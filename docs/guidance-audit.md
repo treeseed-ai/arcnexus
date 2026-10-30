@@ -56,3 +56,30 @@ Human architecture remains authoritative when the software edits its own impleme
    the dependent assignment; preserve owner and required readiness milestone.
 
 Baseline and revised-guidance evaluation results are recorded below after inspection.
+
+### Baseline result
+
+A read-only independent agent replayed scenarios 1–4 before edits. It found the
+nonexistent docs command and unconditional build/CI gates block docs-only bootstrap;
+planning depends on absent superpowers skills and precommitted internal signatures;
+staging release instructions allow a direct commit against the branch rule; skill
+editing requires absent dependencies and repeated microtests. It also independently
+identified the self-development ambiguity. No baseline product execution was attempted.
+
+### Revised guidance and resources
+
+All ten skill entrypoints now pass the skill-creator format validator. The independent
+reader replayed the scenarios and found the baseline behavioral conflicts resolved.
+It caught an overbroad instruction to keep all documentation smaller than nonexistent
+bootstrap code; that was corrected to proportional guidance for the next slice.
+Missing CI remains an explicit integration gate, not a fabricated pass.
+
+The old visual-companion server, builder prompt, ECC release checklist, and copied
+skill-authoring support materials have no callers outside their former skill bundles.
+Their roles and references were inspected; they were removed with the workflows they
+supported. Git retains their history. They are not latent alternative instructions
+for future agents to discover. No product runtime used these files.
+
+These are scoped scenario and static checks, not proof of universal agent compliance.
+There is no application build, product test suite, or CI workflow in this repository
+yet. This change does not claim runtime acceptance or readiness to merge without CI.
