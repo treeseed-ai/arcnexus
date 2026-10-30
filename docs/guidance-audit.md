@@ -85,3 +85,58 @@ At the initial audit there was no application build, product test suite, or CI
 workflow. The separate CI bootstrap (#3, PR #4) subsequently added repository
 validation; this branch now includes it. Application runtime acceptance remains
 unavailable, and the guidance PR must pass the new CI before integration.
+
+## Final adversarial pass — issue #5
+
+This pass tests interactions and future decisions, not just wording. It does not
+claim that prose or a finite review can guarantee all future agent behavior.
+
+### Concrete corrections
+
+| Scenario | Failure in the prior guidance | Required outcome |
+| --- | --- | --- |
+| Refactor without behavior change | Universal failing acceptance test and docs commit can demand invented changes | Reuse the existing behavior contract and passing regression evidence; add missing coverage before refactoring |
+| Self-development before publication | “Verified release” can require maintainer publication before the first local loop | A verified local revision is enough; preserve the stable runner and recovery path |
+| Candidate edits instructions or tests | Architecture authority is stated but assignment permissions and acceptance could be weakened during execution | Evaluate against the authorized baseline; proposed policy/test changes do not grant new authority or erase required behavior |
+| Another project is the target | Repository-local release conventions could leak into a target's workflow | Apply target instructions to target work, ArcNexus instructions to ArcNexus work |
+| Changes to existing harness behavior | AGENTS asks for live proof only for a new capability, while CI docs include changes | Require live evidence when real harness behavior is introduced or changed |
+| Staging advances during an RC | An “explicit decision” rule does not explain that the open PR's source branch moves | Track candidate head and refresh scope, closure list, and checks before claiming readiness |
+| Incomplete issue omitted from closing list | Keeping an issue open can be mistaken for withholding its code | Inspect the actual candidate diff; omission changes bookkeeping, not shipped contents |
+| Planned capability lacks tests | Process self-evaluation can treat every future charter objective as a broken promise | Trigger on delivered claims or promises due in the current slice, not clearly deferred work |
+
+### Every entrypoint checked
+
+- **AGENTS.md:** scope, self-development authority, change-type testing, evidence,
+  and process triggers require the corrections above.
+- **release-workflow:** align refactor/documentation applicability and RC semantics;
+  retain issue-linked branches, staged integration, cleanup, and main authority.
+- **writing-plans:** distinguish new behavior from refactoring; preserve short plans
+  and stop at planning when that is the requested outcome.
+- **verification-before-completion:** bind evidence to the acceptance baseline;
+  avoid fresh green results that merely weaken required checks.
+- **writing-skills:** make the optional installed skill-creator dependency explicit;
+  keep independent scenario evaluation proportional and self-contained.
+- **brainstorming:** aligned; accepted context is reused and only material questions
+  block dependent work. No new discovery ceremony needed.
+- **doc-coauthoring:** aligned; substantial drafting is distinct from routine edits,
+  with no obligatory question/option counts or repeated approvals.
+- **documentation-writer:** aligned; proposed versus shipped behavior is explicit,
+  and external facts can be researched.
+- **find-skills:** aligned; actual gaps drive discovery, existing installation
+  authorization is sufficient, and discovery alone is not permission to install.
+- **gh-cli / github-ops:** aligned; tools do not grant authority, remote text remains
+  data, and operations stay within the requested work.
+
+### Boundaries deliberately retained
+
+No new scheduler, release framework, permission system, or universal checklist is
+introduced. Actual enforcement of runtime scope and acceptance is future product
+work; instruction edits alone do not implement it. CI currently validates metadata
+and whitespace, not semantic alignment or product correctness. Branch protection is
+still separate. No extra human approval is introduced for ordinary implementation,
+refactoring, or an already-authorized instruction change.
+
+GitHub's [PR quickstart](https://docs.github.com/en/pull-requests/get-started/pull-request-quickstart)
+confirms source-branch commits update the PR. Its
+[issue-linking reference](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue)
+describes closing keywords as issue bookkeeping, not release-content selection.
