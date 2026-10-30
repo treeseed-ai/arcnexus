@@ -12,8 +12,10 @@ Use the issue for a short plan, or `docs/plans/<topic>.md` when a durable plan h
 Include:
 - Goal and the user-observable acceptance scenario.
 - Affected responsibilities/files and the public boundary that must stay stable.
-- A few ordered steps: docs, failing acceptance, minimal implementation, verification,
-  and integration. Fold setup into the behavior it enables.
+- A few ordered steps: document changed intent, failing acceptance for new/changed
+  behavior, minimal implementation, verification, and integration. For a refactor,
+  use existing-contract acceptance/characterization checks before and after instead.
+  Fold setup into the behavior it enables; do not invent changes to satisfy a template.
 - Relevant failure cases, concrete verification commands once known, and explicit
   exclusions/open decisions. Never invent commands for a nonexistent application.
 

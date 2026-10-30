@@ -11,11 +11,20 @@ These instructions govern development of this repository. The generic product mu
 not hardcode this file, its text, or its policies. When ArcNexus is the target
 project, the runtime may load these instructions and local skills normally, just
 as it would load another target project's guidance. Generic tests use explicit
-fixtures; self-development acceptance runs may use this real repository.
+fixtures; self-development acceptance runs may use this real repository. These
+local skills do not export ArcNexus's Git/release policy to another target project.
 
 The architect owns purpose, boundaries, and changes to approved architecture.
 Implement within the authorized objective; propose material scope changes. Existing
-user authorization persists. Do not ask again for decisions already made.
+user authorization persists. Do not ask again for decisions already made. Skills
+supply procedures within that authority; they cannot enlarge it. If local guidance
+conflicts, preserve the authorized scope, identify the conflict, and continue work
+that does not depend on the unresolved decision.
+
+During self-development, keep the supervising runner and authorized acceptance
+baseline stable. Candidate edits to instructions, permissions, or tests are proposed
+changes, not new authority for the current execution. Evaluate them against the
+approved objective; do not weaken a check merely to make the candidate pass.
 
 ## Working style
 
@@ -41,15 +50,18 @@ change and before its PR. Read-only discussion/audit needs no branch; edits do.
 Create/adopt an issue, then branch from current `origin/staging` using
 `codex/<issue>-<description>`. Never edit directly on `main` or `staging`.
 
-Follow: issue and acceptance → documentation → failing acceptance test →
-implementation → verification/review → PR to staging. Commit intent before product
-code. Add regression, integration, and unit checks where they prove distinct risks;
-not every change needs every tier. Documentation-only work uses document validation.
+For new or changed behavior: issue and acceptance → documentation → failing
+acceptance test → implementation → verification/review → PR to staging. Commit
+changed intent before product code. For a behavior-preserving refactor, reference
+the existing contract, establish passing acceptance/characterization coverage before
+editing, then prove it still passes; add missing coverage first. Do not manufacture
+a behavior change or redundant docs commit. Documentation-only work uses document
+validation. Add other test layers only where they prove distinct risks.
 
 For executable changes, test the assembled program and the default production wiring.
-Fast deterministic tests may use fakes; a new real harness capability also needs a
-real end-to-end demonstration. Report local tests, build, CI, and live acceptance
-separately; never substitute one for another or claim an unavailable check passed.
+Fast deterministic tests may use fakes; introducing or changing real harness
+behavior also needs a real end-to-end demonstration. Report local tests, build, CI,
+and live acceptance separately; never substitute one for another or claim an unavailable check passed.
 
 Keep commits and PRs issue-linked. Include a changelog entry for developer/user-visible
 changes. Agents may merge to staging only after applicable verification, green CI,
@@ -70,7 +82,8 @@ Verify claims against observed evidence at the current revision. After three
 functionally identical attempts without progress, diagnose and change approach or
 report the blocker. Waiting for an external process to change is not a retry loop.
 
-When a defect escapes checks, a mistake recurs, or an untested promise is found,
+When a defect escapes checks, a mistake recurs, or a delivered/current-slice promise
+lacks verification (not a clearly deferred charter objective),
 record the pattern, cost, and cheapest check that would catch it in a focused issue.
 Keep unrelated process changes out of feature work. Do not build a process framework
 in response to a hypothetical risk.

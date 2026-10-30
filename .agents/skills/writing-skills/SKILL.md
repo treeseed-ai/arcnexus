@@ -6,9 +6,10 @@ description: Use when creating, editing, or validating repository-local agent sk
 # Maintain useful skills
 
 A skill should improve a concrete agent decision with little context overhead.
-Use the available skill-creator guidance when authoring; do not require a framework
-or unavailable companion skill. Project purpose belongs in AGENTS.md/charter, with
-links from skills rather than repeated copies.
+Use skill-creator guidance when installed; otherwise this skill is self-contained.
+Do not install a framework or companion skill merely to satisfy this procedure.
+Project purpose belongs in AGENTS.md/charter, with links from skills rather than
+repeated copies.
 
 Before changing guidance, identify its observed failure or realistic scenario.
 Record what the old guidance causes and the desired observable outcome. For a
