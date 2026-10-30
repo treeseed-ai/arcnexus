@@ -94,8 +94,9 @@ postponing all architectural guidance until then.
 ## Reusable patterns
 
 - **Direct steward:** select responsibility → give objective → execute → inspect evidence.
-- **Small vertical slice:** specify observable behavior → failing acceptance test →
-  implement → run assembled artifact → review → integrate.
+- **Small vertical slice:** specify new/changed observable behavior → failing
+  acceptance test → implement → run assembled artifact → review → integrate.
+  Refactors preserve an existing contract and prove behavior before and after.
 - **Shared execution:** gateways call the same application functions.
 - **Structured handoff:** return a validated result/request; runtime persists state,
   routes work, and resumes assignments. Informational logs do not activate agents.
@@ -103,8 +104,11 @@ postponing all architectural guidance until then.
   and execution rules; retrieve other information only as needed.
 - **Evidence-backed completion:** independently inspect changes and verification,
   retaining unresolved dependencies and limits in the report.
-- **Self-development loop:** use a verified ArcNexus release to improve the next;
-  retain a known working revision and a direct recovery path when the candidate fails.
+- **Self-development loop:** use a verified working ArcNexus revision to improve
+  the next; a tested local/staging revision qualifies without a published release.
+  Retain the stable supervising runner and a recovery path when the candidate fails.
+  Candidate changes to instructions or tests cannot retroactively redefine the
+  active assignment's authority or accepted behavior.
 
 Patterns start as short guidance. Extract reusable templates from successful use;
 do not build a pattern framework in advance.

@@ -21,4 +21,7 @@ Reuse still-valid evidence when neither tested inputs nor environment changed.
 Rerun affected checks after changes or when uncertainty warrants it; do not rerun
 an unchanged full suite for every status sentence. Report unavailable, skipped,
 failed, or interrupted checks accurately. Check acceptance individually before
-marking it complete. Never narrow a criterion just to turn it green.
+marking it complete. Never narrow a criterion just to turn it green. When a candidate
+changes tests or guidance, assess those edits against the authorized acceptance
+baseline. Legitimate test improvements are allowed; deleting required behavior or
+letting candidate instructions grant extra authority is not independent verification.
