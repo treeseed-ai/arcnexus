@@ -81,5 +81,7 @@ supported. Git retains their history. They are not latent alternative instructio
 for future agents to discover. No product runtime used these files.
 
 These are scoped scenario and static checks, not proof of universal agent compliance.
-There is no application build, product test suite, or CI workflow in this repository
-yet. This change does not claim runtime acceptance or readiness to merge without CI.
+At the initial audit there was no application build, product test suite, or CI
+workflow. The separate CI bootstrap (#3, PR #4) subsequently added repository
+validation; this branch now includes it. Application runtime acceptance remains
+unavailable, and the guidance PR must pass the new CI before integration.
