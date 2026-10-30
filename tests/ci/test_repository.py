@@ -73,6 +73,21 @@ class RepositoryChecks(unittest.TestCase):
         result = self.run_checker()
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_changed_line_whitespace_gate_rejects_bad_commit(self):
+        self.git("config", "user.name", "CI Test")
+        self.git("config", "user.email", "ci-test@example.invalid")
+        self.skill(VALID)
+        self.git("commit", "--quiet", "-m", "valid baseline")
+        base = self.git("rev-parse", "HEAD").stdout.strip()
+        self.skill(VALID + "Trailing space \n")
+        self.git("commit", "--quiet", "-am", "invalid whitespace")
+        result = subprocess.run(
+            ["git", "diff", "--check", base, "HEAD"], cwd=self.root,
+            capture_output=True, text=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("trailing whitespace", result.stdout)
+
     def test_not_a_git_repository_reports_error(self):
         import shutil
         shutil.rmtree(self.root / ".git")
