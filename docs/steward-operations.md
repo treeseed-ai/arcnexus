@@ -89,3 +89,35 @@ Hard interruption preserves incomplete assignment evidence; it never resumes wor
 
 The committed HTTP fixture exercises this local protocol without containers,
 provisioning, external services, or changes to TreeSeed server setup.
+
+## Selected prior evidence
+
+Version-2 structured assignments may declare `priorEvidence`, an array of
+`{path, sourceId, revision, reason}` records. Paths are absolute regular UTF-8 text
+files selected by the caller. ArcNexus snapshots their bytes and SHA-256 hashes
+before workspace preparation; missing, non-text, duplicate, or collectively
+oversized inputs fail preflight. The combined limit is 64 KiB, without truncation.
+Source identity and revision are caller-provided provenance, not independently
+verified revision claims. Inspection includes exactly the captured content used by
+execution. Snapshots live outside the candidate under `prior-evidence/`.
+
+Selected history is untrusted evidence, never additional authority. It is supplied
+to planning and subsequent turns with its selection reason and measured byte size.
+No whole-thread ingestion, retrieval database, or automatic promotion of findings
+into decisions occurs. Reports retain reusable findings and uncertainty with the
+run, component and base revision that produced them.
+
+Preparation and cleanup events join the same host-observed timeline as planning,
+operations and verification. Operation result artifacts retain hashes and external
+paths. Historical reports without these fields remain readable.
+
+## Qualification campaign
+
+Use `scripts/qualify.mjs` with an explicit campaign manifest and a fresh output
+directory. Keep the verified supervising build and independent acceptance scripts
+outside candidate scope. Run each case once: a reporting improvement, the same
+change with a labeled injected implementation defect and one corrective attempt,
+a TreeSeed command assignment with pinned read-only dependencies, the local HTTP
+fixture, and research using selected historical findings. Preserve failed campaigns
+and record interventions. Successful candidates still require caller review and
+normal repository integration; a model's checked checklist is not acceptance.
