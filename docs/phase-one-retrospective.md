@@ -15,8 +15,10 @@ The earlier Astra results below remain valid historical evidence, but do not pro
 small-model readiness. The follow-up in issue #20 makes this the application default, rather than relying
 on callers to remember a flag.
 
-The [adapter](../src/codex.ts) uses medium reasoning, workspace-write, approval
+At phase-one completion the adapter used medium reasoning, workspace-write, approval
 never, no agent network/web search, and a launcher inserting `--ignore-user-config`.
+[The current execution contract](execution-contract.md) enables hosted research
+and clarifies verification handoff while retaining disabled command networking.
 It reuses existing Codex authentication. Host environment setup and host verification
 are separate from the agent's sandbox; setup may install declared dependencies.
 The SDK is pinned to 0.166.0. These are application settings, not identification

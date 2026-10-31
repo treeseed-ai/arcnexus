@@ -42,3 +42,20 @@ configuration did not add restrictions. Codex retains its own session separately
 
 SDK events continue to be appended to `events.jsonl`, including web-search events
 when exposed by the SDK. Agent command output and host command logs remain separate.
+
+## Live research evidence
+
+Luna run `8171834c-6906-4c30-968e-0d2112c2e848` completed a small documentation
+research assignment through the built CLI. The SDK stream retained a hosted search
+for official Node.js test-runner documentation and returned source URLs. The worker
+added a cited research paragraph to the fixture README; host baseline/final tests
+passed. `prompt.txt`, schema and execution manifest exist; the manifest records
+Codex CLI 0.163.0-alpha.10.2, SDK 0.166.0 and live web search with command networking
+disabled. The candidate and external evidence remain in the usual state directory.
+
+The bootstrap implementation attempt `735b38a8-fb63-400d-8b8f-d9a23f3ec1df` was
+blocked and incomplete: it updated settings/evidence but omitted the actual shared
+prompt change and had an incorrect SDK-argument test expectation. The supervising
+reviewer completed those gaps, bounded provenance reads and removed duplicated
+schema data. That blocked attempt remains unchanged; the live research run above
+validates the assembled implementation, not the incomplete candidate.
