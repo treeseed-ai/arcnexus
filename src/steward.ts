@@ -76,7 +76,7 @@ export async function runSteward(root:string,record:RecordData,id:string,objecti
   }catch(error){summary.status=record.status==='blocked'?'blocked':'failed';summary.error=String(error);journal(activity,String(summary.status),String(error));throw error;}
   finally{
    summary.finishedAt=new Date().toISOString();summary.durationMs=Date.now()-start;summary.commandEnd=record.commands.length;summary.threadId=record.threadId;summary.reportedUsage=record.attemptReportedUsage??null;
-   const delta=turns.length>1&&record.usage===null?null:usageDelta(record.usage,record.attemptReportedUsage);summary.usage=delta;record.usageComplete=record.usageComplete===true&&delta!==null;record.usage=record.attemptReportedUsage??null;record.usageBasis='thread-cumulative Codex counters; per-turn deltas';
+   const delta=turns.length>1&&record.usage===null?null:usageDelta(record.usage,record.attemptReportedUsage);summary.usage=delta;record.usageComplete=record.usageComplete===true&&delta!==null;record.usage=record.attemptReportedUsage??null;record.usageBasis=record.evidenceMode==='simulation'?'Scripted simulation counters; no model inference':'thread-cumulative Codex counters; per-turn deltas';
    captureChanges(root,record);observe(root,record,'changes.captured',{changes:record.changes,artifacts:['changes.patch','staged.patch','unstaged.patch','new-files.json']});archiveAttempt(root,record,turns.length,commandStart,prompt,'turns');delete record.attemptReportedUsage;save(root,record);
   }
  };

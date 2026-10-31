@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "objective": "SIMULATED: change source to after",
+  "expectedOutcome": "Verified scripted change",
+  "acceptanceCriteria": [
+    "Source becomes after with documentation and regression evidence"
+  ],
+  "hostChecks": []
+}

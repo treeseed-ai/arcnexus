@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "evidenceMode": "live",
+  "campaign": "qualification/experiments-53/campaign.json",
+  "campaignSha256": "1337642f78a1acff595a21a5383e80afaa77c1af948266bb6ae6dc0d11c5254c",
+  "supervisorRevision": "ad414c3224c8875535c9984f1c4693bc3d7c1871",
+  "supervisorHash": "e8ce0c80073d18d1dcd81e91c50e6f02ef0cc4a279e3f6c7eef9114ab682249c",
+  "supervisorCapture": "qualification-inputs/experiments-53/supervisor.json",
+  "manifestHash": "dfec747f828754f322304bd02a6b56c6589ee9b5d1d52b99c53985bab429868c",
+  "startedAt": "2026-10-31T18:28:37.743Z",
+  "finishedAt": "2026-10-31T18:50:22.612Z",
+  "model": "gpt-6-luna",
+  "reasoning": "medium",
+  "snapshotCount": 10,
+  "cases": [
+    {
+      "id": "report-change",
+      "status": "passed",
+      "runId": "87af30d6-b1d5-4ed0-a796-ba6f3fc1eb5c",
+      "report": "runs/87af30d6-b1d5-4ed0-a796-ba6f3fc1eb5c/report.json",
+      "reportSha256": "63c9b825a6e5c57b2082bb603644c2a6bced30b715a1d6748abc209f56b81a70",
+      "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+      "assignmentDigest": "b9bb78fb3241aab4dbe20897eebf69a11dca8c0d4b9fe92bab434e48fc54c703",
+      "outcome": "ready_for_integration",
+      "elapsedMs": 430956,
+      "turns": [
+        "planning",
+        "specification",
+        "implementation",
+        "review"
+      ],
+      "attempts": 1,
+      "usage": {
+        "input_tokens": 680521,
+        "cached_input_tokens": 613248,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 8248,
+        "reasoning_output_tokens": 2509
+      },
+      "usageComplete": true,
+      "callerInterventions": [],
+      "independentAcceptance": [
+        {
+          "exitCode": 0,
+          "log": "qualification/experiments-53/report-change/acceptance-0.log",
+          "sha256": "214cd70415cee57a76591fce874265499f0a7f66daf7897ce101c525db3b2e13"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "id": "report-corrective-repair",
+      "status": "passed",
+      "runId": "a89c54a2-a96a-4859-af94-e83088ff4b95",
+      "report": "runs/a89c54a2-a96a-4859-af94-e83088ff4b95/report.json",
+      "reportSha256": "c9430b1673e320d687a8d77ffa9e4b1298529a0845c8add59d394f1dcb5fc95b",
+      "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+      "assignmentDigest": "7f155fd443038950f5514836b4dec1866d26ffbfc5354be1a9f1f8ecba804a17",
+      "outcome": "ready_for_integration",
+      "elapsedMs": 624863,
+      "turns": [
+        "planning",
+        "specification",
+        "implementation",
+        "correction",
+        "review"
+      ],
+      "attempts": 2,
+      "usage": {
+        "input_tokens": 968397,
+        "cached_input_tokens": 889216,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 9261,
+        "reasoning_output_tokens": 1834
+      },
+      "usageComplete": true,
+      "callerInterventions": [],
+      "independentAcceptance": [
+        {
+          "exitCode": 0,
+          "log": "qualification/experiments-53/report-corrective-repair/acceptance-0.log",
+          "sha256": "da73e8bf5f4bd97836248e94d05c6b70ea7f8aee79dd5a7595403cdd76a6c490"
+        }
+      ],
+      "resources": [],
+      "faultInjection": "One-time external acceptance harness replaces the implemented Operations heading; unchanged check must fail then pass after Luna edits real code."
+    },
+    {
+      "id": "treeseed-command",
+      "status": "passed",
+      "runId": "7a98bc77-6010-46d2-84f9-3133da8ac891",
+      "report": "runs/7a98bc77-6010-46d2-84f9-3133da8ac891/report.json",
+      "reportSha256": "470e9823b6522b754e801c2ff15a194aab21c0c1f88a43c72e8c596f2d0e4f1b",
+      "base": "6d5676317eab400c1e473bb2e0a89f575973c296",
+      "assignmentDigest": "fb8974d1d0c856fa89ba305055f43e9e1e08beeb6746c995d10550439cbcd24c",
+      "outcome": "research_completed",
+      "elapsedMs": 50283,
+      "turns": [
+        "planning",
+        "research"
+      ],
+      "attempts": 0,
+      "usage": {
+        "input_tokens": 338976,
+        "cached_input_tokens": 277120,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3925,
+        "reasoning_output_tokens": 667
+      },
+      "usageComplete": true,
+      "callerInterventions": [],
+      "independentAcceptance": [
+        {
+          "exitCode": 0,
+          "log": "qualification/experiments-53/treeseed-command/acceptance-0.log",
+          "sha256": "8160f38f201d829865062da41db59c992512214b15fea68152484a29dffd0ced"
+        }
+      ],
+      "resources": []
+    },
+    {
+      "id": "local-http",
+      "status": "passed",
+      "runId": "1875f952-d706-449a-a390-866a927f0100",
+      "report": "runs/1875f952-d706-449a-a390-866a927f0100/report.json",
+      "reportSha256": "af74b4e461c42150c861113526e69660f29a4a57a2b9b774d3fa1d2bc48479a0",
+      "base": "5ecf737fada6bb22737011ffa85689a0a11fc5cc",
+      "assignmentDigest": "63bc300d48f8887a4b2ab2b56a2744feabdbd5ad65534cfb509e437be5dbbeb1",
+      "outcome": "research_completed",
+      "elapsedMs": 30253,
+      "turns": [
+        "planning",
+        "research"
+      ],
+      "attempts": 0,
+      "usage": {
+        "input_tokens": 255892,
+        "cached_input_tokens": 223744,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 1908,
+        "reasoning_output_tokens": 94
+      },
+      "usageComplete": true,
+      "callerInterventions": [],
+      "independentAcceptance": [
+        {
+          "exitCode": 0,
+          "log": "qualification/experiments-53/local-http/acceptance-0.log",
+          "sha256": "18d0360a5864f75550aa1714bb536942758d22507c88c0386eed00782c463f6d"
+        }
+      ],
+      "resources": [
+        {
+          "id": "serve",
+          "status": "stopped",
+          "endpointClosed": true
+        }
+      ]
+    },
+    {
+      "id": "prior-evidence-research",
+      "status": "passed",
+      "runId": "04eb7d5e-bb93-408d-944a-0a17a0bd8b01",
+      "report": "runs/04eb7d5e-bb93-408d-944a-0a17a0bd8b01/report.json",
+      "reportSha256": "ef92af5e0bd0de66fa0993bfaf1b8c6c16e8f19c2a6edfc0a8c1a1b6d9d8b0e2",
+      "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+      "assignmentDigest": "b99d9057f2c2d3e07ec81c8b7e29c790aba0486c5f0fd377c702a07cb91bcb4b",
+      "outcome": "research_completed",
+      "elapsedMs": 163297,
+      "turns": [
+        "planning",
+        "research"
+      ],
+      "attempts": 0,
+      "usage": {
+        "input_tokens": 260755,
+        "cached_input_tokens": 214912,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 3642,
+        "reasoning_output_tokens": 737
+      },
+      "usageComplete": true,
+      "callerInterventions": [],
+      "independentAcceptance": [
+        {
+          "exitCode": 0,
+          "log": "qualification/experiments-53/prior-evidence-research/acceptance-0.log",
+          "sha256": "720a61a2f80143c2338ff846fe12cfd75f0d5ee70e1d1a7c9340937f9b027103"
+        }
+      ],
+      "resources": []
+    }
+  ]
+}

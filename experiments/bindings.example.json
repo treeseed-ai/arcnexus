@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "runner": "/absolute/verified-supervisor/dist/cli.js",
+  "codexPath": "/absolute/codex",
+  "projects": {
+    "arc": {
+      "path": "/absolute/arcnexus"
+    },
+    "tree": {
+      "path": "/absolute/treeseed-cordis",
+      "bindings": "/absolute/workspace-bindings.json"
+    },
+    "http": {
+      "path": "/absolute/http-fixture"
+    },
+    "fixture": {
+      "path": "/absolute/simulation-fixture",
+      "base": "0000000000000000000000000000000000000000"
+    }
+  },
+  "tools": {
+    "node": "/absolute/node"
+  },
+  "issues": {},
+  "priorEvidence": {
+    "prior-findings": {
+      "path": "/absolute/selected-findings.txt",
+      "sourceId": "prior-run-id",
+      "revision": "captured-revision",
+      "reason": "Re-evaluate an earlier finding"
+    }
+  }
+}

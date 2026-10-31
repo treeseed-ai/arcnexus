@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import { randomUUID } from 'node:crypto';
+import { join } from 'node:path';
+import { ExperimentRunner } from './experiments.js';
+import { resolveExperiment } from './experiment-config.js';
 import { GuidanceValidator } from './guidance.js';
 import { observe, viewExecution } from './timeline.js';
 import { parseArgs } from 'node:util';
@@ -14,6 +18,8 @@ import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  experiment inspect <manifest> --bindings <file> [--json]
+  experiment run <manifest> --bindings <file> --mode simulation|live [--output <new-directory>]
   guidance validate --project <repository> [--json]
   validate --project <repository> [--base <ref>]
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
@@ -26,7 +32,7 @@ Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <sec
 function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
-      bindings: {type:'string'}, after: {type:'string'},
+      mode: {type:'string'}, output: {type:'string'}, bindings: {type:'string'}, after: {type:'string'},
       'composition-profile': {type:'string'}, 'execution-profile': {type:'string'},
       assignment: { type: 'string' }, kind: { type: 'string' }, json: { type: 'boolean' },
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
@@ -62,6 +68,18 @@ async function main(): Promise<void> {
     if (values.help) { console.log(help); return; }
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
+    if (command === 'experiment') {
+      const action=positionals[1];
+      if(positionals.length!==3||!['inspect','run'].includes(action??'')||!values.bindings||Object.keys(values).some(key=>!['bindings','mode','output','json'].includes(key)))throw new InputError('experiment inspect/run requires manifest and --bindings');
+      if(action==='run'&&!['simulation','live'].includes(values.mode??''))throw new InputError('Experiment requires explicit --mode simulation|live');
+      if(action==='inspect'&&(values.mode||values.output))throw new InputError('inspect accepts only --bindings and --json');
+      const input=resolveExperiment(positionals[2]!,values.bindings,values.mode as 'simulation'|'live'|undefined);
+      if(action==='inspect'){console.log(JSON.stringify(input,null,values.json?undefined:2));return;}
+      const output=values.output??join(stateRoot(),'experiment-'+randomUUID());
+      const campaign=await new ExperimentRunner(controller.signal).run(input,output);
+      process.exitCode=campaign.status==='passed'?0:campaign.status==='cancelled'?130:1;
+      console.log(JSON.stringify({status:campaign.status,evidenceMode:campaign.evidenceMode,output}));return;
+    }
     if (command === 'guidance') {
       if (positionals.length !== 2 || positionals[1] !== 'validate' || !values.project || Object.keys(values).some(key => !['project','json'].includes(key))) throw new InputError('guidance validate requires --project and optional --json');
       const report = new GuidanceValidator().validate(values.project);
@@ -100,6 +118,7 @@ async function main(): Promise<void> {
     else {
       record = createWorkspace(root, { project: values.project!, base: selection?.base ?? values.base, issue: values.issue, bindings });
       if(resolved)record.resolvedAssignment=resolved;
+      if(['simulation','live'].includes(process.env.ARCNEXUS_EXPERIMENT_MODE??''))record.evidenceMode=process.env.ARCNEXUS_EXPERIMENT_MODE;
       if (command === 'run') await runSteward(root, record, positionals[1]!, resolved!.assignment.objective, resolved!.executionProfile.model, values['codex-path'] ?? 'codex', controller.signal, Number(values['max-attempts'] ?? 1));
       else await prepareWorkspace(root, record, controller.signal);
     }
