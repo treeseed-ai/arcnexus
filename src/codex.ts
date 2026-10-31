@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { RecordData } from './state.js';
 import { save } from './state.js';
+import { persistExecutionEvidence } from './evidence.js';
 export interface AgentResult {status:'completed'|'blocked'|'failed';summary:string;blockers:string[]}
 const schema={type:'object',properties:{status:{type:'string',enum:['completed','blocked','failed']},summary:{type:'string'},blockers:{type:'array',items:{type:'string'}}},required:['status','summary','blockers'],additionalProperties:false};
 export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal):Promise<AgentResult>{
@@ -12,9 +13,11 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const env:Record<string,string>={};
   for(const name of ['HOME','PATH','CODEX_HOME','TMPDIR','LANG','SSL_CERT_FILE','SSL_CERT_DIR','HTTPS_PROXY','HTTP_PROXY','NO_PROXY','XDG_CONFIG_HOME','XDG_DATA_HOME'])if(process.env[name])env[name]=process.env[name]!;
   env.ARCNEXUS_CODEX_EXECUTABLE=executable.includes('/')?resolve(executable):executable;env.ARCNEXUS_CODEX_PID=pidFile;
-  const codex=new Codex({codexPathOverride:launcher,env});
-  const thread=codex.startThread({model,modelReasoningEffort:'medium',workingDirectory:record.workspace,sandboxMode:'workspace-write',approvalPolicy:'never',networkAccessEnabled:false,webSearchMode:'disabled'});
-  record.settings={model,reasoning:'medium',sandbox:'workspace-write',approval:'never',network:false,webSearch:'disabled',executable:env.ARCNEXUS_CODEX_EXECUTABLE};record.usage=null;save(root,record);
+  const settings={model,reasoning:'medium',sandbox:'workspace-write',approval:'never',network:false,webSearch:'live',nestedDelegation:false,executable:env.ARCNEXUS_CODEX_EXECUTABLE};
+  persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
+  const codex=new Codex({codexPathOverride:launcher,env,config:{features:{multi_agent:false,multi_agent_v2:false}}});
+  const thread=codex.startThread({model,modelReasoningEffort:'medium',workingDirectory:record.workspace,sandboxMode:'workspace-write',approvalPolicy:'never',networkAccessEnabled:false,webSearchMode:'live'});
+  record.settings=settings;record.usage=null;save(root,record);
   let final='',completed=false;
   const killGroup=()=>{if(existsSync(pidFile)){const pid=Number(readFileSync(pidFile,'utf8').trim());if(Number.isSafeInteger(pid)&&pid>1)try{process.kill(-pid,'SIGKILL');}catch{}}};
   let termination:Promise<void>|undefined;

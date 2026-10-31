@@ -37,8 +37,8 @@ CLI (`codex` on PATH, or `--codex-path`). Sign into that CLI beforehand. Existin
 Codex authentication is reused without copying secrets. The Linux `setsid` utility isolates the CLI process group for cancellation.
 A POSIX launcher inserts
 `--ignore-user-config`; the executable must support it. Explicit configuration uses
-workspace-write, approval never, network disabled for agent tools, and web search
-disabled. User config and inherited API-key/provider variables are not passed.
+workspace-write, approval never, network disabled for local agent commands, and live hosted web search
+enabled. User config and inherited API-key/provider variables are not passed.
 Target `.codex/config.toml` files are rejected in phase one. Managed host restrictions
 still apply. Setup commands run on the host and are a separate trusted boundary.
 
@@ -75,3 +75,6 @@ the separate arrays when a path has different change kinds in each view.
 `staged.patch` captures base-to-index; `unstaged.patch` captures index-to-working-tree.
 `changes.patch` remains the net base-to-working-tree patch for compatibility.
 Evidence capture does not stage, unstage or reset the candidate.
+
+See [the execution contract](execution-contract.md) for objectives, research,
+verification handoff and exact prompt/configuration evidence.

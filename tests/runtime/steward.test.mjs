@@ -24,7 +24,7 @@ function fixture(t,mode='success') {
  const mode=${JSON.stringify(mode)};
  console.log(JSON.stringify({type:'thread.started',thread_id:'test-thread'}));
  if(mode==='timeout'){setInterval(()=>{},1000);return;}
- if(mode==='success'){fs.writeFileSync('source.txt','after');fs.writeFileSync('new.txt','new file');}
+ if(mode==='success'||mode==='sandbox'){fs.writeFileSync('source.txt','after');fs.writeFileSync('new.txt','new file');}
  if(mode==='rename'){fs.renameSync('source.txt','new.txt');cp.execFileSync('git',['add','.']);}
  if(mode==='ignored')fs.writeFileSync('.env','unknown');
  if(mode==='scope')fs.writeFileSync('outside.txt','oops');
@@ -40,7 +40,7 @@ function fixture(t,mode='success') {
  if(mode==='masked_symlink'){
    fs.symlinkSync('source.txt','new.txt');cp.execFileSync('git',['add','new.txt']);fs.unlinkSync('new.txt');fs.writeFileSync('new.txt','regular restoration');
  }
- const result={status:mode==='blocked'?'blocked':'completed',summary:'test',blockers:mode==='blocked'?['needs guidance']:[]};
+ const result={status:mode==='blocked'?'blocked':'completed',summary:mode==='sandbox'?'Checks unavailable in sandbox; host verification required':'test',blockers:mode==='blocked'?['needs guidance']:[]};
  console.log(JSON.stringify({type:'item.completed',item:{id:'final',type:'agent_message',text:mode==='malformed'?'bad':JSON.stringify(result)}}));
  console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:1,cached_input_tokens:0,output_tokens:1}}));
  });`,{mode:0o755});
@@ -59,6 +59,22 @@ test('built CLI runs the SDK boundary and retains observed changes, context and 
  assert.match(readFileSync(join(f.state,'runs',record.id,'changes.patch'),'utf8'),/after/);
  assert.match(readFileSync(join(f.state,'runs',record.id,'report.md'),'utf8'),/completed/);
  assert.equal(f.git('status','--porcelain'),'');
+});
+test('built CLI records execution inputs, requested SDK capabilities and available instruction provenance before execution',t=>{
+ const f=fixture(t,'sandbox');writeFileSync(join(f.repo,'AGENTS.md'),'target instructions');f.commit();
+ const r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout),dir=join(f.state,'runs',record.id);
+ const args=JSON.parse(readFileSync(f.sdkArgs,'utf8')),execution=JSON.parse(readFileSync(join(dir,'execution.json'),'utf8'));
+ assert.ok(args.includes('web_search="live"'));assert.ok(args.some(a=>a.includes('features.multi_agent=false')));assert.ok(args.some(a=>a.includes('features.multi_agent_v2=false')));
+ assert.equal(record.settings.webSearch,'live');assert.equal(record.settings.network,false);
+ assert.match(readFileSync(join(dir,'prompt.txt'),'utf8'),/primary sources and URLs/);
+ assert.deepEqual(JSON.parse(readFileSync(join(dir,'response-schema.json'),'utf8')).required,['status','summary','blockers']);
+ assert.equal(execution.settings.webSearch,'live');assert.equal(execution.settings.network,false);
+ assert.ok(execution.instructionProvenance.some(x=>x.path==='AGENTS.md'&&x.sha256));
+ assert.ok(execution.sdk.version);assert.ok(execution.cliVersion);
+});
+test('completed sandbox-limited result remains eligible only for host verification',t=>{
+ const f=fixture(t,'sandbox'),r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
+ assert.equal(record.agent.status,'completed');assert.match(record.agent.summary,/sandbox/);assert.equal(record.stage,'finished');assert.equal(record.commands.length,2);
 });
 test('built CLI rejects a staged outside-scope edit masked by restoring the working file',t=>{
  const f=fixture(t,'masked_outside'),r=f.run();assert.equal(r.status,1,r.stderr);assert.match(JSON.parse(r.stdout).error,/Out-of-scope change: outside\.txt/);
@@ -112,4 +128,9 @@ test('final verification cannot hide an out-of-scope staged change',t=>{
  const f=fixture(t);f.component.verification=[{command:'node',args:['-e',"const fs=require('fs'),cp=require('child_process');if(fs.readFileSync('source.txt','utf8')==='after'){fs.writeFileSync('outside.txt','staged');cp.execFileSync('git',['add','outside.txt']);fs.unlinkSync('outside.txt');}"]}];
  writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
  const r=f.run();assert.equal(r.status,1,r.stderr);const record=JSON.parse(r.stdout);assert.equal(record.stage,'verification');assert.match(record.error,/Out-of-scope/);assert.ok(record.stagedChanges.some(c=>c.path==='outside.txt'));
+});
+
+test('sandbox handoff does not bypass a failing host check',t=>{
+ const f=fixture(t,'sandbox');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run();assert.equal(r.status,1,r.stderr);const record=JSON.parse(r.stdout);assert.equal(record.agent.status,'completed');assert.equal(record.status,'failed');assert.equal(record.stage,'verification');
 });

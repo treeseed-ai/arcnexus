@@ -4,6 +4,8 @@
 
 ### Added
 
+- Capture steward execution contracts and enable research with explicit verification handoff (#23).
+
 - Preserve the development journey and phase-one lessons (#18).
 
 - Show sorted changed files in execution reports through self-development (#13).
