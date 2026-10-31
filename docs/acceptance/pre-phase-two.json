@@ -358,7 +358,7 @@
           },
           "usageComplete": true,
           "reportSha256": "1f141575354233b1fa7dd52ae565c9182070f03724eb5084b1e114c1edef5d08",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/e317209b-f7ac-4f4f-a149-efe2e5347d9c/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-change/report.json"
         },
         {
           "case": "tree-boundary",
@@ -395,7 +395,7 @@
           },
           "usageComplete": true,
           "reportSha256": "34ae9ff2ffbf35ee16e3c411751020fe310f936fcf7e6f1f55f2d4c67561813a",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/6f287f58-de87-4d93-9fe9-6e8dbc9a17a7/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-boundary/report.json"
         },
         {
           "case": "tree-review",
@@ -432,7 +432,7 @@
           },
           "usageComplete": true,
           "reportSha256": "fa459e6ecbdb8c0464c181996fa798e208e7d081ad548e95e046c447500a31ca",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/56d950d0-484d-4398-8f2c-9190f0aa69a3/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-review/report.json"
         }
       ],
       "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/campaign.json",
@@ -526,7 +526,7 @@
           },
           "usageComplete": true,
           "reportSha256": "46f968fb9178d4869861079f177500cecc864015717525d712d402bc182d6b7b",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/e5e78cd3-4859-4424-b3ab-05cbfdadaf8b/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/tree-change/report.json"
         },
         {
           "case": "tree-review",
@@ -568,7 +568,7 @@
           },
           "usageComplete": true,
           "reportSha256": "5922d899dd0e498d544cbbad65aae954c230974086686a6c2f9f7c0856f14718",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/a2290fe7-6ab0-456c-8608-73f7aec970bc/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/tree-review/report.json"
         }
       ],
       "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/campaign.json",
@@ -650,7 +650,7 @@
           },
           "usageComplete": true,
           "reportSha256": "38991a85a274e2321d2abc8179be6bd020bff4129735102bf68562129187a6c8",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/006efd07-955d-4377-aff5-cbe8e64cdfbe/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-host-1/tree-change/report.json"
         }
       ],
       "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-host-1/campaign.json",
@@ -720,7 +720,7 @@
           },
           "usageComplete": true,
           "reportSha256": "27133739dc14a5662e3fd75c954a902f904cc513005f58b211433a09c58499ba",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/d21e041b-2def-49bf-a2d0-15e87f3a680e/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-explicit-1/tree-change/report.json"
         }
       ],
       "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-explicit-1/campaign.json",
@@ -825,7 +825,7 @@
           "reportSha256": "ac22a585b026d145043ae0e9f843c5fcc28c582fd4d8e60d35575ec4d56069a5",
           "callerSpecificationInterventions": 2,
           "interventionEvidence": "Explicit archive/behavioral marker selection followed by assertion-order clarification; see retained assignment hashes and pre-phase-two.md",
-          "reportPath": "/home/adrian/.local/state/arcnexus/runs/5fd1c042-9ac0-461c-b7c4-d3efc471408c/report.json"
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-ordered-1/tree-change/report.json"
         }
       ],
       "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-ordered-1/campaign.json",
