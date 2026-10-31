@@ -1,0 +1,22 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,mkdirSync,writeFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
+const cli=resolve('dist/cli.js'),valid='---\nname: example\ndescription: Useful guidance\n---\n# Example\n';
+function fixture(t){
+ const repo=mkdtempSync(join(tmpdir(),'arcnexus-guidance-'));t.after(()=>rmSync(repo,{recursive:true,force:true}));
+ const git=(...args)=>{const r=spawnSync('git',['-C',repo,...args],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};git('init','-q');git('config','user.name','Test');git('config','user.email','test@example.invalid');
+ const write=(path,text,track=true)=>{mkdirSync(join(repo,path,'..'),{recursive:true});writeFileSync(join(repo,path),text);if(track)git('add',path);};
+ const skill=(text=valid,track=true)=>write('.agents/skills/example/SKILL.md',text,track);
+ const run=(...args)=>spawnSync(process.execPath,[cli,'guidance','validate','--project',repo,...args],{encoding:'utf8'});
+ return {repo,git,write,skill,run};
+}
+test('guidance accepts tracked metadata and inventories AGENTS without semantic approval',t=>{const f=fixture(t);f.skill(valid.replace('description:','metadata:\n  owner: test\ndescription:'));f.write('AGENTS.md','Conflicting instructions are not deterministically evaluated.');const r=f.run('--json');assert.equal(r.status,0,r.stderr);const data=JSON.parse(r.stdout);assert.equal(data.skills.length,1);assert.deepEqual(data.agents,[{path:'AGENTS.md',readable:true}]);assert.equal(data.status,'valid');assert.deepEqual(data.diagnostics,[]);});
+test('guidance rejects metadata with file diagnostics',t=>{const f=fixture(t);for(const content of ['# No header','---\nname: [broken\n---','---\n- sequence\n---',valid.replace('example','other'),valid.replace('Useful guidance','false'),valid.replace('Useful guidance','""'),'---\nname: example\ndescription: Missing closing delimiter']){f.skill(content);const r=f.run('--json');assert.equal(r.status,1,r.stderr);const data=JSON.parse(r.stdout);assert.equal(data.diagnostics[0].path,'.agents/skills/example/SKILL.md');assert.ok(data.diagnostics[0].code);assert.doesNotMatch(r.stderr,/Traceback/);}});
+test('untracked skills do not satisfy tracked inventory',t=>{const f=fixture(t);f.skill(valid,false);const r=f.run();assert.equal(r.status,1);assert.match(r.stderr,/No tracked skills/);});
+test('untracked invalid skill does not invalidate tracked skills',t=>{const f=fixture(t);f.skill();f.write('.agents/skills/local/SKILL.md','invalid',false);assert.equal(f.run().status,0);});
+test('changed-line whitespace remains a separate executable Git gate',t=>{const f=fixture(t);f.skill();f.git('commit','-qm','baseline');const base=f.git('rev-parse','HEAD');f.skill(valid+'Trailing space \n');f.git('commit','-qm','whitespace');const r=spawnSync('git',['-C',f.repo,'diff','--check',base,'HEAD'],{encoding:'utf8'});assert.notEqual(r.status,0);assert.match(r.stdout,/trailing whitespace/);});
+test('guidance rejects non-Git projects and invalid invocation with exit 2',t=>{const f=fixture(t);rmSync(join(f.repo,'.git'),{recursive:true});assert.equal(f.run().status,2);assert.equal(spawnSync(process.execPath,[cli,'guidance','validate'],{encoding:'utf8'}).status,2);});
+test('guidance reads working bytes and reports deleted AGENTS as unreadable',t=>{const f=fixture(t);f.skill();f.write('nested/AGENTS.md','Readable');f.write('.agents/skills/example/SKILL.md','invalid',false);rmSync(join(f.repo,'nested/AGENTS.md'));const r=f.run('--json');assert.equal(r.status,1);const data=JSON.parse(r.stdout);assert.deepEqual(data.agents,[{path:'nested/AGENTS.md',readable:false}]);assert.equal(data.diagnostics.length,2);});

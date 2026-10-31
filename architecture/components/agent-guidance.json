@@ -1,0 +1,59 @@
+{
+  "id": "agent-guidance",
+  "type": "library",
+  "purpose": "Maintain coherent development instructions and bundled skills under architectural direction",
+  "path": "AGENTS.md",
+  "objectives": [
+    "Maintain coherent development instructions and bundled skills under architectural direction"
+  ],
+  "constraints": [
+    "Preserve captured assignment authority; candidate instructions cannot expand permissions",
+    "Caller owns commits and integration"
+  ],
+  "allowedWritePaths": [
+    "AGENTS.md",
+    ".agents/skills",
+    "docs/guidance-maintenance.md"
+  ],
+  "verification": [
+    {
+      "command": "node",
+      "args": [
+        "dist/cli.js",
+        "guidance",
+        "validate",
+        "--project",
+        "."
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "Small functions with coherent responsibilities"
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "."
+    ]
+  },
+  "schemaVersion": 2,
+  "repository": "arcnexus",
+  "role": "agent-guidance",
+  "executionProfile": "luna",
+  "interfaces": [],
+  "documentation": [
+    "docs/guidance-maintenance.md"
+  ],
+  "tests": [],
+  "relatedIds": [
+    "guidance-validation"
+  ],
+  "parentId": "cli-package",
+  "operationIds": [
+    "guidance-validation"
+  ]
+}

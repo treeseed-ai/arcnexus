@@ -29,20 +29,13 @@
       ]
     },
     {
-      "command": ".venv/bin/python",
+      "command": "node",
       "args": [
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        "tests/ci",
-        "-v"
-      ]
-    },
-    {
-      "command": ".venv/bin/python",
-      "args": [
-        "scripts/check_repository.py"
+        "dist/cli.js",
+        "guidance",
+        "validate",
+        "--project",
+        "."
       ]
     }
   ],
@@ -85,7 +78,10 @@
       "workspace",
       "steward",
       "change-inspection",
-      "report"
+      "report",
+      "agent-guidance",
+      "guidance-validation",
+      "experiments"
     ],
     "releases": []
   },

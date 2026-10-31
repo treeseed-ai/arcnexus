@@ -24,12 +24,6 @@
       "args": [
         "--version"
       ]
-    },
-    {
-      "command": "uv",
-      "args": [
-        "--version"
-      ]
     }
   ],
   "setup": [
@@ -42,33 +36,16 @@
       ]
     },
     {
-      "command": "uv",
+      "command": "npm",
       "args": [
-        "venv",
-        "--python",
-        "python3",
-        "--no-python-downloads",
-        ".venv"
-      ]
-    },
-    {
-      "command": "uv",
-      "args": [
-        "pip",
-        "install",
-        "--python",
-        ".venv/bin/python",
-        "--no-python-downloads",
-        "-r",
-        "scripts/requirements-ci.txt"
+        "run",
+        "build"
       ]
     }
   ],
   "generatedDirectories": [
     "node_modules",
-    "dist",
-    ".venv",
-    "tests/ci/__pycache__"
+    "dist"
   ],
   "schemaVersion": 1,
   "workspace": {

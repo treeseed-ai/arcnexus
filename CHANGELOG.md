@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Own agent guidance and validate tracked instructions through the TypeScript CLI (#51).
+
 ### Fixed
 
 - Reconcile interrupted cleanup, validate operation compatibility and expose coordination evidence (#50).
