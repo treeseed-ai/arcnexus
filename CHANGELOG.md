@@ -18,6 +18,8 @@
 
 ### Fixed
 
+- Inspect staged and unstaged candidate changes independently (#22).
+
 - Preserve execution evidence during workspace cleanup (#16).
 
 ### Changed

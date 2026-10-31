@@ -60,3 +60,18 @@ leaves an incomplete record, with explicit manual recovery as documented for wor
 `completed` means observed in-scope changes passed the captured checks; caller review
 and independent acceptance are still required before integration. No auto-commit,
 merge, force cleanup, or automatic resume is performed.
+
+## Separate index and working-tree evidence
+
+Scope checks inspect staged changes against the captured base and unstaged changes
+against the index independently, plus untracked files. Restoring a working file
+does not hide its staged edit. Both views are checked before and after verification;
+staged symlinks are rejected even if the working file was restored to a regular file.
+In-scope index-only changes count as changes, not `no_changes`.
+
+`report.json` retains `stagedChanges` and `unstagedChanges` separately. The existing
+`changes` list is their path union plus untracked files (one entry per path); use
+the separate arrays when a path has different change kinds in each view.
+`staged.patch` captures base-to-index; `unstaged.patch` captures index-to-working-tree.
+`changes.patch` remains the net base-to-working-tree patch for compatibility.
+Evidence capture does not stage, unstage or reset the candidate.
