@@ -4,6 +4,8 @@
 
 ### Added
 
+- Require explicit component read and write directory policies (#24).
+
 - Capture steward execution contracts and enable research with explicit verification handoff (#23).
 
 - Preserve the development journey and phase-one lessons (#18).

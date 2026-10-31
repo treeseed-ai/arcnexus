@@ -12,12 +12,14 @@
     "Implement only approved execution settings"
   ],
   "allowedWritePaths": [
-    "src/steward.ts",
+    "src/components.ts",
     "src/codex.ts",
-    "src/evidence.ts",
+    "src/permissions.ts",
     "tests/runtime/steward.test.mjs",
-    "docs/execution-contract.md",
-    "docs/stewards.md"
+    "tests/runtime/report.test.mjs",
+    "tests/runtime/permissions.test.mjs",
+    "scripts/check-permissions.mjs",
+    "docs/component-access.md"
   ],
   "verification": [
     {
@@ -54,5 +56,17 @@
   "patterns": [
     "Document intent, test observable behavior, implement",
     "Verify actual SDK executable arguments and report settings"
-  ]
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "tests",
+      "docs",
+      "dist",
+      "scripts"
+    ]
+  }
 }
