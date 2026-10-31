@@ -1,7 +1,7 @@
 # Continuous integration
 
-The initial CI validates repository guidance and the validator itself. It does not
-claim application correctness: ArcNexus has no application build or runtime yet.
+CI validates repository guidance and the built TypeScript CLI. Product acceptance
+uses temporary real Git repositories and subprocesses; live inference stays separate.
 
 ## Contract
 
@@ -42,8 +42,8 @@ valid and invalid input. These tests do not depend on the wording of AGENTS.md.
 
 ## Extend with the product
 
-When phase one adds the application, add its frozen dependency install, static
-checks, tests, build, and assembled CLI smoke test to this workflow. Keep the stable
+The job also installs Node 22, runs `npm ci`, `npm run check`, and `npm test`
+(which builds and exercises the CLI), then checks its help output. Keep the stable
 `Repository checks` gate; if checks become separate jobs, make it a final aggregator
 that fails when any required job fails or is unexpectedly skipped. Add a platform
 matrix only when supported platforms need distinct evidence.
