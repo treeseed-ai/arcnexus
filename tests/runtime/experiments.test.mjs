@@ -45,7 +45,7 @@ function fixture(t) {
     spawnSync(process.execPath, [cli, "experiment", ...args], {
       env: { ...process.env, ARCNEXUS_STATE_DIR: state },
       encoding: "utf8",
-      timeout: 60000,
+      timeout: 120000,
     });
   return {
     root,

@@ -264,7 +264,7 @@ export function resolveExperiment(
           command(check, dirname(manifestPath)),
         ),
         bindings: project.bindings,
-        issue: bindings.issues?.[c.id],
+        issue: bindings.issues && Object.hasOwn(bindings.issues, c.id) ? bindings.issues[c.id] : undefined,
       };
       captureFiles(result, files);
       return result;
