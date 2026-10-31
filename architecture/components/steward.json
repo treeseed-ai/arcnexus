@@ -64,7 +64,8 @@
       "tests",
       "docs",
       "dist",
-      "scripts"
+      "scripts",
+      "schemas"
     ]
   },
   "schemaVersion": 2,
