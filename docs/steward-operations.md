@@ -135,3 +135,8 @@ Finite setup, verification and exploratory commands also use a separate supervis
 with a parent-liveness channel. A hard parent interruption aborts the command process
 group even when the CLI cannot finalize its report. Partial logs and the incomplete
 execution record remain; this does not authorize automatic recovery or cleanup.
+
+The SDK executable launcher also watches the original host process identity and
+terminates its Codex process group if that host disappears. It preserves the SDK's
+stdio event stream and inserts `--ignore-user-config` exactly as before. A lost
+host leaves incomplete evidence, never a successful outcome.
