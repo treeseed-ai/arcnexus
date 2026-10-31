@@ -60,3 +60,12 @@ both frozen dependency installations passed. Reports and inventories are retaine
 ArcNexus user state. This proves preparation, not the six-case Luna qualification gate.
 The blueprint references in that historical source revision are subsequently removed
 by TreeSeed #866/#867; they are not authority for future assignments.
+
+### Bound tools in steward context
+
+The host supplies resolved absolute executables for captured verification commands,
+keeping their original indexes, and includes the declared tool-name bindings in each
+turn's context. Use those paths for target commands: a login shell can replace the
+inherited PATH. This is executable location context, not extra write authority or
+runtime installation. Host verification remains authoritative when the steward
+cannot run a command within its sandbox.
