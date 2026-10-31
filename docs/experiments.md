@@ -130,3 +130,9 @@ For an expected blocked workday, independent acceptance must validate the escala
 Model settings are checked for assignments that actually started inference; an owner
 that was never activated has unavailable execution settings and usage, not a fictitious
 model execution. Its captured profile must still pass workday inspection.
+
+The guidance qualification binds Node/npm explicitly and gives the validator owner
+fixed build and guidance-test operations. The steward obtains regression feedback
+through the verified host route; direct sandbox output is not substituted for the
+host's expected-red evidence. Tool bindings and operation definitions are captured
+before each workday, alongside the unchanged references policy.
