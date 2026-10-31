@@ -4,6 +4,8 @@
 
 ### Added
 
+- Capture selected prior evidence and qualify planned steward operations (#48).
+
 - Probe steward capabilities and supervise local HTTP service leases (#45).
 
 - Expose captured engineering operations with bounded host feedback (#42).

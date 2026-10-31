@@ -92,6 +92,38 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "priorEvidence": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "sourceId",
+          "revision",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [
@@ -114,7 +146,8 @@
       },
       "then": {
         "properties": {
-          "operationIds": false
+          "operationIds": false,
+          "priorEvidence": false
         }
       }
     }

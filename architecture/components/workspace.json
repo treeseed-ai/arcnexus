@@ -29,7 +29,8 @@
     "src/service-supervisor.ts",
     "tests/runtime/services.test.mjs",
     "tests/runtime/operations-fixture.mjs",
-    "fixtures/http"
+    "fixtures/http",
+    "src/command-supervisor.ts"
   ],
   "verification": [
     {

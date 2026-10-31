@@ -1,3 +1,4 @@
+import { observe, readTimeline } from './timeline.js';
 import { assertServicesStopped } from './service-state.js';
 import { resolveMembers,prepareMembers,freezeMembers,assertMembers,cleanupMembers,type Member } from './members.js';
 import { loadBindings,targetCommand,targetEnvironment,type Bindings } from './bindings.js';
@@ -41,20 +42,22 @@ export function createWorkspace(root: string, options: PrepareOptions): RecordDa
   const record: RecordData = { id, source, base, commonDir, branch, workspace: join(root, 'workspaces', id), status: 'preparing', startedAt: new Date().toISOString(), environment: env, commands: [] };
   record.bindings=options.bindings??loadBindings();
   record.members=resolveMembers(source,base,record.workspace,env,record.bindings as Bindings);
-  mkdirSync(join(root,'runs',id), { mode:0o700 }); save(root, record);
+  mkdirSync(join(root,'runs',id), { mode:0o700 }); save(root, record);observe(root,record,'run.created',{base,branch,workspace:record.workspace});
   return record;
 }
 export async function prepareWorkspace(root: string, record: RecordData, signal: AbortSignal): Promise<void> {
   signal.throwIfAborted();
   git(record.source, 'worktree', 'add', '-b', record.branch, record.workspace, record.base);
-  await prepareMembers(root,record,signal);
+  observe(root,record,'workspace.created',{workspace:record.workspace,base:record.base});
+  await prepareMembers(root,record,signal);observe(root,record,'workspace.members',{members:record.members});
   for (const command of [...record.environment.prerequisites, ...record.environment.setup]) {
     const log = join(root,'runs',record.id,`command-${record.commands.length}.log`);
+    observe(root,record,'setup.started',{command,workspace:record.workspace});
     try { record.commands.push(await execute(targetCommand(record,command),record.workspace,log,signal,{env:targetEnvironment(record)})); }
     catch (error) { if (error && typeof error === 'object' && 'commandResult' in error) record.commands.push(error.commandResult as RecordData['commands'][number]); throw error; }
-    finally { save(root,record); }
+    finally { observe(root,record,'setup.result',record.commands.at(-1)??{status:'interrupted'});save(root,record); }
   }
-  freezeMembers(root,record);assertIdentity(record); assertOutputs(record.workspace,record.environment); record.status='prepared';
+  freezeMembers(root,record);assertIdentity(record); assertOutputs(record.workspace,record.environment); record.status='prepared';observe(root,record,'workspace.prepared',{members:record.members});save(root,record);
 }
 export function cleanup(root: string, id: string): RecordData {
   if (!/^[a-f0-9-]{36}$/.test(id)) throw new InputError('Invalid workspace ID');
@@ -80,9 +83,9 @@ export function cleanup(root: string, id: string): RecordData {
     m.definition=definition;
   }
   assertOutputs(record.workspace,env);
-  cleanupMembers(root,record);
+  const cleanupRecord={...record,timelineSequence:readTimeline(join(root,'runs',id)).events.length};observe(root,cleanupRecord,'cleanup.started',{});cleanupMembers(root,record);
   git(record.source,'worktree','remove',record.workspace);
   writeFileSync(`${cleanupPath}.tmp`, JSON.stringify({ cleanupStatus: 'removed', removedAt: new Date().toISOString() }, null, 2) + '\n', { mode: 0o600 });
-  renameSync(`${cleanupPath}.tmp`, cleanupPath);
+  renameSync(`${cleanupPath}.tmp`, cleanupPath);observe(root,cleanupRecord,'cleanup.completed',{status:'removed'});
   return { ...record, cleanupStatus: 'removed' };
 }

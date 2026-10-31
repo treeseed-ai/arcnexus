@@ -54,6 +54,7 @@ try{
   const directory=join(output,c.id);mkdirSync(directory,{mode:0o700});
   const assignment=validateSchema('assignment',read(c.assignment));
   campaign.snapshots.push({path:c.assignment,sha256:hash(readFileSync(c.assignment))});
+  if(assignment.priorEvidence)assignment.priorEvidence=assignment.priorEvidence.map(ref=>({...ref,path:snapshot(ref.path,directory,campaign.snapshots)}));
   assignment.hostChecks=assignment.hostChecks.map(check=>captureCommand(check,directory,campaign.snapshots));
   const assignmentFile=join(directory,'assignment.json');writeFileSync(assignmentFile,JSON.stringify(assignment),{mode:0o400});
   const bindings=c.bindings?snapshot(c.bindings,directory,campaign.snapshots):undefined;

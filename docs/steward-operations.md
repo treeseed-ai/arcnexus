@@ -89,3 +89,65 @@ Hard interruption preserves incomplete assignment evidence; it never resumes wor
 
 The committed HTTP fixture exercises this local protocol without containers,
 provisioning, external services, or changes to TreeSeed server setup.
+
+## Selected prior evidence
+
+Version-2 structured assignments may declare `priorEvidence`, an array of
+`{path, sourceId, revision, reason}` records. Paths are absolute regular UTF-8 text
+files selected by the caller. ArcNexus snapshots their bytes and SHA-256 hashes
+before workspace preparation; missing, non-text, duplicate, or collectively
+oversized inputs fail preflight. The combined limit is 64 KiB, without truncation.
+Source identity and revision are caller-provided provenance, not independently
+verified revision claims. Inspection includes exactly the captured content used by
+execution. Snapshots live outside the candidate under `prior-evidence/`.
+
+Selected history is untrusted evidence, never additional authority. It is supplied
+to planning and subsequent turns with its selection reason and measured byte size.
+No whole-thread ingestion, retrieval database, or automatic promotion of findings
+into decisions occurs. Reports retain reusable findings and uncertainty with the
+run, component and base revision that produced them.
+
+Preparation and cleanup events join the same host-observed timeline as planning,
+operations and verification. Operation result artifacts retain hashes and external
+paths. Historical reports without these fields remain readable.
+
+## Qualification campaign
+
+Use `scripts/qualify.mjs` with an explicit campaign manifest and a fresh output
+directory. Keep the verified supervising build and independent acceptance scripts
+outside candidate scope. Run each case once: a reporting improvement, the same
+change with a labeled injected implementation defect and one corrective attempt,
+a TreeSeed command assignment with pinned read-only dependencies, the local HTTP
+fixture, and research using selected historical findings. Preserve failed campaigns
+and record interventions. Successful candidates still require caller review and
+normal repository integration; a model's checked checklist is not acceptance.
+
+Create a fresh campaign input directory with
+`python3 scripts/qualification/create-campaign.py --runner /absolute/supervisor/dist/cli.js --arc-base <pre-improvement-commit> --tree /absolute/treeseed-cordis --bindings /absolute/bindings.json --http /absolute/http-fixture-repository --prior-report /absolute/prior/report.json --codex /absolute/codex --output /absolute/new-inputs`.
+The HTTP fixture must already be an explicitly initialized local repository.
+Choose an immutable ArcNexus revision before the reporting improvement so a later campaign does not assign already completed work. The generator resolves that revision and pins the other current commits and selects only the prior report's findings.
+Then run `node scripts/qualify.mjs /absolute/new-inputs/manifest.json /absolute/new-campaign`.
+The runner must remain unchanged and outside all candidates throughout the campaign.
+Fault markers are per candidate workspace, so later campaigns do not silently skip
+injection. The campaign does not retry failed cases.
+
+Finite setup, verification and exploratory commands also use a separate supervisor
+with a parent-liveness channel. A hard parent interruption aborts the command process
+group even when the CLI cannot finalize its report. Partial logs and the incomplete
+execution record remain; this does not authorize automatic recovery or cleanup.
+
+The SDK executable launcher also watches the original host process identity and
+terminates its Codex process group if that host disappears. It preserves the SDK's
+stdio event stream and inserts `--ignore-user-config` exactly as before. A lost
+host leaves incomplete evidence, never a successful outcome.
+
+The reporting owner declares a focused built report-test command in addition to
+full repository verification. Use that command for the expected-red and captured
+regression checkpoints; full verification still runs at baseline and after changes.
+This keeps repeated regression checks bounded without weakening integration checks.
+
+Research/review has exactly one execution turn after planning. Source-read-only
+means no source edits; it does not prohibit declared test or service operations.
+The steward must perform its selected permitted work and update the checklist in
+that turn, or report a precise blocker. Activity names are not promises of additional
+model turns. Incomplete checklist claims fail rather than silently adding a turn.

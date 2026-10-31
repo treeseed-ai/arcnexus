@@ -166,3 +166,21 @@ for (const legacy of [false, true]) test(`cleanup refuses replacement paths and 
     assert.deepEqual(JSON.parse(result.stdout), {...record, cleanupStatus:'removed'}); checkEvidence();
   }
 });
+
+test('hard parent death stops a finite setup process group and preserves incomplete evidence', async t => {
+  const f=fixture(t,[{command:process.execPath,args:['-e',"console.log('COMMAND_PID='+process.pid);setInterval(()=>{},1000)"]}]);
+  const child=spawn(process.execPath,[cli,'prepare','--project',f.repo],{env:f.env,stdio:'ignore'});
+  let pid,record,log;
+  t.after(()=>{child.kill('SIGKILL');if(pid)try{process.kill(-pid,'SIGKILL');}catch{}});
+  const deadline=Date.now()+10000;
+  while(Date.now()<deadline&&!pid){
+    if(existsSync(join(f.state,'runs')))for(const id of readdirSync(join(f.state,'runs'))){const path=join(f.state,'runs',id,'command-0.log');if(existsSync(path)){const match=readFileSync(path,'utf8').match(/COMMAND_PID=(\d+)/);if(match){pid=Number(match[1]);log=path;record=join(f.state,'runs',id,'report.json');}}}
+    if(!pid)await new Promise(r=>setTimeout(r,25));
+  }
+  assert.ok(pid,'command reached observable running state');
+  const exited=new Promise(r=>child.once('close',r));child.kill('SIGKILL');await exited;
+  const {groupMembers}=await import('../../dist/service-state.js');
+  const stopped=Date.now()+5000;while(groupMembers(pid).length&&Date.now()<stopped)await new Promise(r=>setTimeout(r,25));
+  assert.deepEqual(groupMembers(pid),[],'parent-loss supervisor stops command group');
+  assert.match(readFileSync(log,'utf8'),/COMMAND_PID=/);assert.equal(JSON.parse(readFileSync(record)).finishedAt,undefined);
+});

@@ -52,6 +52,33 @@ test('historical records without workflow fields render safely', () => {
   assert.doesNotMatch(report, /undefined|null/);
 });
 
+test('captured Operations and Managed services render their recorded fields without mutation', () => {
+  const operations = Object.freeze([
+    Object.freeze({ id: 'compile', exitCode: 0, durationMs: 42, log: '/runs/compile.log' }),
+    Object.freeze({ id: 'checks', exitCode: 3, durationMs: 81, log: '/runs/checks.log' }),
+  ]);
+  const services = Object.freeze([
+    Object.freeze({ id: 'web', status: 'stopped', endpointClosed: true }),
+    Object.freeze({ id: 'api', status: 'unresolved', endpointClosed: false }),
+  ]);
+  const captured = Object.freeze({ ...record, operations, services });
+  const before = JSON.stringify(captured);
+  const report = markdownReport(captured);
+  assert.ok(report.includes('## Operations\n\n- compile — passed — 42 ms — /runs/compile.log\n- checks — failed — 81 ms — /runs/checks.log'), 'captured Operations summary is rendered');
+  assert.ok(report.includes('## Managed services\n\n- web — stopped — endpointClosed: true\n- api — unresolved — endpointClosed: false'), 'captured Managed services summary is rendered');
+  assert.equal(JSON.stringify(captured), before);
+  assert.doesNotMatch(report, /undefined|null/);
+});
+
+test('historical missing and empty operations and service arrays use exact messages', () => {
+  for (const captured of [record, { ...record, operations: [], services: [] }]) {
+    const report = markdownReport(captured);
+    assert.ok(report.includes('## Operations\n\nNo managed operations recorded.'));
+    assert.ok(report.includes('## Managed services\n\nNo managed services recorded.'));
+    assert.doesNotMatch(report, /undefined|null/);
+  }
+});
+
 test('filenames remain text instead of Markdown or HTML', () => {
   const path = '[link](https://bad) `code` <img> &amp;\n# heading\r\t*em*_x|';
   const report = markdownReport({ ...record, changes: [{ path, kind: 'A' }] });
@@ -64,4 +91,8 @@ test('built CLI run renders observed changes from the production workflow', t =>
   const evidence=JSON.parse(readFileSync(join(run,'report.json'),'utf8'));
   assert.deepEqual(evidence.changes,[{kind:'M',path:'docs/behavior.md'},{kind:'M',path:'source.txt'},{path:'tests/regression.cjs',kind:'?'}]);
   assert.equal(section(readFileSync(join(run,'report.md'),'utf8')),'- <code>docs/behavior.md</code> — M\n- <code>source.txt</code> — M\n- <code>tests/regression.cjs</code> — ?');
+  const markdown=readFileSync(join(run,'report.md'),'utf8');
+  assert.equal(section(markdown),'- <code>docs/behavior.md</code> — M\n- <code>source.txt</code> — M\n- <code>tests/regression.cjs</code> — ?');
+  assert.ok(markdown.includes('## Operations\n\nNo managed operations recorded.'));
+  assert.ok(markdown.includes('## Managed services\n\nNo managed services recorded.'));
 });

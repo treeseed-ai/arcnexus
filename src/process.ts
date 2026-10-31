@@ -1,4 +1,5 @@
-import { spawn, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { fork, spawn, spawnSync } from 'node:child_process';
 import { openSync, closeSync, writeSync } from 'node:fs';
 import type { Command } from './config.js';
 export function git(cwd: string, ...args: string[]): string {
@@ -7,7 +8,7 @@ export function git(cwd: string, ...args: string[]): string {
   return result.stdout;
 }
 export interface CommandResult extends Command { cwd: string; startedAt: string; durationMs: number; exitCode: number | null; log: string }
-export async function execute(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number} = {}): Promise<CommandResult> {
+export async function executeDirect(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number} = {}): Promise<CommandResult> {
   signal.throwIfAborted();
   const start = Date.now(), fd = openSync(log, 'wx', 0o600);
   const result: CommandResult = { ...command, cwd, startedAt: new Date(start).toISOString(), durationMs: 0, exitCode: null, log };
@@ -40,4 +41,16 @@ export async function execute(command: Command, cwd: string, log: string, signal
       else resolve(result);
     });
   });
+}
+
+export async function execute(command:Command,cwd:string,log:string,signal:AbortSignal,options:{env?:NodeJS.ProcessEnv;timeoutMs?:number}={}):Promise<CommandResult>{
+ signal.throwIfAborted();
+ return new Promise((resolve,reject)=>{
+  const supervisor=fork(fileURLToPath(new URL('./command-supervisor.js',import.meta.url)),[],{detached:true,stdio:['ignore','ignore','ignore','ipc']});
+  let response:{result?:CommandResult;error?:string}|undefined,failure:Error|undefined;
+  const abort=()=>{if(supervisor.connected)supervisor.send({cancel:String(signal.reason)});};
+  supervisor.on('error',error=>{failure=error;});supervisor.on('message',message=>{response=message as typeof response;});
+  supervisor.on('close',()=>{signal.removeEventListener('abort',abort);if(failure||response?.error||!response?.result)reject(Object.assign(failure??new Error(response?.error??'Command supervisor exited without a result'),response?.result?{commandResult:response.result}:{}));else resolve(response.result);});
+  signal.addEventListener('abort',abort,{once:true});supervisor.send({command,cwd,log,options});if(signal.aborted)abort();
+ });
 }

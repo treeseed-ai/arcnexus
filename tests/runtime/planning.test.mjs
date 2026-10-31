@@ -57,3 +57,7 @@ test('checklist completion without evidence stops the assignment',t=>{const f=pl
 test('timeline reader reports truncation and historical absence',async t=>{const {readTimeline}=await import('../../dist/timeline.js');const f=workflowFixture(t);assert.equal(readTimeline(f.root).complete,false);writeFileSync(join(f.root,'timeline.jsonl'),'{"unfinished":');assert.match(readTimeline(f.root).problem,/Incomplete/);});
 
 test('built production SDK passes explicit MCP bridge configuration to the executable',t=>{const f=planned(t,'bridge-update'),r=f.run();assert.equal(r.status,0,r.stderr);const v=JSON.parse(r.stdout);assert.ok(v.plan.version>=7);const events=readFileSync(join(f.state,'runs',v.id,'timeline.jsonl'),'utf8');assert.match(events,/plan.updated/);});
+
+test('research executes the plan now instead of deferring work to an imaginary later turn',t=>{
+ const f=planned(t);let code=readFileSync(f.executable,'utf8');code=code.replace("console.log(JSON.stringify({type:'item.completed'", "if(stage==='research'&&!prompt.includes('This is the only execution turn')){result.status='failed';result.blockers=['Deferred operations to an imaginary later execution turn'];}console.log(JSON.stringify({type:'item.completed'");writeFileSync(f.executable,code);const r=f.run('--kind','research');assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).turns.length,2);
+});
