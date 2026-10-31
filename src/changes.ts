@@ -22,7 +22,7 @@ export function changes(record: RecordData): Change[] {
 export function checkScope(workspace: string, observed: Change[], allowed: string[]): void {
   for(const change of observed){
     relativePath(change.path);
-    if(!allowed.some(p=>change.path===p||change.path.startsWith(`${p}/`)))throw new Error(`Out-of-scope change: ${change.path}`);
+    if(!allowed.some(p=>p==='.'||change.path===p||change.path.startsWith(`${p}/`)))throw new Error(`Out-of-scope change: ${change.path}`);
     const indexEntries=git(workspace,'ls-files','--stage','-z','--',change.path).split('\0');
     if(indexEntries.some(entry=>entry.startsWith('120000 ')))throw new Error(`Symlink change is unsupported: ${change.path}`);
     const parts=change.path.split('/');

@@ -63,5 +63,20 @@
       "docs",
       "dist"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "saveMarkdown: render captured execution record"
+  ],
+  "documentation": [
+    "docs/report.md"
+  ],
+  "tests": [
+    "tests/runtime/report.test.mjs"
+  ],
+  "relatedIds": [],
+  "parentId": "cli-package"
 }

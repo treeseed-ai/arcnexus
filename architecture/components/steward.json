@@ -1,8 +1,8 @@
 {
   "id": "steward",
   "type": "library",
-  "purpose": "Execute one bounded component steward with explicit context and evidence",
-  "path": "src/steward.ts",
+  "purpose": "Adapt the Codex harness with explicit execution permissions and evidence",
+  "path": "src/codex.ts",
   "objectives": [
     "Research and implement bounded objectives with independently verified evidence"
   ],
@@ -12,13 +12,12 @@
     "Implement only approved execution settings"
   ],
   "allowedWritePaths": [
-    "src/cli.ts",
-    "src/steward.ts",
     "src/codex.ts",
-    "src/attempts.ts",
-    "tests/runtime/steward.test.mjs",
-    "tests/runtime/attempts.test.mjs",
-    "docs/corrective-attempts.md"
+    "src/permissions.ts",
+    "src/evidence.ts",
+    "tests/runtime/permissions.test.mjs",
+    "docs/component-access.md",
+    "docs/execution-contract.md"
   ],
   "verification": [
     {
@@ -67,5 +66,24 @@
       "dist",
       "scripts"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "runCodex: explicit SDK permissions and structured result"
+  ],
+  "documentation": [
+    "docs/component-access.md",
+    "docs/execution-contract.md"
+  ],
+  "tests": [
+    "tests/runtime/permissions.test.mjs"
+  ],
+  "relatedIds": [
+    "architecture"
+  ],
+  "questions": [],
+  "parentId": "cli-package"
 }

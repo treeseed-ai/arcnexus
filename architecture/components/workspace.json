@@ -13,9 +13,10 @@
   ],
   "allowedWritePaths": [
     "src/workspace.ts",
-    "src/cli.ts",
     "tests/runtime/workspace.test.mjs",
-    "docs/workspaces.md"
+    "docs/workspaces.md",
+    "src/process.ts",
+    "src/state.ts"
   ],
   "verification": [
     {
@@ -64,5 +65,20 @@
       "docs",
       "dist"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "createWorkspace/prepareWorkspace/cleanup: owned lifecycle"
+  ],
+  "documentation": [
+    "docs/workspaces.md"
+  ],
+  "tests": [
+    "tests/runtime/workspace.test.mjs"
+  ],
+  "relatedIds": [],
+  "parentId": "cli-package"
 }

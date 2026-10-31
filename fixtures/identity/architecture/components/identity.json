@@ -30,5 +30,15 @@
     "writeDirectories": [
       "."
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "identity",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [],
+  "documentation": [],
+  "tests": [],
+  "relatedIds": [],
+  "questions": [],
+  "patterns": []
 }

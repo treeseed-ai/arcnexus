@@ -4,6 +4,8 @@
 
 ### Added
 
+- Validate architecture definitions and inspect resolved assignments (#30).
+
 - Add opt-in bounded corrective attempts on the same steward thread (#25).
 
 - Require explicit component read and write directory policies (#24).

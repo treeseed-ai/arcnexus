@@ -1,6 +1,6 @@
 # Architecture and assignment contract
 
-This is the increment-one contract being implemented for #30. Workflow checkpoints
+This is the increment-one contract delivered for #30. Workflow checkpoints
 and composed dependency workspaces follow in separate increments; they are not
 claimed as available by this document.
 
@@ -55,3 +55,17 @@ Assignments can narrow scope but cannot widen component authority. Every exact
 write path must be covered by declared write directories. `.` must be explicit.
 Research/review outcomes and staged workflow enforcement are delivered in increment
 two; increment one rejects their execution rather than treating them as code work.
+
+## Ownership and compatibility
+
+The CLI gateway and assignment orchestrator share `tests/runtime/steward.test.mjs`;
+changes to that shared acceptance surface require caller review. Runtime libraries
+retain their existing source locations. Directory sandbox grants may be broader
+than exact file scope; post-execution scope checks remain mandatory.
+
+Existing unversioned project definitions must migrate to schema version 1, including
+environments, role/profile references, and component ownership fields. Old reports
+remain readable, but new runs do not silently accept legacy definitions.
+
+Validation uses [Ajv draft 2020-12](https://ajv.js.org/json-schema.html) in
+[strict mode](https://ajv.js.org/strict-mode.html), with no remote schema loading.

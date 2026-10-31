@@ -1,6 +1,6 @@
 {
   "id": "cli",
-  "type": "library",
+  "type": "gateway",
   "purpose": "Expose predictable command-line execution settings and lifecycle operations",
   "path": "src/cli.ts",
   "objectives": [
@@ -62,5 +62,26 @@
       "docs",
       "dist"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "CLI arguments and exit codes",
+    "Resolved assignment preview"
+  ],
+  "documentation": [
+    "docs/stewards.md"
+  ],
+  "tests": [
+    "tests/runtime/steward.test.mjs"
+  ],
+  "relatedIds": [
+    "assignment",
+    "architecture",
+    "workspace"
+  ],
+  "questions": [],
+  "parentId": "cli-package"
 }

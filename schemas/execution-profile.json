@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcnexus.local/schemas/execution-profile-v1",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reasoning": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "webSearch": {
+      "enum": [
+        "live",
+        "disabled"
+      ]
+    },
+    "timeoutSeconds": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 900
+    },
+    "commandTimeoutSeconds": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 120
+    },
+    "maxTurns": {
+      "const": 3
+    },
+    "maxCorrectiveTurns": {
+      "const": 2
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "model",
+    "reasoning",
+    "webSearch",
+    "timeoutSeconds",
+    "commandTimeoutSeconds",
+    "maxTurns",
+    "maxCorrectiveTurns"
+  ],
+  "additionalProperties": false
+}

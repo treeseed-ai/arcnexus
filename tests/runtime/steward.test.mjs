@@ -1,3 +1,4 @@
+import {catalogFixture,componentFields,members} from './catalog-fixture.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,existsSync,rmSync} from 'node:fs';
@@ -11,10 +12,10 @@ function fixture(t,mode='success') {
  const sdkArgs=join(root,'sdk-args.json');
  const sdkCalls=join(root,'sdk-calls.json');
  const git=(...args)=>{const r=spawnSync('git',['-C',repo,...args],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};
- git('init','-b','main');git('config','user.name','Test');git('config','user.email','test@example.invalid');
+ git('init','-b','main');catalogFixture(repo);git('config','user.name','Test');git('config','user.email','test@example.invalid');
  writeFileSync(join(repo,'source.txt'),'before');writeFileSync(join(repo,'.gitignore'),'.env\n');
- writeFileSync(join(repo,'architecture/environment.json'),JSON.stringify({prerequisites:[],setup:[],generatedDirectories:[]}));
- const component={id:'sample',type:'library',purpose:'test responsibility',path:'source.txt',objectives:[],constraints:[],access:{readPaths:['.'],writeDirectories:['.']},allowedWritePaths:['source.txt','new.txt'],verification:[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='broken')process.exit(1)"]}]};
+ writeFileSync(join(repo,'architecture/environment.json'),JSON.stringify({schemaVersion:1,prerequisites:[],setup:[],generatedDirectories:[]}));
+ const component={...componentFields,id:'sample',type:'library',purpose:'test responsibility',path:'source.txt',objectives:[],constraints:[],access:{readPaths:['.'],writeDirectories:['.']},allowedWritePaths:['source.txt','new.txt'],verification:[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='broken')process.exit(1)"]}]};
  writeFileSync(join(repo,'architecture/components/sample.json'),JSON.stringify(component));
  const fake=join(root,'fake-codex');
  writeFileSync(fake,`#!/usr/bin/env node\nconst fs=require('fs'), cp=require('child_process');
@@ -135,17 +136,17 @@ for(const mode of ['scope','ignored','verify','commit','symlink','malformed','bl
 test('run timeout stops SDK and retains evidence',t=>{const f=fixture(t,'timeout'),r=f.run('--timeout-seconds','0.4');assert.equal(r.status,1);assert.match(r.stderr,/timed out|abort/i);});
 test('missing and cyclic ancestors are rejected before inference',t=>{
  const f=fixture(t);f.component.parentId='missing';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();assert.match(f.run().stderr,/missing/);
- writeFileSync(join(f.repo,'architecture/components/missing.json'),JSON.stringify({...f.component,id:'missing',parentId:'sample',type:'package'}));f.commit();const result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/cyclic/);
+ writeFileSync(join(f.repo,'architecture/components/missing.json'),JSON.stringify({...f.component,id:'missing',parentId:'sample',type:'package',members}));f.commit();const result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/cyclic/i);
 });
 test('missing or invalid access policies on any component ancestor stop before inference',t=>{
  const f=fixture(t);delete f.component.access;writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
- let result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/access/);assert.equal(JSON.parse(result.stdout).threadId,undefined);
+ let result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/access/);assert.equal(result.stdout,'');assert.equal(existsSync(f.sdkArgs),false);
  f.component.access={readPaths:['../escape'],writeDirectories:['.']};writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
  result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/relative path/);
 });
 test('ancestor policies are mandatory and their access is retained in execution context',t=>{
  const f=fixture(t);f.component.parentId='parent';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));
- writeFileSync(join(f.repo,'architecture/components/parent.json'),JSON.stringify({...f.component,id:'parent',type:'package',parentId:undefined,access:undefined,purpose:'Parent intent'}));f.commit();
+ writeFileSync(join(f.repo,'architecture/components/parent.json'),JSON.stringify({...f.component,id:'parent',type:'package',members,parentId:undefined,access:undefined,purpose:'Parent intent'}));f.commit();
  const result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/access/);
 });
 test('failing baseline prevents SDK activation',t=>{
@@ -158,7 +159,7 @@ test('failed permission preflight prevents inference',t=>{
 });
 test('complete ancestor definitions are captured root to leaf',t=>{
  const f=fixture(t);f.component.parentId='parent';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));
- writeFileSync(join(f.repo,'architecture/components/parent.json'),JSON.stringify({...f.component,id:'parent',type:'package',parentId:undefined,purpose:'Parent intent',questions:['Question'],patterns:['Pattern']}));f.commit();
+ writeFileSync(join(f.repo,'architecture/components/parent.json'),JSON.stringify({...f.component,id:'parent',type:'package',members,parentId:undefined,purpose:'Parent intent',questions:['Question'],patterns:['Pattern']}));f.commit();
  const r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);assert.deepEqual(record.context.map(c=>c.id),['parent','sample']);assert.deepEqual(record.context[0].patterns,['Pattern']);
 });
 test('staged rename accounts for old and new paths',t=>{
@@ -234,4 +235,12 @@ test('live cumulative resume counters are not double-counted',t=>{
  const r=f.run('--max-attempts','2');assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
  assert.equal(record.usage.input_tokens,98888);assert.equal(record.usage.output_tokens,756);
  assert.equal(record.attempts[0].usage.input_tokens,81398);assert.equal(record.attempts[1].usage.input_tokens,17490);assert.equal(record.attempts[1].usage.output_tokens,112);assert.equal(record.attempts[1].reportedUsage.input_tokens,98888);
+});
+test('run retains the inspected assignment and independently executes captured host checks',t=>{
+ const f=fixture(t),file=join(f.root,'assignment.json'),check=join(f.root,'acceptance.cjs');writeFileSync(check,"if(require('fs').readFileSync('source.txt','utf8')!=='after')process.exit(7)");
+ writeFileSync(file,JSON.stringify({schemaVersion:1,objective:'Improve sample',kind:'change',expectedOutcome:'Source is after',acceptanceCriteria:['External acceptance passes'],hostChecks:[{id:'external',command:process.execPath,args:[check],artifacts:[check]}]}));
+ const args=['sample','--assignment',file,'--project',f.repo];
+ const preview=spawnSync(process.execPath,[cli,'inspect',...args,'--json'],{encoding:'utf8'});assert.equal(preview.status,0,preview.stderr);
+ const r=spawnSync(process.execPath,[cli,'run',...args,'--codex-path',f.fake],{encoding:'utf8',env:{...process.env,ARCNEXUS_STATE_DIR:f.state}});assert.equal(r.status,0,r.stderr);
+ const record=JSON.parse(r.stdout);assert.equal(record.resolvedAssignment.digest,JSON.parse(preview.stdout).digest);assert.ok(record.commands.at(-1).args[0].startsWith(join(f.state,'runs',record.id,'acceptance')));
 });
