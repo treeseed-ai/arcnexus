@@ -83,9 +83,9 @@ export function cleanup(root: string, id: string): RecordData {
     m.definition=definition;
   }
   assertOutputs(record.workspace,env);
-  record.timelineSequence=readTimeline(join(root,'runs',id)).events.length;observe(root,record,'cleanup.started',{});cleanupMembers(root,record);
+  const cleanupRecord={...record,timelineSequence:readTimeline(join(root,'runs',id)).events.length};observe(root,cleanupRecord,'cleanup.started',{});cleanupMembers(root,record);
   git(record.source,'worktree','remove',record.workspace);
   writeFileSync(`${cleanupPath}.tmp`, JSON.stringify({ cleanupStatus: 'removed', removedAt: new Date().toISOString() }, null, 2) + '\n', { mode: 0o600 });
-  renameSync(`${cleanupPath}.tmp`, cleanupPath);observe(root,record,'cleanup.completed',{status:'removed'});
+  renameSync(`${cleanupPath}.tmp`, cleanupPath);observe(root,cleanupRecord,'cleanup.completed',{status:'removed'});
   return { ...record, cleanupStatus: 'removed' };
 }

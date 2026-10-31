@@ -26,6 +26,7 @@ export function operationBridge(root:string,record:RecordData,signal:AbortSignal
   if(!op)throw new Error('Unknown or denied operation: '+id);
   const stage=String(record.stage),activities=stage==='specification'?['research','documentation','testing']:stage==='correction'?['implementation']:stage==='planning'?['research']:[stage];
   if(!op.activities.some(a=>activities.includes(a)))throw new Error('Operation activity denied: '+stage);
+  observe(root,record,'operation.authorized',{id,tool:name,stage,number:record.operationCalls});
   if(name.startsWith('services.')){let result:unknown;switch(name){case 'services.start':result=await services.start(op);break;case 'services.status':result=services.status(id);break;case 'services.logs':result=services.logs(id);break;case 'services.stop':services.status(id);await services.stop();result={status:'stopped'};break;default:throw new Error('Unknown service action');}inspect();return result;}
   if(op.kind==='service')throw new Error('Use services.start for service operations');
   if(active)throw new Error('Concurrent operation denied');
