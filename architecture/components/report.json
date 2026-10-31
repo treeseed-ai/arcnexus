@@ -3,10 +3,54 @@
   "type": "library",
   "purpose": "Expose honest, readable evidence from a steward execution",
   "path": "src/report.ts",
-  "objectives": ["Make actual execution outcomes easy to inspect"],
-  "constraints": ["Preserve JSON evidence and existing report fields", "Use the captured execution record without inspecting mutable target files", "Keep the supervising runner unchanged"],
-  "allowedWritePaths": ["src/report.ts", "tests/runtime/report.test.mjs", "docs/report.md"],
-  "verification": [{"command": "npm", "args": ["run", "check"]}, {"command": "npm", "args": ["test"]}],
+  "objectives": [
+    "Make actual execution outcomes easy to inspect"
+  ],
+  "constraints": [
+    "Preserve JSON evidence and existing report fields",
+    "Use the captured execution record without inspecting mutable target files",
+    "Keep the supervising runner unchanged"
+  ],
+  "allowedWritePaths": [
+    "src/report.ts",
+    "tests/runtime/report.test.mjs",
+    "docs/report.md"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
   "questions": [],
-  "patterns": ["Evidence-backed completion", "Small functions with coherent responsibilities"]
+  "patterns": [
+    "Evidence-backed completion",
+    "Small functions with coherent responsibilities"
+  ]
 }

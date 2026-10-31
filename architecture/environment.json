@@ -1,5 +1,64 @@
 {
-  "prerequisites": [{"command": "node", "args": ["-e", "if(process.versions.node.split('.')[0]!=='22')process.exit(1)"]}, {"command": "git", "args": ["--version"]}, {"command": "setsid", "args": ["--version"]}],
-  "setup": [{"command": "npm", "args": ["ci", "--no-audit", "--no-fund"]}],
-  "generatedDirectories": ["node_modules", "dist"]
+  "prerequisites": [
+    {
+      "command": "node",
+      "args": [
+        "-e",
+        "if(process.versions.node.split('.')[0]!=='22')process.exit(1)"
+      ]
+    },
+    {
+      "command": "git",
+      "args": [
+        "--version"
+      ]
+    },
+    {
+      "command": "setsid",
+      "args": [
+        "--version"
+      ]
+    },
+    {
+      "command": "python3",
+      "args": [
+        "--version"
+      ]
+    }
+  ],
+  "setup": [
+    {
+      "command": "npm",
+      "args": [
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ]
+    },
+    {
+      "command": "python3",
+      "args": [
+        "-m",
+        "venv",
+        ".venv"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "pip",
+        "install",
+        "--disable-pip-version-check",
+        "-r",
+        "scripts/requirements-ci.txt"
+      ]
+    }
+  ],
+  "generatedDirectories": [
+    "node_modules",
+    "dist",
+    ".venv",
+    "tests/ci/__pycache__"
+  ]
 }
