@@ -18,3 +18,12 @@ One execution, Linux/POSIX, local host tools, explicit commands, no containers,
 runtime installation, database, UI, concurrency, or automatic resume.
 Live-model evidence is separate from deterministic CI; completion requires both
 sample runs and the real self-change, not merely mocks or a successful build.
+
+## Delivered evidence
+
+Workspace lifecycle shipped through PR #8, single-steward execution through PR #10,
+and two independently verified coding runs through PR #12. The report improvement
+in issue #13 was implemented through ArcNexus itself; see
+[the self-development record](../acceptance/self-development.md).
+No UI, coordination database, inbox or multi-steward system was needed to reach
+this first self-development loop.
