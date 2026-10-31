@@ -4,6 +4,10 @@
 
 ### Added
 
+- Run declarative simulated and live experiments through the supervised runtime (#53).
+
+### Added
+
 - Own agent guidance and validate tracked instructions through the TypeScript CLI (#51).
 
 ### Fixed

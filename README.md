@@ -36,3 +36,6 @@ Validate tracked guidance in the current checkout with
 `node dist/cli.js guidance validate --project .` after building. See
 [guidance validation](docs/guidance-validation.md) for the metadata-only contract and
 [maintenance](docs/guidance-maintenance.md) for stewardship ownership.
+
+[Experiments](docs/experiments.md) provide explicit simulation and live qualification
+modes through the same supervised runtime.
