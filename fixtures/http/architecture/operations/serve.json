@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "purpose": "Exercise a managed local HTTP service",
+  "repository": "http-sample",
+  "cwd": ".",
+  "category": "http-check",
+  "activities": [
+    "research",
+    "testing",
+    "implementation",
+    "review"
+  ],
+  "timeoutSeconds": 120,
+  "generatedDirectories": [],
+  "artifacts": [],
+  "probes": [
+    {
+      "command": "node",
+      "args": [
+        "-e",
+        "const h=require('http').createServer();h.listen(0,'127.0.0.1',()=>{console.log(process.version+' loopback '+h.address().port);h.close()})"
+      ]
+    }
+  ],
+  "id": "serve",
+  "kind": "service",
+  "command": "node",
+  "args": [
+    "server.mjs"
+  ],
+  "service": {
+    "port": 0,
+    "readinessPath": "/health",
+    "expectedStatus": 200,
+    "startupTimeoutSeconds": 5
+  }
+}

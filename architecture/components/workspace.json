@@ -22,7 +22,14 @@
     "tests/runtime/composed.test.mjs",
     "docs/composed-workspaces.md",
     "src/operations.ts",
-    "tests/runtime/operations.test.mjs"
+    "tests/runtime/operations.test.mjs",
+    "src/probes.ts",
+    "src/services.ts",
+    "src/service-state.ts",
+    "src/service-supervisor.ts",
+    "tests/runtime/services.test.mjs",
+    "tests/runtime/operations-fixture.mjs",
+    "fixtures/http"
   ],
   "verification": [
     {
@@ -69,7 +76,8 @@
       "src",
       "tests",
       "docs",
-      "dist"
+      "dist",
+      "fixtures/http"
     ]
   },
   "schemaVersion": 2,

@@ -43,7 +43,7 @@ export function loadCatalog(repository: string, base: string): Catalog {
       if (path !== `architecture/${directory}/${value.id}.json`) throw new InputError(`Identity must match filename: ${path}`);
       Object.defineProperty(target, value.id, { value, enumerable: true, configurable: true });
     }
-    for(const path of paths.filter(p=>p.startsWith('architecture/operations/')&&p.endsWith('.json'))){const operation=read<Operation>(repository,base,path,'operation');if(path!==`architecture/operations/${operation.id}.json`)throw new InputError('Operation identity must match filename');scopePath(operation.cwd);operation.generatedDirectories.forEach(scopePath);operation.artifacts.forEach(scopePath);commands([operation,...operation.probes]);Object.defineProperty(catalog.operations,operation.id,{value:operation,enumerable:true});}
+    for(const path of paths.filter(p=>p.startsWith('architecture/operations/')&&p.endsWith('.json'))){const operation=read<Operation>(repository,base,path,'operation');if(path!==`architecture/operations/${operation.id}.json`)throw new InputError('Operation identity must match filename');scopePath(operation.cwd);operation.generatedDirectories.forEach(scopePath);operation.artifacts.forEach(scopePath);commands([...(operation.kind==='http'?[]:[operation]),...operation.probes]);Object.defineProperty(catalog.operations,operation.id,{value:operation,enumerable:true});}
     environment(read(repository, base, 'architecture/environment.json', 'environment'));
     if (!Object.keys(catalog.components).length) throw new InputError('No components defined');
     for (const c of Object.values(catalog.components)) {

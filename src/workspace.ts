@@ -1,3 +1,4 @@
+import { assertServicesStopped } from './service-state.js';
 import { resolveMembers,prepareMembers,freezeMembers,assertMembers,cleanupMembers,type Member } from './members.js';
 import { loadBindings,targetCommand,targetEnvironment,type Bindings } from './bindings.js';
 import { randomUUID } from 'node:crypto';
@@ -60,6 +61,7 @@ export function cleanup(root: string, id: string): RecordData {
   const record = JSON.parse(readFileSync(join(root,'runs',id,'report.json'),'utf8')) as RecordData;
   if (record.id !== id || record.workspace !== join(root,'workspaces',id)) throw new Error('Workspace ownership mismatch');
   if (['preparing','running'].includes(record.status)) throw new Error('Workspace operation is active or incomplete; inspect before cleanup');
+  assertServicesStopped(root,id);
   const cleanupPath = join(root,'runs',id,'cleanup.json');
   if (record.status === 'removed' || existsSync(cleanupPath)) {
     if (lstatSync(record.workspace, { throwIfNoEntry: false })) throw new Error('Previously removed workspace path is occupied');

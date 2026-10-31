@@ -60,3 +60,32 @@ checks cannot replace frozen regression or external acceptance.
 
 The explicitly configured ArcNexus MCP server uses automatic tool approval; the
 agent approval policy remains never. Host authorization still checks every call.
+
+## Functional probes and local HTTP services (#45)
+
+Before inference, declared operation probes run through the host route and must
+leave source unchanged. The MCP bridge is exercised through its real stdio client.
+Probe results retain executable, arguments, configuration, output and timing.
+A sandbox `true` check alone is not functional toolchain evidence.
+
+Service operations use a foreground command and a `service` declaration with port
+(0 requests an OS-assigned port), readinessPath, expectedStatus and
+startupTimeoutSeconds. The host supplies ARCNEXUS_HOST=127.0.0.1 and ARCNEXUS_PORT.
+The service announces one JSON line: `{"arcnexusEndpoint":{"host":"127.0.0.1","port":1234}}`.
+Readiness requires the owned process group to listen only on loopback at that port
+and the declared HTTP status. Fixed-port collisions fail without retry.
+
+`services.start`, `services.status`, `services.logs`, and `services.stop` accept a
+captured service operation ID. Only one service may be active. Captured `http`
+operations identify serviceId, path and expectedStatus; operations.run performs
+the request with bounded output and never follows redirects. Arbitrary URLs are
+not accepted. Every service request counts against the existing operation budget.
+
+Leases end at turn completion, failure, cancellation or bridge loss. A detached
+supervisor watches its IPC parent connection, terminates the service process group,
+and retains an independent resource record. Termination requires both no live group
+members and a closed endpoint. Workspace cleanup refuses unresolved resource records.
+Hard interruption preserves incomplete assignment evidence; it never resumes work.
+
+The committed HTTP fixture exercises this local protocol without containers,
+provisioning, external services, or changes to TreeSeed server setup.
