@@ -68,7 +68,8 @@
             "reasoning_output_tokens": 3860
           },
           "usageComplete": true,
-          "reportSha256": "d1b74816df5e5a7b202f9b051f29bff18db31cc35e02ba24fcd764820205b6b2"
+          "reportSha256": "d1b74816df5e5a7b202f9b051f29bff18db31cc35e02ba24fcd764820205b6b2",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/b53b8418-c6dc-4df5-b941-ad7f504c0744/report.json"
         },
         {
           "case": "tree-change",
@@ -83,7 +84,8 @@
           "callerImplementationFixes": 0,
           "usage": null,
           "usageComplete": true,
-          "reportSha256": "6be5de641d02ce320e6340dff3829fd26a11add46ace42f3b3419c8b33a68542"
+          "reportSha256": "6be5de641d02ce320e6340dff3829fd26a11add46ace42f3b3419c8b33a68542",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/7427b631-9d5e-4c69-80f7-c4d9f71fc4fb/report.json"
         },
         {
           "case": "arc-repair",
@@ -157,7 +159,8 @@
             "reasoning_output_tokens": 5512
           },
           "usageComplete": true,
-          "reportSha256": "425c41c6c4af394d93537125ceeaf6247d4e74e75cd35071ee47c4ce1c32d7af"
+          "reportSha256": "425c41c6c4af394d93537125ceeaf6247d4e74e75cd35071ee47c4ce1c32d7af",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/106038cc-97ef-4295-8c51-55c4bc8d6fd8/report.json"
         },
         {
           "case": "tree-boundary",
@@ -172,7 +175,8 @@
           "callerImplementationFixes": 0,
           "usage": null,
           "usageComplete": true,
-          "reportSha256": "fb0a793110bb491dc2d2ea852a962a03ab1ed060d5d09e1e30c693dbe1ffbc57"
+          "reportSha256": "fb0a793110bb491dc2d2ea852a962a03ab1ed060d5d09e1e30c693dbe1ffbc57",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/330ffeb7-b000-4d75-8617-cb4f86de2dba/report.json"
         },
         {
           "case": "arc-research",
@@ -207,7 +211,8 @@
             "reasoning_output_tokens": 128
           },
           "usageComplete": true,
-          "reportSha256": "87aa93d74c472b73c081fc67101ff48c09680a7f663075fca7d1310a7a5fb638"
+          "reportSha256": "87aa93d74c472b73c081fc67101ff48c09680a7f663075fca7d1310a7a5fb638",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/a04463d8-8ea4-4ec9-8d86-f68f7920cc98/report.json"
         },
         {
           "case": "tree-review",
@@ -222,7 +227,92 @@
           "callerImplementationFixes": 0,
           "usage": null,
           "usageComplete": true,
-          "reportSha256": "38973d48548d50da37c1d31ff00a7665a9695bc7584ae9b197a24f70e7041b96"
+          "reportSha256": "38973d48548d50da37c1d31ff00a7665a9695bc7584ae9b197a24f70e7041b96",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/4790a361-b050-4244-82bd-c8f79be6af69/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-single-steward-1/campaign.json",
+      "manifestHash": "7b102ebf4f6121e0b752ad76bc890e7a3dd160e93e878756250def024a9ac9c4",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-change.json",
+          "sha256": "c68d5a27f5672703d416418b7d564bc6e226c21d78e567b6de4e906af2f4ff2b"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-report-summary.mjs",
+          "sha256": "364f92e56b96468174e68c9aef9438036a2485aef2c0c0f9dd2695c1b3c7ce14"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-repair.json",
+          "sha256": "368a82bac2e8b9ebefbc2f78a6c4f1c59f208e292ada48e85fedec719045c3af"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/inject-report-fault.mjs",
+          "sha256": "f2a6a19433918760a8edb8745af3b9942084a1c9e8c703853016939220bb8cdc"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-report-summary.mjs",
+          "sha256": "364f92e56b96468174e68c9aef9438036a2485aef2c0c0f9dd2695c1b3c7ce14"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-boundary.json",
+          "sha256": "3daf34ffe43f37f0cb06c41b392dc8ed54a636f37d9bd2ddc36c6327d839f765"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-research.json",
+          "sha256": "03b3281c268376489d769e99c04f7785fbdfb8664630dbf5fb55703421557f73"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     },
@@ -267,7 +357,8 @@
             "reasoning_output_tokens": 298
           },
           "usageComplete": true,
-          "reportSha256": "1f141575354233b1fa7dd52ae565c9182070f03724eb5084b1e114c1edef5d08"
+          "reportSha256": "1f141575354233b1fa7dd52ae565c9182070f03724eb5084b1e114c1edef5d08",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/e317209b-f7ac-4f4f-a149-efe2e5347d9c/report.json"
         },
         {
           "case": "tree-boundary",
@@ -303,7 +394,8 @@
             "reasoning_output_tokens": 374
           },
           "usageComplete": true,
-          "reportSha256": "34ae9ff2ffbf35ee16e3c411751020fe310f936fcf7e6f1f55f2d4c67561813a"
+          "reportSha256": "34ae9ff2ffbf35ee16e3c411751020fe310f936fcf7e6f1f55f2d4c67561813a",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/6f287f58-de87-4d93-9fe9-6e8dbc9a17a7/report.json"
         },
         {
           "case": "tree-review",
@@ -339,7 +431,56 @@
             "reasoning_output_tokens": 985
           },
           "usageComplete": true,
-          "reportSha256": "fa459e6ecbdb8c0464c181996fa798e208e7d081ad548e95e046c447500a31ca"
+          "reportSha256": "fa459e6ecbdb8c0464c181996fa798e208e7d081ad548e95e046c447500a31ca",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/56d950d0-484d-4398-8f2c-9190f0aa69a3/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/campaign.json",
+      "manifestHash": "320f1b7497517a4f5d04a9a29ca5c47462d0af2652c4e2a554ad85e4d956f7a7",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-boundary.json",
+          "sha256": "3daf34ffe43f37f0cb06c41b392dc8ed54a636f37d9bd2ddc36c6327d839f765"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     },
@@ -384,7 +525,8 @@
             "reasoning_output_tokens": 876
           },
           "usageComplete": true,
-          "reportSha256": "46f968fb9178d4869861079f177500cecc864015717525d712d402bc182d6b7b"
+          "reportSha256": "46f968fb9178d4869861079f177500cecc864015717525d712d402bc182d6b7b",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/e5e78cd3-4859-4424-b3ab-05cbfdadaf8b/report.json"
         },
         {
           "case": "tree-review",
@@ -425,7 +567,44 @@
             "reasoning_output_tokens": 662
           },
           "usageComplete": true,
-          "reportSha256": "5922d899dd0e498d544cbbad65aae954c230974086686a6c2f9f7c0856f14718"
+          "reportSha256": "5922d899dd0e498d544cbbad65aae954c230974086686a6c2f9f7c0856f14718",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/a2290fe7-6ab0-456c-8608-73f7aec970bc/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/campaign.json",
+      "manifestHash": "b4ad6a1492a4ae39a2e3c69f63dabf2bcbf8038254caa40f1cea505c70a46f45",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     },
@@ -470,7 +649,32 @@
             "reasoning_output_tokens": 0
           },
           "usageComplete": true,
-          "reportSha256": "38991a85a274e2321d2abc8179be6bd020bff4129735102bf68562129187a6c8"
+          "reportSha256": "38991a85a274e2321d2abc8179be6bd020bff4129735102bf68562129187a6c8",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/006efd07-955d-4377-aff5-cbe8e64cdfbe/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-host-1/campaign.json",
+      "manifestHash": "5679e8b548fdb4eae08687bc9ce0da73ea849fe7bb72ace582eaf47aa900a773",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     },
@@ -515,7 +719,32 @@
             "reasoning_output_tokens": 221
           },
           "usageComplete": true,
-          "reportSha256": "27133739dc14a5662e3fd75c954a902f904cc513005f58b211433a09c58499ba"
+          "reportSha256": "27133739dc14a5662e3fd75c954a902f904cc513005f58b211433a09c58499ba",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/d21e041b-2def-49bf-a2d0-15e87f3a680e/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-explicit-1/campaign.json",
+      "manifestHash": "93fc206a399bb097074d2ce0d5f620d9fe3821f6bc01d93541ad0dadf9b52213",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change-explicit.json",
+          "sha256": "1413026110967d3c867282cea0a4bc39871ff9a9f7ad611d365bec497a743b40"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     },
@@ -595,7 +824,32 @@
           "usageComplete": true,
           "reportSha256": "ac22a585b026d145043ae0e9f843c5fcc28c582fd4d8e60d35575ec4d56069a5",
           "callerSpecificationInterventions": 2,
-          "interventionEvidence": "Explicit archive/behavioral marker selection followed by assertion-order clarification; see retained assignment hashes and pre-phase-two.md"
+          "interventionEvidence": "Explicit archive/behavioral marker selection followed by assertion-order clarification; see retained assignment hashes and pre-phase-two.md",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/5fd1c042-9ac0-461c-b7c4-d3efc471408c/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-ordered-1/campaign.json",
+      "manifestHash": "cda8909b73e1da908b56cc9570d43148a366cc46a1e16be5d7188c2d13244ed1",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change-ordered.json",
+          "sha256": "cbb101f9f1c8fb00b32f0cd30f909620853d7a37528ed81fff6f34ad1db84edd"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
         }
       ]
     }
@@ -613,5 +867,15 @@
       "pr": 873,
       "status": "CI pending"
     }
+  },
+  "toolchains": {
+    "supervisorNode": "22.22.1",
+    "codexCli": "0.163.0-alpha.10.2",
+    "codexSdk": "0.166.0",
+    "treeNode": "24.19.0",
+    "treeBun": "1.4.4",
+    "model": "gpt-6-luna",
+    "reasoning": "medium",
+    "basis": "Retained execution.json and prerequisite command logs for the named runs"
   }
 }
