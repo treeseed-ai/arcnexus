@@ -67,5 +67,8 @@
   ],
   "relatedIds": [],
   "parentId": "cli-package",
-  "operationIds": []
+  "operationIds": [
+    "guidance-build",
+    "guidance-tests"
+  ]
 }

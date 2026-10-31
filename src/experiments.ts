@@ -411,13 +411,15 @@ export class ExperimentRunner {
             { model?: string; reasoning?: string } | undefined;
           if (
             c.workdayPath
-              ? (report.assignments as RecordData[]).some(
-                  (o) =>
-                    (o.settings as { model?: string })?.model !==
-                      "gpt-6-luna" ||
-                    (o.settings as { reasoning?: string })?.reasoning !==
-                      "medium",
-                )
+              ? (report.assignments as RecordData[])
+                  .filter((o) => Array.isArray(o.turns) && o.turns.length > 0)
+                  .some(
+                    (o) =>
+                      (o.settings as { model?: string })?.model !==
+                        "gpt-6-luna" ||
+                      (o.settings as { reasoning?: string })?.reasoning !==
+                        "medium",
+                  )
               : settings?.model !== "gpt-6-luna" ||
                 settings.reasoning !== "medium"
           )

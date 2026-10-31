@@ -141,3 +141,84 @@ test("built experiment runs simulated workday through retained threads and indep
   assert.equal(bad.status, 2);
   assert.equal(existsSync(join(root, "bad")), false);
 });
+test("expected blocked workday checks only models that actually executed", (t) => {
+  const f = handoffFixture(t, "unknown-owner"),
+    binding = join(f.root, "binding.json"),
+    manifest = join(f.root, "campaign.json"),
+    check = join(f.root, "blocked.cjs"),
+    output = join(f.root, "output");
+  writeFileSync(
+    check,
+    "const r=require(process.argv[2]);if(r.status!=='blocked'||!r.assignments.some(a=>a.requests?.some(q=>q.ownerId==='unknown')))process.exit(1)",
+  );
+  writeFileSync(
+    binding,
+    JSON.stringify({
+      schemaVersion: 1,
+      runner: cli,
+      codexPath: f.executable,
+      projects: { target: { path: f.repo, base: f.git("rev-parse", "HEAD") } },
+      tools: { node: process.execPath },
+    }),
+  );
+  writeFileSync(
+    manifest,
+    JSON.stringify({
+      schemaVersion: 2,
+      modes: ["live"],
+      cases: [
+        {
+          id: "blocked",
+          project: "target",
+          workday: f.manifest,
+          expectedOutcome: "blocked",
+          acceptance: [
+            { command: "node", args: [check, "{report}"], artifacts: [check] },
+          ],
+        },
+      ],
+    }),
+  );
+  const r = spawnSync(
+    process.execPath,
+    [
+      cli,
+      "experiment",
+      "run",
+      manifest,
+      "--bindings",
+      binding,
+      "--mode",
+      "live",
+      "--output",
+      output,
+    ],
+    { encoding: "utf8", env: f.env, timeout: 60000 },
+  );
+  assert.equal(r.status, 0, r.stderr + "\n" + r.stdout);
+  const campaign = JSON.parse(readFileSync(join(output, "campaign.json")));
+  assert.equal(campaign.cases[0].status, "passed");
+  assert.ok(campaign.cases[0].report.assignments.some((a) => !a.threadId));
+});
+test("real validator owner receives declared build and regression operations", () => {
+  const r = spawnSync(
+    process.execPath,
+    [
+      cli,
+      "inspect",
+      "guidance-validation",
+      "Implement bounded validator behavior",
+      "--project",
+      process.cwd(),
+      "--json",
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(r.status, 0, r.stderr);
+  assert.deepEqual(
+    JSON.parse(r.stdout)
+      .operations.map((o) => o.id)
+      .sort(),
+    ["guidance-build", "guidance-tests"],
+  );
+});

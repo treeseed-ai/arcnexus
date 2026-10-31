@@ -41,3 +41,13 @@ although no clarification was pending. The host rejected it and no implementatio
 was integrated. The SDK output schema is now narrowed to currently eligible actions,
 with an independent host check; observations remain findings/activity evidence.
 Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-1/campaign.json`.
+
+`guidance-live-2`, workday `94132a56-72f8-40c6-ac4f-bf85fbbde959`, used the narrowed
+schema supervisor `79a9976de3d978fd11510ad1d35368a186184539`. It correctly avoided
+unsolicited coordination. Direct sandbox test output was generic, and the steward
+returned that generic diagnostic rather than the named assertion. The host observed
+the real `GUIDANCE_REFERENCES_REQUIRED` assertion and rejected the mismatched claim.
+The next invocation explicitly binds Node/npm and supplies declared host build/test
+operations. The policy and expected-red requirement remain unchanged; no candidate
+implementation was repaired by the caller. Campaign:
+`/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-2/campaign.json`.

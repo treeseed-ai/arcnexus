@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "id": "guidance-build",
+  "purpose": "Run the captured guidance validator build",
+  "kind": "command",
+  "repository": "arcnexus",
+  "cwd": ".",
+  "category": "build",
+  "activities": [
+    "testing",
+    "implementation",
+    "review"
+  ],
+  "command": "npm",
+  "args": [
+    "run",
+    "build"
+  ],
+  "timeoutSeconds": 120,
+  "generatedDirectories": [
+    "dist"
+  ],
+  "artifacts": [],
+  "probes": [
+    {
+      "command": "node",
+      "args": [
+        "-e",
+        "console.log(process.version);if(require('child_process').spawnSync(process.execPath,['--version']).status!==0)process.exit(1)"
+      ]
+    }
+  ]
+}
