@@ -33,6 +33,7 @@
 - Add initial repository validation CI (#3).
 
 ### Fixed
+- Supply executable and revision context to bounded stewards (#38).
 
 - Inspect staged and unstaged candidate changes independently (#22).
 
