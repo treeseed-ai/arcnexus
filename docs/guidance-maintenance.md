@@ -39,11 +39,17 @@ actual output and exit status for the handoff.
 This check validates skill frontmatter metadata and inventories tracked `AGENTS.md`
 files with readable/unreadable status. Skill metadata must be a YAML mapping, have a
 lowercase hyphenated `name` matching the skill directory, and a nonempty `description`;
-an empty tracked skill inventory is a finding. It does not judge prose meaning,
-consistency between instructions, whether a rule is effective, or whether a change
-has architectural approval. Perform those semantic reviews directly against the
-captured assignment and applicable project guidance. A clean validator result is
-not semantic approval.
+an empty tracked skill inventory is a finding. Optional `references` metadata, when
+present, must be a nonempty array of unique repository-relative paths to readable,
+tracked regular files. Entries must be nonempty strings. Absolute paths, traversal
+segments, missing or untracked files, directories, and paths traversing symlinks in
+any component are invalid. Referenced files may contain binary data. Omitting
+`references` preserves the previous metadata behavior. These findings use the
+existing `invalid_skill` diagnostic and make no semantic approval claim. The
+validator does not judge prose meaning, consistency between instructions, whether a
+rule is effective, or whether a change has architectural approval. Perform those
+semantic reviews directly against the captured assignment and applicable project
+guidance. A clean validator result is not semantic approval.
 
 If a needed diagnostic or metadata rule is missing, do not edit validator source or
 tests here. Request the change from the `guidance-validation` owner, with the

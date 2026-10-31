@@ -1,6 +1,6 @@
 import { isUtf8 } from 'node:buffer';
-import { readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { accessSync, constants, lstatSync, readFileSync, realpathSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, resolve, win32 } from 'node:path';
 import { parseDocument } from 'yaml';
 import { InputError } from './config.js';
 import { git } from './process.js';
@@ -24,13 +24,14 @@ export class GuidanceValidator {
       paths = git(root, 'ls-files', '-z').split('\0').filter(Boolean).sort();
     } catch (error) { throw new InputError(`Git guidance inventory unavailable: ${String(error)}`); }
     const report: GuidanceReport = {schemaVersion:1,project:root,status:'valid',skills:[],agents:[],diagnostics:[]};
+    const tracked = new Set(paths);
     const read = (path: string): string => {
       const bytes = readFileSync(join(root,path));
       if (!isUtf8(bytes)) throw new Error('File is not UTF-8');
       return bytes.toString('utf8');
     };
     for (const path of paths.filter(path => /^\.agents\/skills\/.+\/SKILL\.md$/.test(path))) {
-      try { this.checkSkill(path,read(path)); report.skills.push({path,valid:true}); }
+      try { this.checkSkill(path,read(path),root,tracked); report.skills.push({path,valid:true}); }
       catch (error) {
         report.skills.push({path,valid:false});
         report.diagnostics.push({path,code:'invalid_skill',message:error instanceof Error ? error.message : String(error)});
@@ -48,7 +49,7 @@ export class GuidanceValidator {
     return report;
   }
 
-  private checkSkill(path: string, text: string): void {
+  private checkSkill(path: string, text: string, root: string, tracked: Set<string>): void {
     const lines = text.split(/\r?\n/);
     if (lines[0] !== '---') throw new Error('missing YAML frontmatter');
     const end = lines.indexOf('---',1);
@@ -57,9 +58,36 @@ export class GuidanceValidator {
     if (document.errors.length || document.warnings.length) throw new Error((document.errors[0] ?? document.warnings[0])!.message);
     const metadata: unknown = document.toJS();
     if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) throw new Error('frontmatter must be a mapping');
-    const {name,description} = metadata as Record<string,unknown>;
+    const {name,description,references} = metadata as Record<string,unknown>;
     if (typeof name !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) throw new Error('name must use lowercase letters, digits, and hyphens');
     if (name !== basename(dirname(path))) throw new Error('name must match the skill directory');
     if (typeof description !== 'string' || !description.trim()) throw new Error('description must be a nonempty string');
+    if (Object.hasOwn(metadata, 'references')) this.checkReferences(references, root, tracked);
+  }
+
+  private checkReferences(value: unknown, root: string, tracked: Set<string>): void {
+    if (!Array.isArray(value) || value.length === 0) throw new Error('references must be a nonempty array');
+    const seen = new Set<string>();
+    for (const reference of value) {
+      if (typeof reference !== 'string' || !reference.trim()) throw new Error('references entries must be nonempty strings');
+      if (isAbsolute(reference) || win32.isAbsolute(reference)) throw new Error('references paths must be repository-relative');
+      const segments = reference.split(/[\\/]/);
+      if (segments.some(segment => segment === '..' || segment === '.')) throw new Error('references paths must not contain traversal segments');
+      if (reference.includes('\\')) throw new Error('references paths must use repository-relative separators');
+      if (seen.has(reference)) throw new Error('references paths must be unique');
+      seen.add(reference);
+      if (!tracked.has(reference)) throw new Error(`referenced file is not tracked: ${reference}`);
+      let current = root;
+      const parts = reference.split('/');
+      for (let index = 0; index < parts.length; index++) {
+        current = join(current, parts[index]!);
+        const stat = lstatSync(current);
+        if (stat.isSymbolicLink()) throw new Error(`referenced path traverses a symbolic link: ${reference}`);
+        if (index < parts.length - 1 && !stat.isDirectory()) throw new Error(`referenced path parent is not a directory: ${reference}`);
+        if (index === parts.length - 1 && !stat.isFile()) throw new Error(`referenced path is not a regular file: ${reference}`);
+      }
+      try { accessSync(current, constants.R_OK); readFileSync(current); }
+      catch { throw new Error(`referenced file is not readable: ${reference}`); }
+    }
   }
 }
