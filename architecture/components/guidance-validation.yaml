@@ -1,0 +1,54 @@
+id: guidance-validation
+type: library
+purpose: Validate guidance metadata and inventory instructions without semantic approval
+path: src/guidance-validation
+objectives:
+  - Validate guidance metadata and inventory instructions without semantic approval
+constraints:
+  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Caller owns commits and integration
+allowedWritePaths:
+  - src/guidance-validation
+  - tests/guidance-validation
+  - docs/guidance-validation
+verification:
+  - command: npm
+    args:
+      - run
+      - build
+  - command: node
+    args:
+      - --test
+      - tests/guidance-validation/guidance.test.mjs
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/guidance-validation
+    - tests/guidance-validation
+    - docs/guidance-validation
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces: []
+documentation:
+  - docs/guidance-validation/guidance-validation.md
+tests:
+  - tests/guidance-validation/guidance.test.mjs
+relatedIds: []
+parentId: cli-package
+operationIds:
+  - guidance-build
+  - guidance-tests

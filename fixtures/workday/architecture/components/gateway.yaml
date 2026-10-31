@@ -1,0 +1,34 @@
+schemaVersion: 2
+id: gateway
+type: gateway
+repository: sample
+role: engineer
+executionProfile: luna
+purpose: Own gateway contract
+path: gateway
+objectives:
+  - Verified bounded change
+constraints:
+  - No commits
+questions: []
+patterns: []
+interfaces: []
+documentation:
+  - gateway/README.md
+tests:
+  - gateway/test.mjs
+relatedIds:
+  - identity
+allowedWritePaths:
+  - gateway
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - .
+verification:
+  - command: node
+    args:
+      - --test
+      - gateway/test.mjs
+operationIds: []

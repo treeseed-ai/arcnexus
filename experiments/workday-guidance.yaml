@@ -1,0 +1,15 @@
+schemaVersion: 2
+modes:
+  - live
+cases:
+  - id: guidance-handoff
+    project: arcnexus
+    workday: workdays/guidance.yaml
+    expectedOutcome: completed
+    acceptance:
+      - command: node
+        args:
+          - checks/workday-report.mjs
+          - "{report}"
+        artifacts:
+          - checks/workday-report.mjs

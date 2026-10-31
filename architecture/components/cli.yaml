@@ -1,0 +1,56 @@
+id: cli
+type: gateway
+purpose: Expose predictable command-line execution settings and lifecycle operations
+path: src/cli
+objectives:
+  - Use affordable Luna-sized stewards by default while respecting explicit model selection
+constraints:
+  - Do not change sandbox permissions or verification requirements
+  - Caller owns commits and integration
+  - Do not edit architecture or unrelated files
+allowedWritePaths:
+  - src/cli
+  - docs/cli
+  - src/cli.ts
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+patterns:
+  - Document intent, test observable behavior, implement
+  - Verify actual SDK executable arguments and report settings
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/cli
+    - docs/cli
+    - .
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - CLI arguments and exit codes
+  - Resolved assignment preview
+documentation:
+  - docs/cli/stewards.md
+tests: []
+relatedIds:
+  - assignment
+  - architecture
+  - workspace
+questions: []
+parentId: cli-package
+operationIds: []

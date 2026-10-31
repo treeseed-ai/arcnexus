@@ -1,0 +1,56 @@
+id: steward
+type: library
+purpose: Adapt the Codex harness with explicit execution permissions and evidence
+path: src/steward
+objectives:
+  - Research and implement bounded objectives with independently verified evidence
+constraints:
+  - Caller owns commits and integration
+  - Do not edit architecture or weaken host verification
+  - Implement only approved execution settings
+allowedWritePaths:
+  - src/steward
+  - tests/steward
+  - docs/steward
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+patterns:
+  - Document intent, test observable behavior, implement
+  - Verify actual SDK executable arguments and report settings
+  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/steward
+    - tests/steward
+    - docs/steward
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "runCodex: explicit SDK permissions and structured result"
+documentation:
+  - docs/steward/execution-contract.md
+tests:
+  - tests/steward/context.test.mjs
+  - tests/steward/parent-loss.test.mjs
+relatedIds:
+  - architecture
+questions: []
+parentId: cli-package
+operationIds: []

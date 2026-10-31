@@ -3,7 +3,7 @@ import {join} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 import {checkSummary} from './check-report-summary.mjs';
-const marker=new URL('./fault-injection.json',import.meta.url),path=join(process.cwd(),'src/report.ts');
+const marker=new URL('./fault-injection.json',import.meta.url),path=join(process.cwd(),'src/report/report.ts');
 const hash=s=>createHash('sha256').update(s).digest('hex');
 if(!existsSync(marker)){
  const before=readFileSync(path,'utf8'),signature='export function markdownReport(record: RecordData): string {';

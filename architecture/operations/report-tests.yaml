@@ -1,0 +1,24 @@
+schemaVersion: 2
+id: report-tests
+purpose: Run focused report acceptance tests
+kind: command
+repository: arcnexus
+cwd: .
+category: unit-test
+activities:
+  - research
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - --test
+  - tests/report/report.test.mjs
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes:
+  - command: node
+    args:
+      - -e
+      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['-e','process.exit(0)']).status!==0)process.exit(1)

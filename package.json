@@ -12,16 +12,16 @@
   "scripts": {
     "build": "tsc",
     "check": "tsc --noEmit",
-    "test": "npm run build && node --test tests/runtime/*.test.mjs"
+    "test": "npm run build && node --test tests/*/*.test.mjs"
   },
   "devDependencies": {
-    "@types/node": "22.20.5",
-    "typescript": "5.9.3"
+    "@types/node": "22.20.5"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
     "@openai/codex-sdk": "0.166.0",
     "ajv": "8.20.0",
+    "typescript": "^5.9.3",
     "yaml": "2.9.1"
   }
 }

@@ -1,0 +1,51 @@
+id: task-intake
+type: library
+purpose: Initialize assignments and propose accountable owners before execution
+path: src/task-intake
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/task-intake
+  - tests/task-intake
+  - docs/task-intake
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/task-intake
+    - tests/task-intake
+    - docs/task-intake
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "loadCatalog: immutable graph validation"
+  - "resolveAssignment: captured authority and deterministic digest"
+documentation: []
+tests: []
+relatedIds:
+  - assignment
+parentId: cli-package
+operationIds: []

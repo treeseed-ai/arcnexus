@@ -1,0 +1,72 @@
+id: cli-package
+type: package
+purpose: Deliver a bounded steward execution through the CLI
+path: .
+objectives:
+  - Produce independently verifiable bounded work
+constraints:
+  - Human architectural authority is final
+  - Candidate changes cannot redefine active acceptance
+  - No automatic commits, integration or publishing; model delegation is disabled, and only captured
+    workday participants may be dispatched by the host
+allowedWritePaths:
+  - .
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - .
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces: []
+documentation:
+  - README.md
+  - docs
+tests:
+  - tests
+relatedIds: []
+parentId: arcnexus
+members:
+  foundations: []
+  dependencies: []
+  gateways:
+    - cli
+  libraries:
+    - architecture
+    - assignment
+    - steward
+    - workspace
+    - operations
+    - change-inspection
+    - report
+    - coordination-store
+    - workday
+    - agent-guidance
+    - guidance-validation
+    - experiments
+    - development-tooling
+    - architecture-maintenance
+    - task-intake
+  releases: []
+operationIds: []

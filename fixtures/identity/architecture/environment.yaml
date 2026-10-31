@@ -1,0 +1,13 @@
+prerequisites:
+  - command: node
+    args:
+      - --version
+setup:
+  - command: npm
+    args:
+      - ci
+      - --no-audit
+      - --no-fund
+generatedDirectories:
+  - node_modules
+schemaVersion: 1

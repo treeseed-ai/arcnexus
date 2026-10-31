@@ -1,0 +1,54 @@
+id: operations
+type: library
+purpose: Execute declared commands and supervise local services and probes
+path: src/operations
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/operations
+  - tests/operations
+  - docs/operations
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/operations
+    - tests/operations
+    - docs/operations
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "loadCatalog: immutable graph validation"
+  - "resolveAssignment: captured authority and deterministic digest"
+documentation:
+  - docs/operations/steward-operations.md
+tests:
+  - tests/operations/operations.test.mjs
+  - tests/operations/services.test.mjs
+relatedIds:
+  - assignment
+parentId: cli-package
+operationIds: []

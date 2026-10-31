@@ -1,0 +1,56 @@
+id: architecture-maintenance
+type: library
+purpose: Maintain architectural ownership definitions under caller authority
+path: architecture
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - architecture
+  - README.md
+  - CHANGELOG.md
+  - docs/charter.md
+  - docs/dev.md
+  - docs/phase-one-retrospective.md
+  - docs/guidance-audit.md
+  - docs/plans
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - architecture
+    - docs/plans
+    - .
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "loadCatalog: immutable graph validation"
+  - "resolveAssignment: captured authority and deterministic digest"
+documentation: []
+tests: []
+relatedIds:
+  - assignment
+parentId: cli-package
+operationIds: []

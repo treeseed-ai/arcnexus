@@ -1,0 +1,56 @@
+id: workspace
+type: library
+purpose: Prepare and clean workspaces while preserving execution evidence
+path: src/workspace
+objectives:
+  - Preserve original run evidence across workspace lifecycle operations
+constraints:
+  - No changes to source checkout or unrelated worktrees
+  - Retain all existing cleanup safety guards
+  - Do not weaken captured verification or edit architectural definitions
+allowedWritePaths:
+  - src/workspace
+  - tests/workspace
+  - docs/workspace
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Separate execution outcomes from workspace lifecycle metadata
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/workspace
+    - tests/workspace
+    - docs/workspace
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "createWorkspace/prepareWorkspace/cleanup: owned lifecycle"
+documentation:
+  - docs/workspace/cleanup.md
+  - docs/workspace/composed-workspaces.md
+  - docs/workspace/workspaces.md
+tests:
+  - tests/workspace/composed.test.mjs
+  - tests/workspace/workspace.test.mjs
+relatedIds: []
+parentId: cli-package
+operationIds: []

@@ -1,0 +1,61 @@
+id: assignment
+type: library
+purpose: Coordinate bounded assignments and host verification
+path: src/assignment
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/assignment
+  - tests/assignment
+  - docs/assignment
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/assignment
+    - tests/assignment
+    - docs/assignment
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "runSteward: bounded execution and host verification"
+documentation:
+  - docs/assignment/corrective-attempts.md
+  - docs/assignment/steward-workflow.md
+tests:
+  - tests/assignment/attempts.test.mjs
+  - tests/assignment/planning.test.mjs
+  - tests/assignment/prior-evidence.test.mjs
+  - tests/assignment/steward.test.mjs
+  - tests/assignment/workflow.test.mjs
+relatedIds:
+  - steward
+  - workspace
+  - change-inspection
+  - report
+parentId: cli-package
+operationIds: []
