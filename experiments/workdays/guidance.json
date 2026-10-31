@@ -11,12 +11,14 @@
           "build"
         ]
       }
-    ]
+    ],
+    "maxAttempts": 2
   },
   "recipient": {
     "component": "guidance-validation",
     "assignment": "validator.json",
-    "refresh": []
+    "refresh": [],
+    "maxAttempts": 2
   },
   "dependency": {
     "from": "agent-guidance",
