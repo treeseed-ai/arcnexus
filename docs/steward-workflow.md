@@ -5,6 +5,15 @@ work. Activities are research, documentation, testing, implementation, review an
 release/handoff; they are not separate agents. The host records transitions in
 `activities.jsonl` and per-turn evidence in `turns/<number>/` outside the candidate.
 
+## Assignment planning
+
+Version-2 execution profiles first run a source-read-only planning turn. The host
+validates and retains the plan and checklist; `plan.update` records progress or a
+reasoned revision during execution. Final `planUpdates` are also accepted. Agent
+completion claims remain separate from mandatory host acceptance. See
+[operations and evidence](steward-operations.md). Version-1 profiles retain the
+original workflow below.
+
 ## Change assignments
 
 1. **Specification:** research as needed, document intent and create a failing
@@ -24,7 +33,8 @@ only declared documentation paths may change and project verification still runs
 All other changes default to `changeType: "behavior"`. Missing documentation or
 regression scope is a preflight error for behavior work.
 
-Default: one implementation attempt and at most three turns. `--max-attempts 2`
+Version 1: one implementation attempt and at most three turns. Version 2 adds
+one planning turn, giving four normal or six corrective turns. `--max-attempts 2`
 allows one corrective implementation turn plus review, at most five total turns.
 Specification failures stop; scope/identity violations, invalid output, cancellation
 and timeout never authorize correction. A failed host check or actionable review
@@ -39,7 +49,7 @@ finally block. A hard interruption retains an incomplete record for inspection.
 
 ## Research, review and boundaries
 
-`--kind research` and `--kind review` each use one source-read-only turn and may
+`--kind research` and `--kind review` each use one source-read-only execution turn (plus planning for version 2) and may
 complete without changes. Findings include evidence references, uncertainty and
 consequences. No-change is still a failed outcome for change assignments.
 

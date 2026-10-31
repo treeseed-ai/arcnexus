@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync} from 'node:fs';
-import {join} from 'node:path';
+import {join,resolve} from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {workflowFixture,cli} from './workflow-fixture.mjs';
 function planned(t,mode='success') {
@@ -9,11 +9,24 @@ function planned(t,mode='success') {
  const path=join(f.repo,'architecture/execution-profiles/luna.json');
  const profile=JSON.parse(readFileSync(path));profile.schemaVersion=2;profile.maxTurns=4;writeFileSync(path,JSON.stringify(profile));f.commit();
  let code=readFileSync(f.executable,'utf8');
+ code=code.replace("const result={status:","const result={plan:null,planUpdates:[],status:");
  code=code.replace("if(stage==='specification'",`if(stage==='planning')result.plan={approach:'Check bounded behavior',assumptions:[],activities:[{activity:'implementation',reason:'Apply objective'}],items:[{id:'work',activity:'implementation',result:'Verified objective',criteria:[0],expectedEvidence:['verification'],dependencies:[],status:'pending',evidence:[],explanation:''}],questions:[]};
  if(stage!=='planning')result.planUpdates=[{id:'work',status:'completed',explanation:'Observed change and verification',evidence:['source.txt']}];
  if(stage==='specification'`);
  if(mode==='invalid-plan')code=code.replace("criteria:[0]","criteria:[99]");
  if(mode==='planning-write')code=code.replace("if(stage==='planning')result.plan=","if(stage==='planning')fs.writeFileSync('source.txt','bad');if(stage==='planning')result.plan=");
+ if(mode==='bridge-update'){
+  code=code.replace("process.stdin.on('end',()=>{","process.stdin.on('end',async()=>{");
+  code=code.replace("if(stage!=='planning')result.planUpdates=",`if(stage!=='planning'){
+   const {Client}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js'))});
+   const {StdioClientTransport}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js'))});
+   const option=name=>JSON.parse(args.find(a=>a.startsWith('mcp_servers.arcnexus.'+name+'=')).split('=').slice(1).join('='));
+   const client=new Client({name:'controlled-codex',version:'1'},{capabilities:{}});
+   await client.connect(new StdioClientTransport({command:option('command'),args:option('args')}));
+   const reply=await client.callTool({name:'plan.update',arguments:{updates:[{id:'work',status:'completed',explanation:'Observed through bridge',evidence:['source.txt']}]}});if(reply.isError)throw new Error(JSON.stringify(reply));await client.close();
+  }
+  if(stage!=='planning')result.planUpdates=`);
+ }
  writeFileSync(f.executable,code);return f;
 }
 test('built CLI captures a read-only plan and observable checklist before execution',t=>{
@@ -37,3 +50,9 @@ test('real stdio MCP bridge updates host checklist during a turn',async t=>{
  const client=new Client({name:'acceptance',version:'1'},{capabilities:{}});
  try{await client.connect(new StdioClientTransport({command:config.command,args:config.args}));assert.equal((await client.listTools()).tools[0].name,'plan.update');await client.callTool({name:'plan.update',arguments:{updates:[{id:'work',status:'completed',evidence:['source.txt'],explanation:'Verified'}]}});assert.equal(observed.args.updates[0].status,'completed');}finally{await client.close();await bridge.close();}
 });
+for(const kind of ['research','review'])test(`planned ${kind} uses two source-read-only turns`,t=>{const f=planned(t),r=f.run('--kind',kind);assert.equal(r.status,0,r.stderr);const v=JSON.parse(r.stdout);assert.equal(v.turns.length,2);assert.equal(v.changes.length,0);});
+test('planning preserves the single corrective allowance and cumulative usage',t=>{const f=planned(t,'repair'),r=f.run('--max-attempts','2');assert.equal(r.status,0,r.stderr);const v=JSON.parse(r.stdout);assert.deepEqual(v.turns.map(t=>t.activity),['planning','specification','implementation','correction','review']);assert.equal(v.implementationAttempts,2);assert.equal(v.usage.input_tokens,50);});
+test('checklist completion without evidence stops the assignment',t=>{const f=planned(t);writeFileSync(f.executable,readFileSync(f.executable,'utf8').replace("evidence:['source.txt']}];","evidence:[]}];"));const r=f.run();assert.equal(r.status,1,r.stderr);assert.match(r.stderr,/completion requires evidence/);});
+test('timeline reader reports truncation and historical absence',async t=>{const {readTimeline}=await import('../../dist/timeline.js');const f=workflowFixture(t);assert.equal(readTimeline(f.root).complete,false);writeFileSync(join(f.root,'timeline.jsonl'),'{"unfinished":');assert.match(readTimeline(f.root).problem,/Incomplete/);});
+
+test('built production SDK passes explicit MCP bridge configuration to the executable',t=>{const f=planned(t,'bridge-update'),r=f.run();assert.equal(r.status,0,r.stderr);const v=JSON.parse(r.stdout);assert.ok(v.plan.version>=7);const events=readFileSync(join(f.state,'runs',v.id,'timeline.jsonl'),'utf8');assert.match(events,/plan.updated/);});

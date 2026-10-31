@@ -24,7 +24,7 @@ export interface AgentResult {
  reviewFindings:string[];
  requests:Array<{fromComponent:string;ownerId:string|null;request:string;evidence:string[];acceptanceCriteria:string[];reason:string}>;
 }
-const schema=JSON.parse(readFileSync(new URL('../schemas/agent-result.json',import.meta.url),'utf8'));
+const baseSchema=JSON.parse(readFileSync(new URL('../schemas/agent-result.json',import.meta.url),'utf8'));
 export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal,resumeId?:string):Promise<AgentResult>{
   const dir=join(root,'runs',record.id), launcher=join(dir,'codex-launcher'),pidFile=join(dir,'codex.pid');
   appendFileSync(join(dir,'events.jsonl'),'',{mode:0o600});
@@ -32,6 +32,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const resolved=record.resolvedAssignment as ResolvedAssignment|undefined;
   const component=context?.at(-1);
   const profile=resolved?.executionProfile;
+  const schema=structuredClone(baseSchema);if(profile?.schemaVersion===2){schema.required=Object.keys(schema.properties);}else{delete schema.properties.plan;delete schema.properties.planUpdates;}
   const readOnly=record.readOnlyTurn===true;
   const allowedWritePaths=readOnly?[]:resolved?.allowedWritePaths??component?.allowedWritePaths;
   const declared=component?.access as AccessPolicy;
@@ -86,6 +87,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     if(!completed)throw new Error('Codex stream ended without completed turn');
     writeFileSync(join(dir,'agent-result.raw.txt'),final,{mode:0o600});
     const result=validateSchema<AgentResult>('agent-result',JSON.parse(final));
+    if(profile?.schemaVersion===2&&(!Object.hasOwn(result,'plan')||!Array.isArray(result.planUpdates)))throw new Error('Planned response requires plan and planUpdates');
     writeFileSync(join(dir,'agent-result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     return result;
   } finally {await bridge?.close();signal.removeEventListener('abort',abort);await termination;killGroup();save(root,record);}
