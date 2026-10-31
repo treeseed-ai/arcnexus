@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {writeFileSync,readFileSync,existsSync} from 'node:fs';
+import {writeFileSync,readFileSync,existsSync,mkdirSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {spawnSync,spawn} from 'node:child_process';
 import {workflowFixture,cli} from './workflow-fixture.mjs';
@@ -37,5 +37,6 @@ test('campaign cancellation stops its active CLI and retains partial evidence',a
 });
 test('independent report checker still executes when its snapshot path contains spaces',t=>{
  const f=workflowFixture(t),script=join(f.root,'report check.mjs');writeFileSync(script,readFileSync('qualification/check-report-summary.mjs'));
- const result=spawnSync(process.execPath,[script],{encoding:'utf8'});assert.equal(result.status,1);assert.match(result.stderr,/OUTCOME_SECTION_REQUIRED/);
+ mkdirSync(join(f.repo,'dist'));writeFileSync(join(f.repo,'dist/report.js'),"export function markdownReport(){return 'fixture without outcome'}");
+ const result=spawnSync(process.execPath,[script],{encoding:'utf8',cwd:f.repo});assert.equal(result.status,1);assert.match(result.stderr,/OUTCOME_SECTION_REQUIRED/);
 });
