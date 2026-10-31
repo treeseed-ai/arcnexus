@@ -21,3 +21,8 @@ For self-development, `architecture/environment.json` installs this repository's
 npm dependencies. The `report` component permits only its implementation, dedicated
 report tests and report documentation. A stable runner outside the candidate drives
 that assignment; the caller supplies an issue and refreshed staging base.
+
+The supervisor's `node scripts/check-report.mjs <candidate-workspace>` checks the
+self-development result after building the candidate: a Changed files section,
+paths sorted independently of input order, each associated with its Git change kind,
+and no mutation of the captured input. It must fail against the pre-change runner.
