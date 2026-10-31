@@ -1,9 +1,11 @@
 // Explicit, one-time fault injection. The marker is outside candidate scope.
 import {existsSync,readFileSync,writeFileSync} from 'node:fs';
+import {basename} from 'node:path';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
-const [marker,acceptance]=process.argv.slice(2);
-if(!marker||!acceptance)throw new Error('Expected external marker and acceptance script');
+const [markerPrefix,acceptance]=process.argv.slice(2);
+if(!markerPrefix||!acceptance)throw new Error('Expected external marker and acceptance script');
+const marker=markerPrefix+'.'+basename(process.cwd());
 if(!existsSync(marker)){
  const path='src/report.ts',before=readFileSync(path,'utf8');
  if(!before.includes('## Operations'))throw new Error('Fault injection requires implemented Operations heading');
