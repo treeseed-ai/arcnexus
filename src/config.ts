@@ -1,7 +1,8 @@
+import { validateSchema } from './schema.js';
 import { posix } from 'node:path';
 export class InputError extends Error {}
 export interface Command { command: string; args: string[] }
-export interface Environment { prerequisites: Command[]; setup: Command[]; generatedDirectories: string[] }
+export interface Environment { schemaVersion: 1; prerequisites: Command[]; setup: Command[]; generatedDirectories: string[] }
 export function relativePath(value: unknown): string {
   if (typeof value !== 'string' || !value || value === '.' || value.startsWith('/') || value.includes('\\') || value.includes('\0') || posix.normalize(value) !== value || value.split('/').some(p => p === '..' || p.toLowerCase() === '.git')) throw new InputError(`Invalid relative path: ${String(value)}`);
   return value;
@@ -14,7 +15,8 @@ export function commands(value: unknown): Command[] {
   });
 }
 export function environment(value: unknown): Environment {
-  const v = value as Environment;
+  let v: Environment;
+  try { v = validateSchema<Environment>('environment', value); } catch(error) { throw new InputError(String(error)); }
   if (!v || !Array.isArray(v.generatedDirectories)) throw new InputError('Invalid environment definition');
-  return { prerequisites: commands(v.prerequisites), setup: commands(v.setup), generatedDirectories: v.generatedDirectories.map(relativePath) };
+  return { schemaVersion: 1, prerequisites: commands(v.prerequisites), setup: commands(v.setup), generatedDirectories: v.generatedDirectories.map(relativePath) };
 }

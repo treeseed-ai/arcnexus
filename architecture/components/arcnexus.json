@@ -1,0 +1,75 @@
+{
+  "id": "arcnexus",
+  "type": "platform",
+  "purpose": "Enable architecture-directed self-development",
+  "path": ".",
+  "objectives": [
+    "Produce independently verifiable bounded work"
+  ],
+  "constraints": [
+    "Human architectural authority is final",
+    "Candidate changes cannot redefine active acceptance",
+    "No automatic commits, integration, publishing or delegation"
+  ],
+  "allowedWritePaths": [
+    "."
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "Small functions with coherent responsibilities"
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "."
+    ]
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [],
+  "documentation": [
+    "README.md",
+    "docs"
+  ],
+  "tests": [
+    "tests"
+  ],
+  "relatedIds": []
+}

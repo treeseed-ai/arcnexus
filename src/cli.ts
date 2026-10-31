@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
+import { resolveBase, resolveAssignment } from './assignment.js';
+import { loadCatalog } from './components.js';
 import { captureChanges } from './changes.js';
 import { InputError } from './config.js';
 import { saveMarkdown } from './report.js';
@@ -9,6 +11,9 @@ import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  validate --project <repository> [--base <ref>]
+  inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
+  run/inspect: --assignment <file> replaces objective
   prepare --project <repository>
   cleanup <workspace-id>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
@@ -16,6 +21,8 @@ Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <sec
 function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
+      'composition-profile': {type:'string'}, 'execution-profile': {type:'string'},
+      assignment: { type: 'string' }, kind: { type: 'string' }, json: { type: 'boolean' },
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
       'max-attempts': { type: 'string' },
       base: { type: 'string' }, issue: { type: 'string' }, 'timeout-seconds': { type: 'string' },
@@ -47,20 +54,32 @@ async function main(): Promise<void> {
     if (values.help) { console.log(help); return; }
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
-    if (!['prepare', 'cleanup', 'run'].includes(command ?? '')) throw new InputError(help);
+    if (!['prepare', 'cleanup', 'run', 'validate', 'inspect'].includes(command ?? '')) throw new InputError(help);
     if (values['max-attempts'] !== undefined && (command !== 'run' || !/^[12]$/.test(values['max-attempts']))) throw new InputError('--max-attempts is run-only and accepts 1 or 2');
     if (command === 'prepare' && (!values.project || positionals.length !== 1)) throw new InputError('prepare requires --project');
-    if (command === 'run' && (!values.project || positionals.length !== 3 || !positionals[2]?.trim())) throw new InputError('run requires component, objective and --project');
+    if (['run','inspect'].includes(command!) && (!values.project || positionals.length !== (values.assignment ? 2 : 3) || (!values.assignment && !positionals[2]?.trim()))) throw new InputError('run requires component, objective and --project');
     if (command === 'cleanup' && positionals.length !== 2) throw new InputError('cleanup requires workspace ID');
     if (values.issue && !/^[1-9]\d*$/.test(values.issue)) throw new InputError('Invalid issue number');
     const seconds = Number(values['timeout-seconds'] ?? 900);
     if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 2_147_483) throw new InputError('Invalid timeout');
+    if (command === 'validate') {
+      if (!values.project || positionals.length !== 1) throw new InputError('validate requires --project');
+      const {source,base}=resolveBase(values.project,values.base);
+      const catalog=loadCatalog(source,base);console.log(JSON.stringify({base,components:Object.keys(catalog.components),status:'valid'}));return;
+    }
+    const selection=['run','inspect'].includes(command!)?resolveBase(values.project!,values.base):undefined;
+    const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],file:values.assignment,kind:values.kind,compositionProfile:values['composition-profile'],executionProfile:values['execution-profile'],model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;
+    if(command==='inspect'){
+      console.log(values.json?JSON.stringify(resolved):`Assignment ${resolved!.digest}\n${JSON.stringify(resolved,null,2)}`);return;
+    }
+    if(resolved && resolved.assignment.kind!=='change')throw new InputError('Research/review execution requires the workflow increment');
     root = stateRoot(); unlock = lock(root);
-    timer = setTimeout(() => controller.abort(new Error('Operation timed out')), seconds * 1000);
+    timer = setTimeout(() => controller.abort(new Error('Operation timed out')), (resolved?.executionProfile.timeoutSeconds ?? seconds) * 1000);
     if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));
     else {
-      record = createWorkspace(root, { project: values.project!, base: values.base, issue: values.issue });
-      if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-luna', values['codex-path'] ?? 'codex', controller.signal, Number(values['max-attempts'] ?? 1));
+      record = createWorkspace(root, { project: values.project!, base: selection?.base ?? values.base, issue: values.issue });
+      if(resolved)record.resolvedAssignment=resolved;
+      if (command === 'run') await runSteward(root, record, positionals[1]!, resolved!.assignment.objective, resolved!.executionProfile.model, values['codex-path'] ?? 'codex', controller.signal, Number(values['max-attempts'] ?? 1));
       else await prepareWorkspace(root, record, controller.signal);
     }
   } catch (error) {

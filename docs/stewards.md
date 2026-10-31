@@ -10,6 +10,16 @@ Commit a definition at `architecture/components/<id>.json`:
 
 ```json
 {
+  "schemaVersion": 1,
+  "repository": "identity",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [],
+  "documentation": ["README.md"],
+  "tests": ["tests"],
+  "relatedIds": [],
+  "questions": [],
+  "patterns": [],
   "id": "identity",
   "type": "library",
   "purpose": "Session expiration semantics",
@@ -22,9 +32,11 @@ Commit a definition at `architecture/components/<id>.json`:
 }
 ```
 
-Optional `parentId`, `questions` and `patterns` carry applicable architectural context.
+Commit matching role and execution profile definitions as in the
+[identity fixture](../fixtures/identity/architecture/). `parentId` is optional;
+`questions` and `patterns` are required arrays and carry architectural context.
 All parents are loaded in root-to-leaf order. IDs use letters, digits, underscore and
-hyphen. Only library leaves execute in phase one. Paths are explicit relative files
+hyphen. Library, gateway and foundation responsibilities can execute. Paths are explicit relative files
 or directories, not globs. Definitions and verification commands are captured before
 setup/agent execution; changing them cannot authorize new work in that execution.
 

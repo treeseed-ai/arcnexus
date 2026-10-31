@@ -62,5 +62,21 @@
       "docs",
       "dist"
     ]
-  }
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "changes/checkScope: observed Git evidence"
+  ],
+  "documentation": [
+    "docs/stewards.md"
+  ],
+  "tests": [
+    "tests/runtime/steward.test.mjs"
+  ],
+  "relatedIds": [],
+  "questions": [],
+  "parentId": "cli-package"
 }

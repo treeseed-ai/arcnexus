@@ -1,3 +1,4 @@
+import {catalogFixture,componentFields,members} from './catalog-fixture.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
@@ -45,14 +46,14 @@ test('built CLI run writes observed changed paths and Git kinds into Markdown', 
     const result = spawnSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, String(result.error ?? result.stderr));
   };
-  git('init', '-b', 'main');
+  git('init', '-b', 'main');catalogFixture(repo);
   git('config', 'user.name', 'Test');
   git('config', 'user.email', 'test@example.invalid');
   writeFileSync(join(repo, 'z.txt'), 'before');
   writeFileSync(join(repo, 'deleted.txt'), 'remove');
-  writeFileSync(join(repo, 'architecture/environment.json'), JSON.stringify({ prerequisites: [], setup: [], generatedDirectories: [] }));
+  writeFileSync(join(repo, 'architecture/environment.json'), JSON.stringify({ schemaVersion:1, prerequisites: [], setup: [], generatedDirectories: [] }));
   writeFileSync(join(repo, 'architecture/components/sample.json'), JSON.stringify({
-    id: 'sample', type: 'library', purpose: 'report acceptance', path: 'z.txt', objectives: [], constraints: [],
+    ...componentFields, id: 'sample', type: 'library', purpose: 'report acceptance', path: 'z.txt', objectives: [], constraints: [],
     access: { readPaths: ['.'], writeDirectories: ['.'] },
     allowedWritePaths: ['z.txt', 'a[1].txt', 'deleted.txt'],
     verification: [{ command: 'node', args: ['-e', 'process.exit(0)'] }],

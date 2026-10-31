@@ -69,5 +69,6 @@
     "dist",
     ".venv",
     "tests/ci/__pycache__"
-  ]
+  ],
+  "schemaVersion": 1
 }

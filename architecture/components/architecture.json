@@ -1,0 +1,86 @@
+{
+  "id": "architecture",
+  "type": "library",
+  "purpose": "Resolve versioned architecture and immutable assignment context",
+  "path": "src/components.ts",
+  "objectives": [
+    "Make actual execution outcomes easy to inspect"
+  ],
+  "constraints": [
+    "Preserve captured authority and evidence"
+  ],
+  "allowedWritePaths": [
+    "src/components.ts",
+    "src/config.ts",
+    "src/schema.ts",
+    "src/assignment.ts",
+    "schemas",
+    "docs/architecture-contract.md",
+    "tests/runtime/architecture.test.mjs"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "Small functions with coherent responsibilities"
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "schemas",
+      "docs",
+      "tests",
+      "dist"
+    ]
+  },
+  "schemaVersion": 1,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "loadCatalog: immutable graph validation",
+    "resolveAssignment: captured authority and deterministic digest"
+  ],
+  "documentation": [
+    "docs/architecture-contract.md"
+  ],
+  "tests": [
+    "tests/runtime/architecture.test.mjs"
+  ],
+  "relatedIds": [],
+  "parentId": "cli-package"
+}

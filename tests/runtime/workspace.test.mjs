@@ -14,7 +14,7 @@ function fixture(t, setup = []) {
   git('init', '-b', 'main'); git('config', 'user.email', 'test@example.invalid'); git('config', 'user.name', 'Test');
   writeFileSync(join(repo, '.gitignore'), 'generated/\n.env\n');
   writeFileSync(join(repo, 'source.txt'), 'original\n');
-  writeFileSync(join(repo, 'architecture/environment.json'), JSON.stringify({prerequisites: [], setup, generatedDirectories: ['generated']}));
+  writeFileSync(join(repo, 'architecture/environment.json'), JSON.stringify({schemaVersion:1,prerequisites: [], setup, generatedDirectories: ['generated']}));
   git('add', '.'); git('commit', '-m', 'fixture');
   const env = { ...process.env, ARCNEXUS_STATE_DIR: state };
   const run = (...args) => spawnSync(process.execPath, [cli, ...args], { env, encoding: 'utf8' });
@@ -75,9 +75,9 @@ test('SIGINT cancels command and releases lock', async t => {
 });
 test('invalid configuration and missing prerequisite fail at their respective stages', t => {
   const f=fixture(t);
-  writeFileSync(join(f.repo,'architecture/environment.json'),JSON.stringify({prerequisites:[],setup:[],generatedDirectories:['../escape']}));
+  writeFileSync(join(f.repo,'architecture/environment.json'),JSON.stringify({schemaVersion:1,prerequisites:[],setup:[],generatedDirectories:['../escape']}));
   f.git('add','.');f.git('commit','-m','invalid'); assert.equal(f.prepare().status,2);
-  writeFileSync(join(f.repo,'architecture/environment.json'),JSON.stringify({prerequisites:[{command:'arcnexus-nonexistent-tool',args:[]}],setup:[],generatedDirectories:[]}));
+  writeFileSync(join(f.repo,'architecture/environment.json'),JSON.stringify({schemaVersion:1,prerequisites:[{command:'arcnexus-nonexistent-tool',args:[]}],setup:[],generatedDirectories:[]}));
   f.git('add','.');f.git('commit','-m','missing tool'); const r=f.prepare();assert.equal(r.status,1);assert.equal(JSON.parse(r.stdout).commands.length,1);
 });
 test('lock prevents overlapping operations and ownership tampering refuses cleanup', t => {

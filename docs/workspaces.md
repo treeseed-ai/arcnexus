@@ -21,13 +21,14 @@ Commit `architecture/environment.json` in the target repository:
 
 ```json
 {
+  "schemaVersion": 1,
   "prerequisites": [{"command": "node", "args": ["--version"]}],
   "setup": [{"command": "npm", "args": ["ci"]}],
   "generatedDirectories": ["node_modules", "dist"]
 }
 ```
 
-All three arrays are required. Commands run without a shell from the worktree root,
+Version 1 and all three arrays are required. Commands run without a shell from the worktree root,
 using installed host tools and normal environment credentials. Setup commands are
 trusted project code and can use the network. They must not change tracked files;
 new outputs must be ignored by Git and inside declared generated directories.

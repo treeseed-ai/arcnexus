@@ -12,6 +12,8 @@ Requires Linux, Node 22, npm, Git, `setsid`, and an authenticated Codex CLI on P
 npm ci
 npm run build
 node dist/cli.js --help
+node dist/cli.js validate --project /path/to/repository
+node dist/cli.js inspect identity "Implement the objective" --project /path/to/repository --json
 node dist/cli.js prepare --project /path/to/repository
 node dist/cli.js run identity "Implement the objective" --project /path/to/repository
 ```
@@ -26,3 +28,6 @@ only after resolving candidate source changes. Branches and reports are preserve
 `npm test` runs deterministic built-CLI acceptance. `npm run check` checks TypeScript.
 [CI](docs/ci.md) also validates repository guidance. The separate
 [live acceptance](docs/acceptance/live-sample.md) invokes real model work explicitly.
+
+See the [versioned architecture contract](docs/architecture-contract.md) for catalog
+validation, immutable assignment inspection, and structured caller acceptance checks.
