@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "objective": "Implement the approved optional skill references metadata policy in GuidanceValidator. When optional references is present in skill YAML frontmatter, require a nonempty array of unique repository-relative paths to readable tracked regular files. Reject absolute paths, empty or non-string entries, traversal segments, missing or untracked files, directories, and symlink traversal (including parent directories). No references field preserves existing metadata behavior. Keep stable file-oriented diagnostics and no semantic approval claims. Document the behavior and add built-CLI regression tests before implementation. The captured verification command index 1 runs the guidance tests; index 0 rebuilds the CLI before final verification. Do not edit guidance content owned by agent-guidance.",
+  "expectedOutcome": "Optional references field is deterministically validated without changing existing fields",
+  "acceptanceCriteria": [
+    "When optional references is present in skill YAML frontmatter, require a nonempty array of unique repository-relative paths to readable tracked regular files. Reject absolute paths, empty or non-string entries, traversal segments, missing or untracked files, directories, and symlink traversal (including parent directories). No references field preserves existing metadata behavior. Keep stable file-oriented diagnostics and no semantic approval claims."
+  ],
+  "hostChecks": [
+    {
+      "id": "reference-policy",
+      "command": "node",
+      "args": [
+        "../checks/guidance-references.mjs"
+      ],
+      "artifacts": [
+        "../checks/guidance-references.mjs"
+      ]
+    }
+  ]
+}

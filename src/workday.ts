@@ -88,6 +88,7 @@ export class WorkdayRunner {
       parking: { status: this.parking.status, path: this.parking.path },
       budgets: { workdaySeconds: 2400, assignmentSeconds: 900 },
       inputHash: this.input.digest,
+      evidenceMode: this.workspace.evidenceMode,
     };
   }
   private persist(type: string, payload: unknown, messages: Message[] = []) {
@@ -435,6 +436,7 @@ export class WorkdayRunner {
         issue,
         bindings: input.requester.resolved.bindings,
       });
+      this.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? "live";
       this.directory = join(this.root, "workdays", this.workspace.id);
       mkdirSync(this.directory, { recursive: true, mode: 0o700 });
       writeFileSync(

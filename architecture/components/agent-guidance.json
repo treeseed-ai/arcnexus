@@ -46,6 +46,8 @@
   "executionProfile": "luna",
   "interfaces": [],
   "documentation": [
+    "AGENTS.md",
+    ".agents/skills",
     "docs/guidance-maintenance.md"
   ],
   "tests": [],

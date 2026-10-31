@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "objective": "Within the captured identity-label contract, add label `Identity: <id>` to formatIdentity(id), preserving the id field and existing behavior. Accept the authorized request, document and regression-test the added field before implementation.",
+  "expectedOutcome": "Verified contract-dependent result",
+  "acceptanceCriteria": [
+    "Identity labels are correct for Ada, empty string and Unicode; preserve id and use the label through the gateway"
+  ],
+  "hostChecks": []
+}

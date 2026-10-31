@@ -17,6 +17,13 @@
   ],
   "verification": [
     {
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ]
+    },
+    {
       "command": "node",
       "args": [
         "--test",

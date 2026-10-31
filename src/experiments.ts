@@ -34,6 +34,8 @@ export function runnerHash(runner: string): string {
   visit(join(dirname(runner), "../schemas"));
   const fixtures = join(dirname(runner), "../fixtures/simulation");
   if (existsSync(fixtures)) visit(fixtures);
+  const workdayFixture = join(dirname(runner), "../fixtures/workday");
+  if (existsSync(workdayFixture)) visit(workdayFixture);
   entries.push([
     "lock",
     hash(readFileSync(join(dirname(runner), "../package-lock.json"))),
@@ -250,7 +252,10 @@ export class ExperimentRunner {
         if (input.evidenceMode === "simulation") {
           codexPath = join(directory, "simulated-codex");
           const module = pathToFileURL(
-            join(dirname(input.runner), "simulation-codex.js"),
+            join(
+              dirname(input.runner),
+              c.workday ? "workday-simulation.js" : "simulation-codex.js",
+            ),
           ).href;
           writeFileSync(
             codexPath,
@@ -258,10 +263,49 @@ export class ExperimentRunner {
             { mode: 0o700 },
           );
         }
+        let workdayPath: string | undefined;
+        if (c.workday) {
+          const participant = (
+            owner: typeof c.workday.requester,
+            name: string,
+          ) => {
+            const assignment = structuredClone(owner.resolved.assignment);
+            assignment.hostChecks = assignment.hostChecks.map((check) =>
+              this.captureCommand(check, directory, input),
+            );
+            assignment.priorEvidence = assignment.priorEvidence?.map((ref) => ({
+              ...ref,
+              path: this.snapshot(ref.path, directory, input),
+            }));
+            const file = join(directory, name + ".json");
+            writeFileSync(file, JSON.stringify(assignment), { mode: 0o400 });
+            return {
+              component: owner.resolved.componentId,
+              assignment: file,
+              maxAttempts: owner.maxAttempts,
+              refresh: owner.refresh,
+            };
+          };
+          workdayPath = join(directory, "workday.json");
+          writeFileSync(
+            workdayPath,
+            JSON.stringify({
+              schemaVersion: 1,
+              requester: participant(c.workday.requester, "requester"),
+              recipient: participant(c.workday.recipient, "recipient"),
+              dependency: c.workday.dependency,
+              acceptance: c.workday.acceptance.map((check) =>
+                this.captureCommand(check, directory, input),
+              ),
+            }),
+            { mode: 0o400 },
+          );
+        }
         return {
           ...c,
           directory,
           assignmentPath: path,
+          workdayPath,
           codexPath,
           bindings: c.bindings
             ? this.snapshot(c.bindings, directory, input)
@@ -289,21 +333,32 @@ export class ExperimentRunner {
         this.campaign.cases.push(entry);
         this.save();
         try {
-          const args = [
-            input.runner,
-            "run",
-            c.component,
-            "--project",
-            c.project,
-            "--base",
-            c.base,
-            "--assignment",
-            c.assignmentPath,
-            "--model",
-            "gpt-6-luna",
-            "--max-attempts",
-            String(c.maxAttempts ?? 1),
-          ];
+          const args = c.workdayPath
+            ? [
+                input.runner,
+                "workday",
+                "run",
+                c.workdayPath,
+                "--project",
+                c.project,
+                "--base",
+                c.base,
+              ]
+            : [
+                input.runner,
+                "run",
+                c.component,
+                "--project",
+                c.project,
+                "--base",
+                c.base,
+                "--assignment",
+                c.assignmentPath,
+                "--model",
+                "gpt-6-luna",
+                "--max-attempts",
+                String(c.maxAttempts ?? 1),
+              ];
           for (const [name, value] of [
             ["bindings", c.bindings],
             ["issue", c.issue],
@@ -315,7 +370,7 @@ export class ExperimentRunner {
             args,
             join(c.directory, "execution"),
             c.directory,
-            920000,
+            c.workdayPath ? 2420000 : 920000,
             input.evidenceMode,
           );
           const report = JSON.parse(
@@ -326,6 +381,20 @@ export class ExperimentRunner {
           writeFileSync(entry.reportPath, JSON.stringify(report, null, 2), {
             mode: 0o600,
           });
+          if (c.workdayPath) {
+            report.outcome = report.status;
+            const owners = report.assignments as RecordData[];
+            report.usage = (report.metrics as { usage: unknown })?.usage;
+            report.usageComplete = owners.every(
+              (o) => o.usageComplete === true,
+            );
+            report.callerInterventions = owners.flatMap((o) =>
+              Array.isArray(o.callerInterventions) ? o.callerInterventions : [],
+            );
+            report.services = owners.flatMap((o) =>
+              Array.isArray(o.services) ? o.services : [],
+            );
+          }
           entry.usage = report.usage;
           entry.interventionCount = Array.isArray(report.callerInterventions)
             ? report.callerInterventions.length
@@ -341,8 +410,16 @@ export class ExperimentRunner {
           const settings = report.settings as
             { model?: string; reasoning?: string } | undefined;
           if (
-            settings?.model !== "gpt-6-luna" ||
-            settings.reasoning !== "medium"
+            c.workdayPath
+              ? (report.assignments as RecordData[]).some(
+                  (o) =>
+                    (o.settings as { model?: string })?.model !==
+                      "gpt-6-luna" ||
+                    (o.settings as { reasoning?: string })?.reasoning !==
+                      "medium",
+                )
+              : settings?.model !== "gpt-6-luna" ||
+                settings.reasoning !== "medium"
           )
             throw new Error("Qualification requires Luna at medium reasoning");
           for (const [index, check] of c.acceptance.entries()) {

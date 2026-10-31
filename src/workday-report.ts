@@ -87,7 +87,7 @@ export function workdayMarkdown(report: WorkdayReport): string {
         ),
     );
   return (
-    `# Workday ${text(report.workspaceId)}\n\nStatus: ${text(report.status)}\nWorkspace: ${text(report.workspace)}\nBase: ${text(report.base)}\nFailure: ${text(report.error ?? "none recorded")}\n\n## Owners and execution\n\n` +
+    `# Workday ${text(report.workspaceId)}\n\nEvidence mode: ${text(report.evidenceMode)}\nStatus: ${text(report.status)}\nWorkspace: ${text(report.workspace)}\nBase: ${text(report.base)}\nFailure: ${text(report.error ?? "none recorded")}\n\n## Owners and execution\n\n` +
     "| Owner | Outcome | Thread | Turns | Attempts | Active ms |\n| --- | --- | --- | ---: | ---: | ---: |\n" +
     report.assignments
       .map(

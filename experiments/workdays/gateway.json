@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "objective": "Make displayIdentity(id) return the identity owner supplied label `Identity: <id>`. First request the identity-label contract change from identity through the captured workday. Do not implement its code. After verified delivery, resume and implement the gateway by reading formatIdentity(id).label.",
+  "expectedOutcome": "Verified contract-dependent result",
+  "acceptanceCriteria": [
+    "Identity labels are correct for Ada, empty string and Unicode; preserve id and use the label through the gateway"
+  ],
+  "hostChecks": []
+}

@@ -20,9 +20,11 @@ import {
 import { loadBindings } from "./bindings.js";
 import { InputError } from "./config.js";
 import { git } from "./process.js";
+import { resolveWorkday, type WorkdayInput } from "./workday-config.js";
 export type EvidenceMode =
   "simulation" | "live" | "legacy-unspecified" | "unselected";
-export type Scenario = "success" | "repair" | "boundary" | "failure";
+export type Scenario =
+  "success" | "repair" | "boundary" | "failure" | "handoff";
 interface LocalProject {
   path: string;
   base?: string;
@@ -41,6 +43,7 @@ interface ExperimentBindings {
   issues?: Record<string, string>;
 }
 interface DefinitionCase {
+  workday?: string;
   id: string;
   project: string;
   base?: string;
@@ -59,6 +62,7 @@ interface Definition {
   cases: DefinitionCase[];
 }
 export interface ExperimentCase {
+  workday?: WorkdayInput;
   id: string;
   project: string;
   base: string;
@@ -90,9 +94,12 @@ function executable(path: string): string {
   accessSync(path, constants.X_OK);
   return realpathSync(path);
 }
-export function fixtureFiles(): Record<string, string> {
+export function fixtureFiles(workday = false): Record<string, string> {
   const root = fileURLToPath(
-      new URL("../fixtures/simulation", import.meta.url),
+      new URL(
+        workday ? "../fixtures/workday" : "../fixtures/simulation",
+        import.meta.url,
+      ),
     ),
     out: Record<string, string> = {};
   const visit = (directory: string) => {
@@ -109,8 +116,8 @@ export function fixtureFiles(): Record<string, string> {
   visit("");
   return out;
 }
-function checkFixture(project: string, base: string): void {
-  const files = fixtureFiles(),
+function checkFixture(project: string, base: string, workday = false): void {
+  const files = fixtureFiles(workday),
     paths = git(project, "ls-tree", "-rz", "--name-only", base)
       .split("\0")
       .filter(Boolean);
@@ -159,7 +166,9 @@ export function resolveExperiment(
 ): ExperimentInput {
   try {
     const manifest = validateSchema<Definition>(
-        "experiment",
+        (read(manifestPath) as { schemaVersion?: number }).schemaVersion === 2
+          ? "experiment-v2"
+          : "experiment",
         read(manifestPath),
       ),
       bindings = validateSchema<ExperimentBindings>(
@@ -220,10 +229,49 @@ export function resolveExperiment(
       ) {
         if (!c.scenario)
           throw new InputError("Simulation requires a fixed scenario");
-        checkFixture(captured.source, base);
+        checkFixture(captured.source, base, !!c.workday);
       }
       if (mode === "live" && c.scenario)
         throw new InputError("Scripted scenarios cannot be live qualification");
+      if (c.workday) {
+        if (mode === "simulation" && c.scenario !== "handoff")
+          throw new InputError("Workday simulation requires handoff scenario");
+        const workday = resolveWorkday(
+          resolve(dirname(manifestPath), c.workday),
+          captured.source,
+          base,
+          project.bindings,
+          tools,
+        );
+        const result: ExperimentCase = {
+          ...c,
+          workday,
+          component: workday.requester.resolved.componentId,
+          assignment: workday.requester.resolved.assignment,
+          project: captured.source,
+          base,
+          acceptance: c.acceptance.map((check) =>
+            command(check, dirname(manifestPath)),
+          ),
+          bindings: project.bindings,
+          issue: bindings.issues?.[c.id],
+        };
+        if (
+          mode === "simulation" &&
+          (workday.requester.resolved.componentId !== "gateway" ||
+            workday.recipient.resolved.componentId !== "identity")
+        )
+          throw new InputError("Incompatible handoff fixture owners");
+        captureFiles(result, files);
+        for (const participant of [workday.requester, workday.recipient]) {
+          for (const a of participant.resolved.artifacts)
+            files[a.path] = a.content;
+          for (const e of participant.resolved.priorEvidence)
+            files[e.path] = Buffer.from(e.content).toString("base64");
+        }
+        for (const a of workday.artifacts) files[a.path] = a.content;
+        return result;
+      }
       const path = resolve(dirname(manifestPath), c.assignment),
         assignment = validateSchema<Assignment>("assignment", read(path));
       if (
@@ -257,6 +305,7 @@ export function resolveExperiment(
       }
       const result: ExperimentCase = {
         ...c,
+        workday: undefined,
         project: captured.source,
         base,
         assignment,
@@ -264,7 +313,10 @@ export function resolveExperiment(
           command(check, dirname(manifestPath)),
         ),
         bindings: project.bindings,
-        issue: bindings.issues && Object.hasOwn(bindings.issues, c.id) ? bindings.issues[c.id] : undefined,
+        issue:
+          bindings.issues && Object.hasOwn(bindings.issues, c.id)
+            ? bindings.issues[c.id]
+            : undefined,
       };
       captureFiles(result, files);
       return result;

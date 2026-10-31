@@ -22,7 +22,10 @@
     "tests/runtime/experiments.test.mjs",
     "docs/qualification.md",
     "docs/experiments.md",
-    "fixtures/simulation"
+    "fixtures/simulation",
+    "src/workday-simulation.ts",
+    "fixtures/workday",
+    "tests/runtime/workday-experiments.test.mjs"
   ],
   "verification": [
     {
@@ -30,7 +33,8 @@
       "args": [
         "--test",
         "tests/runtime/experiments.test.mjs",
-        "tests/runtime/qualification.test.mjs"
+        "tests/runtime/qualification.test.mjs",
+        "tests/runtime/workday-experiments.test.mjs"
       ]
     },
     {
@@ -68,7 +72,8 @@
   ],
   "tests": [
     "tests/runtime/qualification.test.mjs",
-    "tests/runtime/experiments.test.mjs"
+    "tests/runtime/experiments.test.mjs",
+    "tests/runtime/workday-experiments.test.mjs"
   ],
   "relatedIds": [],
   "parentId": "cli-package",
