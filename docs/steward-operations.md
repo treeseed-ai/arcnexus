@@ -123,9 +123,9 @@ and record interventions. Successful candidates still require caller review and
 normal repository integration; a model's checked checklist is not acceptance.
 
 Create a fresh campaign input directory with
-`python3 scripts/qualification/create-campaign.py --runner /absolute/supervisor/dist/cli.js --tree /absolute/treeseed-cordis --bindings /absolute/bindings.json --http /absolute/http-fixture-repository --prior-report /absolute/prior/report.json --codex /absolute/codex --output /absolute/new-inputs`.
+`python3 scripts/qualification/create-campaign.py --runner /absolute/supervisor/dist/cli.js --arc-base <pre-improvement-commit> --tree /absolute/treeseed-cordis --bindings /absolute/bindings.json --http /absolute/http-fixture-repository --prior-report /absolute/prior/report.json --codex /absolute/codex --output /absolute/new-inputs`.
 The HTTP fixture must already be an explicitly initialized local repository.
-The generator pins each current commit and selects only the prior report's findings.
+Choose an immutable ArcNexus revision before the reporting improvement so a later campaign does not assign already completed work. The generator resolves that revision and pins the other current commits and selects only the prior report's findings.
 Then run `node scripts/qualify.mjs /absolute/new-inputs/manifest.json /absolute/new-campaign`.
 The runner must remain unchanged and outside all candidates throughout the campaign.
 Fault markers are per candidate workspace, so later campaigns do not silently skip
