@@ -50,6 +50,27 @@ test('built validate enforces declared maintained-file ownership',t=>{
  f.put('architecture/ownership.json',{schemaVersion:1,maintainedPaths:['source.txt'],owners:[{component:'sample',paths:['other.txt'],publicModules:[],directoryExceptions:['.']}]});
  f.commit();const r=f.run('validate');assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/source.txt.*owner|owner.*source.txt/);
 });
+test('built validate rejects overlapping ownership even without changed files',t=>{
+ const f=fixture(t);
+ f.put('architecture/components/other.json',{...f.component,id:'other',allowedWritePaths:['source.txt']});
+ f.put('architecture/ownership.json',{schemaVersion:1,maintainedPaths:['source.txt'],owners:['sample','other'].map(component=>({component,paths:['source.txt'],publicModules:[],directoryExceptions:['.']}))});
+ f.commit();const r=f.run('validate');assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/owner/);
+});
+test('built validate rejects a sandbox directory outside declared ownership',t=>{
+ const f=fixture(t);
+ f.put('architecture/ownership.json',{schemaVersion:1,maintainedPaths:['source.txt'],owners:[{component:'sample',paths:['source.txt'],publicModules:[],directoryExceptions:[]}]});
+ f.commit();const r=f.run('validate');assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/Write directory outside ownership/);
+});
+test('built inspect preserves normalized equivalence and original source bytes',t=>{
+ const f=fixture(t),file=join(f.repo,'architecture/components/sample.json');
+ const before=JSON.parse(f.run('inspect','sample','Check hashes','--json').stdout);
+ rmSync(file);writeFileSync(file.replace('.json','.yaml'),'# readable definition\n'+stringify(f.component));f.commit();
+ const after=JSON.parse(f.run('inspect','sample','Check hashes','--json').stdout);
+ const first=before.configurationSources.find(s=>s.path.endsWith('/sample.json'));
+ const second=after.configurationSources.find(s=>s.path.endsWith('/sample.yaml'));
+ assert.equal(first.normalizedHash,second.normalizedHash);assert.notEqual(first.sourceHash,second.sourceHash);
+ assert.match(second.text,/^# readable definition/);
+});
 for(const text of ['id: sample\nid: other\n','id: &identity sample\npurpose: *identity\n','id: !custom sample\n','id: sample\n---\nid: other\n','? [a, b]\n: value\n','<<: {id: sample}\n'])test('built CLI rejects restricted YAML: '+text,t=>{
  const f=fixture(t);rmSync(join(f.repo,'architecture/components/sample.json'));
  writeFileSync(join(f.repo,'architecture/components/sample.yaml'),text);f.commit();

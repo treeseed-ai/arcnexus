@@ -47,6 +47,9 @@ export class OwnershipValidator {
       if (!component || identities.has(owner.component)) throw new Error(`Invalid ownership identity: ${owner.component}`);
       identities.add(owner.component);
       [...owner.paths, ...owner.publicModules].forEach(relativePath);
+      for (const module of owner.publicModules) {
+        if (!owner.paths.some(p => covers(module, p))) throw new Error(`Public module outside ownership: ${module}`);
+      }
       for (const directory of component.access.writeDirectories) {
         if (owner.directoryExceptions.includes(directory)) continue;
         if (!owner.paths.some(p => covers(directory, p))) throw new Error(`Write directory outside ownership: ${owner.component}: ${directory}`);
@@ -54,6 +57,9 @@ export class OwnershipValidator {
       for (const writable of component.allowedWritePaths) {
         if (this.owner(writable, policy).component !== owner.component) throw new Error(`Writable ownership conflict: ${writable}`);
       }
+    }
+    for (const component of Object.values(catalog.components)) {
+      if (!['platform', 'package'].includes(component.type) && !identities.has(component.id)) throw new Error(`Missing declared owner: ${component.id}`);
     }
     policy.maintainedPaths.forEach(relativePath);
   }

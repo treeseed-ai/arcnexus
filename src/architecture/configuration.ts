@@ -17,7 +17,7 @@ export const isConfiguration = (path: string) => /\.(json|yaml|yml)$/.test(path)
 function normalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalize);
   if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a.localeCompare(b, 'en')).map(([key, item]) => [key, normalize(item)]));
+    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, normalize(item)]));
   }
   if (typeof value === 'number' && !Number.isFinite(value)) throw new Error('Expected finite JSON-compatible number');
   return value;

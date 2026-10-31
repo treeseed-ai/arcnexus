@@ -116,8 +116,7 @@ owners:
     publicModules:
       - src/experiments/experiment-config.ts
       - src/experiments/experiments.ts
-    directoryExceptions:
-      - docs
+    directoryExceptions: []
   - component: guidance-validation
     paths:
       - src/guidance-validation

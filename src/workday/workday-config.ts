@@ -73,7 +73,7 @@ export function resolveWorkday(
       configurationSources.push(source);
       const value = validateSchema<Assignment>(
           "assignment",
-          source.value,
+          structuredClone(source.value),
         );
       value.hostChecks = checks(value.hostChecks, dirname(file));
       value.priorEvidence = value.priorEvidence?.map((ref) => ({

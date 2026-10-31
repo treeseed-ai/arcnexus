@@ -171,7 +171,7 @@ export function resolveExperiment(
     const read = (path: string) => {
       const source = new ConfigurationReader().file(path);
       configurationSources.push(source);
-      return source.value;
+      return structuredClone(source.value);
     };
     const manifestValue = read(manifestPath);
     const manifest = validateSchema<Definition>(

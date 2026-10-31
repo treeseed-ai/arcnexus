@@ -15,11 +15,6 @@ allowedWritePaths:
   - qualification
   - fixtures
   - scripts
-  - docs/acceptance
-  - docs/experiment-qualification.json
-  - docs/guidance-qualification.json
-  - docs/operations-qualification.json
-  - docs/workday-qualification.json
 verification:
   - command: node
     args:
@@ -49,8 +44,6 @@ access:
     - qualification
     - fixtures
     - scripts
-    - docs/acceptance
-    - docs
 schemaVersion: 2
 repository: arcnexus
 role: systems-engineer
