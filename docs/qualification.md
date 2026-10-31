@@ -51,3 +51,8 @@ and received read-only-filesystem errors for both the SDK dependency and assembl
 ArcNexus declares itself as the primary `arcnexus` repository with no dependencies;
 TreeSeed declares `platform` as primary with pinned CLI/SDK dependency members. Both
 real qualification targets therefore exercise the same explicit ownership contract.
+
+Pre-inference failures report their actual preparation/baseline error. Model-setting
+validation applies only after the expected execution outcome, so an unstarted model
+is not misreported as a Luna configuration mismatch. Every failure retains the
+underlying CLI stdout/stderr and execution record when one exists.

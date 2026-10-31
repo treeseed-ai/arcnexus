@@ -64,3 +64,8 @@ A workflow creates check results; branch protection is a separate repository set
 Require `Repository checks` for staging/main if server-enforced merge gating is desired.
 The project release workflow still governs whether agents may merge. Main and
 production remain maintainer-controlled.
+
+Repository-aware inspection uses the declared canonical HTTPS origin identity.
+After checkout, CI normalizes `origin` to `https://github.com/<owner>/<repo>.git`
+before invoking built-CLI catalog checks. GitHub checkout's suffixless remote is
+not the repository's declared URL; no fetch or authentication change is required.

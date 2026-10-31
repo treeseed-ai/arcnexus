@@ -68,9 +68,9 @@ try{
    for(const [name,value] of [['bindings',c.bindings],['issue',c.issue],['codex-path',manifest.codexPath]])if(value)args.push('--'+name,value);
    entry.execution=await execute(process.execPath,args,join(c.directory,'execution'),920000);
    entry.report=read(entry.execution.stdout);entry.reportPath=join(c.directory,'report.json');writeFileSync(entry.reportPath,JSON.stringify(entry.report,null,2),{mode:0o600});
-   if(entry.report.settings?.model!=='gpt-6-luna'||entry.report.settings?.reasoning!=='medium')throw new Error('Qualification requires Luna at medium reasoning');
    entry.usage=entry.report.usage;entry.interventionCount=(entry.report.callerInterventions??[]).length;
-   if(entry.execution.exitCode!==(c.expectedOutcome==='blocked'?1:0)||entry.report.outcome!==c.expectedOutcome)throw new Error('Unexpected execution outcome');
+   if(entry.execution.exitCode!==(c.expectedOutcome==='blocked'?1:0)||entry.report.outcome!==c.expectedOutcome)throw new Error(`Unexpected execution outcome: ${entry.report.error??entry.report.outcome}`);
+   if(entry.report.settings?.model!=='gpt-6-luna'||entry.report.settings?.reasoning!=='medium')throw new Error('Qualification requires Luna at medium reasoning');
    for(const [index,check] of c.acceptance.entries()){
     const result=await execute(check.command,check.args.map(a=>a.replaceAll('{report}',entry.reportPath)),join(c.directory,`acceptance-${index}`),120000);entry.acceptance.push(result);
     if(result.exitCode!==0)throw new Error('Independent campaign acceptance failed');

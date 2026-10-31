@@ -9,12 +9,14 @@ ArcNexus is the Architecture Studio described below.
 
 Read the [charter](charter.md) for current architectural authority and the
 [phase-one retrospective](phase-one-retrospective.md) before designing coordination.
-Only the next useful slice needs a detailed implementation plan.
+Read the [pre-phase-two qualification](acceptance/pre-phase-two.md) for the current
+single-steward gate and preserved live evidence. Only the next useful slice needs a
+detailed implementation plan.
 
 | Phase | Current status and next proof |
 | --- | --- |
 | 1. Single steward | Delivered: managed workspace/setup, SDK execution, verification, evidence and guarded cleanup. See the [implementation sequence](plans/phase-one.md), [live sample](acceptance/live-sample.md) and [self-development evidence](acceptance/self-development.md). |
-| 2. Two stewards | Planned: one contract-dependent change through a bounded request/reply, with sequential execution and observable rejection/interruption. Resolve workspace visibility and dependency readiness before implementation. |
+| 2. Two stewards | Planned: one contract-dependent change through a bounded request/reply, with sequential execution and observable rejection/interruption. The pre-phase-two entry gate is qualified; preserve the proven ownership, dependency and host-check boundaries. |
 | 3. Minimal UI | Planned: architect selects a component, directs work and reviews evidence through the same runtime. |
 | 4. Expanded governance | Planned: deepen inherited patterns, contract validation and conformance checks based on actual use. |
 | 5. Multi-project operation | Planned: prove one real package relationship before broad composition and release coordination. |
@@ -23,6 +25,9 @@ Later architect decisions refine the historical sequence:
 
 - Application-managed worktrees and environment setup moved into phase one; they
   are already delivered, despite the later worktree introduction in the source.
+- Pre-phase-two delivered real schemas/catalogs, observable research/change/review
+  workflows, pinned read-only repository dependencies and six Luna qualification cases.
+  Two caller specification clarifications and every failed campaign remain recorded.
 - Full ancestor context and writable-scope checks also began in phase one. Phase
   four expands governance; architecture has applied from the first assignment.
 - Self-development started in phase one, including a corrective change. It does

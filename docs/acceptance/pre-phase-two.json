@@ -1,0 +1,895 @@
+{
+  "schemaVersion": 1,
+  "phaseTwoReady": true,
+  "campaigns": [
+    {
+      "id": "20261031-single-steward-1",
+      "status": "failed",
+      "sha256": "86dff9d3ad2f1f84de20b974b25bea7dea9e85871e1a0434f09db85b69acf99c",
+      "runnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "finalRunnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "cases": [
+        {
+          "case": "arc-change",
+          "status": "passed",
+          "runId": "b53b8418-c6dc-4df5-b941-ad7f504c0744",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 478911,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 113019,
+              "promptBytes": 6750,
+              "usage": {
+                "input_tokens": 367316,
+                "cached_input_tokens": 331136,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3463,
+                "reasoning_output_tokens": 1645
+              }
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 84401,
+              "promptBytes": 6498,
+              "usage": {
+                "input_tokens": 485879,
+                "cached_input_tokens": 474240,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3523,
+                "reasoning_output_tokens": 1729
+              }
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 10466,
+              "promptBytes": 8676,
+              "usage": {
+                "input_tokens": 95898,
+                "cached_input_tokens": 90240,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 851,
+                "reasoning_output_tokens": 486
+              }
+            }
+          ],
+          "implementationAttempts": 1,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 949093,
+            "cached_input_tokens": 895616,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 7837,
+            "reasoning_output_tokens": 3860
+          },
+          "usageComplete": true,
+          "reportSha256": "d1b74816df5e5a7b202f9b051f29bff18db31cc35e02ba24fcd764820205b6b2",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/b53b8418-c6dc-4df5-b941-ad7f504c0744/report.json"
+        },
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "7427b631-9d5e-4c69-80f7-c4d9f71fc4fb",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11756,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "6be5de641d02ce320e6340dff3829fd26a11add46ace42f3b3419c8b33a68542",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/7427b631-9d5e-4c69-80f7-c4d9f71fc4fb/report.json"
+        },
+        {
+          "case": "arc-repair",
+          "status": "passed",
+          "runId": "106038cc-97ef-4295-8c51-55c4bc8d6fd8",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 601408,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 90264,
+              "promptBytes": 7030,
+              "usage": {
+                "input_tokens": 396822,
+                "cached_input_tokens": 359296,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 4618,
+                "reasoning_output_tokens": 2419
+              }
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 72331,
+              "promptBytes": 6778,
+              "usage": {
+                "input_tokens": 268432,
+                "cached_input_tokens": 254592,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2844,
+                "reasoning_output_tokens": 1426
+              }
+            },
+            {
+              "activity": "correction",
+              "status": "completed",
+              "durationMs": 68150,
+              "promptBytes": 8722,
+              "usage": {
+                "input_tokens": 375435,
+                "cached_input_tokens": 366336,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1666,
+                "reasoning_output_tokens": 899
+              }
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 12060,
+              "promptBytes": 9709,
+              "usage": {
+                "input_tokens": 121061,
+                "cached_input_tokens": 114688,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1207,
+                "reasoning_output_tokens": 768
+              }
+            }
+          ],
+          "implementationAttempts": 2,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 1161750,
+            "cached_input_tokens": 1094912,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 10335,
+            "reasoning_output_tokens": 5512
+          },
+          "usageComplete": true,
+          "reportSha256": "425c41c6c4af394d93537125ceeaf6247d4e74e75cd35071ee47c4ce1c32d7af",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/106038cc-97ef-4295-8c51-55c4bc8d6fd8/report.json"
+        },
+        {
+          "case": "tree-boundary",
+          "status": "failed",
+          "runId": "330ffeb7-b000-4d75-8617-cb4f86de2dba",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11995,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "fb0a793110bb491dc2d2ea852a962a03ab1ed060d5d09e1e30c693dbe1ffbc57",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/330ffeb7-b000-4d75-8617-cb4f86de2dba/report.json"
+        },
+        {
+          "case": "arc-research",
+          "status": "passed",
+          "runId": "a04463d8-8ea4-4ec9-8d86-f68f7920cc98",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "research_completed",
+          "error": null,
+          "elapsedMs": 114487,
+          "turns": [
+            {
+              "activity": "research",
+              "status": "completed",
+              "durationMs": 19004,
+              "promptBytes": 7969,
+              "usage": {
+                "input_tokens": 162808,
+                "cached_input_tokens": 127360,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1382,
+                "reasoning_output_tokens": 128
+              }
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 162808,
+            "cached_input_tokens": 127360,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1382,
+            "reasoning_output_tokens": 128
+          },
+          "usageComplete": true,
+          "reportSha256": "87aa93d74c472b73c081fc67101ff48c09680a7f663075fca7d1310a7a5fb638",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/a04463d8-8ea4-4ec9-8d86-f68f7920cc98/report.json"
+        },
+        {
+          "case": "tree-review",
+          "status": "failed",
+          "runId": "4790a361-b050-4244-82bd-c8f79be6af69",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11510,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "38973d48548d50da37c1d31ff00a7665a9695bc7584ae9b197a24f70e7041b96",
+          "reportPath": "/home/adrian/.local/state/arcnexus/runs/4790a361-b050-4244-82bd-c8f79be6af69/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-single-steward-1/campaign.json",
+      "manifestHash": "7b102ebf4f6121e0b752ad76bc890e7a3dd160e93e878756250def024a9ac9c4",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-change.json",
+          "sha256": "c68d5a27f5672703d416418b7d564bc6e226c21d78e567b6de4e906af2f4ff2b"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-report-summary.mjs",
+          "sha256": "364f92e56b96468174e68c9aef9438036a2485aef2c0c0f9dd2695c1b3c7ce14"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-repair.json",
+          "sha256": "368a82bac2e8b9ebefbc2f78a6c4f1c59f208e292ada48e85fedec719045c3af"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/inject-report-fault.mjs",
+          "sha256": "f2a6a19433918760a8edb8745af3b9942084a1c9e8c703853016939220bb8cdc"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-report-summary.mjs",
+          "sha256": "364f92e56b96468174e68c9aef9438036a2485aef2c0c0f9dd2695c1b3c7ce14"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-boundary.json",
+          "sha256": "3daf34ffe43f37f0cb06c41b392dc8ed54a636f37d9bd2ddc36c6327d839f765"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/arc-research.json",
+          "sha256": "03b3281c268376489d769e99c04f7785fbdfb8664630dbf5fb55703421557f73"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "finalRunnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "id": "20261031-tree-followup-1",
+      "sha256": "2e72cab8b7fc8e34f4e50093a1cf403b938f568c02cb8dc30c4a78702e968bfd",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "e317209b-f7ac-4f4f-a149-efe2e5347d9c",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: Captured verification index 3 (`bun test tests/acceptance/artifact-diagnostics.test.mts`) exited 127: `/bin/bash: line 1: bun: command not found`. The required pre-implementation failure could not be confirmed.",
+          "elapsedMs": 27929,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 24024,
+              "promptBytes": 9959,
+              "usage": {
+                "input_tokens": 183952,
+                "cached_input_tokens": 154752,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2597,
+                "reasoning_output_tokens": 298
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 183952,
+            "cached_input_tokens": 154752,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2597,
+            "reasoning_output_tokens": 298
+          },
+          "usageComplete": true,
+          "reportSha256": "1f141575354233b1fa7dd52ae565c9182070f03724eb5084b1e114c1edef5d08",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-change/report.json"
+        },
+        {
+          "case": "tree-boundary",
+          "status": "passed",
+          "runId": "6f287f58-de87-4d93-9fe9-6e8dbc9a17a7",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: SDK public contract is absent from the inspected pinned package. The required change belongs to SDK owner sdk-contracts, outside this component\u2019s write authority.; The assignment requires stopping without edits when the contract is absent, so no regression was added and no captured verification command was run. The expected failing regression evidence is unavailable for this turn.",
+          "elapsedMs": 22813,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 19328,
+              "promptBytes": 9897,
+              "usage": {
+                "input_tokens": 157247,
+                "cached_input_tokens": 128512,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2050,
+                "reasoning_output_tokens": 374
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 157247,
+            "cached_input_tokens": 128512,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2050,
+            "reasoning_output_tokens": 374
+          },
+          "usageComplete": true,
+          "reportSha256": "34ae9ff2ffbf35ee16e3c411751020fe310f936fcf7e6f1f55f2d4c67561813a",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-boundary/report.json"
+        },
+        {
+          "case": "tree-review",
+          "status": "failed",
+          "runId": "56d950d0-484d-4398-8f2c-9190f0aa69a3",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Boundary request has wrong requesting component",
+          "elapsedMs": 36847,
+          "turns": [
+            {
+              "activity": "review",
+              "status": "failed",
+              "durationMs": 33250,
+              "promptBytes": 9420,
+              "usage": {
+                "input_tokens": 327978,
+                "cached_input_tokens": 293632,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3317,
+                "reasoning_output_tokens": 985
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 327978,
+            "cached_input_tokens": 293632,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3317,
+            "reasoning_output_tokens": 985
+          },
+          "usageComplete": true,
+          "reportSha256": "fa459e6ecbdb8c0464c181996fa798e208e7d081ad548e95e046c447500a31ca",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/tree-review/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-followup-1/campaign.json",
+      "manifestHash": "320f1b7497517a4f5d04a9a29ca5c47462d0af2652c4e2a554ad85e4d956f7a7",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-boundary.json",
+          "sha256": "3daf34ffe43f37f0cb06c41b392dc8ed54a636f37d9bd2ddc36c6327d839f765"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "4c12d60baddd7b6fe05579427d80f1b2f3ef8e0b4d7db08d89e98305debc8ba0",
+      "finalRunnerHash": "4c12d60baddd7b6fe05579427d80f1b2f3ef8e0b4d7db08d89e98305debc8ba0",
+      "id": "20261031-tree-context-1",
+      "sha256": "30b02fb7b9c7ed2af9c429b21d3e81dc4bb8fd2ba574b56e0fa8e581b420bf2e",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "e5e78cd3-4859-4424-b3ab-05cbfdadaf8b",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: Captured verification command 3 (`bun run test:artifact-diagnostics`) exited 1 because its spawned diagnostic process could not write to stdout (`EPERM`). The new sorting assertion was not reached. Per instruction, I did not repeat the unavailable check.",
+          "elapsedMs": 42101,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 38560,
+              "promptBytes": 11646,
+              "usage": {
+                "input_tokens": 298558,
+                "cached_input_tokens": 257280,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3109,
+                "reasoning_output_tokens": 876
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 298558,
+            "cached_input_tokens": 257280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3109,
+            "reasoning_output_tokens": 876
+          },
+          "usageComplete": true,
+          "reportSha256": "46f968fb9178d4869861079f177500cecc864015717525d712d402bc182d6b7b",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/tree-change/report.json"
+        },
+        {
+          "case": "tree-review",
+          "status": "passed",
+          "runId": "a2290fe7-6ab0-456c-8608-73f7aec970bc",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "review_completed",
+          "error": null,
+          "elapsedMs": 33938,
+          "turns": [
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 28215,
+              "promptBytes": 20793,
+              "usage": {
+                "input_tokens": 287065,
+                "cached_input_tokens": 241280,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3009,
+                "reasoning_output_tokens": 662
+              },
+              "reviewEvidence": {
+                "basis": "base-first-parent",
+                "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+                "sha256": "a42b218140399952aab804ddf2f303d8d97594f22f541b4d8f708c7e241d4284",
+                "bytes": 9547
+              }
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 287065,
+            "cached_input_tokens": 241280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3009,
+            "reasoning_output_tokens": 662
+          },
+          "usageComplete": true,
+          "reportSha256": "5922d899dd0e498d544cbbad65aae954c230974086686a6c2f9f7c0856f14718",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/tree-review/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-context-1/campaign.json",
+      "manifestHash": "b4ad6a1492a4ae39a2e3c69f63dabf2bcbf8038254caa40f1cea505c70a46f45",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        },
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-review.json",
+          "sha256": "505071c4bf2e02e134d5558351722a9f196500c7ffe3abe969727e92b80ea741"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-host-1",
+      "sha256": "a72d100049fa097627cb1daa3557698e01e58f30353d52df5eae6649d1feb713",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "006efd07-955d-4377-aff5-cbe8e64cdfbe",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Regression did not fail with the expected assertion",
+          "elapsedMs": 26596,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 22497,
+              "promptBytes": 12075,
+              "usage": {
+                "input_tokens": 170356,
+                "cached_input_tokens": 142848,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1922,
+                "reasoning_output_tokens": 0
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 170356,
+            "cached_input_tokens": 142848,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1922,
+            "reasoning_output_tokens": 0
+          },
+          "usageComplete": true,
+          "reportSha256": "38991a85a274e2321d2abc8179be6bd020bff4129735102bf68562129187a6c8",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-host-1/tree-change/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-host-1/campaign.json",
+      "manifestHash": "5679e8b548fdb4eae08687bc9ce0da73ea849fe7bb72ace582eaf47aa900a773",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change.json",
+          "sha256": "a9eb615ba61f37b079acc216866dea00480661af91c86471fd226826b756c31f"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-explicit-1",
+      "sha256": "4b1510e1a65f6221894b1eaca319142a0ba7c2c34bcd46e153f5bd5ebf4c5707",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "d21e041b-2def-49bf-a2d0-15e87f3a680e",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Regression did not fail with the expected assertion",
+          "elapsedMs": 23348,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 18995,
+              "promptBytes": 12726,
+              "usage": {
+                "input_tokens": 153722,
+                "cached_input_tokens": 125568,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1790,
+                "reasoning_output_tokens": 221
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 153722,
+            "cached_input_tokens": 125568,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1790,
+            "reasoning_output_tokens": 221
+          },
+          "usageComplete": true,
+          "reportSha256": "27133739dc14a5662e3fd75c954a902f904cc513005f58b211433a09c58499ba",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-explicit-1/tree-change/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-explicit-1/campaign.json",
+      "manifestHash": "93fc206a399bb097074d2ce0d5f620d9fe3821f6bc01d93541ad0dadf9b52213",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change-explicit.json",
+          "sha256": "1413026110967d3c867282cea0a4bc39871ff9a9f7ad611d365bec497a743b40"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    },
+    {
+      "status": "passed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-ordered-1",
+      "sha256": "a145e3a2784ba713a73f9e07f88abb247a71656d43e9c74217c39c11d0d0432d",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "passed",
+          "runId": "5fd1c042-9ac0-461c-b7c4-d3efc471408c",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 136854,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 31951,
+              "promptBytes": 13160,
+              "usage": {
+                "input_tokens": 175400,
+                "cached_input_tokens": 146816,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3199,
+                "reasoning_output_tokens": 1037
+              },
+              "reviewEvidence": null
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 83392,
+              "promptBytes": 12479,
+              "usage": {
+                "input_tokens": 678565,
+                "cached_input_tokens": 647936,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 8923,
+                "reasoning_output_tokens": 4550
+              },
+              "reviewEvidence": null
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 10143,
+              "promptBytes": 29307,
+              "usage": {
+                "input_tokens": 65385,
+                "cached_input_tokens": 55680,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 899,
+                "reasoning_output_tokens": 513
+              },
+              "reviewEvidence": {
+                "basis": "candidate",
+                "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+                "sha256": "45b0ce1866ca34d9d2e7954374685c85644506b361592a25403bdc5c8210de03",
+                "bytes": 13458
+              }
+            }
+          ],
+          "implementationAttempts": 1,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 919350,
+            "cached_input_tokens": 850432,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 13021,
+            "reasoning_output_tokens": 6100
+          },
+          "usageComplete": true,
+          "reportSha256": "ac22a585b026d145043ae0e9f843c5fcc28c582fd4d8e60d35575ec4d56069a5",
+          "callerSpecificationInterventions": 2,
+          "interventionEvidence": "Explicit archive/behavioral marker selection followed by assertion-order clarification; see retained assignment hashes and pre-phase-two.md",
+          "reportPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-ordered-1/tree-change/report.json"
+        }
+      ],
+      "manifestPath": "/home/adrian/.local/state/arcnexus/campaigns/20261031-tree-ordered-1/campaign.json",
+      "manifestHash": "cda8909b73e1da908b56cc9570d43148a366cc46a1e16be5d7188c2d13244ed1",
+      "inputHashes": [
+        {
+          "path": "/home/adrian/.local/state/arcnexus/qualification-inputs/20261031-single-steward/tree-change-ordered.json",
+          "sha256": "cbb101f9f1c8fb00b32f0cd30f909620853d7a37528ed81fff6f34ad1db84edd"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-tree-artifacts.mjs",
+          "sha256": "d0dc9b4b46c30dd7ce79854c2461e407d5da2f2faf85f2958ee71ce10550c186"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/tree-artifact-expected.json",
+          "sha256": "c916d4e52c1bc306c7ac36ff30c18b732f00825b93bff810e8faecac77dd6362"
+        },
+        {
+          "path": "/tmp/arcnexus-tree-bindings.json",
+          "sha256": "3ddec4743b090a858d65f2812c1e0a4990712f2d5160d771f813c91fc220aa10"
+        },
+        {
+          "path": "/home/adrian/Projects/arcnexus-qualification/qualification/check-outcome.mjs",
+          "sha256": "86664cade17868be96545a91ad74db522f2788a0154e630674bf7d8a0d1ec70f"
+        }
+      ]
+    }
+  ],
+  "integration": {
+    "arcChange": {
+      "pr": 37,
+      "merge": "f95f950d0cbacf4bf12262c4e0e2b3a0c780d572"
+    },
+    "runtimeContext": {
+      "pr": 39,
+      "merge": "dd8164e474890df497ddbdcab6b68851605051f3"
+    },
+    "treeChange": {
+      "pr": "https://github.com/treeseed-ai/platform/pull/873",
+      "merge": "c8c620b8a0df4d84d7a66807e5794760d01c54c5",
+      "candidate": "a46cf638b51c3e580433935acc8228eebcf2b476",
+      "callerImplementationFixes": 0,
+      "callerSpecificationInterventions": 2,
+      "callerChanges": [
+        "CHANGELOG.md",
+        "Git integration commits"
+      ],
+      "workspaceRetainedDetached": true,
+      "taskBranchDeleted": true,
+      "ci": [
+        41172735548,
+        41172735569
+      ]
+    }
+  },
+  "toolchains": {
+    "supervisorNode": "22.22.1",
+    "codexCli": "0.163.0-alpha.10.2",
+    "codexSdk": "0.166.0",
+    "treeNode": "24.19.0",
+    "treeBun": "1.4.4",
+    "model": "gpt-6-luna",
+    "reasoning": "medium",
+    "basis": "Retained execution.json and prerequisite command logs for the named runs"
+  },
+  "gateBasis": "Six required bounded case types independently passed; both real changes passed normal CI/review and integrated. Earlier failed campaigns remain failed. Final evidence PR CI must pass before merging this index."
+}

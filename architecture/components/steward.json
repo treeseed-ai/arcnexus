@@ -17,7 +17,8 @@
     "src/evidence.ts",
     "tests/runtime/permissions.test.mjs",
     "docs/component-access.md",
-    "docs/execution-contract.md"
+    "docs/execution-contract.md",
+    "tests/runtime/context.test.mjs"
   ],
   "verification": [
     {
@@ -53,7 +54,8 @@
   ],
   "patterns": [
     "Document intent, test observable behavior, implement",
-    "Verify actual SDK executable arguments and report settings"
+    "Verify actual SDK executable arguments and report settings",
+    "Context acceptance is shared with assignment/steward ownership; caller reviews changes"
   ],
   "access": {
     "readPaths": [
@@ -79,7 +81,8 @@
     "docs/execution-contract.md"
   ],
   "tests": [
-    "tests/runtime/permissions.test.mjs"
+    "tests/runtime/permissions.test.mjs",
+    "tests/runtime/context.test.mjs"
   ],
   "relatedIds": [
     "architecture"
