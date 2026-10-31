@@ -75,3 +75,8 @@ Each caller-declared tool binding grants read-only access to its resolved contai
 directory (never write access); these directories appear in execution settings.
 No arbitrary ancestor directories are exposed. This permits installed tool binaries
 outside system locations without exposing the rest of the caller's home directory.
+
+The context also supplies the target PATH explicitly. Apply it after login-shell
+initialization for commands that launch nested package scripts; an absolute Bun
+invocation alone does not make a nested `bun` command discoverable. Host commands
+and steward context use the same captured tool-directory ordering.
