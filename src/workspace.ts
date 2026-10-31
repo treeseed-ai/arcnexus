@@ -7,6 +7,9 @@ import { save, type RecordData } from './state.js';
 export interface PrepareOptions { project: string; base?: string; issue?: string }
 export function assertOutputs(workspace: string, env: Environment): void {
   if (git(workspace, 'status', '--porcelain', '--untracked-files=all').trim()) throw new Error('Workspace contains changed source or untracked files');
+  assertGeneratedOutputs(workspace, env);
+}
+export function assertGeneratedOutputs(workspace: string, env: Environment): void {
   const ignored = git(workspace, 'ls-files', '--others', '--ignored', '--exclude-standard', '-z').split('\0').filter(Boolean);
   for (const path of ignored) if (!env.generatedDirectories.some(dir => path.startsWith(`${dir}/`))) throw new Error(`Unknown ignored output: ${path}`);
   for (const path of env.generatedDirectories) {

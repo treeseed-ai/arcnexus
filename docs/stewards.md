@@ -34,7 +34,8 @@ instructions normally; report conflicts rather than claiming unperformed work.
 
 The TypeScript [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk) drives the local
 CLI (`codex` on PATH, or `--codex-path`). Sign into that CLI beforehand. Existing
-Codex authentication is reused without copying secrets. A POSIX launcher inserts
+Codex authentication is reused without copying secrets. The Linux `setsid` utility isolates the CLI process group for cancellation.
+A POSIX launcher inserts
 `--ignore-user-config`; the executable must support it. Explicit configuration uses
 workspace-write, approval never, network disabled for agent tools, and web search
 disabled. User config and inherited API-key/provider variables are not passed.
