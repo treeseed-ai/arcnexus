@@ -4,6 +4,10 @@
 
 ### Added
 
+- Inspect durable two-owner workdays and checkpoint steward execution (#56).
+
+### Added
+
 - Run declarative simulated and live experiments through the supervised runtime (#53).
 
 ### Added
