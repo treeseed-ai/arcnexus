@@ -17,6 +17,7 @@ Commit a definition at `architecture/components/<id>.json`:
   "objectives": ["Predictable expiration boundaries"],
   "constraints": ["No network access needed"],
   "allowedWritePaths": ["src", "tests", "README.md"],
+  "access": {"readPaths": ["."], "writeDirectories": ["."]},
   "verification": [{"command": "npm", "args": ["test"]}]
 }
 ```
@@ -37,7 +38,7 @@ CLI (`codex` on PATH, or `--codex-path`). Sign into that CLI beforehand. Existin
 Codex authentication is reused without copying secrets. The Linux `setsid` utility isolates the CLI process group for cancellation.
 A POSIX launcher inserts
 `--ignore-user-config`; the executable must support it. Explicit configuration uses
-workspace-write, approval never, network disabled for local agent commands, and live hosted web search
+an explicit component permission profile, approval never, network disabled for local agent commands, and live hosted web search
 enabled. User config and inherited API-key/provider variables are not passed.
 Target `.codex/config.toml` files are rejected in phase one. Managed host restrictions
 still apply. Setup commands run on the host and are a separate trusted boundary.
@@ -78,3 +79,6 @@ Evidence capture does not stage, unstage or reset the candidate.
 
 See [the execution contract](execution-contract.md) for objectives, research,
 verification handoff and exact prompt/configuration evidence.
+
+Every definition must declare [component filesystem access](component-access.md);
+whole-worktree access is allowed only when explicitly declared as `.`.

@@ -51,5 +51,16 @@
   "patterns": [
     "Document intent, test observable behavior, implement",
     "Verify actual SDK executable arguments and report settings"
-  ]
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "tests",
+      "docs",
+      "dist"
+    ]
+  }
 }

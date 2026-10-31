@@ -52,5 +52,16 @@
   "patterns": [
     "Evidence-backed completion",
     "Small functions with coherent responsibilities"
-  ]
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "tests",
+      "docs",
+      "dist"
+    ]
+  }
 }

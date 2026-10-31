@@ -53,5 +53,16 @@
   "patterns": [
     "Evidence-backed completion",
     "Separate execution outcomes from workspace lifecycle metadata"
-  ]
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "tests",
+      "docs",
+      "dist"
+    ]
+  }
 }

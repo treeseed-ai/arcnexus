@@ -53,6 +53,7 @@ test('built CLI run writes observed changed paths and Git kinds into Markdown', 
   writeFileSync(join(repo, 'architecture/environment.json'), JSON.stringify({ prerequisites: [], setup: [], generatedDirectories: [] }));
   writeFileSync(join(repo, 'architecture/components/sample.json'), JSON.stringify({
     id: 'sample', type: 'library', purpose: 'report acceptance', path: 'z.txt', objectives: [], constraints: [],
+    access: { readPaths: ['.'], writeDirectories: ['.'] },
     allowedWritePaths: ['z.txt', 'a[1].txt', 'deleted.txt'],
     verification: [{ command: 'node', args: ['-e', 'process.exit(0)'] }],
   }));
@@ -61,6 +62,8 @@ test('built CLI run writes observed changed paths and Git kinds into Markdown', 
   writeFileSync(executable, `#!/usr/bin/env node
 const fs = require('fs');
 const args = process.argv.slice(2);
+if(args[0]==='--version'){console.log('controlled codex');process.exit(0);}
+if(args[0]==='sandbox')process.exit(0);
 process.chdir(args[args.indexOf('--cd') + 1]);
 process.stdin.resume();
 process.stdin.on('end', () => {
