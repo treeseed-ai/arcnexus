@@ -93,3 +93,12 @@ diff captured in its execution artifacts. Active, waiting, command and coordinat
 times have explicit accounting bases; they are not estimates of private reasoning.
 A hard interruption leaves durable state incomplete. Viewers identify a departed host,
 and cleanup refuses active or unresolved workday transitions pending manual inspection.
+
+## Qualification
+
+The contract fixture and real guidance/validator assignments are declarative experiments.
+Qualification uses a stable external supervising build and pinned pre-improvement base.
+The guidance owner's documentation scope includes selected instruction/skill files;
+validator checks rebuild the CLI before testing, and requester refresh rebuilds after
+owner delivery. Source ownership remains disjoint. Failed live invocations are retained
+separately; a later invocation is explicit. Simulation never establishes the live gate.

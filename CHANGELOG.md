@@ -4,6 +4,10 @@
 
 ### Added
 
+- Qualify two-owner workdays with declarative experiments and real guidance self-management (#60).
+
+### Added
+
 - Coordinate two stewards through verified workday handoffs (#57).
 
 ### Added
