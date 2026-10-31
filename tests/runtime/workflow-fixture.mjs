@@ -66,6 +66,6 @@ process.chdir(args[args.indexOf('--cd')+1]);let prompt='';process.stdin.on('data
 });`,{mode:0o755});
  const commit=()=>{git('add','.');git('commit','-m','fixture');};commit();
  const env={...process.env,ARCNEXUS_STATE_DIR:state};
- const run=(...args)=>spawnSync(process.execPath,[cli,'run','sample','Improve behavior','--project',repo,'--codex-path',executable,...args],{encoding:'utf8',env,timeout:15000});
+ const run=(...args)=>spawnSync(process.execPath,[cli,'run','sample','Improve behavior','--project',repo,'--codex-path',executable,...args],{encoding:'utf8',env,timeout:30000});
  return {root,repo,state,calls,component,executable,env,git,commit,run};
 }

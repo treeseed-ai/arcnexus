@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+import { processStart } from './service-state.js';
 import type { OperationBridge } from './operations.js';
 import { openBridge } from './bridge.js';
 import { acceptPlan, updatePlan } from './plan.js';
@@ -40,10 +42,11 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const access=readOnly?{readPaths:[...new Set([...declared.readPaths,...declared.writeDirectories])],writeDirectories:[]}:declared;
   const inherited=context?.slice(0,-1).map(item=>({access:item.access,allowedWritePaths:item.allowedWritePaths}))??[];
   const permissions=preparePermissions(record.workspace,access,allowedWritePaths,join(dir,'tmp'),inherited,((record.members??[]) as Member[]).map(m=>m.workspace),toolDirectories(record));
-  writeFileSync(launcher,'#!/bin/sh\n[ "$1" = exec ] || exit 64\nshift\necho $$ > "$ARCNEXUS_CODEX_PID"\nexec setsid "$ARCNEXUS_CODEX_EXECUTABLE" exec --ignore-user-config "$@"\n',{mode:0o700});
+  writeFileSync(launcher,'#!/bin/sh\nexec "$ARCNEXUS_NODE" "$ARCNEXUS_CODEX_SUPERVISOR" "$@"\n',{mode:0o700});
   const env:Record<string,string>={};
   for(const name of ['HOME','PATH','CODEX_HOME','TMPDIR','LANG','SSL_CERT_FILE','SSL_CERT_DIR','HTTPS_PROXY','HTTP_PROXY','NO_PROXY','XDG_CONFIG_HOME','XDG_DATA_HOME'])if(process.env[name])env[name]=process.env[name]!;
   env.ARCNEXUS_CODEX_EXECUTABLE=executable.includes('/')?resolve(executable):executable;env.ARCNEXUS_CODEX_PID=pidFile;
+  env.ARCNEXUS_NODE=process.execPath;env.ARCNEXUS_CODEX_SUPERVISOR=fileURLToPath(new URL('./codex-supervisor.js',import.meta.url));env.ARCNEXUS_HOST_PID=String(process.pid);env.ARCNEXUS_HOST_START=processStart(process.pid)!;
   env.TMPDIR=permissions.tmpDirectory;env.PATH=targetEnvironment(record).PATH!;
   const settings={model,reasoning:profile?.reasoning??'medium',permissionProfile:'arcnexus',access,allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:profile?.webSearch??'live',nestedDelegation:false,managedTools:profile?.schemaVersion===2?['plan.update',...(operations?.tools.map(t=>t.name)??[])]:[],executable:env.ARCNEXUS_CODEX_EXECUTABLE};
   persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
