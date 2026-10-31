@@ -125,3 +125,8 @@ The guidance owner requests validator implementation, waits for verified deliver
 then updates selected skill metadata and maintenance documentation. Skills without
 `references` preserve existing behavior. Independent fixtures remain outside both
 owners' authority. The campaign report alone does not authorize integration.
+
+For an expected blocked workday, independent acceptance must validate the escalation.
+Model settings are checked for assignments that actually started inference; an owner
+that was never activated has unavailable execution settings and usage, not a fictitious
+model execution. Its captured profile must still pass workday inspection.
