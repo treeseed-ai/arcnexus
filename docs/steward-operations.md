@@ -130,3 +130,8 @@ Then run `node scripts/qualify.mjs /absolute/new-inputs/manifest.json /absolute/
 The runner must remain unchanged and outside all candidates throughout the campaign.
 Fault markers are per candidate workspace, so later campaigns do not silently skip
 injection. The campaign does not retry failed cases.
+
+Finite setup, verification and exploratory commands also use a separate supervisor
+with a parent-liveness channel. A hard parent interruption aborts the command process
+group even when the CLI cannot finalize its report. Partial logs and the incomplete
+execution record remain; this does not authorize automatic recovery or cleanup.
