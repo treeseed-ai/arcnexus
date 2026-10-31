@@ -17,6 +17,13 @@
   ],
   "verification": [
     {
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ]
+    },
+    {
       "command": "node",
       "args": [
         "--test",
@@ -60,5 +67,8 @@
   ],
   "relatedIds": [],
   "parentId": "cli-package",
-  "operationIds": []
+  "operationIds": [
+    "guidance-build",
+    "guidance-tests"
+  ]
 }

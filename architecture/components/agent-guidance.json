@@ -37,7 +37,8 @@
       "."
     ],
     "writeDirectories": [
-      "."
+      ".",
+      ".agents/skills"
     ]
   },
   "schemaVersion": 2,
@@ -46,6 +47,8 @@
   "executionProfile": "luna",
   "interfaces": [],
   "documentation": [
+    "AGENTS.md",
+    ".agents/skills",
     "docs/guidance-maintenance.md"
   ],
   "tests": [],

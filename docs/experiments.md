@@ -103,3 +103,36 @@ accepts the proposed rule; neither steward grants itself new authority.
 
 See [integrated qualification evidence](acceptance/experiments.md) for the completed
 live campaign and the separate simulation guarantees.
+## Two-owner cases
+
+Version-2 experiment manifests may select `workday` (a manifest path) instead of a
+single `component`/`assignment`. Their expected outcome is `completed` or `blocked`.
+The resolver captures both participant envelopes and combined checks before the first
+case. Execution delegates to `workday run`; it does not implement another scheduler.
+Workday limits remain 900 active seconds per owner and 2,400 wall-clock seconds.
+
+The fixed `handoff` simulation scenario requires the exact bundled `fixtures/workday`
+contract. It uses two scripted threads and real host checks. Live cases omit `scenario`
+and use Luna/medium. Both retain explicit mode labels in campaign and workday evidence.
+`experiments/workday-fixture.json` is the live contract example; the corresponding
+simulation manifest demonstrates the same runtime without inference. Local bindings
+supply pinned repositories, the supervising build, executable paths and issue metadata.
+
+The real guidance case captures the optional `references` policy before execution:
+when present, a nonempty unique array of repository-relative paths to readable tracked
+regular files, with no absolute paths, traversal, missing files or symlink traversal.
+The guidance owner requests validator implementation, waits for verified delivery,
+then updates selected skill metadata and maintenance documentation. Skills without
+`references` preserve existing behavior. Independent fixtures remain outside both
+owners' authority. The campaign report alone does not authorize integration.
+
+For an expected blocked workday, independent acceptance must validate the escalation.
+Model settings are checked for assignments that actually started inference; an owner
+that was never activated has unavailable execution settings and usage, not a fictitious
+model execution. Its captured profile must still pass workday inspection.
+
+The guidance qualification binds Node/npm explicitly and gives the validator owner
+fixed build and guidance-test operations. The steward obtains regression feedback
+through the verified host route; direct sandbox output is not substituted for the
+host's expected-red evidence. Tool bindings and operation definitions are captured
+before each workday, alongside the unchanged references policy.

@@ -1,6 +1,8 @@
 ---
 name: documentation-writer
 description: Use when writing or updating repository documentation, references, examples, or user instructions.
+references:
+  - docs/guidance-maintenance.md
 ---
 
 # Write documentation that helps the next action

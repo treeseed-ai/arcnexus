@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { handoffFixture } from "./handoff-fixture.mjs";
 for (const stage of [
   "planning",
+  "planning-updates",
   "specification",
   "implementation",
   "review",
@@ -50,6 +51,7 @@ test("rejected owner request ends workday with retained requester changes", (t) 
 });
 for (const mode of [
   "unknown-owner",
+  "unsolicited-answer",
   "duplicate",
   "exhaust-clarification",
   "forged",
@@ -67,8 +69,16 @@ for (const mode of [
       assert.notEqual(w.status, "completed");
       assert.match(
         w.error,
-        /owner|Nested|budget|requesting|Other-owner|Command failed|blocked/i,
+        /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination/i,
       );
+      if (mode === "unknown-owner")
+        assert.match(
+          readFileSync(
+            join(f.state, "workdays", w.workspaceId, "report.md"),
+            "utf8",
+          ),
+          /ownerId.*unknown/,
+        );
       if (mode === "no-delivery")
         assert.equal(
           w.messages.some((m) => m.payload.decision === "delivered"),
@@ -101,4 +111,35 @@ test("combined acceptance rejects a regression after verified delivery", (t) => 
   assert.equal(w.status, "failed");
   assert.ok(w.messages.some((m) => m.payload.decision === "delivered"));
   assert.match(w.error, /acceptance|Command failed/i);
+});
+
+test("SDK output schema exposes only currently eligible coordination actions", (t) => {
+  const f = handoffFixture(t),
+    r = f.workday();
+  assert.equal(r.status, 0, r.stderr);
+  const calls = readFileSync(f.calls, "utf8")
+    .trim()
+    .split("\n")
+    .map(JSON.parse);
+  assert.deepEqual(
+    calls.find((c) => c.owner === "sample" && c.stage === "planning")
+      .coordinationSchema.anyOf[1].properties.action.enum,
+    ["request"],
+  );
+  assert.deepEqual(
+    calls.find((c) => c.owner === "dependency" && c.stage === "planning")
+      .coordinationSchema.anyOf[1].properties.action.enum,
+    ["accept", "reject", "clarify"],
+  );
+  assert.deepEqual(
+    calls.find((c) => c.owner === "dependency" && c.stage === "specification")
+      .coordinationSchema,
+    { type: "null" },
+  );
+  assert.deepEqual(
+    calls
+      .filter((c) => c.owner === "sample" && c.stage === "implementation")
+      .at(-1).coordinationSchema,
+    { type: "null" },
+  );
 });

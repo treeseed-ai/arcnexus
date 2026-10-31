@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "changeType": "documentation",
+  "objective": "Maintain explicit documentation references for .agents/skills/documentation-writer/SKILL.md. First inspect current validator and request the captured skill-references policy from guidance-validation; do not edit validator implementation. After verified delivery, add references including docs/guidance-maintenance.md to that selected skill and document the references maintenance procedure in docs/guidance-maintenance.md. Preserve existing instructions and authority. When optional references is present in skill YAML frontmatter, require a nonempty array of unique repository-relative paths to readable tracked regular files. Reject absolute paths, empty or non-string entries, traversal segments, missing or untracked files, directories, and symlink traversal (including parent directories). No references field preserves existing metadata behavior. Keep stable file-oriented diagnostics and no semantic approval claims. In the initial planning response submit the owner request now: status=blocked, coordination.action=request, contract=skill-references, requestId=null, and one precise requests entry naming guidance-validation. The host routes that structured result; do not merely promise a later request. During documentation-only specification, actually edit the selected skill frontmatter and update the existing docs/guidance-maintenance.md, preserving applicable content. Returning only a description of future edits does not satisfy the checkpoint.",
+  "expectedOutcome": "Selected skill references validate through the delivered checker and maintenance documentation explains the rule",
+  "acceptanceCriteria": [
+    "Selected documentation-writer skill has valid references including docs/guidance-maintenance.md",
+    "Maintenance documentation explains optional references validation, tracked readable files, forbidden paths, and caller-owned integration"
+  ],
+  "allowedWritePaths": [
+    ".agents/skills/documentation-writer/SKILL.md",
+    "docs/guidance-maintenance.md"
+  ],
+  "hostChecks": []
+}

@@ -93,3 +93,40 @@ diff captured in its execution artifacts. Active, waiting, command and coordinat
 times have explicit accounting bases; they are not estimates of private reasoning.
 A hard interruption leaves durable state incomplete. Viewers identify a departed host,
 and cleanup refuses active or unresolved workday transitions pending manual inspection.
+
+## Qualification
+
+The contract fixture and real guidance/validator assignments are declarative experiments.
+Qualification uses a stable external supervising build and pinned pre-improvement base.
+The guidance owner's documentation scope includes selected instruction/skill files;
+validator checks rebuild the CLI before testing, and requester refresh rebuilds after
+owner delivery. Source ownership remains disjoint. Failed live invocations are retained
+separately; a later invocation is explicit. Simulation never establishes the live gate.
+
+An incomplete planning turn may retain a proposed plan and progress claims, but those
+claims do not update an accepted checklist. After delivery, planning continues and
+must produce a valid initial plan. Checklist activities use the role's engineering
+activity names; `specification` is a host stage, not a separate role activity.
+
+The model-facing coordination schema is narrowed by host state on every turn. A
+requester may request only before its dependency exists; a recipient may accept,
+reject or clarify only while its planning decision is pending. A clarification reply
+may answer. Other turns require `coordination: null`; observations belong in findings
+and activities. Host validation independently rejects unavailable actions even when a
+controlled executable ignores the supplied output schema.
+
+Readable reports include unrouted owner requests as agent claims when host authorization
+rejects the destination. Their requested owner, evidence and acceptance conditions remain
+visible even though no inbox delivery occurred. An unrouted request is never presented
+as accepted work or as a reason to activate an additional steward.
+
+Documentation-only specification requires actual edits in the assigned documentation
+scope. A prose description of intended edits is still planning and cannot satisfy that
+checkpoint. Behavioral regression is skipped explicitly, while documentation changes,
+project verification, independent acceptance and review remain mandatory.
+
+Final-result checklist updates are constrained to the steward item IDs captured at
+turn start. Host acceptance entries are read-only and cannot be completed by a model.
+A plan revision introduced during a turn can update its new items through `plan.update`;
+the final result uses only the IDs advertised for that turn. Host validation still
+checks every update against the current accepted plan and requires completion evidence.

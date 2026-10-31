@@ -22,7 +22,7 @@ export function acceptPlan(root:string,record:RecordData,value:unknown,reason="I
  const ids=new Set(plan.items.map(i=>i.id));if(ids.size!==plan.items.length)throw new Error('Duplicate checklist identity');
  const allowed=resolved.role.activities;
  for(const a of plan.activities)if(!allowed.includes(a.activity))throw new Error('Plan activity outside role');
- for(const i of plan.items){if(!allowed.includes(i.activity)||!plan.activities.some(a=>a.activity===i.activity)||i.criteria.some(n=>n>=resolved.assignment.acceptanceCriteria.length)||i.dependencies.some(d=>!ids.has(d)||d===i.id)||i.status!=='pending')throw new Error('Invalid plan checklist authority/criteria/dependencies');}
+ for(const i of plan.items){if(!plan.activities.some(a=>a.activity===i.activity))throw new Error(`Checklist item ${i.id} activity ${i.activity} is absent from plan.activities`);if(!allowed.includes(i.activity)||i.criteria.some(n=>n>=resolved.assignment.acceptanceCriteria.length)||i.dependencies.some(d=>!ids.has(d)||d===i.id)||i.status!=='pending')throw new Error('Invalid plan checklist authority/criteria/dependencies');}
  const visit=(id:string,path=new Set<string>()):void=>{if(path.has(id))throw new Error('Cyclic checklist dependencies');const next=new Set(path).add(id);for(const d of plan.items.find(i=>i.id===id)!.dependencies)visit(d,next);};for(const id of ids)visit(id);
  for(let n=0;n<resolved.assignment.acceptanceCriteria.length;n++)if(!plan.items.some(i=>i.criteria.includes(n)))throw new Error('Plan omits acceptance criterion');
  plan.hostChecks=[{id:'final-verification',status:'pending',evidence:[]}];persist(root,record,plan,reason);

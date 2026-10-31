@@ -6,7 +6,14 @@ file bytes, not the committed version, and creates no workspace or model executi
 
 Skill files under `.agents/skills/` require YAML mapping frontmatter, a lowercase
 hyphenated name matching their directory, and a nonempty description. Additional
-metadata is allowed. Empty tracked skill inventories fail. The command also inventories
+metadata is allowed. Optional `references` metadata, when present, must be a nonempty
+array of unique repository-relative paths to readable, tracked regular files. Paths
+must not be absolute, empty, contain non-string entries or traversal segments, or
+resolve through symlinks in any path component. Missing and untracked paths and
+directories are invalid. Referenced files may contain binary data. Omitting
+`references` preserves the prior metadata behavior. These checks report through the
+existing `invalid_skill` diagnostic; the checker makes no semantic approval claim.
+Empty tracked skill inventories fail. The command also inventories
 tracked AGENTS.md files and reports readable/unreadable state. It does not validate
 prose semantics, policy consistency, instruction effectiveness, or architectural approval.
 

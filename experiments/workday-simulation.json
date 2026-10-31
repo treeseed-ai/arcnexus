@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "modes": [
+    "simulation"
+  ],
+  "cases": [
+    {
+      "id": "contract-handoff",
+      "project": "fixture",
+      "workday": "workdays/fixture.json",
+      "expectedOutcome": "completed",
+      "acceptance": [
+        {
+          "command": "node",
+          "args": [
+            "checks/workday-report.mjs",
+            "{report}"
+          ],
+          "artifacts": [
+            "checks/workday-report.mjs"
+          ]
+        }
+      ],
+      "scenario": "handoff"
+    }
+  ]
+}

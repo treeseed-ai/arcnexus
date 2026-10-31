@@ -69,6 +69,7 @@ export interface SessionControl {
   context: string;
   inspect: () => void;
   elapsedMs: () => number;
+  actions: (activity: string) => string[];
   chargeTurn: (kind: "engineering" | "coordination") => void;
   onResult: (
     session: StewardSession,
@@ -324,6 +325,8 @@ export class StewardSession {
       record.status = "running";
       record.stage = activity;
       record.readOnlyTurn = readOnly;
+      if (this.control)
+        record.coordinationActions = this.control.actions(activity);
       let reviewEvidence: Record<string, unknown> | undefined;
       if (activity === "review") {
         const paths = [
@@ -373,7 +376,7 @@ export class StewardSession {
         reviewEvidence.sha256 = digest(bytes);
         reviewEvidence.bytes = Buffer.byteLength(bytes);
       }
-      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates for completed or blocked checklist items with evidence and explanation. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
+      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nAllowed coordination actions now: ${JSON.stringify(record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
         start = Date.now(),
         commandStart = record.commands.length;
       const summary: Record<string, unknown> = {
@@ -475,11 +478,26 @@ export class StewardSession {
           activity === "planning" &&
           (!result.coordination ||
             result.coordination.action === "accept" ||
-            result.coordination.activityComplete)
+            (result.coordination.action === "request" &&
+              result.coordination.activityComplete))
         )
           acceptPlan(root, record, result.plan);
-        else if (planned && result.planUpdates?.length)
-          updatePlan(root, record, result.planUpdates);
+        else if (planned && result.planUpdates?.length) {
+          if (
+            activity === "planning" &&
+            this.control &&
+            result.coordination &&
+            !result.coordination.activityComplete &&
+            !record.plan
+          )
+            observe(root, record, "plan.proposed", {
+              plan: result.plan,
+              updates: result.planUpdates,
+              basis:
+                "Unaccepted agent claims; planning must complete after handoff",
+            });
+          else updatePlan(root, record, result.planUpdates);
+        }
         summary.coordinationAction = result.coordination?.action ?? null;
         summary.status = result.coordination ? "yielded" : "completed";
         journal(activity, String(summary.status), { turn: turns.length });
@@ -660,7 +678,7 @@ export class StewardSession {
       if (planned)
         await turn(
           "planning",
-          "Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.",
+          "Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Use only the role activity names research, documentation, testing, implementation, review, release (restricted further by the captured role). Host stage names such as specification and planning are not checklist activity names. Every initial item is pending, including dependencies awaiting another owner; progress claims apply only after the host accepts the plan. Every checklist item activity must also appear in plan.activities with a reason. Before returning, check this membership, unique item IDs, existing acyclic dependency IDs, and valid zero-based criterion indices. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.",
           true,
         );
       if (assignment.kind !== "change") {
@@ -675,8 +693,8 @@ export class StewardSession {
         const spec = await turn(
           "specification",
           documentationOnly
-            ? "Document the intended change only. Set regression=null and explain why behavioral testing is skipped."
-            : "Research as needed, document intent and add/update a failing regression in declared test scope. Do not edit implementation. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
+            ? "Make actual file edits now in the assigned documentation/skill scope. Update the documentation itself, preserving applicable existing content; a prose-only description in your response does not satisfy this checkpoint. Do not edit implementation or tests. Set regression=null and explain why behavioral testing is skipped."
+            : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
         );
         if (!specificationFinished) await finishSpecification(spec);
         let feedback = "",

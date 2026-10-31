@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "requester": {
+    "component": "agent-guidance",
+    "assignment": "guidance-assignment.json",
+    "refresh": [
+      {
+        "command": "npm",
+        "args": [
+          "run",
+          "build"
+        ]
+      }
+    ],
+    "maxAttempts": 2
+  },
+  "recipient": {
+    "component": "guidance-validation",
+    "assignment": "validator.json",
+    "refresh": [],
+    "maxAttempts": 2
+  },
+  "dependency": {
+    "from": "agent-guidance",
+    "to": "guidance-validation",
+    "contract": "skill-references",
+    "delivery": "Verified optional references policy in the candidate checker, not a publication"
+  },
+  "acceptance": [
+    {
+      "id": "combined-references",
+      "command": "node",
+      "args": [
+        "../checks/guidance-references.mjs",
+        "--combined"
+      ],
+      "artifacts": [
+        "../checks/guidance-references.mjs"
+      ]
+    }
+  ]
+}
