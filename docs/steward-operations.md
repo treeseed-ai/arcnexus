@@ -42,7 +42,7 @@ Version-2 components explicitly list `operationIds`. Definitions under
 category, activities, timeoutSeconds (at most 120), generatedDirectories, artifacts,
 and prerequisite probes. Version-2 execution profiles permit categories and bound
 `maxOperationCalls` (default 24). Assignments may select a subset using operationIds.
-Version-1 inputs grant no operation authority. `validate` checks references;
+Version-1 components grant no operation authority. `validate` checks references;
 `inspect` shows captured operations and their trusted-host execution boundary.
 
 The MCP tools `operations.list` and `operations.run` expose the captured catalog.
@@ -57,3 +57,6 @@ candidate code on the host, just like captured verification, not in a new OS
 isolation boundary. They cannot authorize dependency edits or source mutations
 outside the current activity. Host checkpoints still run independently; exploratory
 checks cannot replace frozen regression or external acceptance.
+
+The explicitly configured ArcNexus MCP server uses automatic tool approval; the
+agent approval policy remains never. Host authorization still checks every call.

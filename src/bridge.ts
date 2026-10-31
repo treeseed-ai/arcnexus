@@ -15,5 +15,5 @@ export async function openBridge(tools:BridgeTool[],call:(name:string,args:unkno
   });
  });
  await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(path,resolve);});chmodSync(path,0o600);
- return {config:{mcp_servers:{arcnexus:{command:process.execPath,args:[fileURLToPath(new URL('./bridge-client.js',import.meta.url)),path],startup_timeout_sec:10,tool_timeout_sec:125}}},close:async()=>{closing=true;for(const s of sockets)s.destroy();await new Promise<void>(resolve=>server.close(()=>resolve()));rmSync(directory,{recursive:true,force:true});}};
+ return {config:{mcp_servers:{arcnexus:{default_tools_approval_mode:'approve',command:process.execPath,args:[fileURLToPath(new URL('./bridge-client.js',import.meta.url)),path],startup_timeout_sec:10,tool_timeout_sec:125}}},close:async()=>{closing=true;for(const s of sockets)s.destroy();await new Promise<void>(resolve=>server.close(()=>resolve()));rmSync(directory,{recursive:true,force:true});}};
 }

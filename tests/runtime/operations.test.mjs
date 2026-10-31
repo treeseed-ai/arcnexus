@@ -13,6 +13,7 @@ function fixture(t,mode='success'){
  code=code.replace("console.log(JSON.stringify({type:'item.completed'",`if(stage!=='planning'){
   const {Client}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js'))});
   const {StdioClientTransport}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js'))});
+  if(!args.includes('mcp_servers.arcnexus.default_tools_approval_mode=\"approve\"'))throw new Error('EXPLICIT_BRIDGE_APPROVAL_MISSING');
   const option=name=>JSON.parse(args.find(a=>a.startsWith('mcp_servers.arcnexus.'+name+'=')).split('=').slice(1).join('='));
   const client=new Client({name:'controlled',version:'1'},{capabilities:{}});await client.connect(new StdioClientTransport({command:option('command'),args:option('args')}));
   const reply=await client.callTool({name:'operations.run',arguments:{id:${JSON.stringify(mode==='denied'?'unknown':'test')}}});
