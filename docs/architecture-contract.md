@@ -70,3 +70,9 @@ remain readable, but new runs do not silently accept legacy definitions.
 
 Validation uses [Ajv draft 2020-12](https://ajv.js.org/json-schema.html) in
 [strict mode](https://ajv.js.org/strict-mode.html), with no remote schema loading.
+
+Catalog maintenance is checked against the real source inventory: every `src/*.ts`
+module must have exactly one executable component owner. Workspace lifecycle owns
+`bindings.ts` and `members.ts` as well as preparation/cleanup. The bounded-context
+acceptance test is shared by assignment orchestration and Codex adaptation; changes
+to it require caller review. Qualification infrastructure belongs to the CLI package.
