@@ -4,6 +4,8 @@
 
 ### Added
 
+- Host-check the single-steward engineering workflow (#31).
+
 - Validate architecture definitions and inspect resolved assignments (#30).
 
 - Add opt-in bounded corrective attempts on the same steward thread (#25).

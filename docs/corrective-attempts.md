@@ -1,3 +1,7 @@
+> The [activity workflow](steward-workflow.md) supersedes the historical one-turn
+> attempt layout below. `--max-attempts 2` still permits only one corrective
+> implementation, but planned activity turns now have separate evidence.
+
 # One bounded corrective attempt
 
 `arcnexus run <component> "<objective>" --project <repository> --max-attempts 2`

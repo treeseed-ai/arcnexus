@@ -15,7 +15,11 @@
     "docs/corrective-attempts.md",
     "docs/execution-contract.md",
     "tests/runtime/steward.test.mjs",
-    "tests/runtime/attempts.test.mjs"
+    "tests/runtime/attempts.test.mjs",
+    "src/checkpoints.ts",
+    "tests/runtime/workflow.test.mjs",
+    "tests/runtime/workflow-fixture.mjs",
+    "docs/steward-workflow.md"
   ],
   "verification": [
     {
@@ -75,11 +79,14 @@
   ],
   "documentation": [
     "docs/corrective-attempts.md",
-    "docs/execution-contract.md"
+    "docs/execution-contract.md",
+    "docs/steward-workflow.md"
   ],
   "tests": [
     "tests/runtime/steward.test.mjs",
-    "tests/runtime/attempts.test.mjs"
+    "tests/runtime/attempts.test.mjs",
+    "tests/runtime/workflow.test.mjs",
+    "tests/runtime/workflow-fixture.mjs"
   ],
   "relatedIds": [
     "steward",
