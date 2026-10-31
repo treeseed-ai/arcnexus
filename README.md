@@ -6,7 +6,7 @@ for all five phases, and the [phase-one retrospective](docs/phase-one-retrospect
 for evidence and coordination readiness. The [phase-one sequence](docs/plans/phase-one.md)
 records the delivered implementation slices.
 
-Requires Linux, Node 22, npm, Git, `setsid`, and an authenticated Codex CLI on PATH.
+Requires Linux, Node >=22.13 <23, npm, Git, `setsid`, and an authenticated Codex CLI on PATH.
 
 ```sh
 npm ci
@@ -39,3 +39,9 @@ Validate tracked guidance in the current checkout with
 
 [Experiments](docs/experiments.md) provide explicit simulation and live qualification
 modes through the same supervised runtime.
+
+[Two-owner workdays](docs/workdays.md) add bounded contract requests, verified
+delivery and same-thread requester continuation in one managed candidate. Inspect
+the captured manifest with `workday inspect`, execute with `workday run`, and use
+`workday status` / `workday follow` for retained coordination evidence. SQLite is
+private coordination state; ordinary single-steward commands remain available.

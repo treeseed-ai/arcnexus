@@ -101,4 +101,6 @@ See [bounded corrective attempts](corrective-attempts.md) for opt-in `--max-atte
 
 Workflow evidence lives in `activities.jsonl` and `turns/<n>/`. Implementation
 attempts are counted separately from activity turns. See the workflow reference
-for the three-turn default and five-turn maximum with opt-in correction.
+for four planned turns (including planning) and six maximum with opt-in correction.
+[Workdays](workdays.md) retain those engineering allowances per assignment and add
+a shared, bounded coordination/continuation allowance; handoffs do not reset counters.
