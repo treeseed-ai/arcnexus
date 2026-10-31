@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
+import { loadBindings } from './bindings.js';
 import { resolveBase, resolveAssignment } from './assignment.js';
 import { loadCatalog } from './components.js';
 import { captureChanges } from './changes.js';
@@ -16,11 +17,13 @@ const help = `ArcNexus
   run/inspect: --assignment <file> replaces objective
   prepare --project <repository>
   cleanup <workspace-id>
+Composed workspaces: prepare/run/inspect --bindings <file>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
 `;
 function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
+      bindings: {type:'string'},
       'composition-profile': {type:'string'}, 'execution-profile': {type:'string'},
       assignment: { type: 'string' }, kind: { type: 'string' }, json: { type: 'boolean' },
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
@@ -68,8 +71,9 @@ async function main(): Promise<void> {
       const {source,base}=resolveBase(values.project,values.base);
       const catalog=loadCatalog(source,base);console.log(JSON.stringify({base,components:Object.keys(catalog.components),status:'valid'}));return;
     }
+    const bindings=loadBindings(values.bindings);
     const selection=['run','inspect'].includes(command!)?resolveBase(values.project!,values.base):undefined;
-    const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],file:values.assignment,kind:values.kind,compositionProfile:values['composition-profile'],executionProfile:values['execution-profile'],model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;
+    const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],bindings,file:values.assignment,kind:values.kind,compositionProfile:values['composition-profile'],executionProfile:values['execution-profile'],model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;
     if(command==='inspect'){
       console.log(values.json?JSON.stringify(resolved):`Assignment ${resolved!.digest}\n${JSON.stringify(resolved,null,2)}`);return;
     }
@@ -77,7 +81,7 @@ async function main(): Promise<void> {
     timer = setTimeout(() => controller.abort(new Error('Operation timed out')), (resolved?.executionProfile.timeoutSeconds ?? seconds) * 1000);
     if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));
     else {
-      record = createWorkspace(root, { project: values.project!, base: selection?.base ?? values.base, issue: values.issue });
+      record = createWorkspace(root, { project: values.project!, base: selection?.base ?? values.base, issue: values.issue, bindings });
       if(resolved)record.resolvedAssignment=resolved;
       if (command === 'run') await runSteward(root, record, positionals[1]!, resolved!.assignment.objective, resolved!.executionProfile.model, values['codex-path'] ?? 'codex', controller.signal, Number(values['max-attempts'] ?? 1));
       else await prepareWorkspace(root, record, controller.signal);

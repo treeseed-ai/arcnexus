@@ -32,7 +32,7 @@ execution reports. No claim of atomic cross-repository deletion or OS-wide isola
 
 ## Qualification campaign
 
-The explicit qualification command uses a caller manifest with a stable runner,
+The remaining qualification delivery will add an explicit command using a caller manifest with a stable runner,
 pinned target revisions, component/objective or assignment files, local bindings,
 external acceptance programs, expected outcomes and optional labeled fault injection.
 It runs each case once, sequentially; no automatic campaign retries or model fallback.
@@ -50,3 +50,13 @@ The first TreeSeed selection mounts the exact CLI source supplying its historica
 root lockfile archives and the SDK source corresponding to its assembly contract.
 It uses existing Node/Bun tools, committed archives and non-activating checks. It
 preserves historical composition manifests and runs no deployment or service setup.
+
+## Workspace preparation evidence
+
+A real TreeSeed preparation completed as run `bd00d3b2-4199-4dfd-b6fa-9bb8e5910ad9`
+from Platform revision `d7fa3502ab79a02b20eb393ab8fd88586b553e0e` with application-created
+CLI and SDK dependency worktrees. Node 24.19.0 and Bun 1.4.4 prerequisite checks and
+both frozen dependency installations passed. Reports and inventories are retained in
+ArcNexus user state. This proves preparation, not the six-case Luna qualification gate.
+The blueprint references in that historical source revision are subsequently removed
+by TreeSeed #866/#867; they are not authority for future assignments.

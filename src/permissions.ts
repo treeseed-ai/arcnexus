@@ -46,7 +46,7 @@ function covered(path: string, directories: string[]): boolean {
   return directories.some(directory => directory === '.' || path === directory || path.startsWith(`${directory}/`));
 }
 
-export function preparePermissions(workspacePath: string, rawAccess: unknown, allowedWritePaths: unknown, tmpDirectory: string, inherited: Array<{ access: unknown; allowedWritePaths: unknown }> = []): PreparedPermissions {
+export function preparePermissions(workspacePath: string, rawAccess: unknown, allowedWritePaths: unknown, tmpDirectory: string, inherited: Array<{ access: unknown; allowedWritePaths: unknown }> = [], readOnlyRoots: string[] = []): PreparedPermissions {
   const workspace = resolve(workspacePath);
   const access = validateAccess(rawAccess);
   const createdDirectories: string[] = [];
@@ -82,6 +82,7 @@ export function preparePermissions(workspacePath: string, rawAccess: unknown, al
   for (const path of access.readPaths) filesystem[resolve(workspace, path)] = 'read';
   for (const path of access.writeDirectories) filesystem[path === '.' ? workspace : resolve(workspace, path)] = 'write';
   filesystem[temp] = 'write';
+  for(const root of readOnlyRoots){if(!resolve(root).startsWith(workspace+sep))throw new InputError('Dependency permission must be inside primary worktree');filesystem[resolve(root)]='read';}
   const entries = Object.entries(filesystem).map(([path, permission]) => `${JSON.stringify(path)}=${JSON.stringify(permission)}`);
   return {
     configOverrides: [`default_permissions="arcnexus"`, `permissions.arcnexus.filesystem={${entries.join(',')}}`, 'permissions.arcnexus.network.enabled=false'],

@@ -4,6 +4,8 @@
 
 ### Added
 
+- Prepare composed workspaces with pinned read-only repository members (#32).
+
 - Host-check the single-steward engineering workflow (#31).
 
 - Validate architecture definitions and inspect resolved assignments (#30).
