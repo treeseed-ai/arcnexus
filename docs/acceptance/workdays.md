@@ -98,3 +98,13 @@ approved references contract. Review found the candidate imposed that extra rest
 so independent acceptance now includes a tracked binary file. These are clearer case
 inputs and added coverage, not permission to reset frozen tests or repair a candidate.
 Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-7/campaign.json`.
+
+`guidance-live-8`, workday `d63b7775-e26a-48a6-94fd-89cbaf026f79`, passed independent
+policy acceptance, including binary files. The validator's review identified a real
+test gap: candidate symlink tests could reject untracked paths without exercising
+symlink detection. With one implementation attempt, the host stopped rather than
+waiving the review finding. The next manifest explicitly opts both owners into at most
+two attempts, allowing one bounded repair and review under the unchanged active-time
+budgets. CLI defaults remain one attempt. The validator objective also calls for
+tracked symlink fixtures. No caller implementation fixes were made.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-8/campaign.json`.
