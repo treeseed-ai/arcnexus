@@ -19,6 +19,7 @@ import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]
   workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
   workday status <workday-id> [--json]
   workday follow <workday-id> [--json] [--after <sequence>]
@@ -78,6 +79,13 @@ async function main(): Promise<void> {
       if(action==='inspect'){
         if(!values.project||Object.keys(values).some(k=>!['project','base','bindings','json'].includes(k)))throw new InputError('workday inspect requires --project');
         console.log(JSON.stringify(resolveWorkday(positionals[2]!,values.project,values.base,values.bindings),null,values.json?undefined:2));return;
+      }
+      if(action==='run'){
+        if(!values.project||Object.keys(values).some(k=>!['project','base','bindings','issue','codex-path'].includes(k))||values.issue!==undefined&&!/^[1-9]\d*$/.test(values.issue))throw new InputError('Invalid workday run arguments');
+        const input=resolveWorkday(positionals[2]!,values.project,values.base,values.bindings);
+        root=stateRoot();unlock=lock(root);const {WorkdayRunner}=await import('./workday.js');
+        const result=await new WorkdayRunner(root,controller.signal,values['codex-path']??'codex').run(input,values.issue);
+        console.log(JSON.stringify(result));process.exitCode=result.exitCode;return;
       }
       if(action==='status'||action==='follow'){
         if(Object.keys(values).some(k=>!['json','after'].includes(k))||values.after!==undefined&&(action!=='follow'||!/^\d+$/.test(values.after)||!Number.isSafeInteger(Number(values.after))))throw new InputError('Invalid workday viewer arguments');

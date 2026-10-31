@@ -1,8 +1,7 @@
 # Two-owner workdays
 
 Phase two introduces a deterministic workday: one requester, one authorized recipient,
-one shared candidate worktree and sequential Luna execution. This page specifies the
-incremental interface; `run` and routed handoffs are delivered after the foundation.
+one shared candidate worktree and sequential Luna execution. The runtime captures authority and verifies each handoff before dispatch.
 
 ## Captured definition
 
@@ -45,7 +44,7 @@ regression evidence, attempt/operation counters, consumed active time, authority
 and candidate evidence. Standalone execution uses the same session engine. A checkpoint
 is inspection evidence, not authorization to recover a process or reset a budget.
 
-The next increment routes one dependency request, permits at most two clarification
+The runtime routes one dependency request, permits at most two clarification
 rounds, and parks/restores unfinished requester changes. Acceptance is distinct from
 verified delivery. Each assignment retains 900 seconds of cumulative active execution;
 the workday has a 2,400-second wall-clock deadline. Cancellation/interruption retains
@@ -88,3 +87,9 @@ other owner executes. The workday deadline never pauses. All managed resources s
 at a handoff. Cancellation stops dispatch and attempts safe restoration; ambiguous or
 interrupted transitions remain unresolved and prevent cleanup. There is no restart or
 resume command. The caller owns integration of the final combined diff.
+
+Workday reports distinguish each owner's attributed changes from the full candidate
+diff captured in its execution artifacts. Active, waiting, command and coordination
+times have explicit accounting bases; they are not estimates of private reasoning.
+A hard interruption leaves durable state incomplete. Viewers identify a departed host,
+and cleanup refuses active or unresolved workday transitions pending manual inspection.

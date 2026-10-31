@@ -22,7 +22,8 @@
     "src/bridge.ts",
     "src/bridge-client.ts",
     "src/codex-supervisor.ts",
-    "tests/runtime/parent-loss.test.mjs"
+    "tests/runtime/parent-loss.test.mjs",
+    "schemas/workday-agent-result.json"
   ],
   "verification": [
     {

@@ -18,7 +18,9 @@ import type { RecordData } from './state.js';
 import { save } from './state.js';
 import { persistExecutionEvidence } from './evidence.js';
 import { preparePermissions, type AccessPolicy } from './permissions.js';
+export interface CoordinationResult {action:'request'|'accept'|'reject'|'clarify'|'answer';contract:string;requestId:string|null;text:string;activityComplete:boolean}
 export interface AgentResult {
+ coordination?:CoordinationResult|null;
  plan?:Plan|null;planUpdates?:PlanUpdate[];
  status:'completed'|'blocked'|'failed'; summary:string; blockers:string[];
  findings:Array<{summary:string;evidence:string[];uncertainty:string}>;
@@ -36,6 +38,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const component=context?.at(-1);
   const profile=resolved?.executionProfile;
   const schema=structuredClone(baseSchema);if(profile?.schemaVersion===2){schema.required=Object.keys(schema.properties);}else{delete schema.properties.plan;delete schema.properties.planUpdates;}
+  if(record.workdayId){schema.properties.coordination={anyOf:[{type:'null'},{type:'object',properties:{action:{enum:['request','accept','reject','clarify','answer']},contract:{type:'string'},requestId:{type:['string','null']},text:{type:'string'},activityComplete:{type:'boolean'}},required:['action','contract','requestId','text','activityComplete'],additionalProperties:false}]};schema.required.push('coordination');}
   const readOnly=record.readOnlyTurn===true;
   const allowedWritePaths=readOnly?[]:resolved?.allowedWritePaths??component?.allowedWritePaths;
   const declared=component?.access as AccessPolicy;
@@ -90,7 +93,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     if(bridgeError)throw bridgeError;
     if(!completed)throw new Error('Codex stream ended without completed turn');
     writeFileSync(join(dir,'agent-result.raw.txt'),final,{mode:0o600});
-    const result=validateSchema<AgentResult>('agent-result',JSON.parse(final));
+    const result=validateSchema<AgentResult>(record.workdayId?'workday-agent-result':'agent-result',JSON.parse(final));
     if(profile?.schemaVersion===2&&(!Object.hasOwn(result,'plan')||!Array.isArray(result.planUpdates)))throw new Error('Planned response requires plan and planUpdates');
     writeFileSync(join(dir,'agent-result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     return result;

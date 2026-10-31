@@ -15,7 +15,8 @@
     "src/report.ts",
     "tests/runtime/report.test.mjs",
     "docs/report.md",
-    "src/timeline.ts"
+    "src/timeline.ts",
+    "src/workday-report.ts"
   ],
   "verification": [
     {
