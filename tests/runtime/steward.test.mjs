@@ -31,6 +31,15 @@ function fixture(t,mode='success') {
  if(mode==='verify')fs.writeFileSync('source.txt','broken');
  if(mode==='commit'){fs.writeFileSync('source.txt','after');cp.execFileSync('git',['add','.']);cp.execFileSync('git',['commit','-m','bad commit']);}
  if(mode==='symlink')fs.symlinkSync('/tmp','new.txt');
+ if(mode==='masked_outside'){
+   fs.writeFileSync('outside.txt','staged secret');cp.execFileSync('git',['add','outside.txt']);fs.unlinkSync('outside.txt');
+ }
+ if(mode==='index_only'){
+   fs.writeFileSync('source.txt','staged version');cp.execFileSync('git',['add','source.txt']);fs.writeFileSync('source.txt','before');
+ }
+ if(mode==='masked_symlink'){
+   fs.symlinkSync('source.txt','new.txt');cp.execFileSync('git',['add','new.txt']);fs.unlinkSync('new.txt');fs.writeFileSync('new.txt','regular restoration');
+ }
  const result={status:mode==='blocked'?'blocked':'completed',summary:'test',blockers:mode==='blocked'?['needs guidance']:[]};
  console.log(JSON.stringify({type:'item.completed',item:{id:'final',type:'agent_message',text:mode==='malformed'?'bad':JSON.stringify(result)}}));
  console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:1,cached_input_tokens:0,output_tokens:1}}));
@@ -50,6 +59,19 @@ test('built CLI runs the SDK boundary and retains observed changes, context and 
  assert.match(readFileSync(join(f.state,'runs',record.id,'changes.patch'),'utf8'),/after/);
  assert.match(readFileSync(join(f.state,'runs',record.id,'report.md'),'utf8'),/completed/);
  assert.equal(f.git('status','--porcelain'),'');
+});
+test('built CLI rejects a staged outside-scope edit masked by restoring the working file',t=>{
+ const f=fixture(t,'masked_outside'),r=f.run();assert.equal(r.status,1,r.stderr);assert.match(JSON.parse(r.stdout).error,/Out-of-scope change: outside\.txt/);
+});
+test('built CLI retains separate evidence for an in-scope index-only change',t=>{
+ const f=fixture(t,'index_only'),r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout),dir=join(f.state,'runs',record.id);
+ assert.deepEqual(record.changes,[{kind:'M',path:'source.txt'}]);
+ assert.deepEqual(record.stagedChanges,[{kind:'M',path:'source.txt'}]);assert.deepEqual(record.unstagedChanges,[{kind:'M',path:'source.txt'}]);
+ assert.match(readFileSync(join(dir,'staged.patch'),'utf8'),/staged version/);assert.match(readFileSync(join(dir,'unstaged.patch'),'utf8'),/staged version/);
+ assert.equal(readFileSync(join(dir,'changes.patch'),'utf8'),'');assert.deepEqual(JSON.parse(readFileSync(join(dir,'new-files.json'),'utf8')),{});
+});
+test('built CLI rejects a staged symlink masked by a regular working file',t=>{
+ const f=fixture(t,'masked_symlink'),r=f.run();assert.equal(r.status,1,r.stderr);assert.match(JSON.parse(r.stdout).error,/Symlink change is unsupported: new\.txt/);
 });
 for(const mode of ['scope','ignored','verify','commit','symlink','malformed','blocked','no_changes'])test(`run rejects ${mode}`,t=>{
  const f=fixture(t,mode),r=f.run();assert.equal(r.status,1,r.stderr);const record=JSON.parse(r.stdout);
@@ -84,4 +106,10 @@ test('SIGINT during agent execution records cancellation',async t=>{
  const f=fixture(t,'timeout');const child=spawn(process.execPath,[cli,'run','sample','Improve sample','--project',f.repo,'--codex-path',f.fake],{env:{...process.env,ARCNEXUS_STATE_DIR:f.state}});
  let out='';child.stdout.on('data',b=>out+=b);const closed=new Promise(r=>child.on('close',r));
  await new Promise(r=>setTimeout(r,600));child.kill('SIGINT');assert.equal(await closed,130);assert.equal(JSON.parse(out).status,'cancelled');
+});
+
+test('final verification cannot hide an out-of-scope staged change',t=>{
+ const f=fixture(t);f.component.verification=[{command:'node',args:['-e',"const fs=require('fs'),cp=require('child_process');if(fs.readFileSync('source.txt','utf8')==='after'){fs.writeFileSync('outside.txt','staged');cp.execFileSync('git',['add','outside.txt']);fs.unlinkSync('outside.txt');}"]}];
+ writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run();assert.equal(r.status,1,r.stderr);const record=JSON.parse(r.stdout);assert.equal(record.stage,'verification');assert.match(record.error,/Out-of-scope/);assert.ok(record.stagedChanges.some(c=>c.path==='outside.txt'));
 });
