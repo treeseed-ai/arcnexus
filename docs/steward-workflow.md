@@ -72,3 +72,10 @@ to declared readable paths. The implementation-review turn receives the current
 candidate diff and new-file contents. The steward does not need access to the source
 repository's Git metadata; permissions remain unchanged. A review request must name
 the active component as requester even when the needed decision belongs to a parent.
+
+A sandbox-local inability to run a regression is not proof that the regression
+failed correctly. The specification turn may return a completed preparation with a
+proposed failing assertion/exit expectation and an evidence-backed limitation. The
+host then runs the captured command and must observe that exact failure before
+implementation. The steward must not claim verification it could not perform;
+missing or mismatched host evidence still stops the workflow.
