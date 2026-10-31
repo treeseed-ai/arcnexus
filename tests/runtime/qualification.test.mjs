@@ -40,3 +40,8 @@ test('independent report checker still executes when its snapshot path contains 
  mkdirSync(join(f.repo,'dist'));writeFileSync(join(f.repo,'dist/report.js'),"export function markdownReport(){return 'fixture without outcome'}");
  const result=spawnSync(process.execPath,[script],{encoding:'utf8',cwd:f.repo});assert.equal(result.status,1);assert.match(result.stderr,/OUTCOME_SECTION_REQUIRED/);
 });
+test('campaign exposes actual preparation failure before any model runs',t=>{
+ const f=campaign(t),path=join(f.repo,'architecture/environment.json'),environment=JSON.parse(readFileSync(path));
+ environment.setup=[{command:process.execPath,args:['-e','process.exit(19)']}];writeFileSync(path,JSON.stringify(environment));f.commit();f.value.cases[0].base=f.git('rev-parse','HEAD');
+ assert.equal(f.run().status,1);const report=JSON.parse(readFileSync(join(f.output,'campaign.json')));assert.match(report.cases[0].error,/Command failed \(19\)/);assert.equal(existsSync(f.calls),false);
+});
