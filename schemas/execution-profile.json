@@ -4,7 +4,10 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "const": 1
+      "enum": [
+        1,
+        2
+      ]
     },
     "id": {
       "type": "string",
@@ -39,7 +42,10 @@
       "maximum": 120
     },
     "maxTurns": {
-      "const": 3
+      "enum": [
+        3,
+        4
+      ]
     },
     "maxCorrectiveTurns": {
       "const": 2
@@ -56,5 +62,30 @@
     "maxTurns",
     "maxCorrectiveTurns"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 2
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "maxTurns": {
+            "const": 4
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "maxTurns": {
+            "const": 3
+          }
+        }
+      }
+    }
+  ]
 }

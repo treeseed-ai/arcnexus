@@ -18,7 +18,9 @@
     "tests/runtime/permissions.test.mjs",
     "docs/component-access.md",
     "docs/execution-contract.md",
-    "tests/runtime/context.test.mjs"
+    "tests/runtime/context.test.mjs",
+    "src/bridge.ts",
+    "src/bridge-client.ts"
   ],
   "verification": [
     {

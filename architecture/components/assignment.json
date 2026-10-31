@@ -20,7 +20,10 @@
     "tests/runtime/workflow.test.mjs",
     "tests/runtime/workflow-fixture.mjs",
     "docs/steward-workflow.md",
-    "tests/runtime/context.test.mjs"
+    "tests/runtime/context.test.mjs",
+    "src/plan.ts",
+    "tests/runtime/planning.test.mjs",
+    "docs/steward-operations.md"
   ],
   "verification": [
     {

@@ -14,7 +14,8 @@
   "allowedWritePaths": [
     "src/report.ts",
     "tests/runtime/report.test.mjs",
-    "docs/report.md"
+    "docs/report.md",
+    "src/timeline.ts"
   ],
   "verification": [
     {

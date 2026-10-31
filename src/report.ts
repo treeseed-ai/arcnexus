@@ -1,3 +1,4 @@
+import { planMarkdown, type Plan } from './plan.js';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { RecordData } from './state.js';
@@ -25,7 +26,7 @@ export function markdownReport(record: RecordData): string {
     .sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0)
     .map(change => `- <code>${filenameText(change.path)}</code> — ${change.kind}`)
     .join('\n') || 'No changed files observed.';
-  return `# ArcNexus execution ${record.id}\n\nStatus: ${record.status}\n\nObjective: ${String(record.objective??'Prepare environment')}\n\nWorkspace: ${record.workspace}\n\nBase: ${record.base}\n\n${record.error?`Failure: ${record.error}\n\n`:''}Commands recorded: ${record.commands.length}\n\n## Outcome\n\n${outcome}\n\n## Activities\n\n${activityLines}\n\n## Changed files\n\n${changedFiles}\n\nSee report.json, events.jsonl, changes.patch and command logs for evidence.\n`;
+  return `# ArcNexus execution ${record.id}\n\nStatus: ${record.status}\n\nObjective: ${String(record.objective??'Prepare environment')}\n\nWorkspace: ${record.workspace}\n\nBase: ${record.base}\n\n${record.error?`Failure: ${record.error}\n\n`:''}Commands recorded: ${record.commands.length}\n\n## Outcome\n\n${outcome}\n\n## Activities\n\n${activityLines}\n\n${record.plan?planMarkdown(record.plan as Plan)+'\n':''}## Changed files\n\n${changedFiles}\n\nSee report.json, events.jsonl, changes.patch and command logs for evidence.\n`;
 }
 export function saveMarkdown(root: string, record: RecordData): void {
   writeFileSync(join(root,'runs',record.id,'report.md'),markdownReport(record),{mode:0o600});
