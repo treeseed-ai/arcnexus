@@ -18,7 +18,8 @@ CI tests that the independent checker rejects missing and incorrect implementati
 and accepts the specified boundary. Those synthetic checker tests are not live evidence.
 
 For self-development, `architecture/environment.json` installs this repository's
-npm dependencies and creates a local Python venv for the repository checks.
+npm dependencies and uses host-installed `uv` to create a local Python venv for
+the repository checks, with automatic Python downloads disabled.
 The captured verification includes TypeScript, built-CLI tests, Python acceptance
 and skill validation. Their declared generated directories stay cleanup-safe. The `report` component permits only its implementation, dedicated
 report tests and report documentation. A stable runner outside the candidate drives
@@ -43,3 +44,8 @@ Local fixture source and independent checker logs are retained under
 `/home/adrian/.local/state/arcnexus/samples/identity-Mlloua`; run records and candidates are retained in the normal state directories.
 Neither candidate changed the source repository. The sample implementation was produced
 by Codex in each candidate; the committed fixture intentionally remains the pre-change baseline.
+
+Preparation spike: Python 3.14.4 `python3 -m venv .venv` failed because this host
+lacks ensurepip (run `018247ae-e8e3-44d0-b9b3-aa8ccafc896a`, retained).
+No system installation was attempted. The declared setup uses installed uv 0.13.1
+instead; see [uv environment documentation](https://docs.astral.sh/uv/pip/environments/).
