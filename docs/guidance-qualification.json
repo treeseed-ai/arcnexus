@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "runId": "53f94231-dc28-419d-9d23-4d5a00037015",
+  "report": "runs/53f94231-dc28-419d-9d23-4d5a00037015/report.json",
+  "reportSha256": "f99bc805083ee2a9e63eea92cb2b68dfbe7e6a5a0602e7855e31999a5807c294",
+  "base": "85b2e2114b5de300a2d7e47ed62f55df1cc2eef3",
+  "assignmentDigest": "684e2a9c457712fe3875d141c6ee9da481b03323e23852d453fd2487d195979d",
+  "supervisorRevision": "85b2e2114b5de300a2d7e47ed62f55df1cc2eef3",
+  "supervisorHashes": "qualification/guidance-51/supervisor-hashes.json",
+  "model": "gpt-6-luna",
+  "outcome": "ready_for_integration",
+  "elapsedMs": 72577,
+  "turns": [
+    "planning",
+    "specification",
+    "implementation",
+    "review"
+  ],
+  "usage": {
+    "input_tokens": 409122,
+    "cached_input_tokens": 360448,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 4806,
+    "reasoning_output_tokens": 641
+  },
+  "usageComplete": true,
+  "callerInterventions": []
+}
