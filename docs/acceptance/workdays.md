@@ -87,3 +87,14 @@ research. The host rejected the inconsistent plan before implementation. The pla
 prompt now explicitly requires that cross-reference, and the diagnostic identifies the
 item and omitted activity. The rule remains mandatory; there is no planning-repair loop.
 Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-6/campaign.json`.
+
+`guidance-live-7`, workday `b33435f2-aaa1-4646-a0f5-34352517ae59`, failed its frozen
+regression. The original regression expected rejection of a valid tracked reference;
+the steward changed that test during implementation. The retained original still
+failed, so no delivery occurred. The assignment now identifies the negative fixture
+explicitly: `references: []` must return exit 1, while the old checker returns 0.
+A readable regular reference may contain binary data; UTF-8 is not required by the
+approved references contract. Review found the candidate imposed that extra restriction,
+so independent acceptance now includes a tracked binary file. These are clearer case
+inputs and added coverage, not permission to reset frozen tests or repair a candidate.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-7/campaign.json`.
