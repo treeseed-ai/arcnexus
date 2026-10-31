@@ -1,0 +1,58 @@
+{
+  "id": "steward",
+  "type": "library",
+  "purpose": "Execute one bounded component steward with explicit context and evidence",
+  "path": "src/steward.ts",
+  "objectives": [
+    "Research and implement bounded objectives with independently verified evidence"
+  ],
+  "constraints": [
+    "Caller owns commits and integration",
+    "Do not edit architecture or weaken host verification",
+    "Implement only approved execution settings"
+  ],
+  "allowedWritePaths": [
+    "src/steward.ts",
+    "src/codex.ts",
+    "src/evidence.ts",
+    "tests/runtime/steward.test.mjs",
+    "docs/execution-contract.md",
+    "docs/stewards.md"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "patterns": [
+    "Document intent, test observable behavior, implement",
+    "Verify actual SDK executable arguments and report settings"
+  ]
+}
