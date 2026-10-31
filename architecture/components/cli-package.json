@@ -9,7 +9,7 @@
   "constraints": [
     "Human architectural authority is final",
     "Candidate changes cannot redefine active acceptance",
-    "No automatic commits, integration, publishing or delegation"
+    "No automatic commits, integration or publishing; model delegation is disabled, and only captured workday participants may be dispatched by the host"
   ],
   "allowedWritePaths": [
     "."

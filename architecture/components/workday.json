@@ -14,7 +14,14 @@
     "src/workday-view.ts",
     "schemas/workday.json",
     "docs/workdays.md",
-    "tests/runtime/workdays.test.mjs"
+    "tests/runtime/workdays.test.mjs",
+    "src/workday.ts",
+    "src/workday-budget.ts",
+    "src/workday-parking.ts",
+    "tests/runtime/handoff-fixture.mjs",
+    "tests/runtime/handoffs.test.mjs",
+    "tests/runtime/parking.test.mjs",
+    "tests/runtime/workday-interruption.test.mjs"
   ],
   "verification": [
     {
@@ -69,7 +76,11 @@
     "docs/workdays.md"
   ],
   "tests": [
-    "tests/runtime/workdays.test.mjs"
+    "tests/runtime/workdays.test.mjs",
+    "tests/runtime/handoff-fixture.mjs",
+    "tests/runtime/handoffs.test.mjs",
+    "tests/runtime/parking.test.mjs",
+    "tests/runtime/workday-interruption.test.mjs"
   ],
   "relatedIds": [
     "assignment",

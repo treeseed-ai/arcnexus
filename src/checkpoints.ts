@@ -7,8 +7,8 @@ import type { AgentResult } from './codex.js';
 import type { RecordData } from './state.js';
 import { git } from './process.js';
 export interface FrozenTest {path:string;content:string;sha256:string}
-export function specificationFiles(record:RecordData,component:Component,documentationOnly:boolean):FrozenTest[]{
- const observed=changes(record);checkScope(record.workspace,observed,documentationOnly?component.documentation:[...component.documentation,...component.tests]);
+export function specificationFiles(record:RecordData,component:Component,documentationOnly:boolean,selected=changes(record)):FrozenTest[]{
+ const observed=selected;checkScope(record.workspace,observed,documentationOnly?component.documentation:[...component.documentation,...component.tests]);
  if(!observed.some(c=>covered(c.path,component.documentation)))throw new Error('Specification must document changed intent');
  if(documentationOnly)return [];
  const tests=observed.filter(c=>covered(c.path,component.tests));
@@ -28,10 +28,10 @@ export function candidateDigest(record:RecordData):string {
  const observed=changes(record);checkScope(record.workspace,observed,observed.map(c=>c.path));
  return digest(JSON.stringify({index:git(record.workspace,'diff','--cached','--binary',record.base,'--'),working:git(record.workspace,'diff','--binary','--',),files:observed.map(c=>({path:c.path,bytes:existsSync(join(record.workspace,c.path))?readFileSync(join(record.workspace,c.path)).toString('base64'):null}))}));
 }
-export function validateRequests(result:AgentResult,componentId:string,owners:string[]):void{
+export function validateRequests(result:AgentResult,componentId:string,owners:string[],allowUnknownOwner=false):void{
  for(const request of result.requests){
   if(request.fromComponent!==componentId)throw new Error('Boundary request has wrong requesting component');
-  if(request.ownerId!==null&&!owners.includes(request.ownerId))throw new Error(`Unknown boundary owner: ${request.ownerId}; use null for an architectural question`);
+  if(!allowUnknownOwner&&request.ownerId!==null&&!owners.includes(request.ownerId))throw new Error(`Unknown boundary owner: ${request.ownerId}; use null for an architectural question`);
  }
  if(result.requests.length && result.status!=='blocked')throw new Error('Unresolved boundary requests must report blocked');
  if(result.status==='blocked'&&!result.blockers.length)throw new Error('Blocked result requires a reason');

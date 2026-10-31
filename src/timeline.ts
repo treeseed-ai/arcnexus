@@ -4,10 +4,12 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { InputError } from './config.js';
 import type { RecordData } from './state.js';
 export interface TimelineEvent { schemaVersion:1; sequence:number; observedAt:string; runId:string; componentId?:string; turn:number; type:string; payload:unknown }
+const observers=new Map<string,(event:TimelineEvent)=>void>();
+export function observeExecution(root:string,id:string,listener:(event:TimelineEvent)=>void):()=>void{const key=root+'/'+id;observers.set(key,listener);return ()=>{observers.delete(key);};}
 export function observe(root:string,record:RecordData,type:string,payload:unknown):void {
  const sequence=Number(record.timelineSequence??0)+1;
  const event:TimelineEvent={schemaVersion:1,sequence,observedAt:new Date().toISOString(),runId:record.id,componentId:(record.resolvedAssignment as {componentId?:string}|undefined)?.componentId,turn:Array.isArray(record.turns)?record.turns.length:0,type,payload};
- appendFileSync(join(root,'runs',record.id,'timeline.jsonl'),JSON.stringify(event)+'\n',{mode:0o600});record.timelineSequence=sequence;
+ appendFileSync(join(root,'runs',record.id,'timeline.jsonl'),JSON.stringify(event)+'\n',{mode:0o600});record.timelineSequence=sequence;observers.get(root+'/'+record.id)?.(event);
 }
 export function readTimeline(directory:string):{events:TimelineEvent[];complete:boolean;problem?:string} {
  const path=join(directory,'timeline.jsonl');if(!existsSync(path))return {events:[],complete:false,problem:'No timeline available (historical or not started)'};

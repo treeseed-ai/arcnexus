@@ -65,6 +65,7 @@ export function cleanup(root: string, id: string): RecordData {
   if (record.id !== id || record.workspace !== join(root,'workspaces',id)) throw new Error('Workspace ownership mismatch');
   if (['preparing','running'].includes(record.status)) throw new Error('Workspace operation is active or incomplete; inspect before cleanup');
   assertServicesStopped(root,id);
+  if(record.workday){const workday=record.workday as {assignments:string[];parking:string;active?:boolean};if(workday.active)throw new Error('Workday is active or interrupted; inspect before cleanup');for(const child of workday.assignments)assertServicesStopped(root,child);if(existsSync(workday.parking)){const parking=JSON.parse(readFileSync(workday.parking,'utf8'));if(!['none','restored'].includes(parking.status))throw new Error('Workday parking/restoration is unresolved');}}
   const cleanupPath = join(root,'runs',id,'cleanup.json');
   if (record.status === 'removed' || existsSync(cleanupPath)) {
     if (lstatSync(record.workspace, { throwIfNoEntry: false })) throw new Error('Previously removed workspace path is occupied');
