@@ -14,7 +14,7 @@ export interface ResolvedAssignment {
 }
 export const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 export function resolveBase(repository: string, ref='HEAD'): {source:string;base:string} {
-  try { const source=realpathSync(repository);return {source,base:git(source,'rev-parse','--verify','--end-of-options',`${ref}^{commit}`).trim()}; }
+  try { const source=realpathSync(git(realpathSync(repository),'rev-parse','--show-toplevel').trim());return {source,base:git(source,'rev-parse','--verify','--end-of-options',`${ref}^{commit}`).trim()}; }
   catch(error){throw new InputError(String(error));}
 }
 export function resolveAssignment(repository:string, base:string, id:string, options:{objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
