@@ -47,3 +47,7 @@ A local no-inference probe of Codex 0.163.0-alpha.10.2 executed a Python program
 under the named profile, wrote a completion marker in its allowed temporary directory,
 and received read-only-filesystem errors for both the SDK dependency and assembly
 `node_modules` subtree. Exit status alone was not used as proof of enforcement.
+
+ArcNexus declares itself as the primary `arcnexus` repository with no dependencies;
+TreeSeed declares `platform` as primary with pinned CLI/SDK dependency members. Both
+real qualification targets therefore exercise the same explicit ownership contract.
