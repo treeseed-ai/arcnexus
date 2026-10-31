@@ -4,6 +4,8 @@
 
 ### Added
 
+- Run repeatable single-steward qualification campaigns with retained acceptance evidence (#32).
+
 - Prepare composed workspaces with pinned read-only repository members (#32).
 
 - Host-check the single-steward engineering workflow (#31).

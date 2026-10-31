@@ -1,0 +1,374 @@
+{
+  "owner": "admin",
+  "expectedSha": "d72213d3ce0c04280c86069e6040a91609cf79588ffd1e241073aefdbaee4a4d",
+  "actualSha": "0c5ed5cabb5010e3163c373cbc4422ca694872f27f1862c7cc2205fdbf91fb1b",
+  "changes": [
+    {
+      "path": "LICENSE",
+      "before": {
+        "path": "LICENSE",
+        "sha256": "bba6b55981791caed2ccd0a23b84857e8091de52585bac76d09fee658cfee969",
+        "size": 567,
+        "mode": 416
+      },
+      "after": {
+        "path": "LICENSE",
+        "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+        "size": 34523,
+        "mode": 420
+      },
+      "kind": "modified"
+    },
+    {
+      "path": "README.md",
+      "before": {
+        "path": "README.md",
+        "sha256": "b2a5fd05495c04360f80e62a1d5b7f0f176775921c341e8aeaddfb3410f9a0d5",
+        "size": 9290,
+        "mode": 416
+      },
+      "after": {
+        "path": "README.md",
+        "sha256": "79aa016884504e8a2561180c5dafe62d000130df4e48413ecbeff07a17da8627",
+        "size": 16594,
+        "mode": 416
+      },
+      "kind": "modified"
+    },
+    {
+      "path": "dist/src/admin.d.ts",
+      "before": {
+        "path": "dist/src/admin.d.ts",
+        "sha256": "18c2a77748271bf23ae374793c85268739db515d4a8018ccb8e33a29f494c4a8",
+        "size": 5358,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/admin.js",
+      "before": {
+        "path": "dist/src/admin.js",
+        "sha256": "053e31c87b82eae7559a2b04be9ea29c12cb84cdc84730f92b700c555be833dd",
+        "size": 12731,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/application-view.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/application-view.d.ts",
+        "sha256": "9f20b69a5b9d340f9c0ff18973f82b5fce63d67cfa38d573d3f7a127ab588dfb",
+        "size": 190,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/application-view.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/application-view.js",
+        "sha256": "a60ac640b784ca47318815d01d7139b479b12116f55ab68af26c035df7bb4892",
+        "size": 519,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/assets.d.ts",
+      "before": {
+        "path": "dist/src/assets.d.ts",
+        "sha256": "259b8b3cd4df174a36a2e4d64bf17606b67a8703e370b3e367da18bee195a521",
+        "size": 644,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/assets.js",
+      "before": {
+        "path": "dist/src/assets.js",
+        "sha256": "139608fe78ded2c28863ce48c9edae184092dde380bb011d63ccebfcc5739fa1",
+        "size": 4417,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/browser.bundle.js",
+      "before": {
+        "path": "dist/src/browser.bundle.js",
+        "sha256": "a80a0c8ff4b67866dda1530184cee0a3c286d81a96b608b0b1a308a3bbb194d3",
+        "size": 990552,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/browser.d.ts",
+      "before": {
+        "path": "dist/src/browser.d.ts",
+        "sha256": "094ce4f49418bf760200429e9691dfe05233096cc1e3197957118f752dbd6559",
+        "size": 6841,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/browser.js",
+      "before": {
+        "path": "dist/src/browser.js",
+        "sha256": "09215a1a8a037d20bb328d963c961b30da89f395940a62c51b262c013758932b",
+        "size": 11228,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/configuration.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/configuration.d.ts",
+        "sha256": "fd7c7e7876dad8c184047cb41b1b21576506c70f240ebc7e1ec4c3ce96a7677f",
+        "size": 1066,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/configuration.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/configuration.js",
+        "sha256": "f872691a8c31ed232dd07d2be53e7451e07a1d6053a6d88121a18556096eac56",
+        "size": 880,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/container.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/container.d.ts",
+        "sha256": "ebcd5632a07e40c4c7ce1de6819a5df4013727b55e96aac3226681d2332ffce2",
+        "size": 976,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/container.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/container.js",
+        "sha256": "ea105fa7e82f6820fdba622fe8d598d0feb1eabf13be1d0d360f66a46a1072b0",
+        "size": 2869,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/image-context.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/image-context.d.ts",
+        "sha256": "fa527f6e971e770fa2d4e609dc724f2e8762595956ab08e76326d429373e712b",
+        "size": 401,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/image-context.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/image-context.js",
+        "sha256": "29cb6cef4be41e54689c05387fcf9fe50df60f2023e080be1259c6e86bdbf1c9",
+        "size": 5141,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/json.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/json.d.ts",
+        "sha256": "e49c615ae18dbe7499ffe0e3fc5ce6d177bb16e2807a99e90086f495c688b043",
+        "size": 79,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/json.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/json.js",
+        "sha256": "416ee87f664352181fd40f9c5d3cd8e4400a627adac0a3746125ebb6aa68b1b0",
+        "size": 957,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/runtime-audit.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/runtime-audit.d.ts",
+        "sha256": "2592d06c4f344213df5e9d93ecbdd88e3a3bf050bea2e76425d8be4086db69f0",
+        "size": 662,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/runtime-audit.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/runtime-audit.js",
+        "sha256": "62be354514b2089bfbfc82451e4e2db0c02ac4b71417d14802920852a1f19c07",
+        "size": 10980,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/server.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/server.d.ts",
+        "sha256": "03779e9069048b51de9bcc468686807925b9186ab1bd0e1c8e405f0ddedf0a17",
+        "size": 8345,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/server.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/server.js",
+        "sha256": "eeaee934ef882d9878e0571966b5351c26367e9986a28d00d6b802685f30044f",
+        "size": 27793,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/services.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/src/services.d.ts",
+        "sha256": "db54c09bd97197ca85b50b57994f7dd09f41378fec1b33fc19e16f4980828bb7",
+        "size": 2376,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/services.js",
+      "before": null,
+      "after": {
+        "path": "dist/src/services.js",
+        "sha256": "6fb17d7509e4a2c1f5e792a698f4fd58136b83b69d936b0099f2600a20c04f93",
+        "size": 7414,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/src/views.d.ts",
+      "before": {
+        "path": "dist/src/views.d.ts",
+        "sha256": "aaf2675ecdabd951627b7c1e14355017d310a1f3665dbf8aee7eac1623d32845",
+        "size": 376,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/src/views.js",
+      "before": {
+        "path": "dist/src/views.js",
+        "sha256": "f5e261ce1b361d396783e1775f4d57676471942debf587fd002212d90c5f93bd",
+        "size": 1875,
+        "mode": 416
+      },
+      "after": null,
+      "kind": "removed"
+    },
+    {
+      "path": "dist/tests/installed-root-fixture.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/tests/installed-root-fixture.d.ts",
+        "sha256": "fefee99c7150194edc3119201a9cbc99ada2dd8b089b9852980ff3344aef7b23",
+        "size": 765,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/tests/installed-root-fixture.js",
+      "before": null,
+      "after": {
+        "path": "dist/tests/installed-root-fixture.js",
+        "sha256": "6781d426e0f3e75a61ac829bbe03c66e57a18fca869ee0e507f42ce807c63b2f",
+        "size": 13868,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/tests/runtime-packages.d.ts",
+      "before": null,
+      "after": {
+        "path": "dist/tests/runtime-packages.d.ts",
+        "sha256": "3e1f8d8e00aa192353a319d37e51b4a6fbaab8ff7c5760edb6ff260e1fabc459",
+        "size": 846,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "dist/tests/runtime-packages.js",
+      "before": null,
+      "after": {
+        "path": "dist/tests/runtime-packages.js",
+        "sha256": "1c7b47fc4be5d141892cd3494dd2cb378705616a1fcc2e7c061bcff430ad987b",
+        "size": 7065,
+        "mode": 416
+      },
+      "kind": "added"
+    },
+    {
+      "path": "package.json",
+      "before": {
+        "path": "package.json",
+        "sha256": "a2e39e84a04a39302c5c2d54531e5529186b9894bab860cf51aa5c141d5965bc",
+        "size": 11778,
+        "mode": 416
+      },
+      "after": {
+        "path": "package.json",
+        "sha256": "4f4bf4ca4a13ebf1c2889274ab7b7c46839456e1bb536e9f887ccd76cd5e3750",
+        "size": 23512,
+        "mode": 416
+      },
+      "kind": "modified"
+    }
+  ]
+}

@@ -70,5 +70,12 @@
     ".venv",
     "tests/ci/__pycache__"
   ],
-  "schemaVersion": 1
+  "schemaVersion": 1,
+  "workspace": {
+    "primary": {
+      "id": "arcnexus",
+      "repository": "https://github.com/treeseed-ai/arcnexus.git"
+    },
+    "dependencies": []
+  }
 }

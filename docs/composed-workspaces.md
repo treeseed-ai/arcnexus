@@ -32,7 +32,7 @@ execution reports. No claim of atomic cross-repository deletion or OS-wide isola
 
 ## Qualification campaign
 
-The remaining qualification delivery will add an explicit command using a caller manifest with a stable runner,
+The [qualification command](qualification.md) uses a caller manifest with a stable runner,
 pinned target revisions, component/objective or assignment files, local bindings,
 external acceptance programs, expected outcomes and optional labeled fault injection.
 It runs each case once, sequentially; no automatic campaign retries or model fallback.
