@@ -1,3 +1,4 @@
+import { ConfigurationReader } from '../architecture/configuration.js';
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -21,7 +22,7 @@ const cwd = args[args.indexOf("--cd") + 1];
 if (!cwd) throw new Error("Missing workspace");
 process.chdir(cwd);
 if (
-  JSON.parse(readFileSync("simulation-contract.json", "utf8")).id !==
+  (new ConfigurationReader().file("simulation-contract.yaml").value as {id: string}).id !==
   "single-steward-v1"
 )
   throw new Error("Incompatible simulation fixture");

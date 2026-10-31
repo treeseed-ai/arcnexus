@@ -39,7 +39,7 @@ export class ConfigurationReader {
           if (!isScalar(pair.key) || typeof pair.key.value !== 'string' || pair.key.value === '<<') throw new Error('Expected string mapping key; merge keys are not permitted');
         },
       });
-      const value: unknown = document.toJS();
+      const value: unknown = path.endsWith('.json') ? JSON.parse(text) : document.toJS();
       const normalized = JSON.stringify(normalize(value));
       return { path, text, value, sourceHash: hash(text), normalizedHash: hash(normalized) };
     } catch (error) { throw new Error(`${path}: ${String(error)}`); }

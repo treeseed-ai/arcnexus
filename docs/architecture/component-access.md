@@ -3,19 +3,18 @@
 Every component definition must declare `access`; there is no inferred or legacy
 fallback. Paths are repository-relative. `.` explicitly means the whole worktree.
 
-```json
-{
-  "access": {
-    "readPaths": ["src", "tests", "docs", "package.json", "node_modules"],
-    "writeDirectories": ["src/identity", "tests/identity", "docs/identity", "dist"]
-  }
-}
+```yaml
+access:
+  readPaths: [src, tests, docs, package.json, node_modules]
+  writeDirectories: [src/identity, tests/identity, docs/identity]
 ```
 
 An explicit broad policy is also valid:
 
-```json
-{"access":{"readPaths":["."],"writeDirectories":["."]}}
+```yaml
+access:
+  readPaths: ["."]
+  writeDirectories: ["."]
 ```
 
 `readPaths` grants reads; writable directories are also readable. Every

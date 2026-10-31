@@ -254,6 +254,7 @@ export class ExperimentRunner {
           const module = pathToFileURL(
             join(
               dirname(input.runner),
+              "experiments",
               c.workday ? "workday-simulation.js" : "simulation-codex.js",
             ),
           ).href;

@@ -80,7 +80,8 @@ are not automatic context.
 ## Initial technical direction
 
 The founding conversation recommends TypeScript, an existing Codex execution harness,
-JSON component definitions, SQLite when coordination persistence is needed, and later
+component definitions (now authored in YAML with legacy JSON compatibility), SQLite
+when coordination persistence is needed, and later
 Hono plus React/Vite. Use one repository and a small backend process. Verify the
 current harness interface and authentication during phase-one planning; historical
 API examples and model names in the conversation are not verified current contracts.

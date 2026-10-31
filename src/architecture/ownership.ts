@@ -1,4 +1,5 @@
-import ts from 'typescript';
+import type ts from 'typescript';
+import { createRequire } from 'node:module';
 import { posix } from 'node:path';
 import { git } from '../operations/process.js';
 import { ConfigurationReader, type ConfigurationSource } from './configuration.js';
@@ -65,6 +66,7 @@ export class OwnershipValidator {
   }
 
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {
+    const ts: typeof import('typescript') = createRequire(import.meta.url)('typescript');
     const text = git(this.repository, 'show', `${this.base}:${file}`);
     const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
     const edges: string[] = [];
@@ -74,6 +76,13 @@ export class OwnershipValidator {
         if (specifier && ts.isStringLiteral(specifier)) {
           const target = this.target(file, specifier.text);
           if (target) this.checkImport(target, file, owner, policy, edges, ts.isExportDeclaration(node) ? node.isTypeOnly : node.importClause?.isTypeOnly);
+        }
+      }
+      if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+        const specifier = node.arguments[0];
+        if (specifier && ts.isStringLiteral(specifier)) {
+          const target = this.target(file, specifier.text);
+          if (target) this.checkImport(target, file, owner, policy, edges, false);
         }
       }
       ts.forEachChild(node, inspect);

@@ -1,3 +1,4 @@
+import { ConfigurationReader } from '../architecture/configuration.js';
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import type { AgentResult } from "../steward/codex.js";
@@ -13,7 +14,7 @@ if (args[0] !== "exec" || !args.includes("--ignore-user-config"))
   throw new Error("Expected SDK launcher");
 process.chdir(args[args.indexOf("--cd") + 1]!);
 if (
-  JSON.parse(readFileSync("workday-contract.json", "utf8")).id !==
+  (new ConfigurationReader().file("workday-contract.yaml").value as {id: string}).id !==
   "two-owner-v1"
 )
   throw new Error("Incompatible workday fixture");

@@ -116,7 +116,7 @@ test("built experiment runs simulated workday through retained threads and indep
     ),
   );
   assert.equal(git("status", "--porcelain"), "");
-  writeFileSync(join(repo, "workday-contract.json"), "{}");
+  writeFileSync(join(repo, "workday-contract.yaml"), "{}");
   git("add", ".");
   git("commit", "-qm", "incompatible");
   const b = JSON.parse(readFileSync(bindings));

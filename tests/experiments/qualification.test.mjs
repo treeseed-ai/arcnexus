@@ -37,7 +37,7 @@ test('campaign cancellation stops its active CLI and retains partial evidence',a
 });
 test('independent report checker still executes when its snapshot path contains spaces',t=>{
  const f=workflowFixture(t),script=join(f.root,'report check.mjs');writeFileSync(script,readFileSync('qualification/check-report-summary.mjs'));
- mkdirSync(join(f.repo,'dist'));writeFileSync(join(f.repo,'dist/report/report.js'),"export function markdownReport(){return 'fixture without outcome'}");
+ mkdirSync(join(f.repo,'dist/report'),{recursive:true});writeFileSync(join(f.repo,'dist/report/report.js'),"export function markdownReport(){return 'fixture without outcome'}");
  const result=spawnSync(process.execPath,[script],{encoding:'utf8',cwd:f.repo});assert.equal(result.status,1);assert.match(result.stderr,/OUTCOME_SECTION_REQUIRED/);
 });
 test('campaign exposes actual preparation failure before any model runs',t=>{

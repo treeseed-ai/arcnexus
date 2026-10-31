@@ -3,12 +3,13 @@
 This is the increment-one contract delivered for #30. See [workflow checkpoints](../assignment/steward-workflow.md) for the next execution increment.
 Composed dependency workspaces follow separately.
 
-Architecture files use `schemaVersion: 1`. Built-in JSON Schemas are strict,
+Architecture files use YAML, with legacy JSON accepted through the same reader.
+Version 1 and version 2 contracts remain supported. Built-in JSON Schemas are strict,
 versioned, and resolved locally. Unknown fields, unsupported versions, missing
 references, cyclic ancestry, invalid paths and contradictory ownership fail before
 inference. Historical reports remain evidence and are not migrated.
 
-Components live in `architecture/components/<id>.json`. Each declares its type,
+Components live in `architecture/components/<id>.yaml`. Each declares its type,
 purpose, repository identity, path, objectives, constraints, questions, patterns,
 interfaces, documentation, tests, related components, exact writable scope,
 directory access policy, verification, role and execution profile. A platform owns
@@ -71,7 +72,7 @@ remain readable, but new runs do not silently accept legacy definitions.
 Validation uses [Ajv draft 2020-12](https://ajv.js.org/json-schema.html) in
 [strict mode](https://ajv.js.org/strict-mode.html), with no remote schema loading.
 
-Catalog maintenance is checked against the real source inventory: every `src/*.ts`
+Catalog maintenance is checked against the recursive source inventory: every `src/**/*.ts`
 module must have exactly one executable component owner. Workspace lifecycle owns
 `bindings.ts` and `members.ts` as well as preparation/cleanup. The bounded-context
 acceptance test is shared by assignment orchestration and Codex adaptation; changes

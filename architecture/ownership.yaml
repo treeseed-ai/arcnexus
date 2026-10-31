@@ -169,6 +169,8 @@ owners:
       - docs/workday
     publicModules:
       - src/workday/workday-config.ts
+      - src/workday/workday-view.ts
+      - src/workday/workday.ts
     directoryExceptions: []
   - component: workspace
     paths:

@@ -71,6 +71,22 @@ test('built inspect preserves normalized equivalence and original source bytes',
  assert.equal(first.normalizedHash,second.normalizedHash);assert.notEqual(first.sourceHash,second.sourceHash);
  assert.match(second.text,/^# readable definition/);
 });
+for(const dynamic of [false,true])test('built validate rejects private cross-owner '+(dynamic?'dynamic':'static')+' imports',t=>{
+ const f=fixture(t);
+ f.component.allowedWritePaths=['src/sample'];f.put('architecture/components/sample.json',f.component);
+ f.put('architecture/components/other.json',{...f.component,id:'other',allowedWritePaths:['src/other']});
+ mkdirSync(join(f.repo,'src/sample'),{recursive:true});mkdirSync(join(f.repo,'src/other'),{recursive:true});
+ writeFileSync(join(f.repo,'src/sample/main.ts'),dynamic?"await import('../other/private.js');":"import '../other/private.js';");
+ writeFileSync(join(f.repo,'src/other/private.ts'),'export const value=1;');
+ f.put('architecture/ownership.json',{schemaVersion:1,maintainedPaths:['src'],owners:['sample','other'].map(component=>({component,paths:['src/'+component],publicModules:[],directoryExceptions:['.']}))});
+ f.commit();const r=f.run('validate');assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/Private cross-owner import/);
+});
+test('built validate rejects a runtime module cycle',t=>{
+ const f=fixture(t);f.component.allowedWritePaths=['src'];f.put('architecture/components/sample.json',f.component);
+ mkdirSync(join(f.repo,'src'));writeFileSync(join(f.repo,'src/a.ts'),"import './b.js';");writeFileSync(join(f.repo,'src/b.ts'),"import './a.js';");
+ f.put('architecture/ownership.json',{schemaVersion:1,maintainedPaths:['src'],owners:[{component:'sample',paths:['src'],publicModules:[],directoryExceptions:['.']}]});
+ f.commit();const r=f.run('validate');assert.equal(r.status,2,r.stderr);assert.match(r.stderr,/Runtime import cycle/);
+});
 for(const text of ['id: sample\nid: other\n','id: &identity sample\npurpose: *identity\n','id: !custom sample\n','id: sample\n---\nid: other\n','? [a, b]\n: value\n','<<: {id: sample}\n'])test('built CLI rejects restricted YAML: '+text,t=>{
  const f=fixture(t);rmSync(join(f.repo,'architecture/components/sample.json'));
  writeFileSync(join(f.repo,'architecture/components/sample.yaml'),text);f.commit();
