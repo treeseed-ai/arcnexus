@@ -35,3 +35,15 @@ The entry gate requires successful real changes on ArcNexus and TreeSeed, a labe
 corrective implementation repair, an SDK-owner boundary escalation, useful read-only
 research and review, normal target verification and integration review. Campaign
 success is evidence for that gate, never automatic permission to enter phase two.
+
+The initial report assignment requires `## Outcome` and `## Activities` sections,
+showing captured outcome and activity/status pairs without mutating evidence; older
+records remain renderable. `qualification/check-report-summary.mjs` independently
+checks this contract. `inject-report-fault.mjs` deliberately substitutes the outcome
+inside the implementation once, rebuilds and runs that same check. Its external
+receipt records pre-injection, injected and repaired implementation hashes.
+
+A local no-inference probe of Codex 0.163.0-alpha.10.2 executed a Python program
+under the named profile, wrote a completion marker in its allowed temporary directory,
+and received read-only-filesystem errors for both the SDK dependency and assembly
+`node_modules` subtree. Exit status alone was not used as proof of enforcement.
