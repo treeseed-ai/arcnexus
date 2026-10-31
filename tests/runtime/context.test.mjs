@@ -45,3 +45,8 @@ test('specification delegates unavailable sandbox checks to the authoritative ho
  writeFileSync(f.executable,program);const r=f.run();assert.equal(r.status,0,r.stderr);const report=JSON.parse(r.stdout);
  assert.equal(report.outcome,'ready_for_integration');assert.ok(report.commands.some(c=>c.exitCode===1));assert.ok(report.regressionCheckpoint.outputIncludes==='BOUNDARY_EXPECTED');
 });
+test('specification exposes both required source changes in the actual turn prompt',t=>{
+ const f=workflowFixture(t),r=f.run();assert.equal(r.status,0,r.stderr);
+ const prompt=calls(f).find(c=>c.stage==='specification').prompt;
+ assert.match(prompt,/actual edit to at least one.*documentation/);assert.match(prompt,/host rejects this checkpoint if either kind of change is missing/);
+});
