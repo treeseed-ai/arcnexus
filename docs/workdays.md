@@ -102,3 +102,8 @@ The guidance owner's documentation scope includes selected instruction/skill fil
 validator checks rebuild the CLI before testing, and requester refresh rebuilds after
 owner delivery. Source ownership remains disjoint. Failed live invocations are retained
 separately; a later invocation is explicit. Simulation never establishes the live gate.
+
+An incomplete planning turn may retain a proposed plan and progress claims, but those
+claims do not update an accepted checklist. After delivery, planning continues and
+must produce a valid initial plan. Checklist activities use the role's engineering
+activity names; `specification` is a host stage, not a separate role activity.
