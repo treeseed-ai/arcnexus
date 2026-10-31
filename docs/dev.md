@@ -16,7 +16,7 @@ detailed implementation plan.
 | Phase | Current status and next proof |
 | --- | --- |
 | 1. Single steward | Delivered: managed workspace/setup, SDK execution, verification, evidence and guarded cleanup. See the [implementation sequence](plans/phase-one.md), [live sample](acceptance/live-sample.md) and [self-development evidence](acceptance/self-development.md). |
-| 2. Two stewards | Runtime delivered: bounded requests, verified delivery, partial-change parking and same-thread continuation. Live qualification is in progress; see [workdays](workdays.md) and [retained evidence](acceptance/workdays.md). |
+| 2. Two stewards | Delivered: bounded requests, verified delivery, partial-change parking and same-thread continuation, proven by a live contract fixture and real guidance/validator self-management. See [workdays](workdays.md) and [retained evidence](acceptance/workdays.md). |
 | 3. Minimal UI | Planned: architect selects a component, directs work and reviews evidence through the same runtime. |
 | 4. Expanded governance | Planned: deepen inherited patterns, contract validation and conformance checks based on actual use. |
 | 5. Multi-project operation | Planned: prove one real package relationship before broad composition and release coordination. |

@@ -5,7 +5,43 @@ build outside the candidate, and independently captured acceptance. Simulations 
 the runtime but do not satisfy the live gate. Source revisions, toolchains and evidence
 hashes are recorded with each campaign; no caller implementation repair is permitted.
 
-## Retained failed invocation
+## Successful live proof
+
+Two live cases passed with independent acceptance:
+
+| Case | Workday | Result |
+| --- | --- | --- |
+| Gateway/identity fixture, invocation 4 | `4aee802a-6195-4e07-bd97-239712e30aad` | Real contract change, separate threads, requester continuation, combined checks passed. |
+| ArcNexus guidance/validator, invocation 10 | `377b2f4c-0bb0-40b8-811b-f887baa2eb0d` | Optional references validator, selected skill metadata and maintenance procedure delivered through both owners. |
+
+The ArcNexus workday took 289,221 ms. Guidance used five turns (including one planning
+continuation) and 86,359 ms active time; validation used four turns and 194,396 ms.
+Both used one implementation attempt, although this manifest explicitly allowed two.
+Three declared validator operations supplied feedback. The requester retained thread
+`01a193bf-bcdc-7640-8718-ab1042de9214`; the recipient used
+`01a193bf-e0c3-7b22-9c6f-881d7a17a849`. Final frozen tests, both owners' checks and
+combined acceptance passed. Parking was restored and all managed resources stopped.
+No caller implementation fixes or in-run architectural interventions were required.
+The exact five candidate files were integrated byte-for-byte in commit `30d6fcb`.
+The skill body, name and description remain unchanged; its added reference is tracked
+and passes the new application validator. The user-approved top-level `references`
+extension is validated by ArcNexus; generic skill-authoring validators with a closed
+metadata allowlist do not define this application's metadata contract.
+
+[Machine-readable evidence index](../workday-qualification.json) records all 14 explicit
+invocations, including 11 failed and one cancelled invocation, artifact hashes, immutable
+supervisor revisions, supplied inputs, thread/turn identities, usage and integration
+file hashes. Paths in that index are relative to the private ArcNexus user-state directory.
+Qualifying runs are distinct from the earlier failures; this is an end-to-end milestone,
+not a claim that every Luna assignment succeeds on its first invocation.
+
+The failures exposed concrete protocol and qualification-input gaps: proposed planning
+claims, actual documentation edits, eligible coordination actions, protected directory
+grants, host-owned checklist entries, plan consistency and meaningful regression evidence.
+Those checks remain enforced. Observed named TAP failures are now used for this assignment,
+and bounded correction is explicit rather than an implicit campaign retry.
+
+## Retained failed invocations
 
 `fixture-live-1`, workday `72af52ec-7fce-439d-abdf-d5410df6819d`, used supervisor
 `4dc5754059b79e6b7d7c5d8381d120a54a5d8032`. It failed before dispatch: an incomplete

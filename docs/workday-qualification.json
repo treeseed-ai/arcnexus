@@ -1,0 +1,2603 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-31T21:01:33.077Z",
+  "model": "gpt-6-luna",
+  "reasoning": "medium",
+  "stateRoot": "ArcNexus user-state directory; artifact paths below are relative",
+  "policy": "Each invocation is explicit. Failed and cancelled evidence is retained; only passed live cases qualify. No caller candidate implementation fixes.",
+  "integration": {
+    "workdayId": "377b2f4c-0bb0-40b8-811b-f887baa2eb0d",
+    "candidateBase": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+    "patchSha256": "9b22f42e0b968ed136b7d21f5c2b07b3215a7b0bcb696e0afaec1a3ba2463fad",
+    "files": [
+      {
+        "path": ".agents/skills/documentation-writer/SKILL.md",
+        "sha256": "a8a090d63bf9310e87e8846acf9db6a396e7561850a74948674aabb80da049c6"
+      },
+      {
+        "path": "docs/guidance-maintenance.md",
+        "sha256": "3071340014dc1d2075e6f8de1e39171a25e154d8260d0b185fbc82c5eef24dd0"
+      },
+      {
+        "path": "docs/guidance-validation.md",
+        "sha256": "6a9db3ad050527b3f0d857de6588bd4b74f404455ca8886b59c2ab2e1ee7640c"
+      },
+      {
+        "path": "src/guidance.ts",
+        "sha256": "620904f6eb7b659c7589ecca5980ad9a1ae04b8db7632aec43c15b86e963c935"
+      },
+      {
+        "path": "tests/runtime/guidance.test.mjs",
+        "sha256": "358aa2bb293832095dd43ddfb35aaa1c6b6d839f762c723c02dd134a3093c85d"
+      }
+    ]
+  },
+  "campaigns": [
+    {
+      "id": "fixture-live-1",
+      "path": "qualification/workday-60/fixture-live-1/campaign.json",
+      "sha256": "3fc0c2c9e76be64d25bdb666f472cb0b8067d31ba8a77bbb99127d531b23707a",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "4dc5754059b79e6b7d7c5d8381d120a54a5d8032",
+      "runnerHash": "3a1393be136f8429c11ceebeed66255a7b5abca5da16fb2640e1847269a51d0f",
+      "finalRunnerHash": "3a1393be136f8429c11ceebeed66255a7b5abca5da16fb2640e1847269a51d0f",
+      "manifestHash": "c49c98d52b6a28a110914f221fc24eafd898963f5372f4122f116020e8e701d3",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60/experiments/checks/workday-contract.mjs",
+          "path": "qualification/workday-60/fixture-live-1/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60/experiments/checks/workday-contract.mjs",
+          "sha256": "ee3713e038f8770c45bf109bd32f5ff1fb63ef395fe37d6e5e1e02df31c84886"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/fixture-live-1/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "contract-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: No accepted plan",
+          "workspaceId": "72af52ec-7fce-439d-abdf-d5410df6819d",
+          "base": "3d9fa1f855db8b6955a1214414354c98258097f6",
+          "inputHash": "0cdfa8c3eb3184a448a73fc4436d08b23389345fcfd827092c5013346799d009",
+          "report": {
+            "path": "workdays/72af52ec-7fce-439d-abdf-d5410df6819d/report.json",
+            "sha256": "c5bac1cc5d699c2f6cd4735199c317ecff336aa38183346e86d1453528230f1e"
+          },
+          "database": {
+            "path": "workdays/72af52ec-7fce-439d-abdf-d5410df6819d/workday.sqlite",
+            "sha256": "8615ca3855900c9ccb3792d0df0ec5d557dafd0bd3477d3c3f124084120e7737"
+          },
+          "elapsedMs": 13125,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "none",
+          "usage": {
+            "input_tokens": 17195,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1011,
+            "reasoning_output_tokens": 198
+          },
+          "usageComplete": false,
+          "assignments": [
+            {
+              "owner": "gateway",
+              "runId": "9aa5702a-4d5b-4400-8288-fb71cb53aa51",
+              "threadId": "01a19389-13e4-7971-a4d3-8aa1ebc753cd",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 12000,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "failed",
+                  "threadId": "01a19389-13e4-7971-a4d3-8aa1ebc753cd"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/9aa5702a-4d5b-4400-8288-fb71cb53aa51/report.json",
+                "sha256": "79b82a4388c6c2a97fdadbbb699319638d193fdced361f088e3ad963c6442196"
+              },
+              "evidence": [
+                {
+                  "path": "runs/9aa5702a-4d5b-4400-8288-fb71cb53aa51/events.jsonl",
+                  "sha256": "b035d68842b472dd5f2c7cbc7e7a7e55658a50725c3cd21756ecf4b2065cd7b1"
+                },
+                {
+                  "path": "runs/9aa5702a-4d5b-4400-8288-fb71cb53aa51/timeline.jsonl",
+                  "sha256": "a940a625327e4c04007cbc7be796fec3db46112f83e8960ab1c20e8c0cf39071"
+                },
+                {
+                  "path": "runs/9aa5702a-4d5b-4400-8288-fb71cb53aa51/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/9aa5702a-4d5b-4400-8288-fb71cb53aa51/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "identity",
+              "runId": "fbde6222-7957-4d33-adba-307711f3b32d",
+              "threadId": null,
+              "status": "prepared",
+              "outcome": null,
+              "activeMs": 794,
+              "operationCalls": 0,
+              "changes": [],
+              "report": {
+                "path": "runs/fbde6222-7957-4d33-adba-307711f3b32d/report.json",
+                "sha256": "afb9b17ba685bd572719da761e057d763035845099cebb5ade0e0aec8c673b17"
+              },
+              "evidence": [
+                {
+                  "path": "runs/fbde6222-7957-4d33-adba-307711f3b32d/events.jsonl",
+                  "unavailable": true
+                },
+                {
+                  "path": "runs/fbde6222-7957-4d33-adba-307711f3b32d/timeline.jsonl",
+                  "sha256": "f11d824bf83e9d13287dc870ffa146935b65a4de21920a0f117abe821de817e5"
+                },
+                {
+                  "path": "runs/fbde6222-7957-4d33-adba-307711f3b32d/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/fbde6222-7957-4d33-adba-307711f3b32d/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixture-live-2",
+      "path": "qualification/workday-60/fixture-live-2/campaign.json",
+      "sha256": "ad81d2b7c755e8614f386315763b4c8dd266d50f8b63546e5ee30c76783e88fe",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "23f1901f78cc5a564d94160a69eccc621d2541cb",
+      "runnerHash": "1334cea68767292febc77081e7565309dfe0a5fc055e9d08fc6985b33ab2f8bc",
+      "finalRunnerHash": "1334cea68767292febc77081e7565309dfe0a5fc055e9d08fc6985b33ab2f8bc",
+      "manifestHash": "f6970359668253016c17b798101f8b55535b7869e0c45b76a63db1d306d92cd0",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v2/experiments/checks/workday-contract.mjs",
+          "path": "qualification/workday-60/fixture-live-2/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v2/experiments/checks/workday-contract.mjs",
+          "sha256": "ee3713e038f8770c45bf109bd32f5ff1fb63ef395fe37d6e5e1e02df31c84886"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v2/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/fixture-live-2/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v2/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "contract-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Specification must document changed intent",
+          "workspaceId": "83b60d44-590d-4fc4-a35f-55f74d823b6e",
+          "base": "3d9fa1f855db8b6955a1214414354c98258097f6",
+          "inputHash": "0341c285158d94661fe5e4a76993363436140eb295b8a50f5cf6acc3a52a9d2f",
+          "report": {
+            "path": "workdays/83b60d44-590d-4fc4-a35f-55f74d823b6e/report.json",
+            "sha256": "82d5e004627543603b84d719b12b84e0e0b27cdaa7aba29f7401b1a1e2a39ef3"
+          },
+          "database": {
+            "path": "workdays/83b60d44-590d-4fc4-a35f-55f74d823b6e/workday.sqlite",
+            "sha256": "113f0710b7477f3421c4d36d911f052d2963b16f1ecca387177c477fde692bc6"
+          },
+          "elapsedMs": 103081,
+          "coordinationTurns": 1,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 429773,
+            "cached_input_tokens": 363648,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 8099,
+            "reasoning_output_tokens": 1580
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "gateway",
+              "runId": "09f62e70-e5af-4251-ab0b-4b59fbc6a560",
+              "threadId": "01a1938b-857f-7501-b3cb-3cb78e073a06",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 49585,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938b-857f-7501-b3cb-3cb78e073a06"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a1938b-857f-7501-b3cb-3cb78e073a06"
+                },
+                {
+                  "number": 3,
+                  "activity": "specification",
+                  "category": "continuation",
+                  "status": "completed",
+                  "threadId": "01a1938b-857f-7501-b3cb-3cb78e073a06"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "gateway/test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/09f62e70-e5af-4251-ab0b-4b59fbc6a560/report.json",
+                "sha256": "708c432e3531826b116ac29b71af95efc98e17cf4c507e9732f0d95ca8719c12"
+              },
+              "evidence": [
+                {
+                  "path": "runs/09f62e70-e5af-4251-ab0b-4b59fbc6a560/events.jsonl",
+                  "sha256": "623e556c228e05c7b716680faed342b3c24b25a7bec65c9fc275ce73f18b3dbc"
+                },
+                {
+                  "path": "runs/09f62e70-e5af-4251-ab0b-4b59fbc6a560/timeline.jsonl",
+                  "sha256": "2a86d8ba5847dc9de42fc92b3828e8569d8b7d2f88deb8759b1245df33d9ec11"
+                },
+                {
+                  "path": "runs/09f62e70-e5af-4251-ab0b-4b59fbc6a560/changes.patch",
+                  "sha256": "8741021fb0a56a87a9fcad73b496a2f42f83ebbfce2dcce159aa300021fcf900"
+                },
+                {
+                  "path": "runs/09f62e70-e5af-4251-ab0b-4b59fbc6a560/plan.json",
+                  "sha256": "31c04d7db4c7a88b3acebd85d1d2824c0b073964f114795a88bd5981af5cb257"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "identity",
+              "runId": "8c03eb49-1120-4a08-b879-dc625e3f2095",
+              "threadId": "01a1938c-0bc1-7b00-a4c3-1d9c9d223a5a",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 53023,
+              "implementationAttempts": 1,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a1938c-0bc1-7b00-a4c3-1d9c9d223a5a"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938c-0bc1-7b00-a4c3-1d9c9d223a5a"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938c-0bc1-7b00-a4c3-1d9c9d223a5a"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938c-0bc1-7b00-a4c3-1d9c9d223a5a"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "identity/index.mjs"
+                },
+                {
+                  "kind": "M",
+                  "path": "identity/README.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "identity/test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/8c03eb49-1120-4a08-b879-dc625e3f2095/report.json",
+                "sha256": "64d210bd92883370afcb94a30dc5a0f81c9c90d10c39f7a6921bb761237b5c52"
+              },
+              "evidence": [
+                {
+                  "path": "runs/8c03eb49-1120-4a08-b879-dc625e3f2095/events.jsonl",
+                  "sha256": "b6983e93711154bcc381a4dee06b1d1fa46805735f5fcde3c3f7d5d619843f66"
+                },
+                {
+                  "path": "runs/8c03eb49-1120-4a08-b879-dc625e3f2095/timeline.jsonl",
+                  "sha256": "5471d755fbc0d8274ba86f66177f3a9732b488bc430c1e64184ae2ca7832d8f3"
+                },
+                {
+                  "path": "runs/8c03eb49-1120-4a08-b879-dc625e3f2095/changes.patch",
+                  "sha256": "8741021fb0a56a87a9fcad73b496a2f42f83ebbfce2dcce159aa300021fcf900"
+                },
+                {
+                  "path": "runs/8c03eb49-1120-4a08-b879-dc625e3f2095/plan.json",
+                  "sha256": "8979661c62d06ab130bc91cfd2c516e44b5ff96936c56520eb004b1a01fc5986"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixture-live-3",
+      "path": "qualification/workday-60/fixture-live-3/campaign.json",
+      "sha256": "aed632f637ec0d6017549f9edcf1da39b2cb382d263e4a79190c8d6118a49796",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "4b0dcc1540b57a18ff84dc2ced9b9bb4c9b1b1f1",
+      "runnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "finalRunnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "manifestHash": "c2eb814dd414ee744769e058c73baa6ec8f952f80e193646d6385051410f2382",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v3/experiments/checks/workday-contract.mjs",
+          "path": "qualification/workday-60/fixture-live-3/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v3/experiments/checks/workday-contract.mjs",
+          "sha256": "ee3713e038f8770c45bf109bd32f5ff1fb63ef395fe37d6e5e1e02df31c84886"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v3/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/fixture-live-3/contract-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v3/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "contract-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Regression did not fail with the expected assertion",
+          "workspaceId": "dc029af9-8ecc-40bb-a1f5-e9a82ad404f0",
+          "base": "3d9fa1f855db8b6955a1214414354c98258097f6",
+          "inputHash": "fd3835dcdfb70fec2e62f9fdcf213cff11ff7905e4c51460459850c42acdb71f",
+          "report": {
+            "path": "workdays/dc029af9-8ecc-40bb-a1f5-e9a82ad404f0/report.json",
+            "sha256": "327cf84243f40913e3be64034783afb6c9ec45d04c1c76c1128359fb1d2a6742"
+          },
+          "database": {
+            "path": "workdays/dc029af9-8ecc-40bb-a1f5-e9a82ad404f0/workday.sqlite",
+            "sha256": "4557ab98f8b4083e348306bfe1d6ce57cf3a492925436ee488e8d65b518634de"
+          },
+          "elapsedMs": 28600,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "none",
+          "usage": {
+            "input_tokens": 123413,
+            "cached_input_tokens": 100224,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2126,
+            "reasoning_output_tokens": 118
+          },
+          "usageComplete": false,
+          "assignments": [
+            {
+              "owner": "gateway",
+              "runId": "35705ecb-9b44-4469-9cfe-fd4b50993d1c",
+              "threadId": "01a1938e-d458-7282-a90e-30db8722e2df",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 27352,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938e-d458-7282-a90e-30db8722e2df"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1938e-d458-7282-a90e-30db8722e2df"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "gateway/README.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "gateway/test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/35705ecb-9b44-4469-9cfe-fd4b50993d1c/report.json",
+                "sha256": "2905c9ee4d6b36b1d89c42f7711377d435a0bbcb52e66c2fcb941875491fd8a6"
+              },
+              "evidence": [
+                {
+                  "path": "runs/35705ecb-9b44-4469-9cfe-fd4b50993d1c/events.jsonl",
+                  "sha256": "3da55293fc6309231b2024f426fe530574734dbaef9ada30e3294a1f04800fcd"
+                },
+                {
+                  "path": "runs/35705ecb-9b44-4469-9cfe-fd4b50993d1c/timeline.jsonl",
+                  "sha256": "808fad81cd5e069eadfcea085ab36c831006462c674f6e8228878eb40741f799"
+                },
+                {
+                  "path": "runs/35705ecb-9b44-4469-9cfe-fd4b50993d1c/changes.patch",
+                  "sha256": "a62344ebc95a93acc8eebe5889c519e0aad5786d2c3b9f5a3874c5dab7eb6fd2"
+                },
+                {
+                  "path": "runs/35705ecb-9b44-4469-9cfe-fd4b50993d1c/plan.json",
+                  "sha256": "8ccdb3e05ddce01638a5ba79dc8c63900ed92b8d897b0d8c822add83515b8410"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "identity",
+              "runId": "830ad211-eb1f-4b61-96ad-db7a3eb4cb35",
+              "threadId": null,
+              "status": "prepared",
+              "outcome": null,
+              "activeMs": 850,
+              "operationCalls": 0,
+              "changes": [],
+              "report": {
+                "path": "runs/830ad211-eb1f-4b61-96ad-db7a3eb4cb35/report.json",
+                "sha256": "b880f8996b91e2a28494e88e953091efe05386910ecfca375e6db0b665918306"
+              },
+              "evidence": [
+                {
+                  "path": "runs/830ad211-eb1f-4b61-96ad-db7a3eb4cb35/events.jsonl",
+                  "unavailable": true
+                },
+                {
+                  "path": "runs/830ad211-eb1f-4b61-96ad-db7a3eb4cb35/timeline.jsonl",
+                  "sha256": "f617a8502f64f8f38db3f7e67a23c1e112b59c131aec8913e8fb97f010a211db"
+                },
+                {
+                  "path": "runs/830ad211-eb1f-4b61-96ad-db7a3eb4cb35/changes.patch",
+                  "sha256": "a62344ebc95a93acc8eebe5889c519e0aad5786d2c3b9f5a3874c5dab7eb6fd2"
+                },
+                {
+                  "path": "runs/830ad211-eb1f-4b61-96ad-db7a3eb4cb35/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fixture-live-4",
+      "path": "qualification/workday-60/fixture-live-4/campaign.json",
+      "sha256": "bf7eb406897adb3e29bd2b6dd31b6c96890fb8d3451735941d5dbcceef27e95a",
+      "status": "passed",
+      "evidenceMode": "live",
+      "supervisorRevision": "4b0dcc1540b57a18ff84dc2ced9b9bb4c9b1b1f1",
+      "runnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "finalRunnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "manifestHash": "de2e2ef7a7f8f00f6487a5d88eba5463e60b2b37a17aebcb03f0a37cc9bece4d",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-contract.mjs",
+          "path": "qualification/workday-60/fixture-live-4/contract-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-contract.mjs",
+          "sha256": "ee3713e038f8770c45bf109bd32f5ff1fb63ef395fe37d6e5e1e02df31c84886"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/fixture-live-4/contract-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "contract-handoff",
+          "status": "passed",
+          "error": null,
+          "workspaceId": "4aee802a-6195-4e07-bd97-239712e30aad",
+          "base": "3d9fa1f855db8b6955a1214414354c98258097f6",
+          "inputHash": "5952dc314778445b0d6dee3e152c64c2a972577db87e5085fe52a0cda35e5e67",
+          "report": {
+            "path": "workdays/4aee802a-6195-4e07-bd97-239712e30aad/report.json",
+            "sha256": "3366dd719abf124c9a3777b62b6cce7f5eed44de61ec2777540e561cba5cc749"
+          },
+          "database": {
+            "path": "workdays/4aee802a-6195-4e07-bd97-239712e30aad/workday.sqlite",
+            "sha256": "1145325bb475132114681010db805c7177d602b02306d2d8308c10aca7b2be5b"
+          },
+          "elapsedMs": 107282,
+          "coordinationTurns": 1,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 491244,
+            "cached_input_tokens": 425216,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 7414,
+            "reasoning_output_tokens": 482
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "gateway",
+              "runId": "d79e8964-05bf-486a-ab36-7a02d7b9e36c",
+              "threadId": "01a19390-6540-7121-8a97-46b53946545f",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 56999,
+              "implementationAttempts": 1,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19390-6540-7121-8a97-46b53946545f"
+                },
+                {
+                  "number": 2,
+                  "activity": "planning",
+                  "category": "continuation",
+                  "status": "completed",
+                  "threadId": "01a19390-6540-7121-8a97-46b53946545f"
+                },
+                {
+                  "number": 3,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-6540-7121-8a97-46b53946545f"
+                },
+                {
+                  "number": 4,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-6540-7121-8a97-46b53946545f"
+                },
+                {
+                  "number": 5,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-6540-7121-8a97-46b53946545f"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "gateway/index.mjs"
+                },
+                {
+                  "kind": "M",
+                  "path": "gateway/README.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "gateway/test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/d79e8964-05bf-486a-ab36-7a02d7b9e36c/report.json",
+                "sha256": "5781c8505d29ea792a1795d7d55fc8775ffd44e3d289eebff3b9dcb6686ff661"
+              },
+              "evidence": [
+                {
+                  "path": "runs/d79e8964-05bf-486a-ab36-7a02d7b9e36c/events.jsonl",
+                  "sha256": "d73e1a03e533a63ee126252f4af3d73a2301d1621ac48ddd5f79bdab510785f8"
+                },
+                {
+                  "path": "runs/d79e8964-05bf-486a-ab36-7a02d7b9e36c/timeline.jsonl",
+                  "sha256": "2b2dc2b5e0db628d14ab86e6d3ae8a1fd87a5dd293a3b45cc3c6c4f06182dc4a"
+                },
+                {
+                  "path": "runs/d79e8964-05bf-486a-ab36-7a02d7b9e36c/changes.patch",
+                  "sha256": "cc24086baeabbfaa53225d6e0f330028f3ed133457a497fef6c1fd9380492ba0"
+                },
+                {
+                  "path": "runs/d79e8964-05bf-486a-ab36-7a02d7b9e36c/plan.json",
+                  "sha256": "f272e0d131d2a495427c975dbab6a4b5c093e65c7483fd79dc6c5a4d655bb654"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "identity",
+              "runId": "71e7bea8-c90a-4bfc-b9c2-2bf5263960f3",
+              "threadId": "01a19390-88e3-7ee0-9d38-eeb871781b63",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 49453,
+              "implementationAttempts": 1,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19390-88e3-7ee0-9d38-eeb871781b63"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-88e3-7ee0-9d38-eeb871781b63"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-88e3-7ee0-9d38-eeb871781b63"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19390-88e3-7ee0-9d38-eeb871781b63"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "identity/index.mjs"
+                },
+                {
+                  "kind": "M",
+                  "path": "identity/README.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "identity/test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/71e7bea8-c90a-4bfc-b9c2-2bf5263960f3/report.json",
+                "sha256": "5ec1d5a2810e606168c937acb4a521434df4f623f71a9969c07ae210f93bca40"
+              },
+              "evidence": [
+                {
+                  "path": "runs/71e7bea8-c90a-4bfc-b9c2-2bf5263960f3/events.jsonl",
+                  "sha256": "93c3f70da2df1bfe8f7e4c91101d66c9eb176443da22bd2dddd057c5b83f28b8"
+                },
+                {
+                  "path": "runs/71e7bea8-c90a-4bfc-b9c2-2bf5263960f3/timeline.jsonl",
+                  "sha256": "cc5cc79e0789c3af44b005f0e593ed320792abe980c4435f1ad6a412e233bf3e"
+                },
+                {
+                  "path": "runs/71e7bea8-c90a-4bfc-b9c2-2bf5263960f3/changes.patch",
+                  "sha256": "cc24086baeabbfaa53225d6e0f330028f3ed133457a497fef6c1fd9380492ba0"
+                },
+                {
+                  "path": "runs/71e7bea8-c90a-4bfc-b9c2-2bf5263960f3/plan.json",
+                  "sha256": "a89ae335da4119e5625648d81c2269611a03e871703ea04a10d9e40ccb64ad53"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-1",
+      "path": "qualification/workday-60/guidance-live-1/campaign.json",
+      "sha256": "f9a7d294fb501adc2e08af9eb6d7e5a1ea29d28d7c84f193b8b4212a3631262a",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "4b0dcc1540b57a18ff84dc2ced9b9bb4c9b1b1f1",
+      "runnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "finalRunnerHash": "6e94e3f7926aca0958b33cc9e9e8f408a6f2d30c9246e5ad5eeff5e4782cb28f",
+      "manifestHash": "b7018267b239e9e762c8f86511297e670efac44f19e7c667ee71cdc319098857",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-1/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-1/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-1/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: WorkdayBlocked: Recipient response is outside its request/planning checkpoint",
+          "workspaceId": "55f1a6de-9875-4d2a-988e-849df452b84f",
+          "base": "4dc5754059b79e6b7d7c5d8381d120a54a5d8032",
+          "inputHash": "aeec31abc751d9dc9a73f81e79277b70ad00e0b254e6e7d37c45f129c0b3b986",
+          "report": {
+            "path": "workdays/55f1a6de-9875-4d2a-988e-849df452b84f/report.json",
+            "sha256": "c1af360762a31dd08c74521273fec30c2945da01d394857fbf4bb2e111d18573"
+          },
+          "database": {
+            "path": "workdays/55f1a6de-9875-4d2a-988e-849df452b84f/workday.sqlite",
+            "sha256": "fb62964dadcabe30b038bc585ec748e218e6dc90739cf5a70836da344f99dd30"
+          },
+          "elapsedMs": 101716,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 293279,
+            "cached_input_tokens": 251392,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 5132,
+            "reasoning_output_tokens": 845
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "dbbd2f37-3ec6-4098-b063-313cbdd02c6c",
+              "threadId": "01a19392-aca2-7400-954b-0be68fadbded",
+              "status": "blocked",
+              "outcome": "blocked",
+              "activeMs": 12820,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19392-aca2-7400-954b-0be68fadbded"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/dbbd2f37-3ec6-4098-b063-313cbdd02c6c/report.json",
+                "sha256": "c48b2fdbeb96fa4e95fe0b60860ed2b6a7f9410ea0a920de22ad52addb34c18a"
+              },
+              "evidence": [
+                {
+                  "path": "runs/dbbd2f37-3ec6-4098-b063-313cbdd02c6c/events.jsonl",
+                  "sha256": "a1f9b6e060c2116d2272866e18eae304d7719d15cd38ed4dc17c76eb97e7c88d"
+                },
+                {
+                  "path": "runs/dbbd2f37-3ec6-4098-b063-313cbdd02c6c/timeline.jsonl",
+                  "sha256": "b2e02e313d98795dd69b3361edd864d6528192183ac77ea74fb06832aae7c749"
+                },
+                {
+                  "path": "runs/dbbd2f37-3ec6-4098-b063-313cbdd02c6c/changes.patch",
+                  "sha256": "17703fd60a5cca6f055ff94ebf4dfeafc2b6a13af96772a6a13be6db88be6347"
+                },
+                {
+                  "path": "runs/dbbd2f37-3ec6-4098-b063-313cbdd02c6c/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "eba09d84-dc9d-4771-b237-e2ae38993c3f",
+              "threadId": "01a19392-da2c-72c2-b3f6-8331d7136f90",
+              "status": "blocked",
+              "outcome": "blocked",
+              "activeMs": 80919,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19392-da2c-72c2-b3f6-8331d7136f90"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19392-da2c-72c2-b3f6-8331d7136f90"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/eba09d84-dc9d-4771-b237-e2ae38993c3f/report.json",
+                "sha256": "6f3023b2b6391125f872c9748265f5713fef1571d54671e32250a6174120bc55"
+              },
+              "evidence": [
+                {
+                  "path": "runs/eba09d84-dc9d-4771-b237-e2ae38993c3f/events.jsonl",
+                  "sha256": "01f99ee3d323215c7c145c92e3fb662b271700dc2a72c06548807532b0e68917"
+                },
+                {
+                  "path": "runs/eba09d84-dc9d-4771-b237-e2ae38993c3f/timeline.jsonl",
+                  "sha256": "371962a2bcd3164248f66507277bcc7a7549d86efaa9e66c1fa6de24c7ff9a42"
+                },
+                {
+                  "path": "runs/eba09d84-dc9d-4771-b237-e2ae38993c3f/changes.patch",
+                  "sha256": "17703fd60a5cca6f055ff94ebf4dfeafc2b6a13af96772a6a13be6db88be6347"
+                },
+                {
+                  "path": "runs/eba09d84-dc9d-4771-b237-e2ae38993c3f/plan.json",
+                  "sha256": "e5d9af0dddcf32472bdae7b14c9f59a49fbce24afed5efb3ce57804fb71f77a1"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-2",
+      "path": "qualification/workday-60/guidance-live-2/campaign.json",
+      "sha256": "110078f95f54cbbae65feaceac7a5127ad6921fbcf8ef5f40cd67935e27c0e00",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "79a9976de3d978fd11510ad1d35368a186184539",
+      "runnerHash": "90de61135ee899878540f0b7eef369579085c9cc5ca4c021e6d96a89a3c3ac99",
+      "finalRunnerHash": "90de61135ee899878540f0b7eef369579085c9cc5ca4c021e6d96a89a3c3ac99",
+      "manifestHash": "3add6181798493665a5c1ecc97700525c5edee1ef9d2ea692608bc293228ee00",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-2/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-2/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-2/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v4/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Regression did not fail with the expected assertion",
+          "workspaceId": "94132a56-72f8-40c6-ac4f-bf85fbbde959",
+          "base": "4dc5754059b79e6b7d7c5d8381d120a54a5d8032",
+          "inputHash": "f32fb231e345c9f280fe8083bf038872d31d6e1a94a8877224db804be4cd298f",
+          "report": {
+            "path": "workdays/94132a56-72f8-40c6-ac4f-bf85fbbde959/report.json",
+            "sha256": "ab8837121ff77ebdd88aa6b12f0cceccc10ffbcd00c2ea7eeef27b5e2e539c01"
+          },
+          "database": {
+            "path": "workdays/94132a56-72f8-40c6-ac4f-bf85fbbde959/workday.sqlite",
+            "sha256": "4c9d1066139842d1be1f44a5cba560a6925f3afa79cbdcc5e6d94965bddb290e"
+          },
+          "elapsedMs": 105390,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 194840,
+            "cached_input_tokens": 122496,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 6118,
+            "reasoning_output_tokens": 1978
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "73cdfed6-b540-4566-bf3d-d9882f8f8acf",
+              "threadId": "01a19398-342d-7d43-85f4-454d5817479c",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 18391,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19398-342d-7d43-85f4-454d5817479c"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/73cdfed6-b540-4566-bf3d-d9882f8f8acf/report.json",
+                "sha256": "9f9703e7f3ed6cf7124c5a7c7dcc135355dc90c56950d3b3e6db71dd438da3b6"
+              },
+              "evidence": [
+                {
+                  "path": "runs/73cdfed6-b540-4566-bf3d-d9882f8f8acf/events.jsonl",
+                  "sha256": "47c1e4a7a3afc506bad5b2d4d1db29ccea7b56e1b06d5bb3254381dafdcea849"
+                },
+                {
+                  "path": "runs/73cdfed6-b540-4566-bf3d-d9882f8f8acf/timeline.jsonl",
+                  "sha256": "5f4dd1b8f59b7c4e70c07d61aa161b17178dd8b02f3047f351641da4ca9f5625"
+                },
+                {
+                  "path": "runs/73cdfed6-b540-4566-bf3d-d9882f8f8acf/changes.patch",
+                  "sha256": "c1bc3659c129cab47b33ccdf9aa3c9f9e0031bfcc4b84913ed982f2b9cf6b643"
+                },
+                {
+                  "path": "runs/73cdfed6-b540-4566-bf3d-d9882f8f8acf/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "d272be71-72f7-4ea4-b943-038223971796",
+              "threadId": "01a19398-74a9-75a0-91cb-671b130aab74",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 79367,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a19398-74a9-75a0-91cb-671b130aab74"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a19398-74a9-75a0-91cb-671b130aab74"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/d272be71-72f7-4ea4-b943-038223971796/report.json",
+                "sha256": "6b4be161e602e72cf1071b07c61e201fb5952f008bcf8323b27901e677fffc70"
+              },
+              "evidence": [
+                {
+                  "path": "runs/d272be71-72f7-4ea4-b943-038223971796/events.jsonl",
+                  "sha256": "02034d3b938edd5426426d4e401a5713b673062d0a20e6f45d0d29cd3aeec434"
+                },
+                {
+                  "path": "runs/d272be71-72f7-4ea4-b943-038223971796/timeline.jsonl",
+                  "sha256": "7f58848db9c1b15a320959e1b9b6cf466da2a11a97f7db72a20556ad4eac04f8"
+                },
+                {
+                  "path": "runs/d272be71-72f7-4ea4-b943-038223971796/changes.patch",
+                  "sha256": "c1bc3659c129cab47b33ccdf9aa3c9f9e0031bfcc4b84913ed982f2b9cf6b643"
+                },
+                {
+                  "path": "runs/d272be71-72f7-4ea4-b943-038223971796/plan.json",
+                  "sha256": "2c4a4ec5dd5b74151a71914b57b9ed11bf942283b7c086765ce33f05b2dc2c96"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-3",
+      "path": "qualification/workday-60/guidance-live-3/campaign.json",
+      "sha256": "5fd0a6c5194edd8b36b230b9603a43127f0d55328334859117cbe43fc59594cd",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "79a9976de3d978fd11510ad1d35368a186184539",
+      "runnerHash": "90de61135ee899878540f0b7eef369579085c9cc5ca4c021e6d96a89a3c3ac99",
+      "finalRunnerHash": "90de61135ee899878540f0b7eef369579085c9cc5ca4c021e6d96a89a3c3ac99",
+      "manifestHash": "95684901ce16834dbd1b370a45f84984bcbf4e13b78b289d1fc3899a89401129",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-3/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-3/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-3/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-3/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Candidate has no changes",
+          "workspaceId": "68c58b9f-b45a-458e-a747-22b0a640daf3",
+          "base": "3a882a2c885cc741c3b917d0d15083e985d4128f",
+          "inputHash": "5e7baf910a7d1db6ef3bad1757599ae2e536dac3d5d40b1e283d2a99130dc8f0",
+          "report": {
+            "path": "workdays/68c58b9f-b45a-458e-a747-22b0a640daf3/report.json",
+            "sha256": "d2b3d5db01b14cc3d16af1ecafcd168a6f14439a6d2af915f13655b903b90fa3"
+          },
+          "database": {
+            "path": "workdays/68c58b9f-b45a-458e-a747-22b0a640daf3/workday.sqlite",
+            "sha256": "92570060882c5abc346fa22cc529a0095336e5a730c9fe3b0eae93f712f90ab5"
+          },
+          "elapsedMs": 313655,
+          "coordinationTurns": 1,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 1035888,
+            "cached_input_tokens": 891392,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 17211,
+            "reasoning_output_tokens": 7732
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "15c71c69-479d-41dc-a47a-9e8518719a00",
+              "threadId": "01a1939d-220d-73e3-87b5-ca1b9443d1e5",
+              "status": "no_changes",
+              "outcome": "no_changes",
+              "activeMs": 35781,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a1939d-220d-73e3-87b5-ca1b9443d1e5"
+                },
+                {
+                  "number": 2,
+                  "activity": "planning",
+                  "category": "continuation",
+                  "status": "completed",
+                  "threadId": "01a1939d-220d-73e3-87b5-ca1b9443d1e5"
+                },
+                {
+                  "number": 3,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1939d-220d-73e3-87b5-ca1b9443d1e5"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/15c71c69-479d-41dc-a47a-9e8518719a00/report.json",
+                "sha256": "d58e550d2a513e16563111dbddf384f3f39d6577532fd97b7be7acfcde447c26"
+              },
+              "evidence": [
+                {
+                  "path": "runs/15c71c69-479d-41dc-a47a-9e8518719a00/events.jsonl",
+                  "sha256": "3f996f15ccbacd8d0581c71af0f29d1688f189bfd5dffe48829e87641bdc6b37"
+                },
+                {
+                  "path": "runs/15c71c69-479d-41dc-a47a-9e8518719a00/timeline.jsonl",
+                  "sha256": "2311527021cbdaff907d04bc290bdc29ec5b09e532b9a343d288f220a3e3ad86"
+                },
+                {
+                  "path": "runs/15c71c69-479d-41dc-a47a-9e8518719a00/changes.patch",
+                  "sha256": "ffc3373d5da29f6cf37119790b7d317cab00098d73cbc751afc24665419f8f91"
+                },
+                {
+                  "path": "runs/15c71c69-479d-41dc-a47a-9e8518719a00/plan.json",
+                  "sha256": "9084d8f7600fa0078217c80e5b92acb964edb4d3eed8b2f2b3b9935ed544cd4f"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "ebc17a1b-6d65-4580-b82a-0b41b058b452",
+              "threadId": "01a1939d-43d4-7fd3-b519-85f880203adf",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 270213,
+              "implementationAttempts": 1,
+              "operationCalls": 8,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a1939d-43d4-7fd3-b519-85f880203adf"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1939d-43d4-7fd3-b519-85f880203adf"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1939d-43d4-7fd3-b519-85f880203adf"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a1939d-43d4-7fd3-b519-85f880203adf"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "src/guidance.ts"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/ebc17a1b-6d65-4580-b82a-0b41b058b452/report.json",
+                "sha256": "1f06abd766ed7f930c95de7bb915bd3a769258afefc4b54bb497689b0057403c"
+              },
+              "evidence": [
+                {
+                  "path": "runs/ebc17a1b-6d65-4580-b82a-0b41b058b452/events.jsonl",
+                  "sha256": "b680cd0818c8062d22707d945df2e189244ec1a5b96e14a61d9cb9f1858d1d61"
+                },
+                {
+                  "path": "runs/ebc17a1b-6d65-4580-b82a-0b41b058b452/timeline.jsonl",
+                  "sha256": "a0c8bfd7a2eee0f355e01e651539e62ed2882222283f7efdd1aae108a10807f9"
+                },
+                {
+                  "path": "runs/ebc17a1b-6d65-4580-b82a-0b41b058b452/changes.patch",
+                  "sha256": "ffc3373d5da29f6cf37119790b7d317cab00098d73cbc751afc24665419f8f91"
+                },
+                {
+                  "path": "runs/ebc17a1b-6d65-4580-b82a-0b41b058b452/plan.json",
+                  "sha256": "ec6289a5b3244770dea7ff25949bac16d8899387258917b208ed295d38979cf2"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-4",
+      "path": "qualification/workday-60/guidance-live-4/campaign.json",
+      "sha256": "7a3df2994589b341119d90346634cb70c1c3f7c8f35257eab4261b8c30bfe08a",
+      "status": "cancelled",
+      "evidenceMode": "live",
+      "supervisorRevision": "a21c1d0f14b3c2133a2ce775368e12f9dfcc187c",
+      "runnerHash": "50ad4b0e1be285c132cc0e741c94226dd9a9048181fbfcdc4d153e58aed2f457",
+      "finalRunnerHash": "50ad4b0e1be285c132cc0e741c94226dd9a9048181fbfcdc4d153e58aed2f457",
+      "manifestHash": "16f62768ee546586df1e72b5e836578b5c88caf96c5a53127c8783692bfec373",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [
+        "Cancelled after isolated native permission probe showed missing explicit skill-directory grant"
+      ],
+      "snapshots": [
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-4/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-4/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-4/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-4/guidance-handoff/files/home/adrian/.local/state/arcnexus/supervisors/workday-60-v5/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "cancelled",
+          "error": "Error: Unexpected execution outcome: AbortError: The operation was aborted",
+          "workspaceId": "c472aebf-ca7a-411a-9d6c-b39cce5f6e9c",
+          "base": "3a882a2c885cc741c3b917d0d15083e985d4128f",
+          "inputHash": "0822baac1c3c97c313b7943fdeb4a4e59513954b0fa1e336c40cf549d971c9ba",
+          "report": {
+            "path": "workdays/c472aebf-ca7a-411a-9d6c-b39cce5f6e9c/report.json",
+            "sha256": "513a31d48b85bfa41a0b086c57ce3561427450d84ea2570a0e0163dfe43f723a"
+          },
+          "database": {
+            "path": "workdays/c472aebf-ca7a-411a-9d6c-b39cce5f6e9c/workday.sqlite",
+            "sha256": "1cc1b4a3d877654deef4c392e49748785969cb5f45899b1b2830c2397401852a"
+          },
+          "elapsedMs": 67588,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 62861,
+            "cached_input_tokens": 40192,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1649,
+            "reasoning_output_tokens": 166
+          },
+          "usageComplete": false,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "5171f78f-bc5a-45ff-bc68-7efad260b4d9",
+              "threadId": "01a193a5-251c-7460-88c6-686a46277c0d",
+              "status": "cancelled",
+              "outcome": "cancelled",
+              "activeMs": 19031,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193a5-251c-7460-88c6-686a46277c0d"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/5171f78f-bc5a-45ff-bc68-7efad260b4d9/report.json",
+                "sha256": "8ddee4b258598161f0912422b11c23223eff7e5f4e72cf9d1e877086036cdb92"
+              },
+              "evidence": [
+                {
+                  "path": "runs/5171f78f-bc5a-45ff-bc68-7efad260b4d9/events.jsonl",
+                  "sha256": "e226a3322bd3c18280e634002ead84fb5d3e0ffd929d64bd6a6b6e58b24776af"
+                },
+                {
+                  "path": "runs/5171f78f-bc5a-45ff-bc68-7efad260b4d9/timeline.jsonl",
+                  "sha256": "dce74aae93cbdac1205865de22e0b3ddc9d270c08977d367fc04e682d258a9e3"
+                },
+                {
+                  "path": "runs/5171f78f-bc5a-45ff-bc68-7efad260b4d9/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/5171f78f-bc5a-45ff-bc68-7efad260b4d9/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "5da41ec3-d9cb-493b-878e-5181f892b6cd",
+              "threadId": "01a193a5-6af3-77c1-a94f-9bdaf9607b1f",
+              "status": "cancelled",
+              "outcome": "cancelled",
+              "activeMs": 40555,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193a5-6af3-77c1-a94f-9bdaf9607b1f"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "failed",
+                  "threadId": "01a193a5-6af3-77c1-a94f-9bdaf9607b1f"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/5da41ec3-d9cb-493b-878e-5181f892b6cd/report.json",
+                "sha256": "dc43304cde342f3a5cf4539636340590a707e2eda9098239eae2c7b96f39c371"
+              },
+              "evidence": [
+                {
+                  "path": "runs/5da41ec3-d9cb-493b-878e-5181f892b6cd/events.jsonl",
+                  "sha256": "6f8fd50eba6decffd9fe8fd94f10e0069874a7ec34694ec6dee246099e96c7b2"
+                },
+                {
+                  "path": "runs/5da41ec3-d9cb-493b-878e-5181f892b6cd/timeline.jsonl",
+                  "sha256": "4a93e4f967bb5fca4bdee26d802c314c3bf26abd85b37404efeffda381467a78"
+                },
+                {
+                  "path": "runs/5da41ec3-d9cb-493b-878e-5181f892b6cd/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/5da41ec3-d9cb-493b-878e-5181f892b6cd/plan.json",
+                  "sha256": "e5396155e23c815e8871416bce3b718aeaf4fcaf5bf6876507fde1d59e2ac965"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-5",
+      "path": "qualification/workday-60/guidance-live-5/campaign.json",
+      "sha256": "100c4f51c244cf7fce3ced0c2f9a8e36e09be3009c3b7e07dad32830d603b141",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "a21c1d0f14b3c2133a2ce775368e12f9dfcc187c",
+      "runnerHash": "50ad4b0e1be285c132cc0e741c94226dd9a9048181fbfcdc4d153e58aed2f457",
+      "finalRunnerHash": "50ad4b0e1be285c132cc0e741c94226dd9a9048181fbfcdc4d153e58aed2f457",
+      "manifestHash": "ea98226bdf4e5b86f7ec38adc3a604aba72e2c07ed153655e757b0cb51b85537",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-5/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-5/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-5/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-5/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Unknown checklist item",
+          "workspaceId": "a2261237-8129-403b-85e7-51e0c33a81e5",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "c76ce6ab009c66ef835b64712c0c305ecbc7bd6d2bd983e0927fb17c765c1a93",
+          "report": {
+            "path": "workdays/a2261237-8129-403b-85e7-51e0c33a81e5/report.json",
+            "sha256": "3cb19629f85f6a1f4c4c4cff82595c2938aad5938663117ed85a714dd827a9b6"
+          },
+          "database": {
+            "path": "workdays/a2261237-8129-403b-85e7-51e0c33a81e5/workday.sqlite",
+            "sha256": "e74e7f8cf2dda327ce38de5709913038eeb24283078f53ba10c70651f4b88a70"
+          },
+          "elapsedMs": 331798,
+          "coordinationTurns": 1,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 1146053,
+            "cached_input_tokens": 1005312,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 16588,
+            "reasoning_output_tokens": 5733
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "adf34f0b-35b6-458a-9df7-4fe4213f4df3",
+              "threadId": "01a193a9-a199-7852-a002-7a6517b0435b",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 67412,
+              "implementationAttempts": 1,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193a9-a199-7852-a002-7a6517b0435b"
+                },
+                {
+                  "number": 2,
+                  "activity": "planning",
+                  "category": "continuation",
+                  "status": "completed",
+                  "threadId": "01a193a9-a199-7852-a002-7a6517b0435b"
+                },
+                {
+                  "number": 3,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193a9-a199-7852-a002-7a6517b0435b"
+                },
+                {
+                  "number": 4,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193a9-a199-7852-a002-7a6517b0435b"
+                },
+                {
+                  "number": 5,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "failed",
+                  "threadId": "01a193a9-a199-7852-a002-7a6517b0435b"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": ".agents/skills/documentation-writer/SKILL.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-maintenance.md"
+                }
+              ],
+              "report": {
+                "path": "runs/adf34f0b-35b6-458a-9df7-4fe4213f4df3/report.json",
+                "sha256": "296dc75f6dd3a5635b8ff35613631e9708300fd28a24d80f5c33956a71a45659"
+              },
+              "evidence": [
+                {
+                  "path": "runs/adf34f0b-35b6-458a-9df7-4fe4213f4df3/events.jsonl",
+                  "sha256": "54951eb5a7506e25061f71b7c9ed04c556321068550084abf41448b59c123e54"
+                },
+                {
+                  "path": "runs/adf34f0b-35b6-458a-9df7-4fe4213f4df3/timeline.jsonl",
+                  "sha256": "f0b7a6f11a822f5c6f7fa740ab9ea17ca527841ea206deb6d914e0d5cf8ccbfa"
+                },
+                {
+                  "path": "runs/adf34f0b-35b6-458a-9df7-4fe4213f4df3/changes.patch",
+                  "sha256": "619680039c13e750b8c8c79572280ae3cecdc93e8019ccf0bcf04e517f83dd97"
+                },
+                {
+                  "path": "runs/adf34f0b-35b6-458a-9df7-4fe4213f4df3/plan.json",
+                  "sha256": "e2791a55bf3b2939027d327be5c96261141bbb827f816ea6beca5f10d79420c7"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "60f79eff-3aa8-4d43-bcea-59f16af5fdf3",
+              "threadId": "01a193a9-cb48-7d80-8dff-84bf5c086a76",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 256029,
+              "implementationAttempts": 1,
+              "operationCalls": 4,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193a9-cb48-7d80-8dff-84bf5c086a76"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193a9-cb48-7d80-8dff-84bf5c086a76"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193a9-cb48-7d80-8dff-84bf5c086a76"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193a9-cb48-7d80-8dff-84bf5c086a76"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "src/guidance.ts"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/60f79eff-3aa8-4d43-bcea-59f16af5fdf3/report.json",
+                "sha256": "1d1646911e08c27fc51035d3892949fb0bcc4dc956d0800d9c71bc18c9e03fac"
+              },
+              "evidence": [
+                {
+                  "path": "runs/60f79eff-3aa8-4d43-bcea-59f16af5fdf3/events.jsonl",
+                  "sha256": "18c83de1f163f0271109f5950144ca4ec40420e89f9b62551812484e9c0b9e0b"
+                },
+                {
+                  "path": "runs/60f79eff-3aa8-4d43-bcea-59f16af5fdf3/timeline.jsonl",
+                  "sha256": "07fc95be3f444b6b971a939eeb0ec6f2c3c23dac400a188b5efab47b1b94e2c4"
+                },
+                {
+                  "path": "runs/60f79eff-3aa8-4d43-bcea-59f16af5fdf3/changes.patch",
+                  "sha256": "619680039c13e750b8c8c79572280ae3cecdc93e8019ccf0bcf04e517f83dd97"
+                },
+                {
+                  "path": "runs/60f79eff-3aa8-4d43-bcea-59f16af5fdf3/plan.json",
+                  "sha256": "612e8e800c20e24eb9f76d8062a106617c2705335d6b16af5545355db555e941"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-6",
+      "path": "qualification/workday-60/guidance-live-6/campaign.json",
+      "sha256": "6fa3e2bd8103fcbea58add63ea53672398d0b199869eb7061011bf48b6cf5729",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "e53ed51a5dd42bf1a50c20f7e7f241d05d83b490",
+      "runnerHash": "50f5fc43cf10c61abd99c424781d31e9b36fbace7900014ca2d8244b0104c3f6",
+      "finalRunnerHash": "50f5fc43cf10c61abd99c424781d31e9b36fbace7900014ca2d8244b0104c3f6",
+      "manifestHash": "75d9d2a8d82a477ff24b0023403b0f75a4a0c145d5a94bb0113c7cee03b430de",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-6/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-6/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-6/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-6/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Invalid plan checklist authority/criteria/dependencies",
+          "workspaceId": "32b0bda9-5c28-4810-8a4d-fc290975d64a",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "81dc9375eb4304b7c0008a109f0678f407e449eb9f175cd1ea691a91477ad543",
+          "report": {
+            "path": "workdays/32b0bda9-5c28-4810-8a4d-fc290975d64a/report.json",
+            "sha256": "f12b1a5839bdd5a0d150ffc596517863b3f25f7623d50e41891cd5438dd0adf1"
+          },
+          "database": {
+            "path": "workdays/32b0bda9-5c28-4810-8a4d-fc290975d64a/workday.sqlite",
+            "sha256": "d1f0bb30f9ec54d49f96fa9a7f86cfa9ae8920197390dfdfa08879a0c549ca3a"
+          },
+          "elapsedMs": 51859,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 102490,
+            "cached_input_tokens": 71936,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2625,
+            "reasoning_output_tokens": 279
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "4adcd00f-4f82-4d85-a2af-31c0109171ee",
+              "threadId": "01a193b1-02ee-7553-b57b-2c155c953389",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 23795,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193b1-02ee-7553-b57b-2c155c953389"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/4adcd00f-4f82-4d85-a2af-31c0109171ee/report.json",
+                "sha256": "63a69af0a7066674e0bd539abbf287afd6a520d8c5aa9fbaf80f851d6da4e0e5"
+              },
+              "evidence": [
+                {
+                  "path": "runs/4adcd00f-4f82-4d85-a2af-31c0109171ee/events.jsonl",
+                  "sha256": "7dd535b1fa35697471029792077b4d75bf911c317a8c738ad68ae466cec91119"
+                },
+                {
+                  "path": "runs/4adcd00f-4f82-4d85-a2af-31c0109171ee/timeline.jsonl",
+                  "sha256": "dccb16f792540b55fe71124e93c8b5325beb441aebace3014841856942c62898"
+                },
+                {
+                  "path": "runs/4adcd00f-4f82-4d85-a2af-31c0109171ee/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/4adcd00f-4f82-4d85-a2af-31c0109171ee/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "dd3dd880-8392-4b32-805b-dfb4fb5f65f5",
+              "threadId": "01a193b1-5adb-7781-99ac-1f9fd42ab460",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 20026,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "failed",
+                  "threadId": "01a193b1-5adb-7781-99ac-1f9fd42ab460"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/dd3dd880-8392-4b32-805b-dfb4fb5f65f5/report.json",
+                "sha256": "6d0a96dcfa4979b5d124e02541c00be7517d8716a79c947f1e67e17d304ccb2c"
+              },
+              "evidence": [
+                {
+                  "path": "runs/dd3dd880-8392-4b32-805b-dfb4fb5f65f5/events.jsonl",
+                  "sha256": "5efea8668ec7ee2cbb25d5ea20dd6dc9dfb6819a8ef0d46e7f4db3afb2b1a2e2"
+                },
+                {
+                  "path": "runs/dd3dd880-8392-4b32-805b-dfb4fb5f65f5/timeline.jsonl",
+                  "sha256": "1eb0738588a47dda22e70a0f0ee1a5816fab5e6967a23b0bb09547d4d0e5e6b6"
+                },
+                {
+                  "path": "runs/dd3dd880-8392-4b32-805b-dfb4fb5f65f5/changes.patch",
+                  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                {
+                  "path": "runs/dd3dd880-8392-4b32-805b-dfb4fb5f65f5/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-7",
+      "path": "qualification/workday-60/guidance-live-7/campaign.json",
+      "sha256": "c10ecc29a114214b8ea1a549d80d8ad99efeca80d441f12dd3d3cea24998baad",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "3dbefc124b25c90ceb74d6f2900213b04e393a34",
+      "runnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "finalRunnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "manifestHash": "7feb51ebb8554a4bc55a129102e8bc52735ac7a6c18542d6300b2a8fd07950cc",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-7/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-7/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "3a82c36e4d963006aad8b3d9bc31d0c12a9e94bf3a04190625a19cd0e4344754"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-7/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-7/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Command failed (1): /usr/bin/node",
+          "workspaceId": "b33435f2-aaa1-4646-a0f5-34352517ae59",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "7e07c620a19069d0280bd9b9658106a32c73b680f1188fe7778a04de9aacda9d",
+          "report": {
+            "path": "workdays/b33435f2-aaa1-4646-a0f5-34352517ae59/report.json",
+            "sha256": "11d0aa0563c3793917c93f9159ae982c80d68c3571ae1db72a24938b2b5ecb31"
+          },
+          "database": {
+            "path": "workdays/b33435f2-aaa1-4646-a0f5-34352517ae59/workday.sqlite",
+            "sha256": "46f6adc278d7a9866ce5ea4fe757d66051ba3acfef03d7c5cec3557d13a580d5"
+          },
+          "elapsedMs": 205289,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 613187,
+            "cached_input_tokens": 532480,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 10843,
+            "reasoning_output_tokens": 3103
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "ab656544-ebcb-4b50-b8cd-117b73c1e3ed",
+              "threadId": "01a193b3-65a5-7271-b383-60cb49505d04",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 22011,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193b3-65a5-7271-b383-60cb49505d04"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/ab656544-ebcb-4b50-b8cd-117b73c1e3ed/report.json",
+                "sha256": "a7075f9013792d96f9e2e4c566db68a30c00de9bbe4b4364c63247c1d3194cd5"
+              },
+              "evidence": [
+                {
+                  "path": "runs/ab656544-ebcb-4b50-b8cd-117b73c1e3ed/events.jsonl",
+                  "sha256": "b8d8a5f6cf23a09d676a055261bd51f1a8d47f4ea9235a0d79571124c2291d87"
+                },
+                {
+                  "path": "runs/ab656544-ebcb-4b50-b8cd-117b73c1e3ed/timeline.jsonl",
+                  "sha256": "5a4606f09cb16193ab0310bf3695d041adcb5dbc52fe98286b7dce4f37bb0a3f"
+                },
+                {
+                  "path": "runs/ab656544-ebcb-4b50-b8cd-117b73c1e3ed/changes.patch",
+                  "sha256": "0ff9c0a1fff4cf609f7bf76268ee341ffa4f22bf33b94dbec586b742e23271c4"
+                },
+                {
+                  "path": "runs/ab656544-ebcb-4b50-b8cd-117b73c1e3ed/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7",
+              "threadId": "01a193b3-b67a-7c93-a351-28eb8dd01a8e",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 175445,
+              "implementationAttempts": 1,
+              "operationCalls": 5,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193b3-b67a-7c93-a351-28eb8dd01a8e"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193b3-b67a-7c93-a351-28eb8dd01a8e"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193b3-b67a-7c93-a351-28eb8dd01a8e"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "src/guidance.ts"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7/report.json",
+                "sha256": "d35780ad180043f879f8de3aa63e145dcb6dd14dcc69044f087456d952433d65"
+              },
+              "evidence": [
+                {
+                  "path": "runs/5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7/events.jsonl",
+                  "sha256": "65e992327bec9971cd36ec0e4436485903112bd883583d508446db833848125f"
+                },
+                {
+                  "path": "runs/5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7/timeline.jsonl",
+                  "sha256": "3478e43a1b8237908db690b54ec2942ad8942013fa889994079eab398df2d0c5"
+                },
+                {
+                  "path": "runs/5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7/changes.patch",
+                  "sha256": "0ff9c0a1fff4cf609f7bf76268ee341ffa4f22bf33b94dbec586b742e23271c4"
+                },
+                {
+                  "path": "runs/5c3c195d-f2e5-438e-bdea-2fc6afeeb2f7/plan.json",
+                  "sha256": "0356e38fd0d66d0fd9fee59f04bc5a03096ee016b6aeb20aa9916f84ce583a83"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-8",
+      "path": "qualification/workday-60/guidance-live-8/campaign.json",
+      "sha256": "9296a3994606f5bf21b64644067e7f142fcfc124e4589f5b8e7ae18373a0e3be",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "3dbefc124b25c90ceb74d6f2900213b04e393a34",
+      "runnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "finalRunnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "manifestHash": "3f6b96ad8476b60a1d392875ad56bfbb86329a17ada4f8a4116be41b88d4c5d8",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-8/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-8/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-8/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-8/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Review requires repair: Symlink tests should exercise tracked paths replaced with symlinks to verify the lstat-based rejection rather than relying on untracked-file rejection.",
+          "workspaceId": "d63b7775-e26a-48a6-94fd-89cbaf026f79",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "4733cd38daef01c3693b1e4dceb55a612b6035f06b29e36d075c297817858085",
+          "report": {
+            "path": "workdays/d63b7775-e26a-48a6-94fd-89cbaf026f79/report.json",
+            "sha256": "e1f8e8b72e792a080a11094f0c9df4846a731e69c8a32a1c2cbe1647a12bace8"
+          },
+          "database": {
+            "path": "workdays/d63b7775-e26a-48a6-94fd-89cbaf026f79/workday.sqlite",
+            "sha256": "7fd856fd4d3cda2880b2ea74d9e197a491ce6b16ed84336136a67bb2bddd86f8"
+          },
+          "elapsedMs": 218039,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 778613,
+            "cached_input_tokens": 672640,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 12979,
+            "reasoning_output_tokens": 5479
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "a4708997-697b-48b3-8cd2-dfcc84925bfa",
+              "threadId": "01a193b7-f537-7ce2-8aac-7f8a5604a171",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 12583,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193b7-f537-7ce2-8aac-7f8a5604a171"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/a4708997-697b-48b3-8cd2-dfcc84925bfa/report.json",
+                "sha256": "3501ce5631b3e21b476fe24d7d843a106af6523f4b2a8d1915c91810618fabf0"
+              },
+              "evidence": [
+                {
+                  "path": "runs/a4708997-697b-48b3-8cd2-dfcc84925bfa/events.jsonl",
+                  "sha256": "589a5bfbebd7a34d7f3e179b01b0535a74c694018ee4e5c9fd49a6f87cf09bcf"
+                },
+                {
+                  "path": "runs/a4708997-697b-48b3-8cd2-dfcc84925bfa/timeline.jsonl",
+                  "sha256": "4c4c927ee8edfb387fca9ed2030b98b82b79b1e24e65890cf6657c9590bd01f3"
+                },
+                {
+                  "path": "runs/a4708997-697b-48b3-8cd2-dfcc84925bfa/changes.patch",
+                  "sha256": "205a1e200a5b4db08d5b8639041fd81662eee8abe1a2006995ce77b3ad765bad"
+                },
+                {
+                  "path": "runs/a4708997-697b-48b3-8cd2-dfcc84925bfa/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "15f530d4-99ad-4f58-bbee-eb3c1052e944",
+              "threadId": "01a193b8-2150-7893-a025-0bc14c35042c",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 197104,
+              "implementationAttempts": 1,
+              "operationCalls": 4,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193b8-2150-7893-a025-0bc14c35042c"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193b8-2150-7893-a025-0bc14c35042c"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193b8-2150-7893-a025-0bc14c35042c"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193b8-2150-7893-a025-0bc14c35042c"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "src/guidance.ts"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/15f530d4-99ad-4f58-bbee-eb3c1052e944/report.json",
+                "sha256": "d433611939da524beb3b45a81d1899debf7560670a8ab46d80ff045959643d46"
+              },
+              "evidence": [
+                {
+                  "path": "runs/15f530d4-99ad-4f58-bbee-eb3c1052e944/events.jsonl",
+                  "sha256": "bc0f1695a34ba68d86619d51d7f96f75bded744ba637277df1d558790fce282b"
+                },
+                {
+                  "path": "runs/15f530d4-99ad-4f58-bbee-eb3c1052e944/timeline.jsonl",
+                  "sha256": "b1a899ea8b7228a54d84b637d44273193c86ff119190edcea9ea58f7d539f141"
+                },
+                {
+                  "path": "runs/15f530d4-99ad-4f58-bbee-eb3c1052e944/changes.patch",
+                  "sha256": "205a1e200a5b4db08d5b8639041fd81662eee8abe1a2006995ce77b3ad765bad"
+                },
+                {
+                  "path": "runs/15f530d4-99ad-4f58-bbee-eb3c1052e944/plan.json",
+                  "sha256": "75d97b51c747b378c5c3d039bbd2e01a7bfa47852deea351654b6db294b9bc1e"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-9",
+      "path": "qualification/workday-60/guidance-live-9/campaign.json",
+      "sha256": "d044c2e38c887b9cf373a6cfa25a287a659f638f827f6396dbffbe0255267197",
+      "status": "failed",
+      "evidenceMode": "live",
+      "supervisorRevision": "3dbefc124b25c90ceb74d6f2900213b04e393a34",
+      "runnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "finalRunnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "manifestHash": "ab2e5c46cd7b6c2dc54f91d0d086feaab4755098c2d7f9fd1bc2dab2c0c8f3ac",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-9/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-9/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-9/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-9/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "failed",
+          "error": "Error: Unexpected execution outcome: Error: Regression did not fail with the expected assertion",
+          "workspaceId": "f0c0d76a-bc80-44ad-819d-3ec17a098596",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "3c95b712f741090adbc227bd1efede546768de7ab6bced18cb704b25465dbc99",
+          "report": {
+            "path": "workdays/f0c0d76a-bc80-44ad-819d-3ec17a098596/report.json",
+            "sha256": "ac431d49b079b8677891392939a5f983b51d6ae78aea0e41e5a64ce5ec43b485"
+          },
+          "database": {
+            "path": "workdays/f0c0d76a-bc80-44ad-819d-3ec17a098596/workday.sqlite",
+            "sha256": "85652211776817950746a92d06fc86e137026af95d2b5a5bd029b274d27e14e3"
+          },
+          "elapsedMs": 82788,
+          "coordinationTurns": 0,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 288241,
+            "cached_input_tokens": 204032,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 4554,
+            "reasoning_output_tokens": 642
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "22019de5-18fb-4f15-9c6b-308c480a174b",
+              "threadId": "01a193bc-ce95-7a43-b5e2-89e73cfbae20",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 19510,
+              "implementationAttempts": 0,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193bc-ce95-7a43-b5e2-89e73cfbae20"
+                }
+              ],
+              "changes": [],
+              "report": {
+                "path": "runs/22019de5-18fb-4f15-9c6b-308c480a174b/report.json",
+                "sha256": "8b8f47708d1cd8a8f4c3e2ae032147cd379d78e7b093a812ae708cd0414fad11"
+              },
+              "evidence": [
+                {
+                  "path": "runs/22019de5-18fb-4f15-9c6b-308c480a174b/events.jsonl",
+                  "sha256": "1b9bf85a77f3cae2604797bb7be348712337668f13fd01a83ef6ee8891f501d0"
+                },
+                {
+                  "path": "runs/22019de5-18fb-4f15-9c6b-308c480a174b/timeline.jsonl",
+                  "sha256": "e660346ebe3d14ff61aa0493102a01f8ed3fc3426387d5b2f918784989743f98"
+                },
+                {
+                  "path": "runs/22019de5-18fb-4f15-9c6b-308c480a174b/changes.patch",
+                  "sha256": "7133f8c9f1634c9f50528f50305c6ed895423bfbf3ce64f555097c02d9a1a0d8"
+                },
+                {
+                  "path": "runs/22019de5-18fb-4f15-9c6b-308c480a174b/plan.json",
+                  "unavailable": true
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "176908f8-dc5d-49a6-8d46-fdbe6b35fdc7",
+              "threadId": "01a193bd-1609-7bf0-8455-04216fceb9ce",
+              "status": "failed",
+              "outcome": "failed",
+              "activeMs": 55505,
+              "implementationAttempts": 0,
+              "operationCalls": 1,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193bd-1609-7bf0-8455-04216fceb9ce"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bd-1609-7bf0-8455-04216fceb9ce"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/176908f8-dc5d-49a6-8d46-fdbe6b35fdc7/report.json",
+                "sha256": "8de0256532bf8a1d2de30dd3996e2cef0d9be124e88efc2086aadd45e85e6ec5"
+              },
+              "evidence": [
+                {
+                  "path": "runs/176908f8-dc5d-49a6-8d46-fdbe6b35fdc7/events.jsonl",
+                  "sha256": "787e58abf3de693526421d126423614103110b88a1e4e0c8e095ab8c8ab931d2"
+                },
+                {
+                  "path": "runs/176908f8-dc5d-49a6-8d46-fdbe6b35fdc7/timeline.jsonl",
+                  "sha256": "f2453d2373266b062ec00b9b23fb2e74fd82b5a23345cfc0be9951316171a5ce"
+                },
+                {
+                  "path": "runs/176908f8-dc5d-49a6-8d46-fdbe6b35fdc7/changes.patch",
+                  "sha256": "7133f8c9f1634c9f50528f50305c6ed895423bfbf3ce64f555097c02d9a1a0d8"
+                },
+                {
+                  "path": "runs/176908f8-dc5d-49a6-8d46-fdbe6b35fdc7/plan.json",
+                  "sha256": "e75cf29ea67143939633caf5c645c8d3aaad2c2d4fb0b53afce7a0f522567c6a"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "guidance-live-10",
+      "path": "qualification/workday-60/guidance-live-10/campaign.json",
+      "sha256": "5f8b702b0feee747dda1d6275ad5d6bbfb08dd5b7653019eb3bc41c3f921659f",
+      "status": "passed",
+      "evidenceMode": "live",
+      "supervisorRevision": "3dbefc124b25c90ceb74d6f2900213b04e393a34",
+      "runnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "finalRunnerHash": "da34375f154ca4c04a655edf30409850baf067cf9f78da72ba21c324d461c82d",
+      "manifestHash": "6e9b89c9d732d939f8300e8c9bb05c09b3dd66f252ebc79267ae6129ec64aec1",
+      "node": "v22.22.1",
+      "codexVersion": "0.163.0-alpha.10.2",
+      "operatorInterventions": [],
+      "snapshots": [
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-10/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "path": "qualification/workday-60/guidance-live-10/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/guidance-references.mjs",
+          "sha256": "931e1852aa00f150bd2ba349b10feaec7f6cceb99716ba7d26a1caf024879595"
+        },
+        {
+          "source": "/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "path": "qualification/workday-60/guidance-live-10/guidance-handoff/files/home/adrian/.local/state/arcnexus/qualification/workday-60/workspace-bindings.json",
+          "sha256": "6d61ea7b537799a8a052f68d4b0f478e0e2579910e0c8e2b195903277db06acc"
+        },
+        {
+          "source": "/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "path": "qualification/workday-60/guidance-live-10/guidance-handoff/files/home/adrian/Projects/arcnexus/experiments/checks/workday-report.mjs",
+          "sha256": "3ca905a81fcb4a6bc41504c32734b0361905ff9a31f1ef85b1b2c9259d03f1ec"
+        }
+      ],
+      "cases": [
+        {
+          "id": "guidance-handoff",
+          "status": "passed",
+          "error": null,
+          "workspaceId": "377b2f4c-0bb0-40b8-811b-f887baa2eb0d",
+          "base": "2682c1e889f72b005d9b684503190ff685bcb1d4",
+          "inputHash": "1a7d77498f2ebfb61c47c923458f96a15ae118e380185bc8691ef5918ba2ed76",
+          "report": {
+            "path": "workdays/377b2f4c-0bb0-40b8-811b-f887baa2eb0d/report.json",
+            "sha256": "f8308f1c6d623a8d8c04e7fa6b5320108b607e174bc8fe806a073f81a8b7a4e3"
+          },
+          "database": {
+            "path": "workdays/377b2f4c-0bb0-40b8-811b-f887baa2eb0d/workday.sqlite",
+            "sha256": "638f4a1653b94fa1d312dbf7e6f790e22f5b694dc3297b40d207aaaec0044746"
+          },
+          "elapsedMs": 289221,
+          "coordinationTurns": 1,
+          "clarificationRounds": 0,
+          "parking": "restored",
+          "usage": {
+            "input_tokens": 955346,
+            "cached_input_tokens": 733696,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 12316,
+            "reasoning_output_tokens": 1958
+          },
+          "usageComplete": true,
+          "assignments": [
+            {
+              "owner": "agent-guidance",
+              "runId": "d6ee4d89-787b-4fc8-a954-d6f90ba866ed",
+              "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 86359,
+              "implementationAttempts": 1,
+              "operationCalls": 0,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214"
+                },
+                {
+                  "number": 2,
+                  "activity": "planning",
+                  "category": "continuation",
+                  "status": "completed",
+                  "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214"
+                },
+                {
+                  "number": 3,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214"
+                },
+                {
+                  "number": 4,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214"
+                },
+                {
+                  "number": 5,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-bcdc-7640-8718-ab1042de9214"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": ".agents/skills/documentation-writer/SKILL.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-maintenance.md"
+                }
+              ],
+              "report": {
+                "path": "runs/d6ee4d89-787b-4fc8-a954-d6f90ba866ed/report.json",
+                "sha256": "7b604b9ecc3101d307d431ff7e02412ef73d73da52189cd2e5763774decc46e9"
+              },
+              "evidence": [
+                {
+                  "path": "runs/d6ee4d89-787b-4fc8-a954-d6f90ba866ed/events.jsonl",
+                  "sha256": "6a7c50648f937da4437ed309f7cac1668996d1010c082c0c660d76dc1d747d9a"
+                },
+                {
+                  "path": "runs/d6ee4d89-787b-4fc8-a954-d6f90ba866ed/timeline.jsonl",
+                  "sha256": "fa4abd8698615d3cd4b6c56f899211b7fd252d1831fb852e3cf13ca3b51d339d"
+                },
+                {
+                  "path": "runs/d6ee4d89-787b-4fc8-a954-d6f90ba866ed/changes.patch",
+                  "sha256": "9b22f42e0b968ed136b7d21f5c2b07b3215a7b0bcb696e0afaec1a3ba2463fad"
+                },
+                {
+                  "path": "runs/d6ee4d89-787b-4fc8-a954-d6f90ba866ed/plan.json",
+                  "sha256": "8461ad69c05b17e5f506a6f57bf99d2e096a6737e2ee4076293d61cb8bf8907d"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            },
+            {
+              "owner": "guidance-validation",
+              "runId": "a1b42bbb-75da-43c6-bb59-6718fe9a20f1",
+              "threadId": "01a193bf-e0c3-7b22-9c6f-881d7a17a849",
+              "status": "completed",
+              "outcome": "ready_for_integration",
+              "activeMs": 194396,
+              "implementationAttempts": 1,
+              "operationCalls": 3,
+              "turns": [
+                {
+                  "number": 1,
+                  "activity": "planning",
+                  "category": "engineering",
+                  "status": "yielded",
+                  "threadId": "01a193bf-e0c3-7b22-9c6f-881d7a17a849"
+                },
+                {
+                  "number": 2,
+                  "activity": "specification",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-e0c3-7b22-9c6f-881d7a17a849"
+                },
+                {
+                  "number": 3,
+                  "activity": "implementation",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-e0c3-7b22-9c6f-881d7a17a849"
+                },
+                {
+                  "number": 4,
+                  "activity": "review",
+                  "category": "engineering",
+                  "status": "completed",
+                  "threadId": "01a193bf-e0c3-7b22-9c6f-881d7a17a849"
+                }
+              ],
+              "changes": [
+                {
+                  "kind": "M",
+                  "path": "docs/guidance-validation.md"
+                },
+                {
+                  "kind": "M",
+                  "path": "src/guidance.ts"
+                },
+                {
+                  "kind": "M",
+                  "path": "tests/runtime/guidance.test.mjs"
+                }
+              ],
+              "report": {
+                "path": "runs/a1b42bbb-75da-43c6-bb59-6718fe9a20f1/report.json",
+                "sha256": "b72891899eeac9dc984a61d3a6eac5dd54f680aa4bc724c2a9bd267594bfc609"
+              },
+              "evidence": [
+                {
+                  "path": "runs/a1b42bbb-75da-43c6-bb59-6718fe9a20f1/events.jsonl",
+                  "sha256": "f8398498e6bc1e9b236ce86890e6db9f20fe48d70805fd76cf370cdc3feb08d2"
+                },
+                {
+                  "path": "runs/a1b42bbb-75da-43c6-bb59-6718fe9a20f1/timeline.jsonl",
+                  "sha256": "cb23cda9fa4692e0bc289161e7828fb7ccccf9db6758a87d1c1eeb0f879d11f3"
+                },
+                {
+                  "path": "runs/a1b42bbb-75da-43c6-bb59-6718fe9a20f1/changes.patch",
+                  "sha256": "9b22f42e0b968ed136b7d21f5c2b07b3215a7b0bcb696e0afaec1a3ba2463fad"
+                },
+                {
+                  "path": "runs/a1b42bbb-75da-43c6-bb59-6718fe9a20f1/plan.json",
+                  "sha256": "d24193625023202b2bd3125ba7816154379fb8c04fc2ea353be1f1738153c329"
+                }
+              ],
+              "callerInterventions": [],
+              "services": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
