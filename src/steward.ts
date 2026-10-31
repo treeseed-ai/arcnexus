@@ -376,7 +376,7 @@ export class StewardSession {
         reviewEvidence.sha256 = digest(bytes);
         reviewEvidence.bytes = Buffer.byteLength(bytes);
       }
-      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nAllowed coordination actions now: ${JSON.stringify(record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates for completed or blocked checklist items with evidence and explanation. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
+      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nAllowed coordination actions now: ${JSON.stringify(record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
         start = Date.now(),
         commandStart = record.commands.length;
       const summary: Record<string, unknown> = {

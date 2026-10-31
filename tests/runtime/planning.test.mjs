@@ -61,3 +61,12 @@ test('built production SDK passes explicit MCP bridge configuration to the execu
 test('research executes the plan now instead of deferring work to an imaginary later turn',t=>{
  const f=planned(t);let code=readFileSync(f.executable,'utf8');code=code.replace("console.log(JSON.stringify({type:'item.completed'", "if(stage==='research'&&!prompt.includes('This is the only execution turn')){result.status='failed';result.blockers=['Deferred operations to an imaginary later execution turn'];}console.log(JSON.stringify({type:'item.completed'");writeFileSync(f.executable,code);const r=f.run('--kind','research');assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).turns.length,2);
 });
+
+test('built SDK schema constrains final updates to steward items and rejects forged host completion',t=>{
+ const f=planned(t);
+ let code=readFileSync(f.executable,'utf8');
+ code=code.replace("if(stage!=='planning')result.planUpdates=", "if(stage!=='planning'&&JSON.stringify(schema.properties.planUpdates.items.properties.id.enum)!==JSON.stringify(['work']))throw new Error('STEWARD_ITEM_SCHEMA_REQUIRED');if(stage!=='planning')result.planUpdates=");
+ writeFileSync(f.executable,code);const r=f.run();assert.equal(r.status,0,r.stderr);
+ writeFileSync(f.executable,code.replace("id:'work',status:'completed'","id:'final-verification',status:'completed'"));
+ const bad=f.run();assert.equal(bad.status,1);assert.match(bad.stderr,/Unknown checklist item/);
+});
