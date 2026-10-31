@@ -82,3 +82,5 @@ verification handoff and exact prompt/configuration evidence.
 
 Every definition must declare [component filesystem access](component-access.md);
 whole-worktree access is allowed only when explicitly declared as `.`.
+
+See [bounded corrective attempts](corrective-attempts.md) for opt-in `--max-attempts 2`.

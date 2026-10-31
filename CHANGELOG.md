@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add opt-in bounded corrective attempts on the same steward thread (#25).
+
 - Require explicit component read and write directory policies (#24).
 
 - Capture steward execution contracts and enable research with explicit verification handoff (#23).

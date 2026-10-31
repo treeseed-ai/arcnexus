@@ -8,7 +8,7 @@ import { runSteward } from './steward.js';
 import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
-  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>]
+  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
   prepare --project <repository>
   cleanup <workspace-id>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
@@ -17,6 +17,7 @@ function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
+      'max-attempts': { type: 'string' },
       base: { type: 'string' }, issue: { type: 'string' }, 'timeout-seconds': { type: 'string' },
       help: { type: 'boolean' }, version: { type: 'boolean' },
     } });
@@ -47,6 +48,7 @@ async function main(): Promise<void> {
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
     if (!['prepare', 'cleanup', 'run'].includes(command ?? '')) throw new InputError(help);
+    if (values['max-attempts'] !== undefined && (command !== 'run' || !/^[12]$/.test(values['max-attempts']))) throw new InputError('--max-attempts is run-only and accepts 1 or 2');
     if (command === 'prepare' && (!values.project || positionals.length !== 1)) throw new InputError('prepare requires --project');
     if (command === 'run' && (!values.project || positionals.length !== 3 || !positionals[2]?.trim())) throw new InputError('run requires component, objective and --project');
     if (command === 'cleanup' && positionals.length !== 2) throw new InputError('cleanup requires workspace ID');
@@ -58,7 +60,7 @@ async function main(): Promise<void> {
     if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));
     else {
       record = createWorkspace(root, { project: values.project!, base: values.base, issue: values.issue });
-      if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-luna', values['codex-path'] ?? 'codex', controller.signal);
+      if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-luna', values['codex-path'] ?? 'codex', controller.signal, Number(values['max-attempts'] ?? 1));
       else await prepareWorkspace(root, record, controller.signal);
     }
   } catch (error) {

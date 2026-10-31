@@ -12,14 +12,13 @@
     "Implement only approved execution settings"
   ],
   "allowedWritePaths": [
-    "src/components.ts",
+    "src/cli.ts",
+    "src/steward.ts",
     "src/codex.ts",
-    "src/permissions.ts",
+    "src/attempts.ts",
     "tests/runtime/steward.test.mjs",
-    "tests/runtime/report.test.mjs",
-    "tests/runtime/permissions.test.mjs",
-    "scripts/check-permissions.mjs",
-    "docs/component-access.md"
+    "tests/runtime/attempts.test.mjs",
+    "docs/corrective-attempts.md"
   ],
   "verification": [
     {
