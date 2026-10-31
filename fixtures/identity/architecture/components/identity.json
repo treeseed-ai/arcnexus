@@ -31,7 +31,7 @@
       "."
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "identity",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -42,5 +42,6 @@
   "tests": [],
   "relatedIds": [],
   "questions": [],
-  "patterns": []
+  "patterns": [],
+  "operationIds": []
 }

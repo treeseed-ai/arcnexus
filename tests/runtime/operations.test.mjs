@@ -1,0 +1,25 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {join,resolve} from 'node:path';
+import {workflowFixture,cli} from './workflow-fixture.mjs';
+import {spawnSync} from 'node:child_process';
+function fixture(t,mode='success'){
+ const f=workflowFixture(t,mode),profilePath=join(f.repo,'architecture/execution-profiles/luna.json');const profile=JSON.parse(readFileSync(profilePath));Object.assign(profile,{schemaVersion:2,maxTurns:4,operationCategories:['unit-test'],maxOperationCalls:mode==='budget'?1:24});writeFileSync(profilePath,JSON.stringify(profile));
+ Object.assign(f.component,{schemaVersion:2,operationIds:['test']});writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));
+ mkdirSync(join(f.repo,'architecture/operations'));writeFileSync(join(f.repo,'architecture/operations/test.json'),JSON.stringify({schemaVersion:2,id:'test',purpose:'Observe regression',kind:'command',repository:'sample',cwd:'.',category:'unit-test',activities:['testing','implementation','review','research'],command:process.execPath,args:['verify.cjs'],timeoutSeconds:120,generatedDirectories:[],artifacts:[],probes:[]}));f.commit();
+ let code=readFileSync(f.executable,'utf8').replace("process.stdin.on('end',()=>{","process.stdin.on('end',async()=>{").replace("const result={status:","const result={plan:null,planUpdates:[],status:");
+ code=code.replace("if(stage==='specification'",`if(stage==='planning')result.plan={approach:'Verify change',assumptions:[],activities:[{activity:'implementation',reason:'Objective'}],items:[{id:'work',activity:'implementation',result:'Verified',criteria:[0],expectedEvidence:['test'],dependencies:[],status:'pending',evidence:[],explanation:''}],questions:[]};if(stage!=='planning')result.planUpdates=[{id:'work',status:'completed',explanation:'Observed',evidence:['source.txt']}];if(stage==='specification'`);
+ code=code.replace("console.log(JSON.stringify({type:'item.completed'",`if(stage!=='planning'){
+  const {Client}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js'))});
+  const {StdioClientTransport}=await import(${JSON.stringify('file://'+resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js'))});
+  const option=name=>JSON.parse(args.find(a=>a.startsWith('mcp_servers.arcnexus.'+name+'=')).split('=').slice(1).join('='));
+  const client=new Client({name:'controlled',version:'1'},{capabilities:{}});await client.connect(new StdioClientTransport({command:option('command'),args:option('args')}));
+  const reply=await client.callTool({name:'operations.run',arguments:{id:${JSON.stringify(mode==='denied'?'unknown':'test')}}});
+  fs.appendFileSync(${JSON.stringify(join(f.root,'operations.jsonl'))},JSON.stringify(reply)+'\\n');await client.close();
+ }
+ console.log(JSON.stringify({type:'item.completed'`);writeFileSync(f.executable,code);return f;
+}
+test('production SDK bridge returns real red and green operation feedback',t=>{const f=fixture(t),r=f.run();assert.equal(r.status,0,r.stderr);const v=JSON.parse(r.stdout);assert.equal(v.operations.length,3);assert.deepEqual(v.operations.map(o=>o.exitCode),[1,0,0]);assert.match(readFileSync(join(f.root,'operations.jsonl'),'utf8'),/BOUNDARY_EXPECTED/);});
+for(const mode of ['denied','budget'])test(`host stops ${mode} operation requests`,t=>{const f=fixture(t,mode),r=f.run();assert.equal(r.status,1,r.stderr);assert.match(r.stderr,mode==='denied'?/operation/i:/budget/i);});
+test('inspect captures operations and rejects assignment widening',t=>{const f=fixture(t),r=spawnSync(process.execPath,[cli,'inspect','sample','Objective','--project',f.repo,'--json'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(r.stdout).operations[0].id,'test');const path=join(f.root,'assignment.json');writeFileSync(path,JSON.stringify({schemaVersion:2,kind:'research',objective:'Read',expectedOutcome:'Evidence',acceptanceCriteria:['Evidence'],hostChecks:[],operationIds:['unknown']}));const denied=f.run('--assignment',path);assert.equal(denied.status,2);});

@@ -75,7 +75,7 @@
       "dist"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -100,5 +100,6 @@
     "change-inspection",
     "report"
   ],
-  "parentId": "cli-package"
+  "parentId": "cli-package",
+  "operationIds": []
 }

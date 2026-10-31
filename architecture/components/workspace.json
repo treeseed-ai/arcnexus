@@ -20,7 +20,9 @@
     "src/bindings.ts",
     "src/members.ts",
     "tests/runtime/composed.test.mjs",
-    "docs/composed-workspaces.md"
+    "docs/composed-workspaces.md",
+    "src/operations.ts",
+    "tests/runtime/operations.test.mjs"
   ],
   "verification": [
     {
@@ -70,7 +72,7 @@
       "dist"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -86,5 +88,6 @@
     "tests/runtime/composed.test.mjs"
   ],
   "relatedIds": [],
-  "parentId": "cli-package"
+  "parentId": "cli-package",
+  "operationIds": []
 }

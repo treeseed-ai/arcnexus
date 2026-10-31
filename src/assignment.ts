@@ -1,3 +1,4 @@
+import type { Operation } from './operations.js';
 import { loadBindings, type Bindings } from './bindings.js';
 import { resolveMembers, type Member } from './members.js';
 import { createHash } from 'node:crypto';
@@ -8,9 +9,9 @@ import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, t
 import { validateSchema } from './schema.js';
 import { git } from './process.js';
 export interface HostCheck extends Command { id: string; artifacts: string[] }
-export interface Assignment { schemaVersion: 1; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; changeType?: 'behavior'|'documentation'; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
+export interface Assignment { schemaVersion: 1|2;operationIds?:string[]; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; changeType?: 'behavior'|'documentation'; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
 export interface ResolvedAssignment {
-  schemaVersion: 1; environment: Environment; workspaceMembers: Omit<Member,'workspace'|'status'>[]; bindings?: Bindings; base: string; owners: string[]; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
+  schemaVersion: 1; operations:Operation[];environment: Environment; workspaceMembers: Omit<Member,'workspace'|'status'>[]; bindings?: Bindings; base: string; owners: string[]; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
   role: Role; compositionProfile?: CompositionProfile; executionProfile: ExecutionProfile; allowedWritePaths: string[]; verification: Command[];
   artifacts: Array<{path: string; sha256: string; content: string}>; pendingChecks: string[]; digest: string;
 }
@@ -49,7 +50,11 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     const executionProfile={...catalog.profiles[profileId]!};
     if(options.model)executionProfile.model=options.model;
     if(options.timeoutSeconds!==undefined)executionProfile.timeoutSeconds=options.timeoutSeconds;
-    const data={schemaVersion:1 as const,environment:env,workspaceMembers,...(options.bindings?{bindings:options.bindings}:{}),base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
+    const requestedOperations=assignment.operationIds??component.operationIds??[];
+    if(requestedOperations.some(id=>!(component.operationIds??[]).includes(id)))throw new InputError('Assignment widens operation authority');
+    const operations=requestedOperations.map(id=>catalog.operations[id]!);
+    for(const op of operations){if(executionProfile.schemaVersion!==2||!(executionProfile.operationCategories??[]).includes(op.category))throw new InputError('Operation category not permitted by execution profile: '+op.id);for(const path of op.generatedDirectories)if(!env.generatedDirectories.includes(path))throw new InputError('Operation generated directory is not declared disposable: '+path);}
+    const data={schemaVersion:1 as const,operations,environment:env,workspaceMembers,...(options.bindings?{bindings:options.bindings}:{}),base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
     return {...data,digest:digest(JSON.stringify(data))};
   }catch(error){throw new InputError(String(error));}
 }

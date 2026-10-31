@@ -71,7 +71,7 @@
       "scripts"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -90,5 +90,6 @@
     "architecture"
   ],
   "questions": [],
-  "parentId": "cli-package"
+  "parentId": "cli-package",
+  "operationIds": []
 }

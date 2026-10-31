@@ -65,7 +65,7 @@
       "dist"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -79,5 +79,8 @@
     "tests/runtime/report.test.mjs"
   ],
   "relatedIds": [],
-  "parentId": "cli-package"
+  "parentId": "cli-package",
+  "operationIds": [
+    "report-tests"
+  ]
 }

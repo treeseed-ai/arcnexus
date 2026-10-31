@@ -68,7 +68,7 @@
       "dist"
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -86,5 +86,6 @@
   "relatedIds": [
     "assignment"
   ],
-  "parentId": "cli-package"
+  "parentId": "cli-package",
+  "operationIds": []
 }
