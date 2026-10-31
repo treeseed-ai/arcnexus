@@ -1,0 +1,73 @@
+{
+  "prerequisites": [
+    {
+      "command": "node",
+      "args": [
+        "-e",
+        "if(process.versions.node.split('.')[0]!=='22')process.exit(1)"
+      ]
+    },
+    {
+      "command": "git",
+      "args": [
+        "--version"
+      ]
+    },
+    {
+      "command": "setsid",
+      "args": [
+        "--version"
+      ]
+    },
+    {
+      "command": "python3",
+      "args": [
+        "--version"
+      ]
+    },
+    {
+      "command": "uv",
+      "args": [
+        "--version"
+      ]
+    }
+  ],
+  "setup": [
+    {
+      "command": "npm",
+      "args": [
+        "ci",
+        "--no-audit",
+        "--no-fund"
+      ]
+    },
+    {
+      "command": "uv",
+      "args": [
+        "venv",
+        "--python",
+        "python3",
+        "--no-python-downloads",
+        ".venv"
+      ]
+    },
+    {
+      "command": "uv",
+      "args": [
+        "pip",
+        "install",
+        "--python",
+        ".venv/bin/python",
+        "--no-python-downloads",
+        "-r",
+        "scripts/requirements-ci.txt"
+      ]
+    }
+  ],
+  "generatedDirectories": [
+    "node_modules",
+    "dist",
+    ".venv",
+    "tests/ci/__pycache__"
+  ]
+}
