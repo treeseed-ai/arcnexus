@@ -47,6 +47,13 @@
       "args": [
         "scripts/check_repository.py"
       ]
+    },
+    {
+      "command": "node",
+      "args": [
+        "--test",
+        "tests/runtime/report.test.mjs"
+      ]
     }
   ],
   "questions": [],
