@@ -24,6 +24,19 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install product dependencies
+        run: npm ci
+      - name: Check TypeScript
+        run: npm run check
+      - name: Test built CLI
+        run: npm test
+      - name: Smoke-test CLI
+        run: node dist/cli.js --help
       - name: Set up Python
         uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:

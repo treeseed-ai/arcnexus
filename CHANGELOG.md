@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add application-managed workspaces and environment preparation (#7).
+
 - Add initial repository validation CI (#3).
 
 ### Changed
