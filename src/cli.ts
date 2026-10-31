@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { observe, viewExecution } from './timeline.js';
 import { parseArgs } from 'node:util';
 import { loadBindings } from './bindings.js';
 import { resolveBase, resolveAssignment } from './assignment.js';
@@ -16,14 +17,14 @@ const help = `ArcNexus
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
   run/inspect: --assignment <file> replaces objective
   prepare --project <repository>
-  cleanup <workspace-id>
+  status <workspace-id> [--json]\n  follow <workspace-id> [--json] [--after <sequence>]\n  cleanup <workspace-id>
 Composed workspaces: prepare/run/inspect --bindings <file>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
 `;
 function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
-      bindings: {type:'string'},
+      bindings: {type:'string'}, after: {type:'string'},
       'composition-profile': {type:'string'}, 'execution-profile': {type:'string'},
       assignment: { type: 'string' }, kind: { type: 'string' }, json: { type: 'boolean' },
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
@@ -42,6 +43,7 @@ function finalize(root: string, record: RecordData): void {
     record.evidenceError = String(error);
     if (process.exitCode === undefined) { process.exitCode = 1; record.status = 'failed'; }
   }
+  observe(root,record,'run.finalized',{status:record.status,outcome:record.outcome});
   save(root, record);
   saveMarkdown(root, record);
   console.log(JSON.stringify(record));
@@ -58,7 +60,7 @@ async function main(): Promise<void> {
     if (values.help) { console.log(help); return; }
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
-    if (!['prepare', 'cleanup', 'run', 'validate', 'inspect'].includes(command ?? '')) throw new InputError(help);
+    if (!['prepare', 'cleanup', 'run', 'validate', 'inspect', 'status', 'follow'].includes(command ?? '')) throw new InputError(help);
     if (values['max-attempts'] !== undefined && (command !== 'run' || !/^[12]$/.test(values['max-attempts']))) throw new InputError('--max-attempts is run-only and accepts 1 or 2');
     if (command === 'prepare' && (!values.project || positionals.length !== 1)) throw new InputError('prepare requires --project');
     if (['run','inspect'].includes(command!) && (!values.project || positionals.length !== (values.assignment ? 2 : 3) || (!values.assignment && !positionals[2]?.trim()))) throw new InputError('run requires component, objective and --project');
@@ -71,6 +73,7 @@ async function main(): Promise<void> {
       const {source,base}=resolveBase(values.project,values.base);
       const catalog=loadCatalog(source,base);console.log(JSON.stringify({base,components:Object.keys(catalog.components),status:'valid'}));return;
     }
+    if(command==='status'||command==='follow'){if(positionals.length!==2||values.after!==undefined&&!/^[0-9]+$/.test(values.after))throw new InputError('Invalid viewer arguments');const after=Number(values.after??0);if(!Number.isSafeInteger(after))throw new InputError('Invalid sequence');await viewExecution(stateRoot(),positionals[1]!,command==='follow',!!values.json,after,controller.signal);return;}
     const bindings=loadBindings(values.bindings);
     const selection=['run','inspect'].includes(command!)?resolveBase(values.project!,values.base):undefined;
     const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],bindings,file:values.assignment,kind:values.kind,compositionProfile:values['composition-profile'],executionProfile:values['execution-profile'],model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;

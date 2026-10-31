@@ -11,7 +11,7 @@ export interface Component {
   members?: { foundations: string[]; dependencies: string[]; gateways: string[]; libraries: string[]; releases: string[] };
 }
 export interface Role { schemaVersion: 1; id: string; purpose: string; responsibilities: string[]; activities: string[] }
-export interface ExecutionProfile { schemaVersion: 1; id: string; model: string; reasoning: 'low'|'medium'|'high'; webSearch: 'live'|'disabled'; timeoutSeconds: number; commandTimeoutSeconds: number; maxTurns: 3; maxCorrectiveTurns: 2 }
+export interface ExecutionProfile { schemaVersion: 1|2; id: string; model: string; reasoning: 'low'|'medium'|'high'; webSearch: 'live'|'disabled'; timeoutSeconds: number; commandTimeoutSeconds: number; maxTurns: 3|4; maxCorrectiveTurns: 2 }
 export interface CompositionProfile {schemaVersion:1;id:string;platformId:string;packageIds:string[]}
 export interface Catalog { compositions: Record<string,CompositionProfile>; components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
 export const covered = (path: string, scope: string[]) => scope.some(p => p === '.' || path === p || path.startsWith(`${p}/`));

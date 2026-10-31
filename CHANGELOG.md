@@ -4,6 +4,10 @@
 
 ### Added
 
+- Capture steward assignment plans, checklists and a live execution timeline (#41).
+
+### Added
+
 - Summarize captured workflow activities and outcomes in Markdown reports (#32).
 
 - Run repeatable single-steward qualification campaigns with retained acceptance evidence (#32).
