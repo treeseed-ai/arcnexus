@@ -42,7 +42,7 @@ Selected prior evidence: ${value(resolved?.priorEvidence?.map(item => {const {co
 
 Captured host command results (including setup and expected-red checkpoints; a nonzero exit is not always a final failure):
 
-${list(record.commands.map(c => ({stage:activities.find(a=>a.detail?.log===c.log)?.activity ?? 'unavailable',command:c.command,args:c.args,exitCode:c.exitCode,durationMs:c.durationMs,log:c.log})))}
+${list(record.commands.map(c => ({stage:c.stage ?? activities.find(a=>a.detail?.log===c.log)?.activity ?? 'unavailable',command:c.command,args:c.args,exitCode:c.exitCode,durationMs:c.durationMs,log:c.log})))}
 
 ## Boundary requests
 

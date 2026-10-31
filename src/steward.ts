@@ -33,8 +33,8 @@ export async function runSteward(root:string,record:RecordData,id:string,objecti
  const safe=()=>{assertIdentity(record);checkScope(record.workspace,changes(record),scope);assertGeneratedOutputs(record.workspace,record.environment);};
  const command=async(c:Command,stage:string):Promise<CommandResult>=>{
   record.stage=stage;journal(stage,'started',c);
-  try{const result=await execute(targetCommand(record,c),record.workspace,join(dir,`command-${record.commands.length}.log`),signal,{timeoutMs:resolved.executionProfile.commandTimeoutSeconds*1000,env:operationEnvironment(record)});record.commands.push(result);journal(stage,'completed',result);return result;}
-  catch(error){if(error&&typeof error==='object'&&'commandResult'in error)record.commands.push(error.commandResult as CommandResult);journal(stage,'failed',String(error));throw error;}
+  try{const result=await execute(targetCommand(record,c),record.workspace,join(dir,`command-${record.commands.length}.log`),signal,{timeoutMs:resolved.executionProfile.commandTimeoutSeconds*1000,env:operationEnvironment(record)});result.stage=stage;record.commands.push(result);journal(stage,'completed',result);return result;}
+  catch(error){if(error&&typeof error==='object'&&'commandResult'in error)record.commands.push({...error.commandResult as CommandResult,stage});journal(stage,'failed',String(error));throw error;}
  };
  await prepareWorkspace(root,record,signal);
  if(existsSync(join(record.workspace,'.codex/config.toml')))throw new Error('Setup introduced Codex configuration');

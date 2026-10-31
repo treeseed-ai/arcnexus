@@ -7,7 +7,7 @@ export function git(cwd: string, ...args: string[]): string {
   if (result.error || result.status !== 0) throw new Error(result.error?.message ?? result.stderr.trim());
   return result.stdout;
 }
-export interface CommandResult extends Command { cwd: string; startedAt: string; durationMs: number; exitCode: number | null; log: string }
+export interface CommandResult extends Command { stage?: string; cwd: string; startedAt: string; durationMs: number; exitCode: number | null; log: string }
 export async function executeDirect(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number} = {}): Promise<CommandResult> {
   signal.throwIfAborted();
   const start = Date.now(), fd = openSync(log, 'wx', 0o600);
