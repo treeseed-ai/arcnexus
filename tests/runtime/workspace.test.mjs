@@ -184,3 +184,22 @@ test('hard parent death stops a finite setup process group and preserves incompl
   assert.deepEqual(groupMembers(pid),[],'parent-loss supervisor stops command group');
   assert.match(readFileSync(log,'utf8'),/COMMAND_PID=/);assert.equal(JSON.parse(readFileSync(record)).finishedAt,undefined);
 });
+test('cleanup reconciles primary removal only with durable matching intent', t => {
+  const f=fixture(t),r=f.prepare();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
+  const dir=join(f.state,'runs',record.id),stat=lstatSync(record.workspace);
+  const intent={schemaVersion:1,id:record.id,source:record.source,commonDir:record.commonDir,base:record.base,branch:record.branch,workspace:record.workspace,device:stat.dev,inode:stat.ino,members:record.members,status:'removing'};
+  writeFileSync(join(dir,'cleanup-intent.json'),JSON.stringify(intent));
+  writeFileSync(join(dir,'members-cleanup.json'),JSON.stringify({removed:[]}));
+  const before=readFileSync(join(dir,'report.json'));
+  f.git('worktree','remove',record.workspace);
+  const result=f.run('cleanup',record.id);assert.equal(result.status,0,result.stderr);
+  assert.deepEqual(readFileSync(join(dir,'report.json')),before);
+  assert.equal(JSON.parse(readFileSync(join(dir,'cleanup-intent.json'))).status,'removed');
+  assert.equal(f.run('cleanup',record.id).status,0);
+});
+test('cleanup refuses unexplained disappearance and replacement after intent',t=>{
+ const f=fixture(t),record=JSON.parse(f.prepare().stdout),dir=join(f.state,'runs',record.id),stat=lstatSync(record.workspace);
+ const intent={schemaVersion:1,id:record.id,source:record.source,commonDir:record.commonDir,base:record.base,branch:record.branch,workspace:record.workspace,device:stat.dev,inode:stat.ino,members:record.members,status:'removing'};
+ f.git('worktree','remove',record.workspace);assert.equal(f.run('cleanup',record.id).status,1);
+ writeFileSync(join(dir,'cleanup-intent.json'),JSON.stringify(intent));mkdirSync(record.workspace);writeFileSync(join(record.workspace,'precious'),'keep');assert.equal(f.run('cleanup',record.id).status,1);assert.equal(readFileSync(join(record.workspace,'precious'),'utf8'),'keep');
+});

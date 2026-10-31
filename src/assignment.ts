@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, dirname } from 'node:path';
 import { commands, environment, InputError, type Environment, type Command } from './config.js';
-import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, type ExecutionProfile, type CompositionProfile } from './components.js';
+import { validateOperations, ancestry, covered, loadCatalog, scopePath, type Component, type Role, type ExecutionProfile, type CompositionProfile } from './components.js';
 import { validateSchema } from './schema.js';
 import { git } from './process.js';
 export interface HostCheck extends Command { id: string; artifacts: string[] }
@@ -65,8 +65,7 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     const requestedOperations=assignment.operationIds??component.operationIds??[];
     if(requestedOperations.some(id=>!(component.operationIds??[]).includes(id)))throw new InputError('Assignment widens operation authority');
     const operations=requestedOperations.map(id=>catalog.operations[id]!);
-    for(const op of operations)if(op.kind==='http'&&!operations.some(s=>s.id===op.http.serviceId&&s.kind==='service'))throw new InputError('HTTP operation requires a declared service in assignment scope');
-    for(const op of operations){if(executionProfile.schemaVersion!==2||!(executionProfile.operationCategories??[]).includes(op.category))throw new InputError('Operation category not permitted by execution profile: '+op.id);for(const path of op.generatedDirectories)if(!env.generatedDirectories.includes(path))throw new InputError('Operation generated directory is not declared disposable: '+path);}
+    validateOperations(operations, executionProfile, env);
     const data={schemaVersion:1 as const,priorEvidence,operations,environment:env,workspaceMembers,...(options.bindings?{bindings:options.bindings}:{}),base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
     return {...data,digest:digest(JSON.stringify(data))};
   }catch(error){throw new InputError(String(error));}

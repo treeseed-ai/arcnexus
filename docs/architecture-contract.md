@@ -76,3 +76,8 @@ module must have exactly one executable component owner. Workspace lifecycle own
 `bindings.ts` and `members.ts` as well as preparation/cleanup. The bounded-context
 acceptance test is shared by assignment orchestration and Codex adaptation; changes
 to it require caller review. Qualification infrastructure belongs to the CLI package.
+
+Static catalog validation checks each component's default operation/profile
+compatibility, declared disposable outputs, and HTTP service dependencies. Assignment
+resolution repeats these checks for explicit profile overrides and narrowed operation
+sets; an HTTP operation cannot retain a service outside its effective authority.

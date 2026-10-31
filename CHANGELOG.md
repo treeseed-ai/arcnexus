@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Reconcile interrupted cleanup, validate operation compatibility and expose coordination evidence (#50).
+
 ### Added
 
 - Capture selected prior evidence and qualify planned steward operations (#48).

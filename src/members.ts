@@ -63,7 +63,7 @@ export async function prepareMembers(root:string,record:RecordData,signal:AbortS
  }
 }
 export function freezeMembers(root:string,record:RecordData):void{assertMembers(record,false);for(const m of (record.members??[]) as Member[])m.inventoryDigest=inventory(m);save(root,record);}
-export function cleanupMembers(root:string,record:RecordData):void{
+export function cleanupMembers(root:string,record:RecordData,validateOnly=false):void{
  const path=join(root,'runs',record.id,'members-cleanup.json');
  const removed: string[]=existsSync(path)?JSON.parse(readFileSync(path,'utf8')).removed:[];
  const members=(record.members??[]) as Member[];
@@ -74,6 +74,7 @@ export function cleanupMembers(root:string,record:RecordData):void{
   checkPath(record.workspace,m.definition.path);registered(m);assertOutputs(m.workspace,memberEnvironment(m));
 
  }
+ if(validateOnly)return;
  for(const m of [...members].reverse()){
   if(removed.includes(m.id))continue;
   if(existsSync(m.workspace))git(m.source,'worktree','remove',m.workspace);

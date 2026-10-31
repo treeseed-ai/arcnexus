@@ -1,5 +1,5 @@
 import type { Operation } from './operations.js';
-import { commands, environment, InputError, relativePath, type Command } from './config.js';
+import { commands, environment, InputError, relativePath, type Command, type Environment } from './config.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { git } from './process.js';
 import { validateSchema } from './schema.js';
@@ -17,6 +17,13 @@ export interface CompositionProfile {schemaVersion:1;id:string;platformId:string
 export interface Catalog { operations:Record<string,Operation>; compositions: Record<string,CompositionProfile>; components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
 export const covered = (path: string, scope: string[]) => scope.some(p => p === '.' || path === p || path.startsWith(`${p}/`));
 export const scopePath = (path: string) => path === '.' ? path : relativePath(path);
+export function validateOperations(operations: Operation[], profile: ExecutionProfile, env: Environment): void {
+  for (const op of operations) {
+    if (profile.schemaVersion !== 2 || !profile.operationCategories?.includes(op.category)) throw new InputError('Operation category not permitted by execution profile: ' + op.id);
+    for (const path of op.generatedDirectories) if (!env.generatedDirectories.includes(path)) throw new InputError('Operation generated directory is not declared disposable: ' + path);
+    if (op.kind === 'http' && !operations.some(service => service.id === op.http.serviceId && service.kind === 'service')) throw new InputError('HTTP operation requires a declared service in assignment scope');
+  }
+}
 function read<T>(repository: string, base: string, path: string, schema: string): T {
   const mode = git(repository, 'ls-tree', base, '--', path).split(' ')[0];
   if (mode !== '100644' && mode !== '100755') throw new InputError(`Definition must be a regular tracked file: ${path}`);
@@ -44,7 +51,7 @@ export function loadCatalog(repository: string, base: string): Catalog {
       Object.defineProperty(target, value.id, { value, enumerable: true, configurable: true });
     }
     for(const path of paths.filter(p=>p.startsWith('architecture/operations/')&&p.endsWith('.json'))){const operation=read<Operation>(repository,base,path,'operation');if(path!==`architecture/operations/${operation.id}.json`)throw new InputError('Operation identity must match filename');scopePath(operation.cwd);operation.generatedDirectories.forEach(scopePath);operation.artifacts.forEach(scopePath);commands([...(operation.kind==='http'?[]:[operation]),...operation.probes]);Object.defineProperty(catalog.operations,operation.id,{value:operation,enumerable:true});}
-    environment(read(repository, base, 'architecture/environment.json', 'environment'));
+    const env = environment(read(repository, base, 'architecture/environment.json', 'environment'));
     if (!Object.keys(catalog.components).length) throw new InputError('No components defined');
     for (const c of Object.values(catalog.components)) {
       scopePath(c.path); validateAccess(c.access);
@@ -52,6 +59,7 @@ export function loadCatalog(repository: string, base: string): Catalog {
       commands(c.verification);
       for(const id of c.operationIds??[]){const op=catalog.operations[id];if(!Object.hasOwn(catalog.operations,id)||op?.repository!==c.repository)throw new InputError('Missing operation or conflicting repository owner: '+id);if(!op.activities.every(a=>catalog.roles[c.role]?.activities.includes(a)))throw new InputError('Operation activity outside role');}
       if (!Object.hasOwn(catalog.roles,c.role) || !Object.hasOwn(catalog.profiles,c.executionProfile)) throw new InputError(`Missing role/execution profile for ${c.id}`);
+      validateOperations((c.operationIds ?? []).map(id => catalog.operations[id]!), catalog.profiles[c.executionProfile]!, env);
       if (c.allowedWritePaths.some(p => !covered(p,c.access.writeDirectories))) throw new InputError(`Uncovered writable scope: ${c.id}`);
       const ancestors = ancestry(catalog,c.id).slice(0,-1);
       const parent = ancestors.at(-1);

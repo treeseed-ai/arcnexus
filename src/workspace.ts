@@ -70,12 +70,34 @@ export function cleanup(root: string, id: string): RecordData {
     if (lstatSync(record.workspace, { throwIfNoEntry: false })) throw new Error('Previously removed workspace path is occupied');
     return { ...record, cleanupStatus: 'removed' };
   }
+  const intentPath = join(root,'runs',id,'cleanup-intent.json');
+  const members = (record.members ?? []) as Member[];
+  const identity = {schemaVersion:1,id,source:record.source,commonDir:record.commonDir,base:record.base,branch:record.branch,workspace:record.workspace,members};
+  const intent = existsSync(intentPath) ? JSON.parse(readFileSync(intentPath,'utf8')) : undefined;
+  if (intent && Object.entries(identity).some(([key,value]) => JSON.stringify(intent[key]) !== JSON.stringify(value))) throw new Error('Cleanup intent ownership mismatch');
+  const registered = (source:string,path:string) => git(source,'worktree','list','--porcelain','-z').split('\0').includes(`worktree ${path}`);
+  const writeIntent = (value:unknown) => {writeFileSync(intentPath+'.tmp',JSON.stringify(value),{mode:0o600});renameSync(intentPath+'.tmp',intentPath);};
+  const stat = lstatSync(record.workspace,{throwIfNoEntry:false});
+  if (!stat) {
+    if (!intent || !['removing','removed'].includes(intent.status)) throw new Error('Workspace disappeared without cleanup intent');
+    if (realpathSync(git(record.source,'rev-parse','--path-format=absolute','--git-common-dir').trim()) !== record.commonDir || registered(record.source,record.workspace)) throw new Error('Absent workspace ownership is unresolved');
+    const progress = join(root,'runs',id,'members-cleanup.json');
+    const removed = existsSync(progress) ? JSON.parse(readFileSync(progress,'utf8')).removed : [];
+    for (const member of members) {
+      if (!removed.includes(member.id) || lstatSync(member.workspace,{throwIfNoEntry:false}) || registered(member.source,member.workspace) || realpathSync(git(member.source,'rev-parse','--path-format=absolute','--git-common-dir').trim()) !== member.commonDir) throw new Error('Dependency removal is unresolved');
+    }
+    writeIntent({...intent,status:'removed'});
+    writeFileSync(cleanupPath+'.tmp',JSON.stringify({cleanupStatus:'removed',removedAt:new Date().toISOString()}),{mode:0o600});renameSync(cleanupPath+'.tmp',cleanupPath);
+    const recovered={...record,timelineSequence:readTimeline(join(root,'runs',id)).events.length};observe(root,recovered,'cleanup.completed',{status:'removed',reconciled:true});
+    return {...record,cleanupStatus:'removed'};
+  }
+  if (intent && (intent.status !== 'removing' || intent.device !== stat.dev || intent.inode !== stat.ino)) throw new Error('Cleanup workspace was replaced');
   if (realpathSync(record.workspace) !== record.workspace) throw new Error('Workspace path is redirected');
   const common = realpathSync(git(record.workspace,'rev-parse','--path-format=absolute','--git-common-dir').trim());
   if (common !== record.commonDir || !git(record.source,'worktree','list','--porcelain','-z').split('\0').includes(`worktree ${record.workspace}`)) throw new Error('Workspace registration mismatch');
   // Use the immutable base configuration rather than potentially edited record settings.
   const env = environment(JSON.parse(git(record.workspace,'show',`${record.base}:architecture/environment.json`)));
-  const definitions=env.workspace?.dependencies??[],members=(record.members??[]) as Member[];
+  const definitions=env.workspace?.dependencies??[];
   if(definitions.length!==members.length)throw new Error('Dependency ownership record mismatch');
   for(const [i,definition] of definitions.entries()){
     const m=members[i]!;
@@ -83,8 +105,11 @@ export function cleanup(root: string, id: string): RecordData {
     m.definition=definition;
   }
   assertOutputs(record.workspace,env);
+  cleanupMembers(root,record,true);
+  if (!intent) writeIntent({...identity,device:stat.dev,inode:stat.ino,status:'removing'});
   const cleanupRecord={...record,timelineSequence:readTimeline(join(root,'runs',id)).events.length};observe(root,cleanupRecord,'cleanup.started',{});cleanupMembers(root,record);
   git(record.source,'worktree','remove',record.workspace);
+  writeIntent({...identity,device:stat.dev,inode:stat.ino,status:'removed'});
   writeFileSync(`${cleanupPath}.tmp`, JSON.stringify({ cleanupStatus: 'removed', removedAt: new Date().toISOString() }, null, 2) + '\n', { mode: 0o600 });
   renameSync(`${cleanupPath}.tmp`, cleanupPath);observe(root,cleanupRecord,'cleanup.completed',{status:'removed'});
   return { ...record, cleanupStatus: 'removed' };

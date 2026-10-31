@@ -96,3 +96,9 @@ test('built CLI run renders observed changes from the production workflow', t =>
   assert.ok(markdown.includes('## Operations\n\nNo managed operations recorded.'));
   assert.ok(markdown.includes('## Managed services\n\nNo managed services recorded.'));
 });
+test('built CLI report includes coordination evidence and explicit historical absence',t=>{
+ const f=workflowFixture(t),r=spawnSync(process.execPath,[resolve('dist/cli.js'),'run','sample','Improve behavior','--project',f.repo,'--codex-path',f.executable],{env:f.env,encoding:'utf8'});assert.equal(r.status,0,r.stderr);const data=JSON.parse(r.stdout),md=readFileSync(join(f.state,'runs',data.id,'report.md'),'utf8');
+ for(const heading of ['Execution accounting','Usage','Supplied context','Host checks','Boundary requests','Caller interventions','Findings and uncertainty'])assert.ok(md.includes('## '+heading),heading);
+ assert.ok(data.commands.some(c=>c.stage==='verification'));assert.match(md,/verification/);assert.match(md,/Actual turns: 3/);assert.match(md,/not complete effective Codex context/);
+ assert.match(markdownReport(record),/Usage completeness: unavailable/);
+});
