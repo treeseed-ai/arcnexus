@@ -95,3 +95,19 @@ also exposes a phase-two need: feed a precise verification failure back to the
 responsible worker without repeating the whole investigation. Current phase one
 has no resume, so the correction required a fresh assignment/worktree. The planned
 Astra supervisor is not yet an implemented application role.
+
+## Index evidence correction (#22)
+
+Luna run `505bc000-efce-4bc2-9792-6287a6aa5e4e` implemented separate staged and
+unstaged inspection and evidence. An external built-CLI check failed both masked
+out-of-scope staging and in-scope index-only changes before the implementation,
+then passed against the candidate. Host verification correctly rejected the run:
+its generated test expected an empty unstaged diff after restoring a working file,
+but restoring the file creates the reverse index-to-working-tree diff.
+
+The supervising reviewer integrated the implementation unchanged, corrected those
+two test expectations, and added a case for a masked staged edit introduced during
+final verification. The integrated build passed 45 product tests, TypeScript and
+the independent checks. This is assisted self-development with a reviewer test
+correction, not a claim that the original autonomous run passed. Its failed record
+and candidate remain retained for inspection.

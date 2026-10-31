@@ -1,0 +1,55 @@
+{
+  "id": "change-inspection",
+  "type": "library",
+  "purpose": "Inspect candidate edits and retain complete review evidence",
+  "path": "src/changes.ts",
+  "objectives": [
+    "Detect all staged, unstaged and untracked changes without losing candidate state"
+  ],
+  "constraints": [
+    "Do not change sandbox permissions or verification requirements",
+    "Caller owns commits and integration",
+    "Do not edit architecture or unrelated files"
+  ],
+  "allowedWritePaths": [
+    "src/changes.ts",
+    "tests/runtime/steward.test.mjs",
+    "docs/stewards.md"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "patterns": [
+    "Document intent, test observable behavior, implement",
+    "Verify actual SDK executable arguments and report settings"
+  ]
+}
