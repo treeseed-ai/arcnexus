@@ -90,3 +90,16 @@ It must name guidance-validation, provide observed evidence, desired behavior an
 acceptance conditions, and explain why implementation is outside its scope. Phase
 two will deliver the bounded request, owner response, verified validator change and
 resumption. This increment records the scenario without implementing cooperation.
+
+A concrete first coordination fixture can propose an optional `references` metadata
+list whose repository-relative documentation targets must exist and stay inside the
+repository. This is a proposed phase-two rule, not current checker behavior. The
+first guidance assignment demonstrates a broken reference, requests that deterministic
+rule from `guidance-validation`, and names accepted/rejected fixture examples. It must
+stop before editing validator implementation. Phase two succeeds when the owner makes
+and independently verifies the bounded checker change, returns captured evidence,
+and the original steward resumes and validates its guidance. The architect still
+accepts the proposed rule; neither steward grants itself new authority.
+
+See [integrated qualification evidence](acceptance/experiments.md) for the completed
+live campaign and the separate simulation guarantees.
