@@ -140,3 +140,8 @@ The SDK executable launcher also watches the original host process identity and
 terminates its Codex process group if that host disappears. It preserves the SDK's
 stdio event stream and inserts `--ignore-user-config` exactly as before. A lost
 host leaves incomplete evidence, never a successful outcome.
+
+The reporting owner declares a focused built report-test command in addition to
+full repository verification. Use that command for the expected-red and captured
+regression checkpoints; full verification still runs at baseline and after changes.
+This keeps repeated regression checks bounded without weakening integration checks.
