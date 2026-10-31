@@ -31,3 +31,8 @@ only after resolving candidate source changes. Branches and reports are preserve
 
 See the [versioned architecture contract](docs/architecture-contract.md) for catalog
 validation, immutable assignment inspection, and structured caller acceptance checks.
+
+Validate tracked guidance in the current checkout with
+`node dist/cli.js guidance validate --project .` after building. See
+[guidance validation](docs/guidance-validation.md) for the metadata-only contract and
+[maintenance](docs/guidance-maintenance.md) for stewardship ownership.
