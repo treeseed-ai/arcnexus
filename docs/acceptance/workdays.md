@@ -80,3 +80,10 @@ entry; the host rejected that unauthorized checklist update. No candidate change
 were integrated. The model-facing final-result schema now advertises only captured
 steward item IDs; independent host validation remains unchanged. Campaign:
 `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-5/campaign.json`.
+
+`guidance-live-6`, workday `32b0bda9-5c28-4810-8a4d-fc290975d64a`, stopped in the
+recipient's planning turn: an item used `research`, but the selected activities omitted
+research. The host rejected the inconsistent plan before implementation. The planning
+prompt now explicitly requires that cross-reference, and the diagnostic identifies the
+item and omitted activity. The rule remains mandatory; there is no planning-repair loop.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-6/campaign.json`.
