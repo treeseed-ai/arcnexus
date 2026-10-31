@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, lstatSync, symlinkSync, readlinkSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, lstatSync, symlinkSync, readlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
@@ -69,8 +69,10 @@ test('SIGINT cancels command and releases lock', async t => {
   const f=fixture(t,[{command:'node',args:['-e','console.log("READY");setInterval(()=>{},1000)']}]);
   const child=spawn(process.execPath,[cli,'prepare','--project',f.repo],{env:f.env});
   let output=''; child.stdout.on('data',b=>output+=b);
-  await new Promise(r=>setTimeout(r,400)); child.kill('SIGINT');
-  const code=await new Promise(r=>child.on('close',r)); assert.equal(code,130);
+  const exited=new Promise(r=>child.once('close',r));t.after(()=>child.kill('SIGKILL'));let ready=false;const deadline=Date.now()+10000;
+  while(Date.now()<deadline){try{const run=join(f.state,'runs',readdirSync(join(f.state,'runs'))[0]);ready=readdirSync(run).filter(n=>n.startsWith('command-')).some(n=>readFileSync(join(run,n),'utf8').includes('READY'));}catch{}if(ready)break;await new Promise(r=>setTimeout(r,20));}
+  assert.ok(ready,'setup command must be running before cancellation');child.kill('SIGINT');
+  const code=await exited; assert.equal(code,130);
   assert.equal(JSON.parse(output).status,'cancelled'); assert.equal(existsSync(join(f.state,'active.lock')),false);
 });
 test('invalid configuration and missing prerequisite fail at their respective stages', t => {
