@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 2,
+  "id": "luna",
+  "model": "gpt-6-luna",
+  "reasoning": "medium",
+  "webSearch": "disabled",
+  "timeoutSeconds": 900,
+  "commandTimeoutSeconds": 120,
+  "maxTurns": 4,
+  "maxCorrectiveTurns": 2,
+  "maxOperationCalls": 24,
+  "operationCategories": [
+    "unit-test"
+  ]
+}

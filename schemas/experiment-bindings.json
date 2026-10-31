@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "runner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "codexPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "projects": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "bindings": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tools": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "priorEvidence": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sourceId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "sourceId",
+          "revision",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "issues": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*$"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "runner",
+    "projects",
+    "tools"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "engineer",
+  "purpose": "Bounded simulation",
+  "responsibilities": [
+    "Verify changes"
+  ],
+  "activities": [
+    "research",
+    "documentation",
+    "testing",
+    "implementation",
+    "review",
+    "release"
+  ]
+}

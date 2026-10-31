@@ -13,7 +13,8 @@ node dist/cli.js experiment run experiments/operations.json --bindings /absolute
 node dist/cli.js experiment run experiments/simulation.json --bindings /absolute/simulation-bindings.json --mode simulation
 ```
 
-A missing mode is an input error. Inspection resolves tracked architecture and all
+A missing mode is an input error. Inspection reports mode as unselected; it never
+selects a paid execution default. Inspection resolves tracked architecture and all
 case inputs without creating state. Run defaults to a unique experiment directory
 beneath ArcNexus user state; explicit output must be new and outside target repositories.
 Exit codes are 0 campaign expectations met, 1 unexpected execution/check failure,
@@ -55,7 +56,9 @@ clone or fetch repositories. Altered fixture contracts are rejected before execu
 
 Simulation uses a bundled controlled executable through the real SDK, launcher and
 bridge. File edits, Git worktrees and host checks are real; agent responses and usage
-are scripted and labeled simulated. It needs no credentials or inference calls and
+are scripted and labeled simulated. The bundled four-case example deliberately includes an unexpected execution failure:
+its first three cases should pass and its fourth remains failed, so the campaign
+returns exit 1. It needs no credentials or inference calls and
 cannot satisfy live-model qualification. It does not prove installed Codex sandbox
 behavior. No custom scenario language or arbitrary scripted model actions are exposed.
 

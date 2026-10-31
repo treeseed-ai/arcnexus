@@ -48,7 +48,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   env.ARCNEXUS_CODEX_EXECUTABLE=executable.includes('/')?resolve(executable):executable;env.ARCNEXUS_CODEX_PID=pidFile;
   env.ARCNEXUS_NODE=process.execPath;env.ARCNEXUS_CODEX_SUPERVISOR=fileURLToPath(new URL('./codex-supervisor.js',import.meta.url));env.ARCNEXUS_HOST_PID=String(process.pid);env.ARCNEXUS_HOST_START=processStart(process.pid)!;
   env.TMPDIR=permissions.tmpDirectory;env.PATH=targetEnvironment(record).PATH!;
-  const settings={model,reasoning:profile?.reasoning??'medium',permissionProfile:'arcnexus',access,allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:profile?.webSearch??'live',nestedDelegation:false,managedTools:profile?.schemaVersion===2?['plan.update',...(operations?.tools.map(t=>t.name)??[])]:[],executable:env.ARCNEXUS_CODEX_EXECUTABLE};
+  const settings={evidenceMode:record.evidenceMode??'unspecified',model,reasoning:profile?.reasoning??'medium',permissionProfile:'arcnexus',access,allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:profile?.webSearch??'live',nestedDelegation:false,managedTools:profile?.schemaVersion===2?['plan.update',...(operations?.tools.map(t=>t.name)??[])]:[],executable:env.ARCNEXUS_CODEX_EXECUTABLE};
   persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
   const preflightHome=join(dir,`sandbox-preflight-home-${(record.turns as unknown[]).length}`);mkdirSync(preflightHome,{recursive:true,mode:0o700});
   const preflightEnv={...env,CODEX_HOME:preflightHome};

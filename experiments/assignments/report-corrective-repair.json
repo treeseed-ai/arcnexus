@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "kind": "change",
+  "objective": "Add Operations and Managed services summaries to the Markdown report using only captured JSON fields. Modify only src/report.ts, tests/runtime/report.test.mjs and docs/report.md. Inspect src/operations.ts and src/services.ts read-only for record shape. Preserve existing report fields. During specification edit docs/tests only, invoke operations.run report-tests to observe the regression, and select captured npm test (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red check. Implementation may build dist with npm run build before exploratory report-tests. Complete every checklist item or validly skip it with reason, respecting dependency order. No commits; caller owns issue/branch/release steps.",
+  "expectedOutcome": "Add Operations and Managed services summaries to the Markdown report using only captured JSON fields. Modify only src/report.ts, tests/runtime/report.test.mjs and docs/report.md. Inspect src/operations.ts and src/services.ts read-only for record shape. Preserve existing report fields. During specification edit docs/tests only, invoke operations.run report-tests to observe the regression, and select captured npm test (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red check. Implementation may build dist with npm run build before exploratory report-tests. Complete every checklist item or validly skip it with reason, respecting dependency order. No commits; caller owns issue/branch/release steps.",
+  "acceptanceCriteria": [
+    "Markdown has ## Operations with each captured operation id, passed when exitCode=0 otherwise failed, durationMs and log path; ## Managed services with id, status and endpointClosed boolean.",
+    "Historical absent/empty arrays show exactly No managed operations recorded. and No managed services recorded.; never undefined/null. Preserve existing sections and do not mutate records.",
+    "Document behavior and add regression tests including a built CLI report assertion. Run report-tests through operations.run for actual feedback; update plan checklist with evidence and provide caller handoff."
+  ],
+  "hostChecks": [
+    {
+      "id": "injected-report-repair",
+      "command": "node",
+      "args": [
+        "../checks/inject-report-defect.mjs",
+        "{faultMarker}",
+        "../checks/report-operations.mjs"
+      ],
+      "artifacts": [
+        "../checks/inject-report-defect.mjs",
+        "../checks/report-operations.mjs"
+      ]
+    }
+  ],
+  "allowedWritePaths": [
+    "src/report.ts",
+    "tests/runtime/report.test.mjs",
+    "docs/report.md"
+  ]
+}

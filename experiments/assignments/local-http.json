@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "kind": "research",
+  "objective": "Qualify the declared local HTTP service without source edits. During execution use services.start serve, operations.run health, services.logs serve and services.stop serve; report readiness, response, logs and closed endpoint. Complete the checklist with evidence. Planning should only plan, not start the service.",
+  "expectedOutcome": "Qualify the declared local HTTP service without source edits. During execution use services.start serve, operations.run health, services.logs serve and services.stop serve; report readiness, response, logs and closed endpoint. Complete the checklist with evidence. Planning should only plan, not start the service.",
+  "acceptanceCriteria": [
+    "Demonstrate managed local service readiness, declared HTTP request and bounded log access.",
+    "Stop the service and report its lifecycle evidence without source edits."
+  ],
+  "hostChecks": []
+}

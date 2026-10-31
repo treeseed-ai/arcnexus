@@ -8,9 +8,11 @@ export function git(cwd: string, ...args: string[]): string {
   return result.stdout;
 }
 export interface CommandResult extends Command { stage?: string; cwd: string; startedAt: string; durationMs: number; exitCode: number | null; log: string }
-export async function executeDirect(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number} = {}): Promise<CommandResult> {
+export async function executeDirect(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number; stdout?: string; stderr?: string; killGraceMs?: number} = {}): Promise<CommandResult> {
   signal.throwIfAborted();
   const start = Date.now(), fd = openSync(log, 'wx', 0o600);
+  const stdout = options.stdout ? openSync(options.stdout,'wx',0o600) : undefined;
+  const stderr = options.stderr ? openSync(options.stderr,'wx',0o600) : undefined;
   const result: CommandResult = { ...command, cwd, startedAt: new Date(start).toISOString(), durationMs: 0, exitCode: null, log };
   return new Promise((resolve, reject) => {
     const child = spawn(command.command, command.args, { cwd, env: options.env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -20,19 +22,19 @@ export async function executeDirect(command: Command, cwd: string, log: string, 
       failure ??= reason;
       if (child.pid) {
         try { process.kill(-child.pid, 'SIGTERM'); } catch {}
-        killTimer ??= setTimeout(() => { try { process.kill(-child.pid!, 'SIGKILL'); } catch {} }, 300);
+        killTimer ??= setTimeout(() => { try { process.kill(-child.pid!, 'SIGKILL'); } catch {} }, options.killGraceMs ?? 300);
       }
     };
     let outputBytes=0;
-    const capture=(chunk:Buffer)=>{const remaining=64*1024*1024-outputBytes;if(remaining>0)writeSync(fd,chunk.subarray(0,remaining));outputBytes+=chunk.length;if(outputBytes>64*1024*1024)terminate(new Error('Command output limit exceeded'));};
-    child.stdout!.on('data',capture);child.stderr!.on('data',capture);
+    const capture=(chunk:Buffer,separate?:number)=>{const remaining=64*1024*1024-outputBytes;if(remaining>0){writeSync(fd,chunk.subarray(0,remaining));if(separate!==undefined)writeSync(separate,chunk.subarray(0,remaining));}outputBytes+=chunk.length;if(outputBytes>64*1024*1024)terminate(new Error('Command output limit exceeded'));};
+    child.stdout!.on('data',chunk=>capture(chunk,stdout));child.stderr!.on('data',chunk=>capture(chunk,stderr));
     const abort = () => terminate(new Error(String(signal.reason)));
     const timer = setTimeout(() => terminate(new Error('Command timed out')), options.timeoutMs ?? 120_000);
     signal.addEventListener('abort', abort, { once: true });
     if (signal.aborted) abort();
     child.on('error', error => { failure = error; });
     child.on('close', code => {
-      clearTimeout(timer); signal.removeEventListener('abort', abort); closeSync(fd);
+      clearTimeout(timer); signal.removeEventListener('abort', abort); closeSync(fd);if(stdout!==undefined)closeSync(stdout);if(stderr!==undefined)closeSync(stderr);
       // Kill surviving descendants even if their group leader exited first.
       if (child.pid) { try { process.kill(-child.pid, 'SIGKILL'); } catch {} }
       if (killTimer) clearTimeout(killTimer);
@@ -43,7 +45,7 @@ export async function executeDirect(command: Command, cwd: string, log: string, 
   });
 }
 
-export async function execute(command:Command,cwd:string,log:string,signal:AbortSignal,options:{env?:NodeJS.ProcessEnv;timeoutMs?:number}={}):Promise<CommandResult>{
+export async function execute(command:Command,cwd:string,log:string,signal:AbortSignal,options:{env?:NodeJS.ProcessEnv;timeoutMs?:number;stdout?:string;stderr?:string;killGraceMs?:number}={}):Promise<CommandResult>{
  signal.throwIfAborted();
  return new Promise((resolve,reject)=>{
   const supervisor=fork(fileURLToPath(new URL('./command-supervisor.js',import.meta.url)),[],{detached:true,stdio:['ignore','ignore','ignore','ipc']});

@@ -18,12 +18,6 @@
       "args": [
         "--version"
       ]
-    },
-    {
-      "command": "python3",
-      "args": [
-        "--version"
-      ]
     }
   ],
   "setup": [

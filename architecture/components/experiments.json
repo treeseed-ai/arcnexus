@@ -2,7 +2,7 @@
   "id": "experiments",
   "type": "library",
   "purpose": "Resolve and execute repeatable experiments with honestly labeled evidence",
-  "path": "scripts/qualify.mjs",
+  "path": "src/experiments.ts",
   "objectives": [
     "Resolve and execute repeatable experiments with honestly labeled evidence"
   ],
@@ -21,9 +21,18 @@
     "tests/runtime/qualification.test.mjs",
     "tests/runtime/experiments.test.mjs",
     "docs/qualification.md",
-    "docs/experiments.md"
+    "docs/experiments.md",
+    "fixtures/simulation"
   ],
   "verification": [
+    {
+      "command": "node",
+      "args": [
+        "--test",
+        "tests/runtime/experiments.test.mjs",
+        "tests/runtime/qualification.test.mjs"
+      ]
+    },
     {
       "command": "node",
       "args": [
@@ -54,10 +63,12 @@
   "executionProfile": "luna",
   "interfaces": [],
   "documentation": [
-    "docs/qualification.md"
+    "docs/qualification.md",
+    "docs/experiments.md"
   ],
   "tests": [
-    "tests/runtime/qualification.test.mjs"
+    "tests/runtime/qualification.test.mjs",
+    "tests/runtime/experiments.test.mjs"
   ],
   "relatedIds": [],
   "parentId": "cli-package",

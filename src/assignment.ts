@@ -23,7 +23,7 @@ export function resolveBase(repository: string, ref='HEAD'): {source:string;base
   try { const source=realpathSync(git(realpathSync(repository),'rev-parse','--show-toplevel').trim());return {source,base:git(source,'rev-parse','--verify','--end-of-options',`${ref}^{commit}`).trim()}; }
   catch(error){throw new InputError(String(error));}
 }
-export function resolveAssignment(repository:string, base:string, id:string, options:{bindings?:Bindings;objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
+export function resolveAssignment(repository:string, base:string, id:string, options:{value?:unknown;bindings?:Bindings;objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
   try {
     const catalog=loadCatalog(repository,base),context=ancestry(catalog,id),component=context.at(-1)!;
     const env=environment(JSON.parse(git(repository,'show',`${base}:architecture/environment.json`)));
@@ -31,7 +31,7 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     const workspaceMembers=resolveMembers(repository,base,'/workspace',env,options.bindings??loadBindings()).map(({workspace,status,...member})=>member);
     if(!['gateway','library','foundation'].includes(component.type)||!component.verification.length)throw new InputError('Executable component requires verification');
     if(options.file && (options.objective!==undefined || options.kind!==undefined))throw new InputError('--assignment excludes objective and --kind');
-    const assignment=validateSchema<Assignment>('assignment',options.file?JSON.parse(readFileSync(options.file,'utf8')):{schemaVersion:1,objective:options.objective,kind:options.kind??'change',expectedOutcome:options.objective,acceptanceCriteria:[options.objective],hostChecks:[]});
+    const assignment=validateSchema<Assignment>('assignment',options.value??(options.file?JSON.parse(readFileSync(options.file,'utf8')):{schemaVersion:1,objective:options.objective,kind:options.kind??'change',expectedOutcome:options.objective,acceptanceCriteria:[options.objective],hostChecks:[]}));
     if(!assignment.objective.trim())throw new InputError('Objective must not be blank');
     const priorEvidence:EvidenceSnapshot[]=[],historyPaths=new Set<string>();let historyBytes=0;
     for(const ref of assignment.priorEvidence??[]){

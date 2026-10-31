@@ -1,0 +1,1 @@
+import{existsSync,readFileSync}from'node:fs';if(existsSync('tests/regression.mjs'))await import('./tests/regression.mjs');if(readFileSync('source.txt','utf8')==='broken')throw new Error('BROKEN_IMPLEMENTATION');
