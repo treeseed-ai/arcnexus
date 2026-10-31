@@ -39,3 +39,24 @@ remain unchanged. The fresh successful run explicitly handed unavailable sandbox
 tests to the supervising runtime; no assertions or host verification were relaxed.
 [Issue #14](https://github.com/treeseed-ai/arcnexus/issues/14) proposes clarifying
 that distinction in shared guidance based on the observed extra-run cost.
+
+## Cleanup evidence correction through the same loop
+
+Final review found cleanup rewrote execution status and timing in existing reports.
+Issue #16 records the observed defect and the smallest regression check: compare
+JSON/Markdown bytes before and after cleanup. An independent built-CLI check failed
+against the old runner before the fix.
+
+ArcNexus execution `43ad1f7a-bd40-4176-990d-dc40964e967a` implemented the correction itself,
+from base `3dafcc35fb04a3919a27fdd3a59af8e70b6f6c70` (current staging plus caller-supplied
+workspace architecture/contract). Only the four declared workspace-component files
+changed during execution. The unchanged supervisor then passed all 39 product tests,
+six Python tests, TypeScript checking and ten skill validations. The independent
+cleanup checker passed, and supervisor checksums stayed unchanged. No generated
+implementation or test was edited by the caller.
+
+Cleanup now writes separate atomic metadata, preserves execution reports byte-for-byte,
+and refuses replacement files/directories/symlinks on retry, including legacy cases.
+The run directory retains the independent checker, its result, supervisor checksums,
+command logs, events and captured diff. This is the first corrective change made
+through the newly established self-development loop.

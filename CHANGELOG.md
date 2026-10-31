@@ -14,6 +14,10 @@
 
 - Add initial repository validation CI (#3).
 
+### Fixed
+
+- Preserve execution evidence during workspace cleanup (#16).
+
 ### Changed
 
 - Resolve guidance edge cases for self-development (#5).

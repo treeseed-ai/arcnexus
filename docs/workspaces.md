@@ -56,3 +56,8 @@ Repeated cleanup leaves both reports and removal metadata unchanged. If a new fi
 directory or symlink occupies a previously removed path, refuse to delete it.
 Legacy records already marked `removed` are accepted only when the path is absent;
 they cannot reconstruct evidence overwritten by the earlier implementation.
+
+Removal writes `cleanup.json` atomically with `cleanupStatus: "removed"` and
+`removedAt` (an ISO timestamp). This lifecycle receipt is separate from execution
+evidence and is not rewritten on retries. An absent legacy workspace succeeds
+without creating a receipt or changing its existing reports.
