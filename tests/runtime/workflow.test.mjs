@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,existsSync} from 'node:fs';
+import {readFileSync,existsSync,writeFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {workflowFixture} from './workflow-fixture.mjs';
 test('built CLI performs three checked turns on one thread',t=>{

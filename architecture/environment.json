@@ -24,12 +24,6 @@
       "args": [
         "--version"
       ]
-    },
-    {
-      "command": "uv",
-      "args": [
-        "--version"
-      ]
     }
   ],
   "setup": [
@@ -51,9 +45,7 @@
   ],
   "generatedDirectories": [
     "node_modules",
-    "dist",
-    ".venv",
-    "tests/ci/__pycache__"
+    "dist"
   ],
   "schemaVersion": 1,
   "workspace": {

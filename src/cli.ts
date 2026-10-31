@@ -1,5 +1,5 @@
-import { GuidanceValidator } from './guidance.js';
 #!/usr/bin/env node
+import { GuidanceValidator } from './guidance.js';
 import { observe, viewExecution } from './timeline.js';
 import { parseArgs } from 'node:util';
 import { loadBindings } from './bindings.js';
