@@ -222,3 +222,9 @@ test("real validator owner receives declared build and regression operations", (
     ["guidance-build", "guidance-tests"],
   );
 });
+test('guidance inspection preserves explicit writable skill-directory grant', () => {
+  const r = spawnSync(process.execPath, [cli, 'inspect', 'agent-guidance', 'Maintain skill metadata', '--project', process.cwd(), '--json'], {encoding:'utf8'});
+  assert.equal(r.status,0,r.stderr);
+  const owner = JSON.parse(r.stdout).context.find(c=>c.id==='agent-guidance');
+  assert.ok(owner.access.writeDirectories.includes('.agents/skills'));
+});

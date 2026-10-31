@@ -37,7 +37,8 @@
       "."
     ],
     "writeDirectories": [
-      "."
+      ".",
+      ".agents/skills"
     ]
   },
   "schemaVersion": 2,
