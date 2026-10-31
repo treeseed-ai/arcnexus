@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {join,dirname} from 'node:path';
-import {workflowFixture} from './workflow-fixture.mjs';
+import {workflowFixture,cli} from './workflow-fixture.mjs';
+import {spawnSync} from 'node:child_process';
 const calls=f=>readFileSync(f.calls,'utf8').trim().split('\n').map(JSON.parse);
 test('bound command executes from supplied context with reset PATH and read-only tool visibility',t=>{
  const f=workflowFixture(t),bin=join(f.root,'tool directory');mkdirSync(bin);
@@ -49,4 +50,13 @@ test('specification exposes both required source changes in the actual turn prom
  const f=workflowFixture(t),r=f.run();assert.equal(r.status,0,r.stderr);
  const prompt=calls(f).find(c=>c.stage==='specification').prompt;
  assert.match(prompt,/actual edit to at least one.*documentation/);assert.match(prompt,/host rejects this checkpoint if either kind of change is missing/);
+});
+
+test('documentation-only specification requires real documentation edits through the built CLI',t=>{
+ const f=workflowFixture(t),assignment=join(f.root,'documentation.json');
+ writeFileSync(assignment,JSON.stringify({schemaVersion:1,kind:'change',changeType:'documentation',objective:'Update documentation',expectedOutcome:'Updated docs',acceptanceCriteria:['Updated documentation'],hostChecks:[]}));
+ let code=readFileSync(f.executable,'utf8').replace("if(stage==='specification'&&mode!=='no-changes'){","if(false){").replace("if(stage==='implementation'||stage==='correction'){","if(false){");
+ code=code.replace("const result={status:","if(stage==='specification'){if(!prompt.includes('Make actual file edits now'))throw new Error('DOCUMENTATION_EDIT_CHECKPOINT_MISSING');fs.writeFileSync('docs/behavior.md','Updated documentation');}const result={status:");
+ writeFileSync(f.executable,code);
+ const r=spawnSync(process.execPath,[cli,'run','sample','--assignment',assignment,'--project',f.repo,'--codex-path',f.executable],{encoding:'utf8',env:f.env,timeout:30000});assert.equal(r.status,0,r.stderr);const report=JSON.parse(r.stdout);assert.deepEqual(report.changes.map(c=>c.path),['docs/behavior.md']);assert.ok(!report.commands.some(c=>c.stage==='red-test'));assert.equal(report.status,'completed');
 });

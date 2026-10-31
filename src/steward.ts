@@ -693,7 +693,7 @@ export class StewardSession {
         const spec = await turn(
           "specification",
           documentationOnly
-            ? "Document the intended change only. Set regression=null and explain why behavioral testing is skipped."
+            ? "Make actual file edits now in the assigned documentation/skill scope. Update the documentation itself, preserving applicable existing content; a prose-only description in your response does not satisfy this checkpoint. Do not edit implementation or tests. Set regression=null and explain why behavioral testing is skipped."
             : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
         );
         if (!specificationFinished) await finishSpecification(spec);
