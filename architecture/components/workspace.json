@@ -76,7 +76,8 @@
       "src",
       "tests",
       "docs",
-      "dist"
+      "dist",
+      "fixtures/http"
     ]
   },
   "schemaVersion": 2,
