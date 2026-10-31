@@ -9,6 +9,7 @@ function planned(t,mode='success') {
  const path=join(f.repo,'architecture/execution-profiles/luna.json');
  const profile=JSON.parse(readFileSync(path));profile.schemaVersion=2;profile.maxTurns=4;writeFileSync(path,JSON.stringify(profile));f.commit();
  let code=readFileSync(f.executable,'utf8');
+ code=code.replace("process.chdir(args[args.indexOf('--cd')+1]);","const schema=JSON.parse(fs.readFileSync(args[args.indexOf('--output-schema')+1]));function strict(s){if(!s||typeof s!=='object')return;if(s.properties&&Object.keys(s.properties).some(k=>!s.required?.includes(k)))throw new Error('STRICT_REQUIRED');if(s.uniqueItems!==undefined)throw new Error('STRICT_UNIQUE_ITEMS');Object.values(s).forEach(v=>Array.isArray(v)?v.forEach(strict):strict(v));}strict(schema);process.chdir(args[args.indexOf('--cd')+1]);");
  code=code.replace("const result={status:","const result={plan:null,planUpdates:[],status:");
  code=code.replace("if(stage==='specification'",`if(stage==='planning')result.plan={approach:'Check bounded behavior',assumptions:[],activities:[{activity:'implementation',reason:'Apply objective'}],items:[{id:'work',activity:'implementation',result:'Verified objective',criteria:[0],expectedEvidence:['verification'],dependencies:[],status:'pending',evidence:[],explanation:''}],questions:[]};
  if(stage!=='planning')result.planUpdates=[{id:'work',status:'completed',explanation:'Observed change and verification',evidence:['source.txt']}];
