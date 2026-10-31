@@ -1,0 +1,53 @@
+id: task-intake
+type: library
+purpose: Initialize assignments and propose accountable owners before execution
+path: src/task-intake
+objectives:
+  - Interpret requests and identify accountable existing owners
+  - Report missing responsibilities and architectural questions precisely
+constraints:
+  - Intake runtime is introduced in increment three; this definition does not claim it is delivered
+  - Never silently broaden a captured assignment or grant write authority
+allowedWritePaths:
+  - src/task-intake
+  - tests/task-intake
+  - docs/task-intake
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Keep public contracts explicit and independently verified
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/task-intake
+    - tests/task-intake
+    - docs/task-intake
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Planned initialization result and task proposal contract
+documentation: []
+tests: []
+relatedIds:
+  - architecture-maintenance
+  - assignment
+  - workday
+parentId: cli-package
+operationIds: []

@@ -1,0 +1,23 @@
+schemaVersion: 2
+id: guidance-tests
+purpose: Run the captured guidance validator tests
+kind: command
+repository: arcnexus
+cwd: .
+category: unit-test
+activities:
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - --test
+  - tests/guidance-validation/guidance.test.mjs
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes:
+  - command: node
+    args:
+      - -e
+      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['--version']).status!==0)process.exit(1)

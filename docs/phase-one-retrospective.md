@@ -17,7 +17,7 @@ on callers to remember a flag.
 
 At phase-one completion the adapter used medium reasoning, workspace-write, approval
 never, no agent network/web search, and a launcher inserting `--ignore-user-config`.
-[The current execution contract](execution-contract.md) enables hosted research
+[The current execution contract](steward/execution-contract.md) enables hosted research
 and clarifies verification handoff while retaining disabled command networking.
 It reuses existing Codex authentication. Host environment setup and host verification
 are separate from the agent's sandbox; setup may install declared dependencies.

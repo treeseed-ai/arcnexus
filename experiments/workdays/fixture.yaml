@@ -1,0 +1,21 @@
+schemaVersion: 1
+requester:
+  component: gateway
+  assignment: gateway.yaml
+  refresh: []
+recipient:
+  component: identity
+  assignment: identity.yaml
+  refresh: []
+dependency:
+  from: gateway
+  to: identity
+  contract: identity-label
+  delivery: "Verified formatIdentity result includes label `Identity: <id>` while preserving id"
+acceptance:
+  - id: combined
+    command: node
+    args:
+      - ../checks/workday-contract.mjs
+    artifacts:
+      - ../checks/workday-contract.mjs

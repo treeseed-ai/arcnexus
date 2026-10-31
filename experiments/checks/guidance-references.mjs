@@ -16,7 +16,7 @@ try{
  for(const [label,value] of Object.entries({empty:[],nullValue:null,falseValue:false,mapping:{path:'docs/guide.md'},scalar:'docs/guide.md',duplicate:['docs/guide.md','docs/guide.md'],absolute:[join(root,'docs/guide.md')],traversal:['docs/../docs/guide.md'],escape:['../guide.md'],missing:['docs/missing.md'],untracked:['untracked.md'],directory:['docs'],symlink:['link.md'],parentSymlink:['nested/guide.md'],emptyEntry:[''],wrongType:[42]}))run(value,1,label);
  if(process.argv.includes('--combined')){
   const skillText=readFileSync('.agents/skills/documentation-writer/SKILL.md','utf8');assert.match(skillText,/references:/);assert.match(skillText,/docs\/guidance-maintenance\.md/);
-  const guide=readFileSync('docs/guidance-maintenance.md','utf8');for(const pattern of [/references/i,/track/i,/readab/i,/integrat/i])assert.match(guide,pattern);
+  const guide=readFileSync('docs/agent-guidance/guidance-maintenance.md','utf8');for(const pattern of [/references/i,/track/i,/readab/i,/integrat/i])assert.match(guide,pattern);
   const r=spawnSync(process.execPath,[cli,'guidance','validate','--project','.'],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);
  }
  console.log('Independent references policy acceptance passed');

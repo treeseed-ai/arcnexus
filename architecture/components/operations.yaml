@@ -1,0 +1,56 @@
+id: operations
+type: library
+purpose: Execute declared commands and supervise local services and probes
+path: src/operations
+objectives:
+  - Execute captured engineering operations and preserve their evidence
+  - Stop managed subprocesses and services when their execution scope ends
+constraints:
+  - Never infer setup commands or broaden captured operation authority
+  - Preserve caller cancellation and resource ownership checks
+allowedWritePaths:
+  - src/operations
+  - tests/operations
+  - docs/operations
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Keep public contracts explicit and independently verified
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/operations
+    - tests/operations
+    - docs/operations
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Declared operation execution and results
+  - Managed service lifecycle and functional probes
+documentation:
+  - docs/operations/steward-operations.md
+tests:
+  - tests/operations/operations.test.mjs
+  - tests/operations/services.test.mjs
+relatedIds:
+  - workspace
+  - steward
+parentId: cli-package
+operationIds: []

@@ -20,7 +20,7 @@ if(kind==='boundary'){
   const logs=record.commands.map(c=>readFileSync(c.log,'utf8'));
   assert.ok(logs.some(log=>log.includes('FAULT_INJECTED:')&&log.includes('VERIFIED_OUTCOME_REQUIRED')));
   assert.ok(logs.some(log=>log.includes('FAULT_REPAIR_OBSERVED:')&&log.includes('Independent activity/outcome summary acceptance passed')));
-  assert.doesNotMatch(readFileSync(record.workspace+'/src/report.ts','utf8'),/INJECTED_WRONG_OUTCOME/);
+  assert.doesNotMatch(readFileSync(record.workspace+'/src/report/report.ts','utf8'),/INJECTED_WRONG_OUTCOME/);
  }
 }
 console.log('Independent '+kind+' outcome acceptance passed; findings still require caller review');

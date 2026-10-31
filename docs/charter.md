@@ -80,7 +80,8 @@ are not automatic context.
 ## Initial technical direction
 
 The founding conversation recommends TypeScript, an existing Codex execution harness,
-JSON component definitions, SQLite when coordination persistence is needed, and later
+component definitions (now authored in YAML with legacy JSON compatibility), SQLite
+when coordination persistence is needed, and later
 Hono plus React/Vite. Use one repository and a small backend process. Verify the
 current harness interface and authentication during phase-one planning; historical
 API examples and model names in the conversation are not verified current contracts.
@@ -129,7 +130,7 @@ the arrangement with two Luna workers before scaling the number of stewards.
 
 - Phase two uses a verified change in the shared candidate as its delivery milestone.
   Threads continue only within the same live workday; process interruption ends the
-  workday without automatic recovery. See [workdays](workdays.md).
+  workday without automatic recovery. See [workdays](workday/workdays.md).
 - Later: which architectural decisions may stewards accept themselves, and which
   require the human or an explicitly authorized parent steward?
 

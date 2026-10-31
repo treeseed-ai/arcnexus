@@ -20,27 +20,27 @@ node dist/cli.js run identity "Implement the objective" --project /path/to/repos
 
 Runs default to `gpt-6-luna` with medium reasoning; `--model` explicitly overrides it.
 
-Targets declare [environment setup](docs/workspaces.md) and [components](docs/stewards.md).
+Targets declare [environment setup](docs/workspace/workspaces.md) and [components](docs/cli/stewards.md).
 The application creates and retains a dedicated worktree. Review its evidence and
 changes; commits, PRs and integration remain caller-owned. Use `cleanup <workspace-id>`
 only after resolving candidate source changes. Branches and reports are preserved.
 
 `npm test` runs deterministic built-CLI acceptance. `npm run check` checks TypeScript.
-[CI](docs/ci.md) also validates repository guidance. The separate
+[CI](docs/development-tooling/ci.md) also validates repository guidance. The separate
 [live acceptance](docs/acceptance/live-sample.md) invokes real model work explicitly.
 
-See the [versioned architecture contract](docs/architecture-contract.md) for catalog
+See the [versioned architecture contract](docs/architecture/architecture-contract.md) for catalog
 validation, immutable assignment inspection, and structured caller acceptance checks.
 
 Validate tracked guidance in the current checkout with
 `node dist/cli.js guidance validate --project .` after building. See
-[guidance validation](docs/guidance-validation.md) for the metadata-only contract and
-[maintenance](docs/guidance-maintenance.md) for stewardship ownership.
+[guidance validation](docs/guidance-validation/guidance-validation.md) for the metadata-only contract and
+[maintenance](docs/agent-guidance/guidance-maintenance.md) for stewardship ownership.
 
-[Experiments](docs/experiments.md) provide explicit simulation and live qualification
+[Experiments](docs/experiments/experiments.md) provide explicit simulation and live qualification
 modes through the same supervised runtime.
 
-[Two-owner workdays](docs/workdays.md) add bounded contract requests, verified
+[Two-owner workdays](docs/workday/workdays.md) add bounded contract requests, verified
 delivery and same-thread requester continuation in one managed candidate. Inspect
 the captured manifest with `workday inspect`, execute with `workday run`, and use
 `workday status` / `workday follow` for retained coordination evidence. SQLite is

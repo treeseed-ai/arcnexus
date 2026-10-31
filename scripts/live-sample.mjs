@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { stateRoot } from '../dist/state.js';
+import { stateRoot } from '../dist/workspace/state.js';
 const supervisor = resolve(import.meta.dirname, '..');
 const samples = join(stateRoot(), 'samples');
 mkdirSync(samples, { recursive: true, mode: 0o700 });

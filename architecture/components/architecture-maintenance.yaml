@@ -1,0 +1,59 @@
+id: architecture-maintenance
+type: library
+purpose: Maintain architectural ownership definitions under caller authority
+path: architecture
+objectives:
+  - Maintain readable definitions with accountable, disjoint ownership
+  - Propose architectural changes with explicit acceptance criteria
+constraints:
+  - Caller accepts architectural authority changes
+  - Candidate definition edits never change authority for an active execution
+allowedWritePaths:
+  - architecture
+  - README.md
+  - CHANGELOG.md
+  - docs/charter.md
+  - docs/dev.md
+  - docs/phase-one-retrospective.md
+  - docs/guidance-audit.md
+  - docs/plans
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Keep public contracts explicit and independently verified
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - architecture
+    - docs/plans
+    - .
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Maintained architecture catalog and ownership policy
+  - Reviewable component and ownership proposals
+documentation: []
+tests: []
+relatedIds:
+  - architecture
+  - agent-guidance
+  - task-intake
+parentId: cli-package
+operationIds: []

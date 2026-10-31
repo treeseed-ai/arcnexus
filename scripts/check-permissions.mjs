@@ -1,4 +1,4 @@
-import { preparePermissions } from '../dist/permissions.js';
+import { preparePermissions } from '../dist/architecture/permissions.js';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';

@@ -1,0 +1,47 @@
+id: change-inspection
+type: library
+purpose: Inspect candidate edits and retain complete review evidence
+path: src/change-inspection
+objectives:
+  - Detect all staged, unstaged and untracked changes without losing candidate state
+constraints:
+  - Do not change sandbox permissions or verification requirements
+  - Caller owns commits and integration
+  - Do not edit architecture or unrelated files
+allowedWritePaths:
+  - src/change-inspection
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+patterns:
+  - Document intent, test observable behavior, implement
+  - Verify actual SDK executable arguments and report settings
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/change-inspection
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "changes/checkScope: observed Git evidence"
+documentation: []
+tests: []
+relatedIds: []
+questions: []
+parentId: cli-package
+operationIds: []

@@ -1,0 +1,34 @@
+id: identity
+type: library
+purpose: Predictable identity and session helpers
+path: src
+objectives:
+  - Small deterministic functions with explicit boundaries
+constraints:
+  - Keep normalizeIdentity behavior unchanged
+  - No added dependencies
+allowedWritePaths:
+  - src
+  - tests
+  - README.md
+verification:
+  - command: npm
+    args:
+      - test
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - .
+schemaVersion: 2
+repository: identity
+role: systems-engineer
+executionProfile: luna
+interfaces: []
+documentation:
+  - README.md
+tests: []
+relatedIds: []
+questions: []
+patterns: []
+operationIds: []

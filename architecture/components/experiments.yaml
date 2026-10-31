@@ -1,0 +1,62 @@
+id: experiments
+type: library
+purpose: Resolve and execute repeatable experiments with honestly labeled evidence
+path: src/experiments
+objectives:
+  - Resolve and execute repeatable experiments with honestly labeled evidence
+constraints:
+  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Caller owns commits and integration
+allowedWritePaths:
+  - src/experiments
+  - tests/experiments
+  - docs/experiments
+  - experiments
+  - qualification
+  - fixtures
+  - scripts
+verification:
+  - command: node
+    args:
+      - --test
+      - tests/experiments/experiments.test.mjs
+      - tests/experiments/qualification.test.mjs
+      - tests/experiments/workday-experiments.test.mjs
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/experiments
+    - tests/experiments
+    - docs/experiments
+    - experiments
+    - qualification
+    - fixtures
+    - scripts
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces: []
+documentation:
+  - docs/experiments/experiments.md
+  - docs/experiments/qualification.md
+tests:
+  - tests/experiments/experiments.test.mjs
+  - tests/experiments/qualification.test.mjs
+  - tests/experiments/sample-check.test.mjs
+  - tests/experiments/workday-experiments.test.mjs
+relatedIds: []
+parentId: cli-package
+operationIds: []

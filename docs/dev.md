@@ -16,7 +16,7 @@ detailed implementation plan.
 | Phase | Current status and next proof |
 | --- | --- |
 | 1. Single steward | Delivered: managed workspace/setup, SDK execution, verification, evidence and guarded cleanup. See the [implementation sequence](plans/phase-one.md), [live sample](acceptance/live-sample.md) and [self-development evidence](acceptance/self-development.md). |
-| 2. Two stewards | Delivered: bounded requests, verified delivery, partial-change parking and same-thread continuation, proven by a live contract fixture and real guidance/validator self-management. See [workdays](workdays.md) and [retained evidence](acceptance/workdays.md). |
+| 2. Two stewards | Delivered: bounded requests, verified delivery, partial-change parking and same-thread continuation, proven by a live contract fixture and real guidance/validator self-management. See [workdays](workday/workdays.md) and [retained evidence](acceptance/workdays.md). |
 | 3. Minimal UI | Planned: architect selects a component, directs work and reviews evidence through the same runtime. |
 | 4. Expanded governance | Planned: deepen inherited patterns, contract validation and conformance checks based on actual use. |
 | 5. Multi-project operation | Planned: prove one real package relationship before broad composition and release coordination. |
@@ -47,8 +47,8 @@ The excerpts below reproduce source sections 2–7 and 9–14, including the fin
 starting point, verbatim apart from trailing blank lines. Section 8's illustrative
 source-tree layout and the earlier conceptual discussion are omitted. The numbering,
 examples and wording belong to the original proposal. They are not current CLI,
-SDK, schema or API reference; use [stewards](stewards.md) and
-[workspaces](workspaces.md) for implemented interfaces. SQLite coordination is delivered; Hono/React remain future direction. Current decisions above take precedence where
+SDK, schema or API reference; use [stewards](cli/stewards.md) and
+[workspaces](workspace/workspaces.md) for implemented interfaces. SQLite coordination is delivered; Hono/React remain future direction. Current decisions above take precedence where
 historical sequencing differs.
 
 <!-- source-planning:milestones:start -->

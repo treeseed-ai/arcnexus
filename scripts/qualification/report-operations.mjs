@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
 import {resolve} from 'node:path';
-const {markdownReport}=await import(pathToFileURL(resolve('dist/report.js')));
+const {markdownReport}=await import(pathToFileURL(resolve('dist/report/report.js')));
 const base={id:'qualification',source:'/source',workspace:'/candidate',branch:'candidate',base:'abc',commonDir:'/git',status:'completed',startedAt:'2026-10-31T00:00:00Z',environment:{},commands:[]};
 const captured={...base,operations:[{id:'alpha',exitCode:0,durationMs:17,log:'/evidence/alpha.log'},{id:'beta',exitCode:1,durationMs:23,log:'/evidence/beta.log'}],services:[{id:'local',status:'stopped',endpointClosed:true}]};
 const before=JSON.stringify(captured),report=markdownReport(captured);

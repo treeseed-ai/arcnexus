@@ -1,0 +1,27 @@
+schemaVersion: 2
+id: guidance-validation
+purpose: Check tracked skill metadata and instruction readability
+kind: command
+repository: arcnexus
+cwd: .
+category: cli-check
+activities:
+  - research
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - dist/cli.js
+  - guidance
+  - validate
+  - --project
+  - .
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes:
+  - command: node
+    args:
+      - -e
+      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['-e','process.exit(0)']).status!==0)process.exit(1)

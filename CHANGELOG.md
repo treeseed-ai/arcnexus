@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Read YAML configuration and group implementation by accountable owner (#63).
+
 ### Added
 
 - Qualify two-owner workdays with declarative experiments and real guidance self-management (#60).

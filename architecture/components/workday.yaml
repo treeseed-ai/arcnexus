@@ -1,0 +1,57 @@
+id: workday
+type: library
+purpose: Resolve and execute bounded two-owner workdays
+path: src/workday
+objectives:
+  - Resolve and execute bounded two-owner workdays
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/workday
+  - tests/workday
+  - docs/workday
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - One host writer; candidate input never widens authority
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/workday
+    - tests/workday
+    - docs/workday
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Captured two-owner workday contract
+documentation:
+  - docs/workday/workdays.md
+tests:
+  - tests/workday/handoffs.test.mjs
+  - tests/workday/parking.test.mjs
+  - tests/workday/workday-interruption.test.mjs
+  - tests/workday/workdays.test.mjs
+relatedIds:
+  - assignment
+  - workspace
+  - report
+parentId: cli-package
+operationIds: []

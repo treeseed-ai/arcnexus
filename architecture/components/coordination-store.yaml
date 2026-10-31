@@ -1,0 +1,54 @@
+id: coordination-store
+type: library
+purpose: Persist atomic workday coordination and ordered evidence
+path: src/coordination-store
+objectives:
+  - Persist atomic workday coordination and ordered evidence
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/coordination-store
+  - tests/coordination-store
+  - docs/coordination-store
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - One host writer; candidate input never widens authority
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/coordination-store
+    - tests/coordination-store
+    - docs/coordination-store
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Atomic SQLite coordination transitions
+documentation:
+  - docs/coordination-store/coordination-store.md
+tests:
+  - tests/coordination-store/workday-store.test.mjs
+relatedIds:
+  - assignment
+  - workspace
+  - report
+parentId: cli-package
+operationIds: []

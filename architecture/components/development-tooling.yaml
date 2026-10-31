@@ -1,0 +1,65 @@
+id: development-tooling
+type: library
+purpose: Maintain build, formatting, lint and repository structural checks
+path: tests/development-tooling
+objectives:
+  - Keep builds and deterministic tests reproducible
+  - Maintain formatting, linting, CI and shared test infrastructure
+constraints:
+  - Do not weaken independent acceptance to make candidate work pass
+  - Keep generated output separate from maintained source
+allowedWritePaths:
+  - tests/development-tooling
+  - docs/development-tooling
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - .github
+  - .gitignore
+  - src/cli.ts
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Keep public contracts explicit and independently verified
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - tests/development-tooling
+    - docs/development-tooling
+    - .github
+    - .gitignore
+    - .
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - npm run build, npm run check and npm test
+  - Stable dist/cli.js executable entry point
+documentation:
+  - docs/development-tooling/ci.md
+tests:
+  - tests/development-tooling/catalog-fixture.mjs
+  - tests/development-tooling/handoff-fixture.mjs
+  - tests/development-tooling/operations-fixture.mjs
+  - tests/development-tooling/workflow-fixture.mjs
+relatedIds:
+  - cli
+  - architecture
+parentId: cli-package
+operationIds: []

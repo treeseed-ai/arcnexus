@@ -1,0 +1,36 @@
+schemaVersion: 2
+id: http
+type: gateway
+repository: http-sample
+role: systems-engineer
+executionProfile: luna
+purpose: Provide a local HTTP readiness endpoint
+path: server.mjs
+objectives:
+  - Return a ready JSON response at /health
+constraints:
+  - Loopback only; no external infrastructure
+interfaces:
+  - GET /health
+documentation:
+  - README.md
+tests: []
+relatedIds: []
+questions: []
+patterns: []
+allowedWritePaths:
+  - server.mjs
+  - README.md
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - .
+verification:
+  - command: node
+    args:
+      - --check
+      - server.mjs
+operationIds:
+  - serve
+  - health

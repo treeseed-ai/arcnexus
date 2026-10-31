@@ -1,0 +1,58 @@
+id: report
+type: library
+purpose: Expose honest, readable evidence from a steward execution
+path: src/report
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve JSON evidence and existing report fields
+  - Use the captured execution record without inspecting mutable target files
+  - Keep the supervising runner unchanged
+allowedWritePaths:
+  - src/report
+  - tests/report
+  - docs/report
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - --test
+      - tests/report/report.test.mjs
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/report
+    - tests/report
+    - docs/report
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "saveMarkdown: render captured execution record"
+documentation:
+  - docs/report/report.md
+tests:
+  - tests/report/report.test.mjs
+relatedIds: []
+parentId: cli-package
+operationIds:
+  - report-tests

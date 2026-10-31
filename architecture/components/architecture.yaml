@@ -1,0 +1,60 @@
+id: architecture
+type: library
+purpose: Resolve architectural definitions and immutable assignment inputs; execution is owned by
+  the assignment component
+path: src/architecture
+objectives:
+  - Make actual execution outcomes easy to inspect
+constraints:
+  - Preserve captured authority and evidence
+allowedWritePaths:
+  - src/architecture
+  - tests/architecture
+  - docs/architecture
+  - schemas
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+questions: []
+patterns:
+  - Evidence-backed completion
+  - Small functions with coherent responsibilities
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/architecture
+    - tests/architecture
+    - docs/architecture
+    - schemas
+schemaVersion: 2
+repository: arcnexus
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - "loadCatalog: immutable graph validation"
+  - "resolveAssignment: captured authority and deterministic digest"
+documentation:
+  - docs/architecture/architecture-contract.md
+  - docs/architecture/component-access.md
+  - docs/architecture/configuration.md
+tests:
+  - tests/architecture/architecture.test.mjs
+  - tests/architecture/catalog-ownership.test.mjs
+  - tests/architecture/permissions.test.mjs
+relatedIds:
+  - assignment
+parentId: cli-package
+operationIds: []
