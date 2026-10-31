@@ -10,7 +10,7 @@ ArcNexus is the Architecture Studio described below.
 Read the [charter](charter.md) for current architectural authority and the
 [phase-one retrospective](phase-one-retrospective.md) before designing coordination.
 Read the [pre-phase-two qualification](acceptance/pre-phase-two.md) for the current
-single-steward gate and preserved live evidence. Only the next useful slice needs a
+single-steward gate and preserved live evidence. The [operations qualification](acceptance/steward-operations.md) adds captured plans/checklists, managed operations, parent-loss supervision and selected prior findings, including a retained failed case and its verified workflow fix. Only the next useful slice needs a
 detailed implementation plan.
 
 | Phase | Current status and next proof |

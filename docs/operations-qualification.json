@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-31",
+  "model": "gpt-6-luna",
+  "reasoning": "medium",
+  "campaigns": [
+    {
+      "path": "qualification/20261031-operations/campaign.json",
+      "sha256": "7bb70df9c85b489f345ef02689f50fa783fa6db36b66d7afd5223e632e77bb93",
+      "status": "failed",
+      "runnerHash": "9c4df050d9936a65e66f7699071a8d0d58ab1e79995d9b8d3993b656f0f324d7",
+      "finalRunnerHash": "9c4df050d9936a65e66f7699071a8d0d58ab1e79995d9b8d3993b656f0f324d7",
+      "manifestHash": "70abe72a316a67aa14d9fcaaf26d7be36e7a3c382b562fe0713226e03afe558c",
+      "cases": [
+        {
+          "case": "report-change",
+          "status": "passed",
+          "workspaceId": "cb82b7e3-5f35-4e0c-bb35-5f5eb3e72444",
+          "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+          "report": "runs/cb82b7e3-5f35-4e0c-bb35-5f5eb3e72444/report.json",
+          "reportSha256": "b3f9ba9fed22a2d91426fffdf4019143d6ed8e442f8d44d1045595e502657c1f",
+          "assignmentDigest": "6e1ec4e6ed7a7902d46161728ea574dbac4d550d41467398d22f8b1c421af35b",
+          "turns": [
+            "planning",
+            "specification",
+            "implementation",
+            "review"
+          ],
+          "outcome": "ready_for_integration",
+          "elapsedMs": 422753,
+          "operationCalls": 2,
+          "services": [],
+          "usage": {
+            "input_tokens": 587016,
+            "cached_input_tokens": 523392,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 8008,
+            "reasoning_output_tokens": 1883
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": null,
+          "error": null
+        },
+        {
+          "case": "report-corrective-repair",
+          "status": "passed",
+          "workspaceId": "feb0ff0e-dd67-46f4-a92b-26090e3a5730",
+          "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+          "report": "runs/feb0ff0e-dd67-46f4-a92b-26090e3a5730/report.json",
+          "reportSha256": "0ba6f5e4100d644b05b6d60fb1579c3da89181e98022ffadcb615adf69251b96",
+          "assignmentDigest": "d232e5bca59dd0ebfca9bb6af84725bdf92bf422f2e64c0c1ee3a5b5a00fe9fb",
+          "turns": [
+            "planning",
+            "specification",
+            "implementation",
+            "correction",
+            "review"
+          ],
+          "outcome": "ready_for_integration",
+          "elapsedMs": 651068,
+          "operationCalls": 3,
+          "services": [],
+          "usage": {
+            "input_tokens": 1013946,
+            "cached_input_tokens": 874112,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 15890,
+            "reasoning_output_tokens": 7452
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": "One-time external acceptance harness replaces the implemented Operations heading; unchanged check must fail then pass after Luna edits real code.",
+          "error": null
+        },
+        {
+          "case": "treeseed-command",
+          "status": "passed",
+          "workspaceId": "5149abe5-5f25-4ef1-af9e-a8e0a0d46e1a",
+          "base": "6d5676317eab400c1e473bb2e0a89f575973c296",
+          "report": "runs/5149abe5-5f25-4ef1-af9e-a8e0a0d46e1a/report.json",
+          "reportSha256": "b84db621fa2fdc18c46b6ef2daa9d63e87db14d4c5b50c98203750f474762c44",
+          "assignmentDigest": "fb8974d1d0c856fa89ba305055f43e9e1e08beeb6746c995d10550439cbcd24c",
+          "turns": [
+            "planning",
+            "research"
+          ],
+          "outcome": "research_completed",
+          "elapsedMs": 50412,
+          "operationCalls": 1,
+          "services": [],
+          "usage": {
+            "input_tokens": 235063,
+            "cached_input_tokens": 188928,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3195,
+            "reasoning_output_tokens": 212
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": null,
+          "error": null
+        },
+        {
+          "case": "local-http",
+          "status": "failed",
+          "workspaceId": "33deb528-ddd8-4e49-8086-d4ec655008de",
+          "base": "5ecf737fada6bb22737011ffa85689a0a11fc5cc",
+          "report": "runs/33deb528-ddd8-4e49-8086-d4ec655008de/report.json",
+          "reportSha256": "f8ac193ee510ad1072ac70d466c5efd3b1c79b1d00b4e0b7d1d95e8e0176400a",
+          "assignmentDigest": "63bc300d48f8887a4b2ab2b56a2744feabdbd5ad65534cfb509e437be5dbbeb1",
+          "turns": [
+            "planning",
+            "research"
+          ],
+          "outcome": "failed",
+          "elapsedMs": 16094,
+          "operationCalls": 0,
+          "services": [],
+          "usage": {
+            "input_tokens": 78492,
+            "cached_input_tokens": 57216,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1128,
+            "reasoning_output_tokens": 55
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": null,
+          "error": "Error: Unexpected execution outcome: Error: Assignment checklist remains incomplete or blocked"
+        },
+        {
+          "case": "prior-evidence-research",
+          "status": "passed",
+          "workspaceId": "a8212335-df29-456d-9300-fa6e78f372ff",
+          "base": "0c2d68e9377f7512dda4de70094c176a52e0b395",
+          "report": "runs/a8212335-df29-456d-9300-fa6e78f372ff/report.json",
+          "reportSha256": "11cbf6f97456c73e41248486a689c66b7b1866ecb887d6f1f87d02ef9023a2e0",
+          "assignmentDigest": "739b83c3dfe278190e52f4464445e071e00f02d844cb3026890b2f615334fecd",
+          "turns": [
+            "planning",
+            "research"
+          ],
+          "outcome": "research_completed",
+          "elapsedMs": 147387,
+          "operationCalls": 1,
+          "services": [],
+          "usage": {
+            "input_tokens": 184918,
+            "cached_input_tokens": 158976,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2227,
+            "reasoning_output_tokens": 0
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": null,
+          "error": null
+        }
+      ]
+    },
+    {
+      "path": "qualification/20261031-http-workflow-fix/campaign.json",
+      "sha256": "385227913293220529bed9613939ce457e118d52f0731c37900b18c6c5b9fb26",
+      "status": "passed",
+      "runnerHash": "a16cd99fd6626ae2f6ea982f5c3506cb4bef88baf0d70572286b3a928644e2cc",
+      "finalRunnerHash": "a16cd99fd6626ae2f6ea982f5c3506cb4bef88baf0d70572286b3a928644e2cc",
+      "manifestHash": "f848eae57056da802944e70597f0279a9556e5a53001c5987e02fed373d63a74",
+      "cases": [
+        {
+          "case": "local-http",
+          "status": "passed",
+          "workspaceId": "464f7659-0878-40b1-8711-4b497e06e529",
+          "base": "5ecf737fada6bb22737011ffa85689a0a11fc5cc",
+          "report": "runs/464f7659-0878-40b1-8711-4b497e06e529/report.json",
+          "reportSha256": "05f96e5d2cf6945d3734a1555668351974dff11fedf087a2ac73cd0c1b5c97c9",
+          "assignmentDigest": "63bc300d48f8887a4b2ab2b56a2744feabdbd5ad65534cfb509e437be5dbbeb1",
+          "turns": [
+            "planning",
+            "research"
+          ],
+          "outcome": "research_completed",
+          "elapsedMs": 32027,
+          "operationCalls": 5,
+          "services": [
+            {
+              "id": "serve",
+              "status": "stopped",
+              "endpointClosed": true
+            }
+          ],
+          "usage": {
+            "input_tokens": 252970,
+            "cached_input_tokens": 221312,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1997,
+            "reasoning_output_tokens": 212
+          },
+          "usageComplete": true,
+          "callerInterventions": [],
+          "faultInjection": null,
+          "error": null
+        }
+      ]
+    }
+  ]
+}
