@@ -3,7 +3,8 @@ type: library
 purpose: Adapt the Codex harness with explicit execution permissions and evidence
 path: src/steward
 objectives:
-  - Research and implement bounded objectives with independently verified evidence
+  - Research and implement bounded objectives with independently verified
+    evidence
 constraints:
   - Caller owns commits and integration
   - Do not edit architecture or weaken host verification
@@ -27,10 +28,19 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 patterns:
   - Document intent, test observable behavior, implement
   - Verify actual SDK executable arguments and report settings
-  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
+  - Context acceptance is shared with assignment/steward ownership; caller
+    reviews changes
 access:
   readPaths:
     - .
@@ -47,10 +57,11 @@ interfaces:
 documentation:
   - docs/steward/execution-contract.md
 tests:
-  - tests/steward/context.test.mjs
-  - tests/steward/parent-loss.test.mjs
+  - tests/steward/context.test.ts
+  - tests/steward/parent-loss.test.ts
 relatedIds:
   - architecture
 questions: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - steward-lint

@@ -1,18 +1,18 @@
-import { ConfigurationReader } from "../architecture/configuration.js";
-import { readFileSync, statSync } from "node:fs";
-import { dirname, resolve, isAbsolute } from "node:path";
-import { validateSchema } from "../architecture/schema.js";
+import { readFileSync, statSync } from 'node:fs';
+import { dirname, isAbsolute, resolve } from 'node:path';
 import {
+  digest,
   resolveAssignment,
   resolveBase,
-  digest,
   type Assignment,
-  type ResolvedAssignment,
   type HostCheck,
-} from "../architecture/assignment.js";
-import { loadBindings } from "../architecture/bindings.js";
-import { commands, InputError, type Command } from "../architecture/config.js";
-import { covered } from "../architecture/components.js";
+  type ResolvedAssignment,
+} from '../architecture/assignment.js';
+import { loadBindings } from '../architecture/bindings.js';
+import { covered } from '../architecture/components.js';
+import { commands, InputError, type Command } from '../architecture/config.js';
+import { ConfigurationReader } from '../architecture/configuration.js';
+import { validateSchema } from '../architecture/schema.js';
 interface Participant {
   component: string;
   assignment: string;
@@ -38,9 +38,9 @@ export interface WorkdayInput {
   base: string;
   requester: WorkdayParticipant;
   recipient: WorkdayParticipant;
-  dependency: Definition["dependency"];
+  dependency: Definition['dependency'];
   acceptance: HostCheck[];
-  artifacts: ResolvedAssignment["artifacts"];
+  artifacts: ResolvedAssignment['artifacts'];
   digest: string;
 }
 export function resolveWorkday(
@@ -52,10 +52,7 @@ export function resolveWorkday(
 ): WorkdayInput {
   try {
     const configurationSources = [new ConfigurationReader().file(path)];
-    const definition = validateSchema<Definition>(
-        "workday",
-        configurationSources[0]!.value,
-      ),
+    const definition = validateSchema<Definition>('workday', configurationSources[0]!.value),
       selection = resolveBase(project, base),
       bindings = loadBindings(bindingsPath);
     if (bindings.configurationSource) configurationSources.push(bindings.configurationSource);
@@ -64,35 +61,28 @@ export function resolveWorkday(
         ...c,
         command: tools[c.command] ?? bindings?.tools[c.command] ?? c.command,
         artifacts: c.artifacts.map((p) => resolve(directory, p)),
-        args: c.args.map((a) =>
-          c.artifacts.includes(a) ? resolve(directory, a) : a,
-        ),
+        args: c.args.map((a) => (c.artifacts.includes(a) ? resolve(directory, a) : a)),
       }));
     const participant = (p: Participant): WorkdayParticipant => {
       const file = resolve(dirname(path), p.assignment);
       const source = new ConfigurationReader().file(file);
       configurationSources.push(source);
-      const value = validateSchema<Assignment>(
-          "assignment",
-          structuredClone(source.value),
-        );
+      const value = validateSchema<Assignment>('assignment', structuredClone(source.value));
       value.hostChecks = checks(value.hostChecks, dirname(file));
       value.priorEvidence = value.priorEvidence?.map((ref) => ({
         ...ref,
         path: resolve(dirname(file), ref.path),
       }));
-      const resolved = resolveAssignment(
-        selection.source,
-        selection.base,
-        p.component,
-        { value, bindings },
-      );
+      const resolved = resolveAssignment(selection.source, selection.base, p.component, {
+        value,
+        bindings,
+      });
       commands(p.refresh);
       if (
-        resolved.executionProfile.model !== "gpt-6-luna" ||
-        resolved.executionProfile.reasoning !== "medium"
+        resolved.executionProfile.model !== 'gpt-6-luna' ||
+        resolved.executionProfile.reasoning !== 'medium'
       )
-        throw new InputError("Workdays require Luna/medium profiles");
+        throw new InputError('Workdays require Luna/medium profiles');
       return { resolved, maxAttempts: p.maxAttempts ?? 1, refresh: p.refresh };
     };
     const requester = participant(definition.requester),
@@ -102,7 +92,7 @@ export function resolveWorkday(
       definition.dependency.from !== requester.resolved.componentId ||
       definition.dependency.to !== recipient.resolved.componentId
     )
-      throw new InputError("Invalid two-owner dependency edge");
+      throw new InputError('Invalid two-owner dependency edge');
     const a = requester.resolved.context.at(-1)!,
       b = recipient.resolved.context.at(-1)!;
     if (
@@ -110,9 +100,7 @@ export function resolveWorkday(
       (requester.resolved.environment.workspace &&
         a.repository !== requester.resolved.environment.workspace.primary.id)
     )
-      throw new InputError(
-        "Both owners must belong to the same primary repository",
-      );
+      throw new InputError('Both owners must belong to the same primary repository');
     if (
       requester.resolved.allowedWritePaths.some(
         (p) =>
@@ -120,25 +108,22 @@ export function resolveWorkday(
           recipient.resolved.allowedWritePaths.some((q) => covered(q, [p])),
       )
     )
-      throw new InputError("Workday owner writable scopes overlap");
+      throw new InputError('Workday owner writable scopes overlap');
     const acceptance = checks(definition.acceptance, dirname(path)),
-      artifacts: ResolvedAssignment["artifacts"] = [],
+      artifacts: ResolvedAssignment['artifacts'] = [],
       ids = new Set<string>();
     for (const c of acceptance) {
       commands([c]);
       if (!isAbsolute(c.command) || ids.has(c.id))
-        throw new InputError(
-          "Independent checks require absolute executable and unique identity",
-        );
+        throw new InputError('Independent checks require absolute executable and unique identity');
       ids.add(c.id);
       for (const p of c.artifacts) {
-        if (!statSync(p).isFile())
-          throw new InputError("Expected acceptance artifact");
+        if (!statSync(p).isFile()) throw new InputError('Expected acceptance artifact');
         const bytes = readFileSync(p);
         if (!artifacts.some((a) => a.path === p))
           artifacts.push({
             path: p,
-            content: bytes.toString("base64"),
+            content: bytes.toString('base64'),
             sha256: digest(bytes),
           });
       }

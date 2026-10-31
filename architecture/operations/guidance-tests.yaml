@@ -9,10 +9,10 @@ activities:
   - testing
   - implementation
   - review
-command: node
+command: npm
 args:
-  - --test
-  - tests/guidance-validation/guidance.test.mjs
+  - run
+  - test:guidance-validation
 timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []

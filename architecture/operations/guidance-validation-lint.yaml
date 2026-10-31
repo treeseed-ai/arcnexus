@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: guidance-validation-lint
+purpose: Read-only lint feedback for guidance-validation
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/guidance-validation
+  - tests/guidance-validation
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

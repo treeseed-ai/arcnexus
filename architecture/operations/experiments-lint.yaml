@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: experiments-lint
+purpose: Read-only lint feedback for experiments
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/experiments
+  - tests/experiments
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

@@ -38,3 +38,6 @@ Thumbs.db
 
 # Documentation 
 /docs/.astro/
+
+# Compiled TypeScript acceptance tests
+.test-build/

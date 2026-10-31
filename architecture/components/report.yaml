@@ -20,10 +20,10 @@ verification:
   - command: npm
     args:
       - test
-  - command: node
+  - command: npm
     args:
-      - --test
-      - tests/report/report.test.mjs
+      - run
+      - test:report
   - command: node
     args:
       - dist/cli.js
@@ -31,6 +31,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -51,8 +59,9 @@ interfaces:
 documentation:
   - docs/report/report.md
 tests:
-  - tests/report/report.test.mjs
+  - tests/report/report.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - report-tests
+  - report-lint

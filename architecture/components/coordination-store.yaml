@@ -25,6 +25,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -45,10 +53,11 @@ interfaces:
 documentation:
   - docs/coordination-store/coordination-store.md
 tests:
-  - tests/coordination-store/workday-store.test.mjs
+  - tests/coordination-store/workday-store.test.ts
 relatedIds:
   - assignment
   - workspace
   - report
 parentId: cli-package
-operationIds: []
+operationIds:
+  - coordination-store-lint

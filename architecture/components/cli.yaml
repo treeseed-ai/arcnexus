@@ -3,7 +3,8 @@ type: gateway
 purpose: Expose predictable command-line execution settings and lifecycle operations
 path: src/cli
 objectives:
-  - Use affordable Luna-sized stewards by default while respecting explicit model selection
+  - Use affordable Luna-sized stewards by default while respecting explicit
+    model selection
 constraints:
   - Do not change sandbox permissions or verification requirements
   - Caller owns commits and integration
@@ -26,6 +27,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 patterns:
   - Document intent, test observable behavior, implement
   - Verify actual SDK executable arguments and report settings
@@ -51,4 +60,5 @@ relatedIds:
   - workspace
 questions: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - cli-lint

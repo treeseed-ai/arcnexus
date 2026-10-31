@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 const target = resolve(process.argv[2] ?? '');
-const { normalizeIdentity, isSessionExpired } = await import(pathToFileURL(join(target, 'src/identity.mjs')).href);
+const { normalizeIdentity, isSessionExpired } = await import(
+  pathToFileURL(join(target, 'src/identity.mjs')).href
+);
 assert.equal(normalizeIdentity(' Ada '), 'ada');
 assert.equal(typeof isSessionExpired, 'function', 'isSessionExpired must be exported');
 for (const expiry of [-100, 0, 100, 1700000000000]) {

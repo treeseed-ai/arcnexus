@@ -6,7 +6,9 @@ const validators = new Map<string, ReturnType<typeof ajv.compile>>();
 export function validateSchema<T>(name: string, value: unknown): T {
   let validate = validators.get(name);
   if (!validate) {
-    validate = ajv.compile(JSON.parse(readFileSync(new URL(`../../schemas/${name}.json`, import.meta.url), 'utf8')));
+    validate = ajv.compile(
+      JSON.parse(readFileSync(new URL(`../../schemas/${name}.json`, import.meta.url), 'utf8')),
+    );
     validators.set(name, validate);
   }
   if (!validate(value)) throw new Error(`Invalid ${name}: ${ajv.errorsText(validate.errors)}`);

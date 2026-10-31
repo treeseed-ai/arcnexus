@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: workday-lint
+purpose: Read-only lint feedback for workday
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/workday
+  - tests/workday
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

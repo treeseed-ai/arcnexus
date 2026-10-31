@@ -1,0 +1,23 @@
+schemaVersion: 2
+id: development-tooling-lint
+purpose: Read-only lint feedback for development-tooling
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - tests/development-tooling
+  - src/cli.ts
+  - eslint.config.ts
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

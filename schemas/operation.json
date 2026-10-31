@@ -35,7 +35,8 @@
         "unit-test",
         "integration-test",
         "cli-check",
-        "http-check"
+        "http-check",
+        "lint"
       ]
     },
     "activities": {

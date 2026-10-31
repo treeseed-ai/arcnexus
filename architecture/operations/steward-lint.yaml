@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: steward-lint
+purpose: Read-only lint feedback for steward
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/steward
+  - tests/steward
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

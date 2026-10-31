@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { parseDocument, visit, isScalar } from 'yaml';
-import { git } from "../operations/process.js";
+import { isScalar, parseDocument, visit } from 'yaml';
+import { git } from '../operations/process.js';
 
 export interface ConfigurationSource {
   path: string;
@@ -17,9 +17,14 @@ export const isConfiguration = (path: string) => /\.(json|yaml|yml)$/.test(path)
 function normalize(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalize);
   if (value !== null && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, normalize(item)]));
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+        .map(([key, item]) => [key, normalize(item)]),
+    );
   }
-  if (typeof value === 'number' && !Number.isFinite(value)) throw new Error('Expected finite JSON-compatible number');
+  if (typeof value === 'number' && !Number.isFinite(value))
+    throw new Error('Expected finite JSON-compatible number');
   return value;
 }
 
@@ -31,18 +36,23 @@ export class ConfigurationReader {
       if (document.errors.length) throw document.errors[0];
       if (document.warnings.length) throw document.warnings[0];
       visit(document, {
-        Alias() { throw new Error('YAML aliases are not permitted'); },
+        Alias() {
+          throw new Error('YAML aliases are not permitted');
+        },
         Node(_key, node) {
           if (node.tag || node.anchor) throw new Error('YAML tags and anchors are not permitted');
         },
         Pair(_key, pair) {
-          if (!isScalar(pair.key) || typeof pair.key.value !== 'string' || pair.key.value === '<<') throw new Error('Expected string mapping key; merge keys are not permitted');
+          if (!isScalar(pair.key) || typeof pair.key.value !== 'string' || pair.key.value === '<<')
+            throw new Error('Expected string mapping key; merge keys are not permitted');
         },
       });
       const value: unknown = path.endsWith('.json') ? JSON.parse(text) : document.toJS();
       const normalized = JSON.stringify(normalize(value));
       return { path, text, value, sourceHash: hash(text), normalizedHash: hash(normalized) };
-    } catch (error) { throw new Error(`${path}: ${String(error)}`); }
+    } catch (error) {
+      throw new Error(`${path}: ${String(error)}`);
+    }
   }
 
   file(path: string): ConfigurationSource {
@@ -51,12 +61,26 @@ export class ConfigurationReader {
 
   revision(repository: string, base: string, path: string): ConfigurationSource {
     const mode = git(repository, 'ls-tree', base, '--', path).split(' ')[0];
-    if (!['100644', '100755'].includes(mode!)) throw new Error(`Definition must be a regular tracked file: ${path}`);
+    if (!['100644', '100755'].includes(mode!))
+      throw new Error(`Definition must be a regular tracked file: ${path}`);
     return this.parse(path, git(repository, 'show', `${base}:${path}`));
   }
 
   definition(repository: string, base: string, stem: string): ConfigurationSource {
-    const paths = git(repository, 'ls-tree', '-r', '--name-only', base, '--', stem + '.yaml', stem + '.yml', stem + '.json').trim().split('\n').filter(Boolean);
+    const paths = git(
+      repository,
+      'ls-tree',
+      '-r',
+      '--name-only',
+      base,
+      '--',
+      stem + '.yaml',
+      stem + '.yml',
+      stem + '.json',
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean);
     if (paths.length !== 1) throw new Error(`Missing or ambiguous definition: ${stem}`);
     return this.revision(repository, base, paths[0]!);
   }

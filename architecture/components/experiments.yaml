@@ -5,7 +5,8 @@ path: src/experiments
 objectives:
   - Resolve and execute repeatable experiments with honestly labeled evidence
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - src/experiments
@@ -16,12 +17,10 @@ allowedWritePaths:
   - fixtures
   - scripts
 verification:
-  - command: node
+  - command: npm
     args:
-      - --test
-      - tests/experiments/experiments.test.mjs
-      - tests/experiments/qualification.test.mjs
-      - tests/experiments/workday-experiments.test.mjs
+      - run
+      - test:experiments
   - command: node
     args:
       - dist/cli.js
@@ -29,6 +28,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -53,10 +60,11 @@ documentation:
   - docs/experiments/experiments.md
   - docs/experiments/qualification.md
 tests:
-  - tests/experiments/experiments.test.mjs
-  - tests/experiments/qualification.test.mjs
-  - tests/experiments/sample-check.test.mjs
-  - tests/experiments/workday-experiments.test.mjs
+  - tests/experiments/experiments.test.ts
+  - tests/experiments/qualification.test.ts
+  - tests/experiments/sample-check.test.ts
+  - tests/experiments/workday-experiments.test.ts
 relatedIds: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - experiments-lint

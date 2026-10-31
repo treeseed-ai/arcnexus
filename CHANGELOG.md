@@ -4,6 +4,8 @@
 
 ### Changed
 
+- Compile class-based TypeScript tests and enforce compact owner-scoped code quality (#64).
+
 - Read YAML configuration and group implementation by accountable owner (#63).
 
 ### Added

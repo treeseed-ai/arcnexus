@@ -3,7 +3,8 @@ type: library
 purpose: Inspect candidate edits and retain complete review evidence
 path: src/change-inspection
 objectives:
-  - Detect all staged, unstaged and untracked changes without losing candidate state
+  - Detect all staged, unstaged and untracked changes without losing candidate
+    state
 constraints:
   - Do not change sandbox permissions or verification requirements
   - Caller owns commits and integration
@@ -25,6 +26,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 patterns:
   - Document intent, test observable behavior, implement
   - Verify actual SDK executable arguments and report settings
@@ -44,4 +53,5 @@ tests: []
 relatedIds: []
 questions: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - change-inspection-lint

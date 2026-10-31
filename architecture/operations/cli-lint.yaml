@@ -1,0 +1,21 @@
+schemaVersion: 2
+id: cli-lint
+purpose: Read-only lint feedback for cli
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/cli
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

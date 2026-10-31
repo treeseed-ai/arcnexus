@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: workspace-lint
+purpose: Read-only lint feedback for workspace
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/workspace
+  - tests/workspace
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []
