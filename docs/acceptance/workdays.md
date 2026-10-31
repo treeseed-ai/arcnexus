@@ -60,3 +60,15 @@ correctly stopped with `no_changes`. A dedicated documentation-only built-CLI
 regression now requires the prompt to request actual file edits. No part of this
 failed combined candidate was integrated. Campaign:
 `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-3/campaign.json`.
+
+`guidance-live-4` was deliberately cancelled after an inference-free capability probe
+showed that the installed Codex `0.163.0-alpha.10.2` protects `.agents` under a
+whole-worktree write grant. Cancellation restored parked changes and retained evidence.
+The probe used `codex sandbox --permission-profile arcnexus`, generated filesystem
+configuration, Node 22.22.1, and an isolated `CODEX_HOME`. Writing a fixture skill failed
+with `EROFS` for `writeDirectories: ["."]`; it passed with the explicitly declared
+`[".", ".agents/skills"]` policy. This is a catalog correction, not a sandbox bypass.
+The [Codex security documentation](https://learn.chatgpt.com/docs/agent-approvals-security)
+describes protected agent directories. The guidance definition must declare its skill
+directory explicitly, and inspection must preserve that declaration.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-4/campaign.json`.
