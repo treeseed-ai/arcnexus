@@ -69,3 +69,9 @@ turn's context. Use those paths for target commands: a login shell can replace t
 inherited PATH. This is executable location context, not extra write authority or
 runtime installation. Host verification remains authoritative when the steward
 cannot run a command within its sandbox.
+
+A bound executable outside the minimal system filesystem also needs visibility.
+Each caller-declared tool binding grants read-only access to its resolved containing
+directory (never write access); these directories appear in execution settings.
+No arbitrary ancestor directories are exposed. This permits installed tool binaries
+outside system locations without exposing the rest of the caller's home directory.
