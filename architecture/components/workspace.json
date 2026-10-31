@@ -16,7 +16,11 @@
     "tests/runtime/workspace.test.mjs",
     "docs/workspaces.md",
     "src/process.ts",
-    "src/state.ts"
+    "src/state.ts",
+    "src/bindings.ts",
+    "src/members.ts",
+    "tests/runtime/composed.test.mjs",
+    "docs/composed-workspaces.md"
   ],
   "verification": [
     {
@@ -74,10 +78,12 @@
     "createWorkspace/prepareWorkspace/cleanup: owned lifecycle"
   ],
   "documentation": [
-    "docs/workspaces.md"
+    "docs/workspaces.md",
+    "docs/composed-workspaces.md"
   ],
   "tests": [
-    "tests/runtime/workspace.test.mjs"
+    "tests/runtime/workspace.test.mjs",
+    "tests/runtime/composed.test.mjs"
   ],
   "relatedIds": [],
   "parentId": "cli-package"

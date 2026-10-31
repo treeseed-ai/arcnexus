@@ -16,7 +16,8 @@
     "src/assignment.ts",
     "schemas",
     "docs/architecture-contract.md",
-    "tests/runtime/architecture.test.mjs"
+    "tests/runtime/architecture.test.mjs",
+    "tests/runtime/catalog-ownership.test.mjs"
   ],
   "verification": [
     {
@@ -79,7 +80,8 @@
     "docs/architecture-contract.md"
   ],
   "tests": [
-    "tests/runtime/architecture.test.mjs"
+    "tests/runtime/architecture.test.mjs",
+    "tests/runtime/catalog-ownership.test.mjs"
   ],
   "relatedIds": [
     "assignment"
