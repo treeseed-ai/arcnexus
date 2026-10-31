@@ -71,6 +71,14 @@ for (const mode of [
         w.error,
         /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination/i,
       );
+      if (mode === "unknown-owner")
+        assert.match(
+          readFileSync(
+            join(f.state, "workdays", w.workspaceId, "report.md"),
+            "utf8",
+          ),
+          /ownerId.*unknown/,
+        );
       if (mode === "no-delivery")
         assert.equal(
           w.messages.some((m) => m.payload.decision === "delivered"),

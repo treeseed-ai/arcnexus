@@ -78,6 +78,23 @@ export function workdayMetrics(report: WorkdayReport) {
 export function workdayMarkdown(report: WorkdayReport): string {
   const metrics = workdayMetrics(report),
     requests = report.messages.filter((m) => m.kind === "request"),
+    unrouted = report.assignments
+      .flatMap((a) =>
+        Array.isArray(a.requests)
+          ? (a.requests as Array<Record<string, unknown>>)
+          : [],
+      )
+      .filter(
+        (r) =>
+          !requests.some((m) => {
+            const p = m.payload as Record<string, unknown>;
+            return (
+              p.fromComponent === r.fromComponent &&
+              p.ownerId === r.ownerId &&
+              p.request === r.request
+            );
+          }),
+      ),
     outstanding = requests.filter(
       (r) =>
         !report.messages.some(
@@ -102,7 +119,7 @@ export function workdayMarkdown(report: WorkdayReport): string {
           `- ${text(m.id)}: ${text(m.from)} → ${text(m.to)}; ${text(m.kind)}; reply to ${text(m.replyTo)}; ${text(JSON.stringify(m.payload))}`,
       )
       .join("\n") +
-    `\n\n## Outstanding needs\n\n${outstanding.length ? outstanding.map((m) => "- " + text(JSON.stringify(m.payload))).join("\n") : "No undelivered request recorded."}\n\n## Host checks\n\n` +
+    `\n\n## Outstanding needs\n\n${outstanding.length || unrouted.length ? [...outstanding.map((m) => "- " + text(JSON.stringify(m.payload))), ...unrouted.map((r) => "- Unrouted agent claim (not host-authorized): " + text(JSON.stringify(r)))].join("\n") : "No undelivered request recorded."}\n\n## Host checks\n\n` +
     report.assignments
       .flatMap((a) =>
         a.commands.map(
