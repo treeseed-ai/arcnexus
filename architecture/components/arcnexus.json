@@ -59,7 +59,7 @@
       "."
     ]
   },
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "arcnexus",
   "role": "systems-engineer",
   "executionProfile": "luna",
@@ -71,5 +71,6 @@
   "tests": [
     "tests"
   ],
-  "relatedIds": []
+  "relatedIds": [],
+  "operationIds": []
 }

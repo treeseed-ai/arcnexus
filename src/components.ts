@@ -1,9 +1,10 @@
+import type { Operation } from './operations.js';
 import { commands, environment, InputError, relativePath, type Command } from './config.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { git } from './process.js';
 import { validateSchema } from './schema.js';
 export interface Component {
-  schemaVersion: 1; id: string; type: string; repository: string; purpose: string; path: string;
+  schemaVersion: 1|2; operationIds?:string[]; id: string; type: string; repository: string; purpose: string; path: string;
   objectives: string[]; constraints: string[]; access: AccessPolicy; allowedWritePaths: string[];
   verification: Command[]; parentId?: string; questions: string[]; patterns: string[];
   interfaces: string[]; documentation: string[]; tests: string[]; relatedIds: string[];
@@ -11,9 +12,9 @@ export interface Component {
   members?: { foundations: string[]; dependencies: string[]; gateways: string[]; libraries: string[]; releases: string[] };
 }
 export interface Role { schemaVersion: 1; id: string; purpose: string; responsibilities: string[]; activities: string[] }
-export interface ExecutionProfile { schemaVersion: 1|2; id: string; model: string; reasoning: 'low'|'medium'|'high'; webSearch: 'live'|'disabled'; timeoutSeconds: number; commandTimeoutSeconds: number; maxTurns: 3|4; maxCorrectiveTurns: 2 }
+export interface ExecutionProfile { schemaVersion: 1|2; id: string; model: string; reasoning: 'low'|'medium'|'high'; webSearch: 'live'|'disabled'; timeoutSeconds: number; commandTimeoutSeconds: number; operationCategories?:string[];maxOperationCalls?:number;maxTurns: 3|4; maxCorrectiveTurns: 2 }
 export interface CompositionProfile {schemaVersion:1;id:string;platformId:string;packageIds:string[]}
-export interface Catalog { compositions: Record<string,CompositionProfile>; components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
+export interface Catalog { operations:Record<string,Operation>; compositions: Record<string,CompositionProfile>; components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
 export const covered = (path: string, scope: string[]) => scope.some(p => p === '.' || path === p || path.startsWith(`${p}/`));
 export const scopePath = (path: string) => path === '.' ? path : relativePath(path);
 function read<T>(repository: string, base: string, path: string, schema: string): T {
@@ -34,7 +35,7 @@ export function ancestry(catalog: Catalog, id: string): Component[] {
 }
 export function loadCatalog(repository: string, base: string): Catalog {
   try {
-    const catalog: Catalog = { compositions: {}, components: {}, roles: {}, profiles: {} };
+    const catalog: Catalog = { operations:{},compositions: {}, components: {}, roles: {}, profiles: {} };
     const paths = git(repository, 'ls-tree', '-r', '--name-only', base, '--', 'architecture').split('\n').sort();
     const groups = [['components','component',catalog.components],['roles','role',catalog.roles],['execution-profiles','execution-profile',catalog.profiles]] as const;
     for (const [directory, schema, target] of groups) for (const path of paths.filter(p => p.startsWith(`architecture/${directory}/`) && p.endsWith('.json'))) {
@@ -42,12 +43,14 @@ export function loadCatalog(repository: string, base: string): Catalog {
       if (path !== `architecture/${directory}/${value.id}.json`) throw new InputError(`Identity must match filename: ${path}`);
       Object.defineProperty(target, value.id, { value, enumerable: true, configurable: true });
     }
+    for(const path of paths.filter(p=>p.startsWith('architecture/operations/')&&p.endsWith('.json'))){const operation=read<Operation>(repository,base,path,'operation');if(path!==`architecture/operations/${operation.id}.json`)throw new InputError('Operation identity must match filename');scopePath(operation.cwd);operation.generatedDirectories.forEach(scopePath);operation.artifacts.forEach(scopePath);commands([operation,...operation.probes]);Object.defineProperty(catalog.operations,operation.id,{value:operation,enumerable:true});}
     environment(read(repository, base, 'architecture/environment.json', 'environment'));
     if (!Object.keys(catalog.components).length) throw new InputError('No components defined');
     for (const c of Object.values(catalog.components)) {
       scopePath(c.path); validateAccess(c.access);
       for (const p of [...c.allowedWritePaths, ...c.documentation, ...c.tests]) scopePath(p);
       commands(c.verification);
+      for(const id of c.operationIds??[]){const op=catalog.operations[id];if(!Object.hasOwn(catalog.operations,id)||op?.repository!==c.repository)throw new InputError('Missing operation or conflicting repository owner: '+id);if(!op.activities.every(a=>catalog.roles[c.role]?.activities.includes(a)))throw new InputError('Operation activity outside role');}
       if (!Object.hasOwn(catalog.roles,c.role) || !Object.hasOwn(catalog.profiles,c.executionProfile)) throw new InputError(`Missing role/execution profile for ${c.id}`);
       if (c.allowedWritePaths.some(p => !covered(p,c.access.writeDirectories))) throw new InputError(`Uncovered writable scope: ${c.id}`);
       const ancestors = ancestry(catalog,c.id).slice(0,-1);

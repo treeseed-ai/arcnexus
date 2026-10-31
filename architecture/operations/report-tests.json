@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "id": "report-tests",
+  "purpose": "Run focused report acceptance tests",
+  "kind": "command",
+  "repository": "arcnexus",
+  "cwd": ".",
+  "category": "unit-test",
+  "activities": [
+    "research",
+    "testing",
+    "implementation",
+    "review"
+  ],
+  "command": "node",
+  "args": [
+    "--test",
+    "tests/runtime/report.test.mjs"
+  ],
+  "timeoutSeconds": 120,
+  "generatedDirectories": [],
+  "artifacts": [],
+  "probes": []
+}

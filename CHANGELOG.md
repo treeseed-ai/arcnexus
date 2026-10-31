@@ -4,6 +4,8 @@
 
 ### Added
 
+- Expose captured engineering operations with bounded host feedback (#42).
+
 - Capture steward assignment plans, checklists and a live execution timeline (#41).
 
 ### Added

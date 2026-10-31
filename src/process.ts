@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { openSync, closeSync } from 'node:fs';
+import { openSync, closeSync, writeSync } from 'node:fs';
 import type { Command } from './config.js';
 export function git(cwd: string, ...args: string[]): string {
   const result = spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8', timeout: 30_000, maxBuffer: 32 * 1024 * 1024, env: { ...process.env, GIT_TERMINAL_PROMPT: '0' } });
@@ -12,7 +12,7 @@ export async function execute(command: Command, cwd: string, log: string, signal
   const start = Date.now(), fd = openSync(log, 'wx', 0o600);
   const result: CommandResult = { ...command, cwd, startedAt: new Date(start).toISOString(), durationMs: 0, exitCode: null, log };
   return new Promise((resolve, reject) => {
-    const child = spawn(command.command, command.args, { cwd, env: options.env, detached: true, stdio: ['ignore', fd, fd] });
+    const child = spawn(command.command, command.args, { cwd, env: options.env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
     let failure: Error | undefined;
     let killTimer: NodeJS.Timeout | undefined;
     const terminate = (reason: Error) => {
@@ -22,6 +22,9 @@ export async function execute(command: Command, cwd: string, log: string, signal
         killTimer ??= setTimeout(() => { try { process.kill(-child.pid!, 'SIGKILL'); } catch {} }, 300);
       }
     };
+    let outputBytes=0;
+    const capture=(chunk:Buffer)=>{const remaining=64*1024*1024-outputBytes;if(remaining>0)writeSync(fd,chunk.subarray(0,remaining));outputBytes+=chunk.length;if(outputBytes>64*1024*1024)terminate(new Error('Command output limit exceeded'));};
+    child.stdout!.on('data',capture);child.stderr!.on('data',capture);
     const abort = () => terminate(new Error(String(signal.reason)));
     const timer = setTimeout(() => terminate(new Error('Command timed out')), options.timeoutMs ?? 120_000);
     signal.addEventListener('abort', abort, { once: true });
