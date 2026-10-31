@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+import { resolveWorkday } from './workday-config.js';
+import { viewWorkday } from './workday-view.js';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { ExperimentRunner } from './experiments.js';
@@ -18,6 +20,9 @@ import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
+  workday status <workday-id> [--json]
+  workday follow <workday-id> [--json] [--after <sequence>]
   experiment inspect <manifest> --bindings <file> [--json]
   experiment run <manifest> --bindings <file> --mode simulation|live [--output <new-directory>]
   guidance validate --project <repository> [--json]
@@ -68,6 +73,19 @@ async function main(): Promise<void> {
     if (values.help) { console.log(help); return; }
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
+    if(command==='workday'){
+      const action=positionals[1];
+      if(positionals.length!==3)throw new InputError('workday requires action and manifest/identity');
+      if(action==='inspect'){
+        if(!values.project||Object.keys(values).some(k=>!['project','base','bindings','json'].includes(k)))throw new InputError('workday inspect requires --project');
+        console.log(JSON.stringify(resolveWorkday(positionals[2]!,values.project,values.base,values.bindings),null,values.json?undefined:2));return;
+      }
+      if(action==='status'||action==='follow'){
+        if(Object.keys(values).some(k=>!['json','after'].includes(k))||values.after!==undefined&&(action!=='follow'||!/^\d+$/.test(values.after)||!Number.isSafeInteger(Number(values.after))))throw new InputError('Invalid workday viewer arguments');
+        await viewWorkday(stateRoot(),positionals[2]!,action==='follow',!!values.json,Number(values.after??0),controller.signal);return;
+      }
+      throw new InputError('Unknown workday action');
+    }
     if (command === 'experiment') {
       const action=positionals[1];
       if(positionals.length!==3||!['inspect','run'].includes(action??'')||!values.bindings||Object.keys(values).some(key=>!['bindings','mode','output','json'].includes(key)))throw new InputError('experiment inspect/run requires manifest and --bindings');

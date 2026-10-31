@@ -1,0 +1,81 @@
+{
+  "id": "workday",
+  "type": "library",
+  "purpose": "Resolve and execute bounded two-owner workdays",
+  "path": "src/workday-config.ts",
+  "objectives": [
+    "Resolve and execute bounded two-owner workdays"
+  ],
+  "constraints": [
+    "Preserve captured authority and evidence"
+  ],
+  "allowedWritePaths": [
+    "src/workday-config.ts",
+    "src/workday-view.ts",
+    "schemas/workday.json",
+    "docs/workdays.md",
+    "tests/runtime/workdays.test.mjs"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": "node",
+      "args": [
+        "dist/cli.js",
+        "guidance",
+        "validate",
+        "--project",
+        "."
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "One host writer; candidate input never widens authority"
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "src",
+      "schemas",
+      "docs",
+      "tests",
+      "dist"
+    ]
+  },
+  "schemaVersion": 2,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [
+    "Captured two-owner workday contract"
+  ],
+  "documentation": [
+    "docs/workdays.md"
+  ],
+  "tests": [
+    "tests/runtime/workdays.test.mjs"
+  ],
+  "relatedIds": [
+    "assignment",
+    "workspace",
+    "report"
+  ],
+  "parentId": "cli-package",
+  "operationIds": []
+}

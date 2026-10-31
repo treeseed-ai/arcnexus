@@ -81,7 +81,9 @@
       "report",
       "agent-guidance",
       "guidance-validation",
-      "experiments"
+      "experiments",
+      "workday",
+      "coordination-store"
     ],
     "releases": []
   },
