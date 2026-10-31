@@ -1,0 +1,617 @@
+{
+  "schemaVersion": 1,
+  "phaseTwoReady": false,
+  "campaigns": [
+    {
+      "id": "20261031-single-steward-1",
+      "status": "failed",
+      "sha256": "86dff9d3ad2f1f84de20b974b25bea7dea9e85871e1a0434f09db85b69acf99c",
+      "runnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "finalRunnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "cases": [
+        {
+          "case": "arc-change",
+          "status": "passed",
+          "runId": "b53b8418-c6dc-4df5-b941-ad7f504c0744",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 478911,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 113019,
+              "promptBytes": 6750,
+              "usage": {
+                "input_tokens": 367316,
+                "cached_input_tokens": 331136,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3463,
+                "reasoning_output_tokens": 1645
+              }
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 84401,
+              "promptBytes": 6498,
+              "usage": {
+                "input_tokens": 485879,
+                "cached_input_tokens": 474240,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3523,
+                "reasoning_output_tokens": 1729
+              }
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 10466,
+              "promptBytes": 8676,
+              "usage": {
+                "input_tokens": 95898,
+                "cached_input_tokens": 90240,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 851,
+                "reasoning_output_tokens": 486
+              }
+            }
+          ],
+          "implementationAttempts": 1,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 949093,
+            "cached_input_tokens": 895616,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 7837,
+            "reasoning_output_tokens": 3860
+          },
+          "usageComplete": true,
+          "reportSha256": "d1b74816df5e5a7b202f9b051f29bff18db31cc35e02ba24fcd764820205b6b2"
+        },
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "7427b631-9d5e-4c69-80f7-c4d9f71fc4fb",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11756,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "6be5de641d02ce320e6340dff3829fd26a11add46ace42f3b3419c8b33a68542"
+        },
+        {
+          "case": "arc-repair",
+          "status": "passed",
+          "runId": "106038cc-97ef-4295-8c51-55c4bc8d6fd8",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 601408,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 90264,
+              "promptBytes": 7030,
+              "usage": {
+                "input_tokens": 396822,
+                "cached_input_tokens": 359296,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 4618,
+                "reasoning_output_tokens": 2419
+              }
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 72331,
+              "promptBytes": 6778,
+              "usage": {
+                "input_tokens": 268432,
+                "cached_input_tokens": 254592,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2844,
+                "reasoning_output_tokens": 1426
+              }
+            },
+            {
+              "activity": "correction",
+              "status": "completed",
+              "durationMs": 68150,
+              "promptBytes": 8722,
+              "usage": {
+                "input_tokens": 375435,
+                "cached_input_tokens": 366336,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1666,
+                "reasoning_output_tokens": 899
+              }
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 12060,
+              "promptBytes": 9709,
+              "usage": {
+                "input_tokens": 121061,
+                "cached_input_tokens": 114688,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1207,
+                "reasoning_output_tokens": 768
+              }
+            }
+          ],
+          "implementationAttempts": 2,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 1161750,
+            "cached_input_tokens": 1094912,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 10335,
+            "reasoning_output_tokens": 5512
+          },
+          "usageComplete": true,
+          "reportSha256": "425c41c6c4af394d93537125ceeaf6247d4e74e75cd35071ee47c4ce1c32d7af"
+        },
+        {
+          "case": "tree-boundary",
+          "status": "failed",
+          "runId": "330ffeb7-b000-4d75-8617-cb4f86de2dba",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11995,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "fb0a793110bb491dc2d2ea852a962a03ab1ed060d5d09e1e30c693dbe1ffbc57"
+        },
+        {
+          "case": "arc-research",
+          "status": "passed",
+          "runId": "a04463d8-8ea4-4ec9-8d86-f68f7920cc98",
+          "base": "91b2b439526bcc4fa4a5d7dd9e73035d832144bb",
+          "outcome": "research_completed",
+          "error": null,
+          "elapsedMs": 114487,
+          "turns": [
+            {
+              "activity": "research",
+              "status": "completed",
+              "durationMs": 19004,
+              "promptBytes": 7969,
+              "usage": {
+                "input_tokens": 162808,
+                "cached_input_tokens": 127360,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1382,
+                "reasoning_output_tokens": 128
+              }
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 162808,
+            "cached_input_tokens": 127360,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1382,
+            "reasoning_output_tokens": 128
+          },
+          "usageComplete": true,
+          "reportSha256": "87aa93d74c472b73c081fc67101ff48c09680a7f663075fca7d1310a7a5fb638"
+        },
+        {
+          "case": "tree-review",
+          "status": "failed",
+          "runId": "4790a361-b050-4244-82bd-c8f79be6af69",
+          "base": "4718e56e2b310b0a08a2da52de2e08796e75a240",
+          "outcome": "failed",
+          "error": "Error: Command failed (1): /home/adrian/.cache/assembly-840/tools/node_modules/@oven/bun-linux-x64/bin/bun",
+          "elapsedMs": 11510,
+          "turns": [],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": null,
+          "usageComplete": true,
+          "reportSha256": "38973d48548d50da37c1d31ff00a7665a9695bc7584ae9b197a24f70e7041b96"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "finalRunnerHash": "257de938a508b3ba349da42eee55e027d365a8f51e15e7be82b1cda8af37ce09",
+      "id": "20261031-tree-followup-1",
+      "sha256": "2e72cab8b7fc8e34f4e50093a1cf403b938f568c02cb8dc30c4a78702e968bfd",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "e317209b-f7ac-4f4f-a149-efe2e5347d9c",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: Captured verification index 3 (`bun test tests/acceptance/artifact-diagnostics.test.mts`) exited 127: `/bin/bash: line 1: bun: command not found`. The required pre-implementation failure could not be confirmed.",
+          "elapsedMs": 27929,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 24024,
+              "promptBytes": 9959,
+              "usage": {
+                "input_tokens": 183952,
+                "cached_input_tokens": 154752,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2597,
+                "reasoning_output_tokens": 298
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 183952,
+            "cached_input_tokens": 154752,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2597,
+            "reasoning_output_tokens": 298
+          },
+          "usageComplete": true,
+          "reportSha256": "1f141575354233b1fa7dd52ae565c9182070f03724eb5084b1e114c1edef5d08"
+        },
+        {
+          "case": "tree-boundary",
+          "status": "passed",
+          "runId": "6f287f58-de87-4d93-9fe9-6e8dbc9a17a7",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: SDK public contract is absent from the inspected pinned package. The required change belongs to SDK owner sdk-contracts, outside this component\u2019s write authority.; The assignment requires stopping without edits when the contract is absent, so no regression was added and no captured verification command was run. The expected failing regression evidence is unavailable for this turn.",
+          "elapsedMs": 22813,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 19328,
+              "promptBytes": 9897,
+              "usage": {
+                "input_tokens": 157247,
+                "cached_input_tokens": 128512,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 2050,
+                "reasoning_output_tokens": 374
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 157247,
+            "cached_input_tokens": 128512,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 2050,
+            "reasoning_output_tokens": 374
+          },
+          "usageComplete": true,
+          "reportSha256": "34ae9ff2ffbf35ee16e3c411751020fe310f936fcf7e6f1f55f2d4c67561813a"
+        },
+        {
+          "case": "tree-review",
+          "status": "failed",
+          "runId": "56d950d0-484d-4398-8f2c-9190f0aa69a3",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Boundary request has wrong requesting component",
+          "elapsedMs": 36847,
+          "turns": [
+            {
+              "activity": "review",
+              "status": "failed",
+              "durationMs": 33250,
+              "promptBytes": 9420,
+              "usage": {
+                "input_tokens": 327978,
+                "cached_input_tokens": 293632,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3317,
+                "reasoning_output_tokens": 985
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 327978,
+            "cached_input_tokens": 293632,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3317,
+            "reasoning_output_tokens": 985
+          },
+          "usageComplete": true,
+          "reportSha256": "fa459e6ecbdb8c0464c181996fa798e208e7d081ad548e95e046c447500a31ca"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "4c12d60baddd7b6fe05579427d80f1b2f3ef8e0b4d7db08d89e98305debc8ba0",
+      "finalRunnerHash": "4c12d60baddd7b6fe05579427d80f1b2f3ef8e0b4d7db08d89e98305debc8ba0",
+      "id": "20261031-tree-context-1",
+      "sha256": "30b02fb7b9c7ed2af9c429b21d3e81dc4bb8fd2ba574b56e0fa8e581b420bf2e",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "e5e78cd3-4859-4424-b3ab-05cbfdadaf8b",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "blocked",
+          "error": "Error: Agent reported blocked: Captured verification command 3 (`bun run test:artifact-diagnostics`) exited 1 because its spawned diagnostic process could not write to stdout (`EPERM`). The new sorting assertion was not reached. Per instruction, I did not repeat the unavailable check.",
+          "elapsedMs": 42101,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "blocked",
+              "durationMs": 38560,
+              "promptBytes": 11646,
+              "usage": {
+                "input_tokens": 298558,
+                "cached_input_tokens": 257280,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3109,
+                "reasoning_output_tokens": 876
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 298558,
+            "cached_input_tokens": 257280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3109,
+            "reasoning_output_tokens": 876
+          },
+          "usageComplete": true,
+          "reportSha256": "46f968fb9178d4869861079f177500cecc864015717525d712d402bc182d6b7b"
+        },
+        {
+          "case": "tree-review",
+          "status": "passed",
+          "runId": "a2290fe7-6ab0-456c-8608-73f7aec970bc",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "review_completed",
+          "error": null,
+          "elapsedMs": 33938,
+          "turns": [
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 28215,
+              "promptBytes": 20793,
+              "usage": {
+                "input_tokens": 287065,
+                "cached_input_tokens": 241280,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3009,
+                "reasoning_output_tokens": 662
+              },
+              "reviewEvidence": {
+                "basis": "base-first-parent",
+                "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+                "sha256": "a42b218140399952aab804ddf2f303d8d97594f22f541b4d8f708c7e241d4284",
+                "bytes": 9547
+              }
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 287065,
+            "cached_input_tokens": 241280,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 3009,
+            "reasoning_output_tokens": 662
+          },
+          "usageComplete": true,
+          "reportSha256": "5922d899dd0e498d544cbbad65aae954c230974086686a6c2f9f7c0856f14718"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-host-1",
+      "sha256": "a72d100049fa097627cb1daa3557698e01e58f30353d52df5eae6649d1feb713",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "006efd07-955d-4377-aff5-cbe8e64cdfbe",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Regression did not fail with the expected assertion",
+          "elapsedMs": 26596,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 22497,
+              "promptBytes": 12075,
+              "usage": {
+                "input_tokens": 170356,
+                "cached_input_tokens": 142848,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1922,
+                "reasoning_output_tokens": 0
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 170356,
+            "cached_input_tokens": 142848,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1922,
+            "reasoning_output_tokens": 0
+          },
+          "usageComplete": true,
+          "reportSha256": "38991a85a274e2321d2abc8179be6bd020bff4129735102bf68562129187a6c8"
+        }
+      ]
+    },
+    {
+      "status": "failed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-explicit-1",
+      "sha256": "4b1510e1a65f6221894b1eaca319142a0ba7c2c34bcd46e153f5bd5ebf4c5707",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "failed",
+          "runId": "d21e041b-2def-49bf-a2d0-15e87f3a680e",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "failed",
+          "error": "Error: Regression did not fail with the expected assertion",
+          "elapsedMs": 23348,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 18995,
+              "promptBytes": 12726,
+              "usage": {
+                "input_tokens": 153722,
+                "cached_input_tokens": 125568,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1790,
+                "reasoning_output_tokens": 221
+              },
+              "reviewEvidence": null
+            }
+          ],
+          "implementationAttempts": 0,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 153722,
+            "cached_input_tokens": 125568,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 1790,
+            "reasoning_output_tokens": 221
+          },
+          "usageComplete": true,
+          "reportSha256": "27133739dc14a5662e3fd75c954a902f904cc513005f58b211433a09c58499ba"
+        }
+      ]
+    },
+    {
+      "status": "passed",
+      "runnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "finalRunnerHash": "3f122d459f7888683b116e7ac0d5b24fc475ff2f630a90b4afd3d9ad11696526",
+      "id": "20261031-tree-ordered-1",
+      "sha256": "a145e3a2784ba713a73f9e07f88abb247a71656d43e9c74217c39c11d0d0432d",
+      "cases": [
+        {
+          "case": "tree-change",
+          "status": "passed",
+          "runId": "5fd1c042-9ac0-461c-b7c4-d3efc471408c",
+          "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+          "outcome": "ready_for_integration",
+          "error": null,
+          "elapsedMs": 136854,
+          "turns": [
+            {
+              "activity": "specification",
+              "status": "completed",
+              "durationMs": 31951,
+              "promptBytes": 13160,
+              "usage": {
+                "input_tokens": 175400,
+                "cached_input_tokens": 146816,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 3199,
+                "reasoning_output_tokens": 1037
+              },
+              "reviewEvidence": null
+            },
+            {
+              "activity": "implementation",
+              "status": "completed",
+              "durationMs": 83392,
+              "promptBytes": 12479,
+              "usage": {
+                "input_tokens": 678565,
+                "cached_input_tokens": 647936,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 8923,
+                "reasoning_output_tokens": 4550
+              },
+              "reviewEvidence": null
+            },
+            {
+              "activity": "review",
+              "status": "completed",
+              "durationMs": 10143,
+              "promptBytes": 29307,
+              "usage": {
+                "input_tokens": 65385,
+                "cached_input_tokens": 55680,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 899,
+                "reasoning_output_tokens": 513
+              },
+              "reviewEvidence": {
+                "basis": "candidate",
+                "base": "9208ef502de3f8ebfb0ae11b71739b0bb11bcd0d",
+                "sha256": "45b0ce1866ca34d9d2e7954374685c85644506b361592a25403bdc5c8210de03",
+                "bytes": 13458
+              }
+            }
+          ],
+          "implementationAttempts": 1,
+          "callerImplementationFixes": 0,
+          "usage": {
+            "input_tokens": 919350,
+            "cached_input_tokens": 850432,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 13021,
+            "reasoning_output_tokens": 6100
+          },
+          "usageComplete": true,
+          "reportSha256": "ac22a585b026d145043ae0e9f843c5fcc28c582fd4d8e60d35575ec4d56069a5",
+          "callerSpecificationInterventions": 2,
+          "interventionEvidence": "Explicit archive/behavioral marker selection followed by assertion-order clarification; see retained assignment hashes and pre-phase-two.md"
+        }
+      ]
+    }
+  ],
+  "integration": {
+    "arcChange": {
+      "pr": 37,
+      "merge": "f95f950d0cbacf4bf12262c4e0e2b3a0c780d572"
+    },
+    "runtimeContext": {
+      "pr": 39,
+      "merge": "dd8164e474890df497ddbdcab6b68851605051f3"
+    },
+    "treeChange": {
+      "pr": 873,
+      "status": "CI pending"
+    }
+  }
+}

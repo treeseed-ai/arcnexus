@@ -34,6 +34,8 @@
 
 ### Fixed
 
+- Record qualification evidence and correct failure diagnostics and ownership (#32).
+
 - Inspect staged and unstaged candidate changes independently (#22).
 
 - Preserve execution evidence during workspace cleanup (#16).
