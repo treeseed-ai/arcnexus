@@ -36,7 +36,9 @@
   "role": "systems-engineer",
   "executionProfile": "luna",
   "interfaces": [],
-  "documentation": [],
+  "documentation": [
+    "README.md"
+  ],
   "tests": [],
   "relatedIds": [],
   "questions": [],

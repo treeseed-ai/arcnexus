@@ -31,6 +31,7 @@ function argumentsForCommand() {
   } catch (error) { throw new InputError(String(error)); }
 }
 function finalize(root: string, record: RecordData): void {
+  record.outcome ??= record.status;
   record.finishedAt = new Date().toISOString();
   record.elapsedMs = Date.now() - Date.parse(record.startedAt);
   try { captureChanges(root, record); }
@@ -72,7 +73,6 @@ async function main(): Promise<void> {
     if(command==='inspect'){
       console.log(values.json?JSON.stringify(resolved):`Assignment ${resolved!.digest}\n${JSON.stringify(resolved,null,2)}`);return;
     }
-    if(resolved && resolved.assignment.kind!=='change')throw new InputError('Research/review execution requires the workflow increment');
     root = stateRoot(); unlock = lock(root);
     timer = setTimeout(() => controller.abort(new Error('Operation timed out')), (resolved?.executionProfile.timeoutSeconds ?? seconds) * 1000);
     if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));

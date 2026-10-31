@@ -40,8 +40,9 @@ hyphen. Library, gateway and foundation responsibilities can execute. Paths are 
 or directories, not globs. Definitions and verification commands are captured before
 setup/agent execution; changing them cannot authorize new work in that execution.
 
-The systems-engineer steward documents intent, adds failing observable tests, then
-implements. The caller owns Git commits, issues, PRs and integration. The runtime
+The steward follows [host-checked activities](steward-workflow.md): specification
+and regression tests, implementation, then read-only review in the same thread.
+Research/review assignments use one read-only turn and can succeed without edits. The caller owns Git commits, issues, PRs and integration. The runtime
 never embeds ArcNexus repository policy in generic target prompts. Read target
 instructions normally; report conflicts rather than claiming unperformed work.
 
@@ -56,9 +57,10 @@ Target `.codex/config.toml` files are rejected in phase one. Managed host restri
 still apply. Setup commands run on the host and are a separate trusted boundary.
 
 Baseline verification must pass before activation. The agent returns JSON with
-`status` (`completed`, `blocked`, `failed`), `summary`, and `blockers` (string array).
+`status` (`completed`, `blocked`, `failed`), `summary`, `blockers`, findings,
+activity outcomes, regression checkpoint, review findings and owner requests.
 Runtime checks actual changes and reruns captured commands; agent claims alone do
-not establish success. No changes, changed HEAD/branch, out-of-scope edits, escaping
+not establish success. Unchanged change assignments, changed HEAD/branch, out-of-scope edits, escaping
 symlinks, malformed results, blocked work, and failed checks exit nonzero. Scope
 inspection is detection, not complete OS isolation. Changed tests/instructions are
 flagged for human review; they cannot redefine the accepted objective.
@@ -96,3 +98,7 @@ Every definition must declare [component filesystem access](component-access.md)
 whole-worktree access is allowed only when explicitly declared as `.`.
 
 See [bounded corrective attempts](corrective-attempts.md) for opt-in `--max-attempts 2`.
+
+Workflow evidence lives in `activities.jsonl` and `turns/<n>/`. Implementation
+attempts are counted separately from activity turns. See the workflow reference
+for the three-turn default and five-turn maximum with opt-in correction.

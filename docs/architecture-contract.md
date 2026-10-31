@@ -1,8 +1,7 @@
 # Architecture and assignment contract
 
-This is the increment-one contract delivered for #30. Workflow checkpoints
-and composed dependency workspaces follow in separate increments; they are not
-claimed as available by this document.
+This is the increment-one contract delivered for #30. See [workflow checkpoints](steward-workflow.md) for the next execution increment.
+Composed dependency workspaces follow separately.
 
 Architecture files use `schemaVersion: 1`. Built-in JSON Schemas are strict,
 versioned, and resolved locally. Unknown fields, unsupported versions, missing
@@ -55,8 +54,8 @@ Issue numbers provide traceability, not an automatically fetched objective.
 
 Assignments can narrow scope but cannot widen component authority. Every exact
 write path must be covered by declared write directories. `.` must be explicit.
-Research/review outcomes and staged workflow enforcement are delivered in increment
-two; increment one rejects their execution rather than treating them as code work.
+Research/review use source-read-only execution and can complete without edits;
+change assignments follow the [host-checked workflow](steward-workflow.md).
 
 ## Ownership and compatibility
 

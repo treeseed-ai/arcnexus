@@ -6,9 +6,9 @@ import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, t
 import { validateSchema } from './schema.js';
 import { git } from './process.js';
 export interface HostCheck extends Command { id: string; artifacts: string[] }
-export interface Assignment { schemaVersion: 1; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
+export interface Assignment { schemaVersion: 1; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; changeType?: 'behavior'|'documentation'; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
 export interface ResolvedAssignment {
-  schemaVersion: 1; base: string; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
+  schemaVersion: 1; base: string; owners: string[]; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
   role: Role; compositionProfile?: CompositionProfile; executionProfile: ExecutionProfile; allowedWritePaths: string[]; verification: Command[];
   artifacts: Array<{path: string; sha256: string; content: string}>; pendingChecks: string[]; digest: string;
 }
@@ -24,8 +24,9 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     if(options.file && (options.objective!==undefined || options.kind!==undefined))throw new InputError('--assignment excludes objective and --kind');
     const assignment=validateSchema<Assignment>('assignment',options.file?JSON.parse(readFileSync(options.file,'utf8')):{schemaVersion:1,objective:options.objective,kind:options.kind??'change',expectedOutcome:options.objective,acceptanceCriteria:[options.objective],hostChecks:[]});
     if(!assignment.objective.trim())throw new InputError('Objective must not be blank');
-    const allowedWritePaths=assignment.allowedWritePaths??component.allowedWritePaths;
-    for(const p of allowedWritePaths){scopePath(p);if(!covered(p,component.allowedWritePaths))throw new InputError(`Assignment widens component scope: ${p}`);}
+    const requestedPaths=assignment.allowedWritePaths??component.allowedWritePaths;
+    const allowedWritePaths=assignment.kind==='change'?requestedPaths:[];
+    for(const p of requestedPaths){scopePath(p);if(!covered(p,component.allowedWritePaths))throw new InputError(`Assignment widens component scope: ${p}`);}
     const artifacts:ResolvedAssignment['artifacts']=[],seen=new Set<string>();
     for(const check of assignment.hostChecks){
       commands([check]);
@@ -43,7 +44,7 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     const executionProfile={...catalog.profiles[profileId]!};
     if(options.model)executionProfile.model=options.model;
     if(options.timeoutSeconds!==undefined)executionProfile.timeoutSeconds=options.timeoutSeconds;
-    const data={schemaVersion:1 as const,base,componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
+    const data={schemaVersion:1 as const,base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
     return {...data,digest:digest(JSON.stringify(data))};
   }catch(error){throw new InputError(String(error));}
 }

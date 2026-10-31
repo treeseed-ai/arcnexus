@@ -18,9 +18,9 @@ export function logExcerpt(path: string): string {
   finally { closeSync(fd); }
 }
 
-export function archiveAttempt(root: string, record: RecordData, number: number, commandStart: number, prompt: string): void {
-  const dir=join(root,'runs',record.id), target=join(dir,'attempts',String(number));
-  mkdirSync(join(dir,'attempts'),{recursive:true,mode:0o700});
+export function archiveAttempt(root: string, record: RecordData, number: number, commandStart: number, prompt: string, collection: 'attempts'|'turns'='attempts'): void {
+  const dir=join(root,'runs',record.id), target=join(dir,collection,String(number));
+  mkdirSync(join(dir,collection),{recursive:true,mode:0o700});
   mkdirSync(target,{mode:0o700});
   for(const name of artifacts){const source=join(dir,name);if(existsSync(source))cpSync(source,join(target,name));}
   const probe=record.sandboxPreflight as {log?:string}|undefined;
@@ -30,7 +30,7 @@ export function archiveAttempt(root: string, record: RecordData, number: number,
     if(command.log&&existsSync(command.log))cpSync(command.log,join(target,`command-${i}.log`));
   }
   writeFileSync(join(target,'prompt.txt'),prompt,{mode:0o600});
-  const summary=(record.attempts as Array<Record<string,unknown>>).find(a=>a.number===number);
+  const summary=(record[collection] as Array<Record<string,unknown>>).find(a=>a.number===number);
   if(summary)writeFileSync(join(target,'report.json'),JSON.stringify({...record,attempts:undefined,attempt:summary},null,2)+'\n',{mode:0o600});
 }
 
