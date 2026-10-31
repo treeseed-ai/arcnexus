@@ -1,0 +1,37 @@
+# TypeScript and code quality
+
+Issue #64 introduces the following development contract. These commands and limits
+are delivery requirements until implementation and acceptance are complete.
+
+Maintained application code, tests and executable tooling use TypeScript. Test
+suites use cohesive classes with explicit fixture lifecycle and scenario methods.
+Production classes own dependencies or lifecycle state; pure helpers remain small
+functions. Public CLI behavior and production construction-path tests are preserved.
+
+`npm run check` preserves strict compiler checking and includes tests/tooling.
+Linting is syntax-based and does not require TypeScript type analysis. Explicit
+`any` remains allowed; do not replace useful work with exhaustive annotation rules.
+
+## Commands
+
+- `npm run format` formats maintained files; `npm run format:check` checks them.
+- `npm run lint` checks maintained code without changing it.
+- `npm run lint:fix` applies supported fixes within the caller-selected checkout.
+- `npm test` builds the application and TypeScript tests, then runs Node acceptance.
+
+Formatted code has at most 500 physical lines per file and 30 per function, method,
+constructor or callback, counting comments and blank lines. Inline suppression of
+size and ownership checks is prohibited. Generated artifacts, dependencies,
+lockfiles, external payloads and retained historical evidence are excluded.
+Split responsibilities rather than compressing lines or adding trivial wrappers.
+
+## Steward integration
+
+Components expose fixed owner-scoped lint operations. Agents receive their output
+through the existing operation bridge. Captured final verification also runs the
+repository-wide check. Neither host checks nor lint operations silently format or
+modify source; a steward may fix only its originally captured writable scope.
+
+CI checks formatting, lint, ownership, types, build, guidance and deterministic
+acceptance. Its test-infrastructure watchdog is separate from application execution
+limits. Candidate guidance/configuration edits cannot weaken captured host checks.
