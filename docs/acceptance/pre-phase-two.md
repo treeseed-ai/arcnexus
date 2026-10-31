@@ -42,7 +42,7 @@ The research result follows declared ownership despite misleading module names:
 `runSteward` in `src/steward.ts`; `workspace` owns lifecycle implementation. This
 supersedes the earlier probe's filename-based ownership inference, without hiding it.
 
-## Lessons and remaining gate
+## Lessons from the first campaign
 
 The host must remain authoritative for verification: narrower steward permissions
 can prevent running some integration checks or reading an interpreter symlink,
@@ -61,8 +61,8 @@ The campaign summary also mislabeled pre-inference errors as missing Luna settin
 The execution record preserved the real error; a regression now requires the summary
 to expose it before checking model settings.
 
-Phase two remains gated on a successful follow-up TreeSeed change, precise SDK-owner
-escalation, useful read-only review, and normal integration CI/review. Successful
+At this point, phase two remained gated on a successful follow-up TreeSeed change,
+precise SDK-owner escalation, useful read-only review, and normal integration CI/review. Successful
 ArcNexus cases need not be repeated merely because another target failed before
 inference. Follow-up manifests must name their new pinned revision and retain this
 failed campaign separately; no automatic campaign retry is permitted.
@@ -141,10 +141,29 @@ independent acceptance and final checks after read-only review. The independent
 check verifies 32 real archive changes: 20 added, 9 removed and 3 modified, retaining
 metadata/digests and rejecting invalid selection. No caller implementation/test
 fixes were applied to the candidate. Two specification clarifications are recorded.
-The candidate is under normal integration review in
-[Platform #873](https://github.com/treeseed-ai/platform/pull/873); CI is still pending.
+The candidate passed both full CI workflows (41172735548 and 41172735569) and
+caller review, then integrated through [Platform #873](https://github.com/treeseed-ai/platform/pull/873)
+at `c8c620b8a0df4d84d7a66807e5794760d01c54c5`. Its workspace remains retained and
+detached; the merged task branch is deleted. Separate isolated host checks also
+proved inconsistent-baseline rejection and unchanged CLI-only identity fields.
 
 The final runtime refinement is integrated in
 [ArcNexus #39](https://github.com/treeseed-ai/arcnexus/pull/39), with 111 deterministic
 Node tests, six Python tests and CI green. The evidence follow-up also makes every
 source module's executable ownership observable through built `inspect` commands.
+
+## Phase-two entry decision
+
+The specified entry gate is met for bounded assignments with explicit acceptance.
+All six case types have successful evidence, both real changes passed normal CI
+and caller review before integration, and no qualifying candidate required caller
+implementation/test fixes. The final combined deterministic suite passes 113 Node
+tests and six Python tests, with TypeScript/build and assembled CLI smoke checks.
+CI normalizes the canonical repository origin before the real catalog inspection.
+
+This is not a claim that all campaigns passed or that vague assignments are reliable.
+Two caller specification clarifications and the sandbox-local stdio limitation are
+explicit evidence for the next phase. Host verification and precise owner requests
+remain the coordination boundary. No inboxes or multiple-steward execution are
+implemented yet. The next useful slice is one bounded request/reply between two
+owners, retaining sequential execution and the same evidence contract.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "phaseTwoReady": false,
+  "phaseTwoReady": true,
   "campaigns": [
     {
       "id": "20261031-single-steward-1",
@@ -864,8 +864,21 @@
       "merge": "dd8164e474890df497ddbdcab6b68851605051f3"
     },
     "treeChange": {
-      "pr": 873,
-      "status": "CI pending"
+      "pr": "https://github.com/treeseed-ai/platform/pull/873",
+      "merge": "c8c620b8a0df4d84d7a66807e5794760d01c54c5",
+      "candidate": "a46cf638b51c3e580433935acc8228eebcf2b476",
+      "callerImplementationFixes": 0,
+      "callerSpecificationInterventions": 2,
+      "callerChanges": [
+        "CHANGELOG.md",
+        "Git integration commits"
+      ],
+      "workspaceRetainedDetached": true,
+      "taskBranchDeleted": true,
+      "ci": [
+        41172735548,
+        41172735569
+      ]
     }
   },
   "toolchains": {
@@ -877,5 +890,6 @@
     "model": "gpt-6-luna",
     "reasoning": "medium",
     "basis": "Retained execution.json and prerequisite command logs for the named runs"
-  }
+  },
+  "gateBasis": "Six required bounded case types independently passed; both real changes passed normal CI/review and integrated. Earlier failed campaigns remain failed. Final evidence PR CI must pass before merging this index."
 }
