@@ -103,7 +103,9 @@ CLI has one worker role; automated Astra supervision is planned, not delivered.
    for the first slice: sequential scoped ownership in one workday workspace, or
    separate candidates with an explicit integration step. Define the revision used
    by resumed work and test it. Do not accidentally build cross-repository merging.
-4. **Extend the model baseline.** Two Luna sample runs now pass. Use Luna for self-development and coordination acceptance objectives,
+4. **Extend the model baseline.** Two Luna sample runs and a [self-development
+   change with corrective feedback](acceptance/self-development.md) now pass.
+   Use Luna for coordination acceptance objectives,
    with unchanged independent checks. A two-agent success needs both contributions
    and the original objective verified. Failures should identify missing context,
    unclear state or insufficient capability before anyone proposes a larger model.

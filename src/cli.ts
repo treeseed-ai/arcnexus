@@ -58,7 +58,7 @@ async function main(): Promise<void> {
     if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));
     else {
       record = createWorkspace(root, { project: values.project!, base: values.base, issue: values.issue });
-      if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-astra', values['codex-path'] ?? 'codex', controller.signal);
+      if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-luna', values['codex-path'] ?? 'codex', controller.signal);
       else await prepareWorkspace(root, record, controller.signal);
     }
   } catch (error) {

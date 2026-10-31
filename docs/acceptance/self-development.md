@@ -60,3 +60,38 @@ and refuses replacement files/directories/symlinks on retry, including legacy ca
 The run directory retains the independent checker, its result, supervisor checksums,
 command logs, events and captured diff. This is the first corrective change made
 through the newly established self-development loop.
+
+## Luna worker default through Luna self-development
+
+The architect clarified the intended hierarchy: Astra supervises, Luna performs
+bounded component engineering. Issue #20 changes the CLI's ordinary worker default
+to `gpt-6-luna`, retaining explicit `--model` overrides. The caller supplied a CLI
+component definition, documentation and an independent executable-boundary check.
+That check failed the old default and passed the explicit override before work.
+
+The first Luna run, `052acbbf-9e22-497d-aa65-9bf05972c64d`, changed the default but
+introduced a test fixture that expected a custom environment variable to survive
+the runtime's environment allowlist. Mandatory host verification rejected it.
+Its failed record and workspace remain available; no permissions were relaxed.
+
+With focused feedback, fresh Luna run `1a4118d4-020f-4f31-afdf-9cb91eede96a`
+completed from base `b80dd0aa032f155360072f1adc41f670774291fe`, using thread
+`01a18f77-738d-7662-8f4a-d90f2ac56417`. It embedded the temporary capture path in
+the controlled executable and added default/override tests through the real SDK.
+Only `src/cli.ts` and `tests/runtime/steward.test.mjs` changed; caller integration
+copied those files unchanged. The host passed TypeScript, 41 product tests, six
+Python tests and ten skill validations. The independent check passed both report
+settings and the exact SDK `--model` argument. Integration also passed the local
+build, 41 tests and built CLI help smoke check.
+
+The successful run took 52.0 seconds and reported 115,051 input tokens (92,544 cached)
+and 1,584 output tokens. The failed run took 108.4 seconds with 533,667 input tokens
+(490,624 cached) and 6,049 output tokens. These are aggregate usage records, not
+quota prices. Both used Luna/medium; no Astra inference was needed for this change.
+Evidence and the external acceptance script are retained in the run directories.
+
+This demonstrates one Luna self-development change with supervisor feedback; it
+also exposes a phase-two need: feed a precise verification failure back to the
+responsible worker without repeating the whole investigation. Current phase one
+has no resume, so the correction required a fresh assignment/worktree. The planned
+Astra supervisor is not yet an implemented application role.

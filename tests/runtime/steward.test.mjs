@@ -8,6 +8,7 @@ const cli=resolve('dist/cli.js');
 function fixture(t,mode='success') {
  const root=mkdtempSync(join(tmpdir(),'arcnexus-steward-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
  const repo=join(root,'repo'),state=join(root,'state');mkdirSync(join(repo,'architecture/components'),{recursive:true});
+ const sdkArgs=join(root,'sdk-args.json');
  const git=(...args)=>{const r=spawnSync('git',['-C',repo,...args],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};
  git('init','-b','main');git('config','user.name','Test');git('config','user.email','test@example.invalid');
  writeFileSync(join(repo,'source.txt'),'before');writeFileSync(join(repo,'.gitignore'),'.env\n');
@@ -17,6 +18,7 @@ function fixture(t,mode='success') {
  const fake=join(root,'fake-codex');
  writeFileSync(fake,`#!/usr/bin/env node\nconst fs=require('fs'), cp=require('child_process');
  const args=process.argv.slice(2); if(!args.includes('--ignore-user-config')||!args.includes('workspace-write'))process.exit(7);
+ fs.writeFileSync(${JSON.stringify(sdkArgs)},JSON.stringify(args));
  const cwd=args[args.indexOf('--cd')+1];process.chdir(cwd);
  let prompt='';process.stdin.on('data',x=>prompt+=x);process.stdin.on('end',()=>{
  const mode=${JSON.stringify(mode)};
@@ -35,8 +37,12 @@ function fixture(t,mode='success') {
  });`,{mode:0o755});
  const commit=()=>{git('add','.');git('commit','-m','fixture');};commit();
  const run=(...args)=>spawnSync(process.execPath,[cli,'run','sample','Improve sample','--project',repo,'--codex-path',fake,...args],{encoding:'utf8',env:{...process.env,ARCNEXUS_STATE_DIR:state}});
- return {root,repo,state,git,component,commit,run,fake};
+ return {root,repo,state,git,component,commit,run,fake,sdkArgs};
 }
+for(const [name,options,expected] of [['default model',[],'gpt-6-luna'],['explicit model',['--model','synthetic-worker-model'],'synthetic-worker-model']])test(`run selects ${name} in report and SDK arguments`,t=>{
+ const f=fixture(t),r=f.run(...options);assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
+ assert.equal(record.settings.model,expected);assert.ok(JSON.parse(readFileSync(f.sdkArgs,'utf8')).includes(expected));
+});
 test('built CLI runs the SDK boundary and retains observed changes, context and evidence',t=>{
  const f=fixture(t);const r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
  assert.equal(record.status,'completed');assert.equal(record.threadId,'test-thread');assert.equal(record.changes.length,2);
