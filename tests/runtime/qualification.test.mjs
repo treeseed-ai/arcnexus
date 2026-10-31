@@ -35,3 +35,7 @@ test('campaign cancellation stops its active CLI and retains partial evidence',a
  child.kill('SIGINT');assert.equal(await exited,130);
  const report=JSON.parse(readFileSync(join(f.output,'campaign.json')));assert.equal(report.status,'cancelled');assert.equal(report.cases.length,1);assert.equal(report.cases[0].report.status,'cancelled');
 });
+test('independent report checker still executes when its snapshot path contains spaces',t=>{
+ const f=workflowFixture(t),script=join(f.root,'report check.mjs');writeFileSync(script,readFileSync('qualification/check-report-summary.mjs'));
+ const result=spawnSync(process.execPath,[script],{encoding:'utf8'});assert.equal(result.status,1);assert.match(result.stderr,/OUTCOME_SECTION_REQUIRED/);
+});

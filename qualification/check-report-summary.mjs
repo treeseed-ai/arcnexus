@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {pathToFileURL} from 'node:url';
+import {pathToFileURL,fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 export async function checkSummary(workspace=process.cwd()) {
  const {markdownReport}=await import(pathToFileURL(join(workspace,'dist/report.js')).href);
@@ -14,4 +14,4 @@ export async function checkSummary(workspace=process.cwd()) {
  assert.match(historical,/historical/);assert.doesNotMatch(historical,/undefined|null/);
  console.log('Independent activity/outcome summary acceptance passed');
 }
-if(process.argv[1]===new URL(import.meta.url).pathname)await checkSummary();
+if(process.argv[1]===fileURLToPath(import.meta.url))await checkSummary();
