@@ -119,3 +119,8 @@ Readable reports include unrouted owner requests as agent claims when host autho
 rejects the destination. Their requested owner, evidence and acceptance conditions remain
 visible even though no inbox delivery occurred. An unrouted request is never presented
 as accepted work or as a reason to activate an additional steward.
+
+Documentation-only specification requires actual edits in the assigned documentation
+scope. A prose description of intended edits is still planning and cannot satisfy that
+checkpoint. Behavioral regression is skipped explicitly, while documentation changes,
+project verification, independent acceptance and review remain mandatory.

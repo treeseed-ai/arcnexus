@@ -51,3 +51,12 @@ The next invocation explicitly binds Node/npm and supplies declared host build/t
 operations. The policy and expected-red requirement remain unchanged; no candidate
 implementation was repaired by the caller. Campaign:
 `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-2/campaign.json`.
+
+`guidance-live-3`, workday `68c58b9f-b45a-458e-a747-22b0a640daf3`, pinned
+`3a882a2c885cc741c3b917d0d15083e985d4128f` with explicit Node/npm bindings and declared
+operations. The validator delivered an independently accepted implementation. The
+requester resumed but described documentation edits without making them; the host
+correctly stopped with `no_changes`. A dedicated documentation-only built-CLI
+regression now requires the prompt to request actual file edits. No part of this
+failed combined candidate was integrated. Campaign:
+`/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-3/campaign.json`.
