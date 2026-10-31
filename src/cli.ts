@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 import { resolveWorkday } from './workday-config.js';
-import { viewWorkday } from './workday-view.js';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { ExperimentRunner } from './experiments.js';
@@ -82,6 +81,7 @@ async function main(): Promise<void> {
       }
       if(action==='status'||action==='follow'){
         if(Object.keys(values).some(k=>!['json','after'].includes(k))||values.after!==undefined&&(action!=='follow'||!/^\d+$/.test(values.after)||!Number.isSafeInteger(Number(values.after))))throw new InputError('Invalid workday viewer arguments');
+        const {viewWorkday}=await import('./workday-view.js');
         await viewWorkday(stateRoot(),positionals[2]!,action==='follow',!!values.json,Number(values.after??0),controller.signal);return;
       }
       throw new InputError('Unknown workday action');
