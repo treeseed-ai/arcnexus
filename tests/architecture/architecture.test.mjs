@@ -71,6 +71,14 @@ test('built inspect preserves normalized equivalence and original source bytes',
  assert.equal(first.normalizedHash,second.normalizedHash);assert.notEqual(first.sourceHash,second.sourceHash);
  assert.match(second.text,/^# readable definition/);
 });
+test('built inspect captures YAML bindings before normalizing executable locations',t=>{
+ const f=fixture(t),file=join(f.root,'bindings.yaml');
+ const text=stringify({schemaVersion:1,repositories:{},tools:{node:process.execPath}});writeFileSync(file,text);
+ const r=f.run('inspect','sample','Capture tool bindings','--bindings',file,'--json');assert.equal(r.status,0,r.stderr);
+ const source=JSON.parse(r.stdout).configurationSources.find(s=>s.path===file);
+ assert.equal(source.text,text);assert.equal(source.value.tools.node,process.execPath);
+ assert.match(source.sourceHash,/^[a-f0-9]{64}$/);
+});
 for(const dynamic of [false,true])test('built validate rejects private cross-owner '+(dynamic?'dynamic':'static')+' imports',t=>{
  const f=fixture(t);
  f.component.allowedWritePaths=['src/sample'];f.put('architecture/components/sample.json',f.component);

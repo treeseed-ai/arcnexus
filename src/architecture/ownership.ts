@@ -26,7 +26,7 @@ export class OwnershipValidator {
     if (!files.some(p => /^architecture\/ownership\.(json|ya?ml)$/.test(p))) return;
     const source = new ConfigurationReader().definition(this.repository, this.base, 'architecture/ownership');
     const policy = validateSchema<OwnershipPolicy>('ownership', source.value);
-    this.validateOwners(policy, catalog);
+    this.validateOwners(policy, catalog, files);
     for (const file of files.filter(f => policy.maintainedPaths.some(p => covers(f, p)))) {
       const owner = this.owner(file, policy);
       if (/\.[cm]?[jt]sx?$/.test(file)) this.imports(file, owner, policy);
@@ -41,15 +41,17 @@ export class OwnershipValidator {
     return owners[0]!;
   }
 
-  private validateOwners(policy: OwnershipPolicy, catalog: Catalog): void {
+  private validateOwners(policy: OwnershipPolicy, catalog: Catalog, files: string[]): void {
     const identities = new Set<string>();
     for (const owner of policy.owners) {
       const component = catalog.components[owner.component];
       if (!component || identities.has(owner.component)) throw new Error(`Invalid ownership identity: ${owner.component}`);
       identities.add(owner.component);
-      [...owner.paths, ...owner.publicModules].forEach(relativePath);
+      owner.paths.filter(p => p !== '.').forEach(relativePath);
+      owner.publicModules.forEach(relativePath);
       for (const module of owner.publicModules) {
         if (!owner.paths.some(p => covers(module, p))) throw new Error(`Public module outside ownership: ${module}`);
+        if (!files.includes(module)) throw new Error(`Missing public module: ${module}`);
       }
       for (const directory of component.access.writeDirectories) {
         if (owner.directoryExceptions.includes(directory)) continue;
@@ -62,7 +64,7 @@ export class OwnershipValidator {
     for (const component of Object.values(catalog.components)) {
       if (!['platform', 'package'].includes(component.type) && !identities.has(component.id)) throw new Error(`Missing declared owner: ${component.id}`);
     }
-    policy.maintainedPaths.forEach(relativePath);
+    policy.maintainedPaths.filter(p => p !== '.').forEach(relativePath);
   }
 
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {

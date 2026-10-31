@@ -14,6 +14,7 @@ allowedWritePaths:
   - tsconfig.json
   - .github
   - .gitignore
+  - src/cli.ts
 verification:
   - command: npm
     args:

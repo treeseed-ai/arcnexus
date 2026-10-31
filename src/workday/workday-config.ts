@@ -58,6 +58,7 @@ export function resolveWorkday(
       ),
       selection = resolveBase(project, base),
       bindings = loadBindings(bindingsPath);
+    if (bindings.configurationSource) configurationSources.push(bindings.configurationSource);
     const checks = (checks: HostCheck[], directory: string) =>
       checks.map((c) => ({
         ...c,

@@ -75,10 +75,9 @@ owners:
     paths:
       - src/cli
       - docs/cli
-      - src/cli.ts
-    publicModules: []
-    directoryExceptions:
-      - .
+    publicModules:
+      - src/cli/cli.ts
+    directoryExceptions: []
   - component: coordination-store
     paths:
       - src/coordination-store
@@ -96,6 +95,7 @@ owners:
       - tsconfig.json
       - .github
       - .gitignore
+      - src/cli.ts
     publicModules: []
     directoryExceptions:
       - .

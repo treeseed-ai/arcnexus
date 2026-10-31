@@ -29,7 +29,7 @@ export function createWorkspace(root: string, options: PrepareOptions): RecordDa
   const id = randomUUID(), branch = `codex/${options.issue ?? 'run'}-${id}`;
   const record: RecordData = { id, source, base, commonDir, branch, workspace: join(root, 'workspaces', id), status: 'preparing', startedAt: new Date().toISOString(), environment: env, commands: [] };
   record.bindings=options.bindings??loadBindings();
-  record.configurationSources=[new ConfigurationReader().definition(source,base,'architecture/environment')];
+  record.configurationSources=[new ConfigurationReader().definition(source,base,'architecture/environment'),...(options.bindings?.configurationSource?[options.bindings.configurationSource]:[])];
   record.members=resolveMembers(source,base,record.workspace,env,record.bindings as Bindings);
   mkdirSync(join(root,'runs',id), { mode:0o700 }); save(root, record);observe(root,record,'run.created',{base,branch,workspace:record.workspace});
   return record;
