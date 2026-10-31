@@ -4,6 +4,8 @@
 
 ### Added
 
+- Add repeatable live coding acceptance and self-development definitions (#11).
+
 - Execute one component steward through the Codex SDK (#9).
 
 - Add application-managed workspaces and environment preparation (#7).
