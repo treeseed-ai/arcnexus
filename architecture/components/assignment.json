@@ -23,7 +23,8 @@
     "tests/runtime/context.test.mjs",
     "src/plan.ts",
     "tests/runtime/planning.test.mjs",
-    "docs/steward-operations.md"
+    "docs/steward-operations.md",
+    "tests/runtime/prior-evidence.test.mjs"
   ],
   "verification": [
     {
@@ -92,7 +93,8 @@
     "tests/runtime/attempts.test.mjs",
     "tests/runtime/workflow.test.mjs",
     "tests/runtime/workflow-fixture.mjs",
-    "tests/runtime/context.test.mjs"
+    "tests/runtime/context.test.mjs",
+    "tests/runtime/prior-evidence.test.mjs"
   ],
   "relatedIds": [
     "steward",
