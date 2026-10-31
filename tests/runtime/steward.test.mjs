@@ -9,6 +9,7 @@ function fixture(t,mode='success') {
  const root=mkdtempSync(join(tmpdir(),'arcnexus-steward-'));t.after(()=>rmSync(root,{recursive:true,force:true}));
  const repo=join(root,'repo'),state=join(root,'state');mkdirSync(join(repo,'architecture/components'),{recursive:true});
  const sdkArgs=join(root,'sdk-args.json');
+ const sdkCalls=join(root,'sdk-calls.json');
  const git=(...args)=>{const r=spawnSync('git',['-C',repo,...args],{encoding:'utf8'});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};
  git('init','-b','main');git('config','user.name','Test');git('config','user.email','test@example.invalid');
  writeFileSync(join(repo,'source.txt'),'before');writeFileSync(join(repo,'.gitignore'),'.env\n');
@@ -27,12 +28,14 @@ function fixture(t,mode='success') {
  }
  if(args[0]!=='exec'||!args.includes('--ignore-user-config')||args.some(a=>a==='workspace-write'||a==='--sandbox')||!args.some(a=>a.includes('default_permissions=\"arcnexus\"'))||!args.some(a=>a.includes('permissions.arcnexus.filesystem')))process.exit(7);
  fs.writeFileSync(${JSON.stringify(sdkArgs)},JSON.stringify(args));
+ const calls=fs.existsSync(${JSON.stringify(sdkCalls)})?JSON.parse(fs.readFileSync(${JSON.stringify(sdkCalls)},'utf8')):[];calls.push(args);fs.writeFileSync(${JSON.stringify(sdkCalls)},JSON.stringify(calls));
  const cwd=args[args.indexOf('--cd')+1];process.chdir(cwd);
  let prompt='';process.stdin.on('data',x=>prompt+=x);process.stdin.on('end',()=>{
  const mode=${JSON.stringify(mode)};
- console.log(JSON.stringify({type:'thread.started',thread_id:'test-thread'}));
- if(mode==='timeout'){setInterval(()=>{},1000);return;}
+ console.log(JSON.stringify({type:'thread.started',thread_id:${JSON.stringify(mode)}==='retry-thread'&&calls.length===2?'different-thread':'test-thread'}));
+ if(mode==='timeout'||(mode==='retry-timeout'&&calls.length===2)){setInterval(()=>{},1000);return;}
  if(mode==='success'||mode==='sandbox'){fs.writeFileSync('source.txt','after');fs.writeFileSync('new.txt','new file');}
+ if(mode==='retry'||mode==='retry-malformed'||mode==='retry-thread'||mode==='retry-timeout'||mode==='retry-usage'){fs.writeFileSync('source.txt',calls.length===1?'after':'fixed');}
  if(mode==='rename'){fs.renameSync('source.txt','new.txt');cp.execFileSync('git',['add','.']);}
  if(mode==='ignored')fs.writeFileSync('.env','unknown');
  if(mode==='scope')fs.writeFileSync('outside.txt','oops');
@@ -49,13 +52,39 @@ function fixture(t,mode='success') {
    fs.symlinkSync('source.txt','new.txt');cp.execFileSync('git',['add','new.txt']);fs.unlinkSync('new.txt');fs.writeFileSync('new.txt','regular restoration');
  }
  const result={status:mode==='blocked'?'blocked':'completed',summary:mode==='sandbox'?'Checks unavailable in sandbox; host verification required':'test',blockers:mode==='blocked'?['needs guidance']:[]};
- console.log(JSON.stringify({type:'item.completed',item:{id:'final',type:'agent_message',text:mode==='malformed'?'bad':JSON.stringify(result)}}));
- console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:1,cached_input_tokens:0,output_tokens:1}}));
+ console.log(JSON.stringify({type:'item.completed',item:{id:'final',type:'agent_message',text:(mode==='malformed'||(mode==='retry-malformed'&&calls.length===2))?'bad':JSON.stringify(result)}}));
+ console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:mode==='retry-usage'?(args.includes('resume')?98888:81398):(args.includes('resume')?2:1),cached_input_tokens:0,output_tokens:mode==='retry-usage'?(args.includes('resume')?756:644):(args.includes('resume')?2:1)}}));
  });`,{mode:0o755});
  const commit=()=>{git('add','.');git('commit','-m','fixture');};commit();
  const run=(...args)=>spawnSync(process.execPath,[cli,'run','sample','Improve sample','--project',repo,'--codex-path',fake,...args],{encoding:'utf8',env:{...process.env,ARCNEXUS_STATE_DIR:state}});
- return {root,repo,state,git,component,commit,run,fake,sdkArgs};
+ return {root,repo,state,git,component,commit,run,fake,sdkArgs,sdkCalls};
 }
+test('max attempts defaults to one and accepts only 1 or 2 on run',t=>{
+ const f=fixture(t);let r=f.run();assert.equal(r.status,0,r.stderr);assert.equal(JSON.parse(readFileSync(f.sdkCalls,'utf8')).length,1);
+ for(const value of ['0','3','1.5','two']){r=f.run('--max-attempts',value);assert.equal(r.status,2,`value ${value} should be rejected`);}
+ assert.equal(f.run('--max-attempts','2').status,0);
+ assert.equal(spawnSync(process.execPath,[cli,'prepare','--project',f.repo,'--max-attempts','2'],{encoding:'utf8',env:{...process.env,ARCNEXUS_STATE_DIR:f.state}}).status,2);
+});
+test('failed host verification resumes the same thread once and archives independent evidence',t=>{
+ const f=fixture(t,'retry');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run('--max-attempts','2');assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout),dir=join(f.state,'runs',record.id),calls=JSON.parse(readFileSync(f.sdkCalls,'utf8'));
+ assert.equal(calls.length,2);assert.ok(calls[1].includes('resume'));assert.ok(calls[1].includes('test-thread'));
+ assert.equal(record.attempts.length,2);assert.equal(record.attempts[0].status,'failed');assert.equal(record.attempts[1].status,'completed');
+ for(const n of ['1','2'])assert.ok(existsSync(join(dir,'attempts',n,'events.jsonl')));
+ assert.match(readFileSync(join(dir,'attempts/1/prompt.txt'),'utf8'),/Improve sample/);assert.match(readFileSync(join(dir,'attempts/2/prompt.txt'),'utf8'),/exit status|exit code/i);
+});
+test('failed correction exhausts two attempts without losing the first report',t=>{
+ const f=fixture(t,'verify');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='broken')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run('--max-attempts','2');assert.equal(r.status,1);const record=JSON.parse(r.stdout),calls=JSON.parse(readFileSync(f.sdkCalls,'utf8'));
+ assert.equal(calls.length,2);assert.deepEqual(record.attempts.map(x=>x.status),['failed','failed']);assert.ok(existsSync(join(f.state,'runs',record.id,'attempts/1/report.json')));
+});
+for(const mode of ['blocked','malformed','no_changes','scope','commit','ignored','symlink'])test(`${mode} outcome never starts correction`,t=>{
+ const f=fixture(t,mode),r=f.run('--max-attempts','2');assert.equal(r.status,1);assert.equal(JSON.parse(readFileSync(f.sdkCalls,'utf8')).length,1);
+});
+test('baseline failure and overall timeout never retry',t=>{
+ const baseline=fixture(t);writeFileSync(join(baseline.repo,'source.txt'),'broken');baseline.commit();const b=baseline.run('--max-attempts','2');assert.equal(b.status,1);assert.equal(existsSync(baseline.sdkCalls),false);
+ const timeout=fixture(t,'timeout'),r=timeout.run('--max-attempts','2','--timeout-seconds','1.5');assert.equal(r.status,1);assert.equal(JSON.parse(readFileSync(timeout.sdkCalls,'utf8')).length,1);
+});
 for(const [name,options,expected] of [['default model',[],'gpt-6-luna'],['explicit model',['--model','synthetic-worker-model'],'synthetic-worker-model']])test(`run selects ${name} in report and SDK arguments`,t=>{
  const f=fixture(t),r=f.run(...options);assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
  assert.equal(record.settings.model,expected);assert.ok(JSON.parse(readFileSync(f.sdkArgs,'utf8')).includes(expected));
@@ -165,4 +194,44 @@ test('overall timeout interrupts sandbox preflight before inference',t=>{
  const f=fixture(t,'preflight-hang'),start=Date.now(),r=f.run('--timeout-seconds','0.5');
  assert.equal(r.status,1);assert.equal(existsSync(f.sdkArgs),false);assert.ok(Date.now()-start<2500,'preflight must honor overall budget');
  assert.match(r.stderr,/timed out|abort/i);
+});
+
+for(const mode of ['retry','retry-malformed','retry-thread'])test(`second attempt evidence is fresh: ${mode}`,t=>{
+ const f=fixture(t,mode);f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run('--max-attempts','2');assert.equal(r.status,mode==='retry'?0:1,r.stderr);
+ const record=JSON.parse(r.stdout),dir=join(f.state,'runs',record.id);
+ const first=JSON.parse(readFileSync(join(dir,'attempts/1/report.json'),'utf8')),second=JSON.parse(readFileSync(join(dir,'attempts/2/report.json'),'utf8'));
+ assert.match(first.error,/Command failed/);assert.equal(first.attempt.usage.input_tokens,1);
+ if(mode==='retry'){assert.equal(second.error,undefined);assert.equal(second.attempt.error,undefined);assert.equal(record.usage.input_tokens,2);}
+ else {assert.equal(existsSync(join(dir,'attempts/2/agent-result.json')),false);assert.equal(second.agent,undefined);}
+});
+test('verification-created scope violation cannot trigger correction',t=>{
+ const f=fixture(t);f.component.verification=[{command:'node',args:['-e',"const fs=require('fs');if(fs.readFileSync('source.txt','utf8')==='after'){fs.writeFileSync('outside.txt','oops');process.exit(5)}"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run('--max-attempts','2');assert.equal(r.status,1);assert.match(r.stderr,/scope/i);assert.equal(JSON.parse(r.stdout).attempts.length,1);
+});
+
+test('host verification removing all changes is not completion or retry',t=>{
+ for(const code of [0,5]){
+  const f=fixture(t,'verify');f.component.verification=[{command:'node',args:['-e',`const fs=require('fs');if(fs.readFileSync('source.txt','utf8')==='broken'){fs.writeFileSync('source.txt','before');process.exit(${code})}`]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+  const r=f.run('--max-attempts','2');assert.equal(r.status,1);const record=JSON.parse(r.stdout);assert.equal(record.status,'no_changes');assert.equal(record.attempts.length,1);
+ }
+});
+test('help documents the opt-in attempt limit',()=>{
+ const r=spawnSync(process.execPath,[cli,'--help'],{encoding:'utf8'});assert.equal(r.status,0);assert.match(r.stdout,/--max-attempts/);
+});
+
+for(const cancel of [false,true])test(`second attempt ${cancel?'cancellation':'overall timeout'} retains both attempts`,async t=>{
+ const f=fixture(t,'retry-timeout');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const start=Date.now(),child=spawn(process.execPath,[cli,'run','sample','Improve sample','--project',f.repo,'--codex-path',f.fake,'--max-attempts','2','--timeout-seconds',cancel?'10':'2.5'],{env:{...process.env,ARCNEXUS_STATE_DIR:f.state}});
+ let out='';child.stdout.on('data',b=>out+=b);const closed=new Promise(r=>child.on('close',r));
+ if(cancel){let started=false;while(Date.now()-start<7000){try{started=JSON.parse(readFileSync(f.sdkCalls,'utf8')).length===2;}catch{}if(started)break;await new Promise(r=>setTimeout(r,20));}assert.ok(started);child.kill('SIGINT');}
+ assert.equal(await closed,cancel?130:1);const record=JSON.parse(out);assert.equal(record.attempts.length,2);assert.equal(record.status,cancel?'cancelled':'failed');assert.equal(record.attempts[1].status,cancel?'cancelled':'failed');
+ assert.ok(Date.now()-start<(cancel?8000:4000));assert.ok(existsSync(join(f.state,'runs',record.id,'attempts/1/events.jsonl')));assert.ok(existsSync(join(f.state,'runs',record.id,'attempts/2/events.jsonl')));
+});
+
+test('live cumulative resume counters are not double-counted',t=>{
+ const f=fixture(t,'retry-usage');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ const r=f.run('--max-attempts','2');assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
+ assert.equal(record.usage.input_tokens,98888);assert.equal(record.usage.output_tokens,756);
+ assert.equal(record.attempts[0].usage.input_tokens,81398);assert.equal(record.attempts[1].usage.input_tokens,17490);assert.equal(record.attempts[1].usage.output_tokens,112);assert.equal(record.attempts[1].reportedUsage.input_tokens,98888);
 });

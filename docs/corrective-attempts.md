@@ -47,3 +47,27 @@ boundary; raw event logs remain unchanged. This is the accounting contract for t
 tested CLI, not a claim about every alternate executable or future CLI version.
 The [official SDK documentation](https://learn.chatgpt.com/docs/codex-sdk) establishes
 the resume interface but does not resolve this counter discrepancy.
+
+## Acceptance evidence
+
+The built CLI passed 78 deterministic runtime tests, including successful resume,
+exhaustion, default single attempt, unsafe outcomes, verification-created scope
+violations, stale evidence, unexpected thread IDs, and cancellation/timeout during
+attempt two. Twelve independent external checks also passed. TypeScript/build,
+Python repository checks and CLI help smoke checks passed separately.
+
+Live Luna run `5ae2a1af-14d1-4048-902a-00710dabe3a8` completed two attempts on
+thread `01a18fe8-bc06-7700-a707-0ef8c6afbc96` in one worktree. This was a controlled
+acceptance fixture: the host deliberately failed its first final check once, then
+accepted the unchanged valid documentation. The external counter confirmed exactly
+one baseline and two final checks. It proves live resume and feedback delivery,
+not a spontaneous model defect repair; deterministic tests cover actual repair.
+The original report retains the pre-fix usage overcount. Its raw counters drove the
+accounting correction above, verified by executable replay without more inference.
+
+Luna run `bf247590-2c2e-4fb7-aff2-7f58aa1a5111` supplied the initial implementation.
+Host verification caught two flawed test setups. Caller review then tightened
+attempt evidence, thread identity and final no-change checks, and corrected usage
+accounting after live inspection. This is assisted self-development; failed and
+pre-fix records remain intact. The supervisor and external checks remained outside
+the candidate's writable scope throughout.

@@ -9,7 +9,7 @@ import { persistExecutionEvidence } from './evidence.js';
 import { preparePermissions } from './permissions.js';
 export interface AgentResult {status:'completed'|'blocked'|'failed';summary:string;blockers:string[]}
 const schema={type:'object',properties:{status:{type:'string',enum:['completed','blocked','failed']},summary:{type:'string'},blockers:{type:'array',items:{type:'string'}}},required:['status','summary','blockers'],additionalProperties:false};
-export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal):Promise<AgentResult>{
+export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal,resumeId?:string):Promise<AgentResult>{
   const dir=join(root,'runs',record.id), launcher=join(dir,'codex-launcher'),pidFile=join(dir,'codex.pid');
   const context=record.context as Array<{access?:unknown;allowedWritePaths?:unknown}>|undefined;
   const component=context?.at(-1);
@@ -22,14 +22,14 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   env.TMPDIR=permissions.tmpDirectory;
   const settings={model,reasoning:'medium',permissionProfile:'arcnexus',access:component?.access,allowedWritePaths:component?.allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:'live',nestedDelegation:false,executable:env.ARCNEXUS_CODEX_EXECUTABLE};
   persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
-  const preflightHome=join(dir,'sandbox-preflight-home');mkdirSync(preflightHome,{mode:0o700});
+  const preflightHome=join(dir,`sandbox-preflight-home-${(record.attempts as unknown[]).length}`);mkdirSync(preflightHome,{recursive:true,mode:0o700});
   const preflightEnv={...env,CODEX_HOME:preflightHome};
   const preflightArgs=['sandbox','--permission-profile','arcnexus','--cd',record.workspace];
   for(const override of permissions.configOverrides)preflightArgs.push('--config',override);
   preflightArgs.push('--','true');
-  record.settings=settings;record.usage=null;save(root,record);
+  record.settings=settings;record.attemptReportedUsage=undefined;save(root,record);
   try {
-    const probe=await execute({command:env.ARCNEXUS_CODEX_EXECUTABLE,args:preflightArgs},record.workspace,join(dir,'sandbox-preflight.log'),signal,{env:preflightEnv,timeoutMs:5000});
+    const probe=await execute({command:env.ARCNEXUS_CODEX_EXECUTABLE,args:preflightArgs},record.workspace,join(dir,`sandbox-preflight-${(record.attempts as unknown[]).length}.log`),signal,{env:preflightEnv,timeoutMs:5000});
     record.sandboxPreflight={...probe,status:'passed'};
   } catch(error) {
     record.sandboxPreflight={status:'failed',error:String(error),...(error&&typeof error==='object'&&'commandResult'in error?error.commandResult as object:{})};
@@ -38,7 +38,8 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     writeFileSync(join(dir,'sandbox-preflight.json'),JSON.stringify(record.sandboxPreflight,null,2)+'\n',{mode:0o600});save(root,record);
   }
   const codex=new Codex({codexPathOverride:launcher,env,config:{features:{multi_agent:false,multi_agent_v2:false}},configOverrides:permissions.configOverrides});
-  const thread=codex.startThread({model,modelReasoningEffort:'medium',workingDirectory:record.workspace,approvalPolicy:'never',webSearchMode:'live'});
+  const options={model,modelReasoningEffort:'medium' as const,workingDirectory:record.workspace,approvalPolicy:'never' as const,webSearchMode:'live' as const};
+  const thread=resumeId?codex.resumeThread(resumeId,options):codex.startThread(options);
   let final='',completed=false;
   const killGroup=()=>{if(existsSync(pidFile)){const pid=Number(readFileSync(pidFile,'utf8').trim());if(Number.isSafeInteger(pid)&&pid>1)try{process.kill(-pid,'SIGKILL');}catch{}}};
   let termination:Promise<void>|undefined;
@@ -48,16 +49,18 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     const {events}=await thread.runStreamed(prompt,{outputSchema:schema,signal});
     for await(const event of events){
       appendFileSync(join(dir,'events.jsonl'),JSON.stringify(event)+'\n',{mode:0o600});
-      if(event.type==='thread.started'){record.threadId=event.thread_id;save(root,record);}
+      if(event.type==='thread.started'){if(resumeId&&event.thread_id!==resumeId)throw new Error('Codex resumed an unexpected thread ID');record.threadId=event.thread_id;save(root,record);}
       if(event.type==='item.completed'&&event.item.type==='agent_message')final=event.item.text;
-      if(event.type==='turn.completed'){record.usage=event.usage;completed=true;}
+      if(event.type==='turn.completed'){record.attemptReportedUsage=event.usage;completed=true;}
       if(event.type==='turn.failed')throw new Error(event.error.message);
       if(event.type==='error')throw new Error(event.message);
     }
     signal.throwIfAborted();
     if(!completed)throw new Error('Codex stream ended without completed turn');
+    writeFileSync(join(dir,'agent-result.raw.txt'),final,{mode:0o600});
     const result=JSON.parse(final) as AgentResult;
     if(!result||!['completed','blocked','failed'].includes(result.status)||typeof result.summary!=='string'||!Array.isArray(result.blockers)||!result.blockers.every(b=>typeof b==='string'))throw new Error('Malformed agent result');
+    writeFileSync(join(dir,'agent-result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     return result;
   } finally {signal.removeEventListener('abort',abort);await termination;killGroup();save(root,record);}
 }
