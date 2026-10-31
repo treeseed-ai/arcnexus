@@ -35,3 +35,10 @@ modify source; a steward may fix only its originally captured writable scope.
 CI checks formatting, lint, ownership, types, build, guidance and deterministic
 acceptance. Its test-infrastructure watchdog is separate from application execution
 limits. Candidate guidance/configuration edits cannot weaken captured host checks.
+
+The lint configuration uses the syntax-only
+[typescript-eslint recommended configuration](https://typescript-eslint.io/users/configs/).
+The [ESLint function-length rule](https://eslint.org/docs/latest/rules/max-lines-per-function)
+is exercised against ordinary functions, callbacks and TypeScript constructors.
+Do not enable a typed-lint preset merely to preserve compiler checking; the two
+checks are independent.
