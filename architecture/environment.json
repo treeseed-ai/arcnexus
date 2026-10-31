@@ -24,6 +24,12 @@
       "args": [
         "--version"
       ]
+    },
+    {
+      "command": "uv",
+      "args": [
+        "--version"
+      ]
     }
   ],
   "setup": [
@@ -36,20 +42,23 @@
       ]
     },
     {
-      "command": "python3",
+      "command": "uv",
       "args": [
-        "-m",
         "venv",
+        "--python",
+        "python3",
+        "--no-python-downloads",
         ".venv"
       ]
     },
     {
-      "command": ".venv/bin/python",
+      "command": "uv",
       "args": [
-        "-m",
         "pip",
         "install",
-        "--disable-pip-version-check",
+        "--python",
+        ".venv/bin/python",
+        "--no-python-downloads",
         "-r",
         "scripts/requirements-ci.txt"
       ]
