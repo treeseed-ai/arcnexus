@@ -7,12 +7,12 @@ export function git(cwd: string, ...args: string[]): string {
   return result.stdout;
 }
 export interface CommandResult extends Command { cwd: string; startedAt: string; durationMs: number; exitCode: number | null; log: string }
-export async function execute(command: Command, cwd: string, log: string, signal: AbortSignal): Promise<CommandResult> {
+export async function execute(command: Command, cwd: string, log: string, signal: AbortSignal, options: {env?: NodeJS.ProcessEnv; timeoutMs?: number} = {}): Promise<CommandResult> {
   signal.throwIfAborted();
   const start = Date.now(), fd = openSync(log, 'wx', 0o600);
   const result: CommandResult = { ...command, cwd, startedAt: new Date(start).toISOString(), durationMs: 0, exitCode: null, log };
   return new Promise((resolve, reject) => {
-    const child = spawn(command.command, command.args, { cwd, detached: true, stdio: ['ignore', fd, fd] });
+    const child = spawn(command.command, command.args, { cwd, env: options.env, detached: true, stdio: ['ignore', fd, fd] });
     let failure: Error | undefined;
     let killTimer: NodeJS.Timeout | undefined;
     const terminate = (reason: Error) => {
@@ -23,7 +23,7 @@ export async function execute(command: Command, cwd: string, log: string, signal
       }
     };
     const abort = () => terminate(new Error(String(signal.reason)));
-    const timer = setTimeout(() => terminate(new Error('Command timed out')), 120_000);
+    const timer = setTimeout(() => terminate(new Error('Command timed out')), options.timeoutMs ?? 120_000);
     signal.addEventListener('abort', abort, { once: true });
     if (signal.aborted) abort();
     child.on('error', error => { failure = error; });

@@ -37,6 +37,15 @@ The requested profile is retained in execution evidence. A bounded sandbox start
 probe uses the selected executable and profile before inference; failure has no
 broader-permission fallback.
 
+The `arcnexus` profile uses `:minimal` reads plus the validated project paths and a
+private per-run temporary directory. TOML path keys are explicitly quoted in raw
+SDK config override strings because the SDK's structured flattener does not quote
+them. The probe runs the same profile and raw overrides with an isolated empty
+`CODEX_HOME` under the run directory; it has no copied authentication state. Probe
+output is retained as `sandbox-preflight` evidence and is not counted as a component
+verification command. The requested profile name and paths are included in the
+execution manifest.
+
 Besides declared project paths, the policy grants Codex's `:minimal` runtime reads
 and one private per-run temporary directory outside the candidate. The latter is
 passed as `TMPDIR`; there is no whole `/tmp` write grant. Generated outputs are not
@@ -63,4 +72,25 @@ An exact-file write rule on this installed CLI failed before command execution:
 That is a version/configuration finding, not a general claim that file permissions
 are impossible. It matches [upstream issue #52985](https://github.com/openai/codex/issues/52985).
 We therefore use explicit directories, not silently widened file rules.
-See [official permission profiles](https://learn.chatgpt.com/docs/permissions).
+See [official permission profiles](https://learn.chatgpt.com/docs/permissions) and the
+[Codex SDK raw config override documentation](https://github.com/openai/codex/blob/main/sdk/typescript/README.md).
+
+## Delivered acceptance
+
+The default SDK construction path passed 57 deterministic runtime tests, including
+explicit broad access, missing policies, ancestor validation, startup failure and
+cancellation. `node scripts/check-permissions.mjs` uses the production profile builder
+with the installed CLI and no inference to check allowed writes, related reads,
+and denied related writes/unrelated reads and writes.
+
+Luna live run `4fcde85a-01db-46f1-b6eb-17536fbe6f9f` completed a documentation
+assignment using only `related` reads and `docs` writes; independent inspection
+confirmed the expected sentence and only `docs/README.md` changed. Its report,
+profile, probe log, exact prompt and events are retained under the normal state root.
+
+The implementation originated in Luna run `56a64782-fc67-40f5-b4a2-91709a30b110`.
+Its host verification caught one test executable that edited files during preflight.
+Caller review corrected that fixture, made startup cancellation use the managed
+command runner, and connected the sandbox acceptance script to the production
+profile builder. This is assisted self-development; the failed original record
+remains intact.

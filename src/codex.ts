@@ -1,23 +1,44 @@
 import { Codex } from '@openai/codex-sdk';
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execute } from './process.js';
 import { join, resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import type { RecordData } from './state.js';
 import { save } from './state.js';
 import { persistExecutionEvidence } from './evidence.js';
+import { preparePermissions } from './permissions.js';
 export interface AgentResult {status:'completed'|'blocked'|'failed';summary:string;blockers:string[]}
 const schema={type:'object',properties:{status:{type:'string',enum:['completed','blocked','failed']},summary:{type:'string'},blockers:{type:'array',items:{type:'string'}}},required:['status','summary','blockers'],additionalProperties:false};
 export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal):Promise<AgentResult>{
   const dir=join(root,'runs',record.id), launcher=join(dir,'codex-launcher'),pidFile=join(dir,'codex.pid');
+  const context=record.context as Array<{access?:unknown;allowedWritePaths?:unknown}>|undefined;
+  const component=context?.at(-1);
+  const inherited=context?.slice(0,-1).map(item=>({access:item.access,allowedWritePaths:item.allowedWritePaths}))??[];
+  const permissions=preparePermissions(record.workspace,component?.access,component?.allowedWritePaths,join(dir,'tmp'),inherited);
   writeFileSync(launcher,'#!/bin/sh\n[ "$1" = exec ] || exit 64\nshift\necho $$ > "$ARCNEXUS_CODEX_PID"\nexec setsid "$ARCNEXUS_CODEX_EXECUTABLE" exec --ignore-user-config "$@"\n',{mode:0o700});
   const env:Record<string,string>={};
   for(const name of ['HOME','PATH','CODEX_HOME','TMPDIR','LANG','SSL_CERT_FILE','SSL_CERT_DIR','HTTPS_PROXY','HTTP_PROXY','NO_PROXY','XDG_CONFIG_HOME','XDG_DATA_HOME'])if(process.env[name])env[name]=process.env[name]!;
   env.ARCNEXUS_CODEX_EXECUTABLE=executable.includes('/')?resolve(executable):executable;env.ARCNEXUS_CODEX_PID=pidFile;
-  const settings={model,reasoning:'medium',sandbox:'workspace-write',approval:'never',network:false,webSearch:'live',nestedDelegation:false,executable:env.ARCNEXUS_CODEX_EXECUTABLE};
+  env.TMPDIR=permissions.tmpDirectory;
+  const settings={model,reasoning:'medium',permissionProfile:'arcnexus',access:component?.access,allowedWritePaths:component?.allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:'live',nestedDelegation:false,executable:env.ARCNEXUS_CODEX_EXECUTABLE};
   persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
-  const codex=new Codex({codexPathOverride:launcher,env,config:{features:{multi_agent:false,multi_agent_v2:false}}});
-  const thread=codex.startThread({model,modelReasoningEffort:'medium',workingDirectory:record.workspace,sandboxMode:'workspace-write',approvalPolicy:'never',networkAccessEnabled:false,webSearchMode:'live'});
+  const preflightHome=join(dir,'sandbox-preflight-home');mkdirSync(preflightHome,{mode:0o700});
+  const preflightEnv={...env,CODEX_HOME:preflightHome};
+  const preflightArgs=['sandbox','--permission-profile','arcnexus','--cd',record.workspace];
+  for(const override of permissions.configOverrides)preflightArgs.push('--config',override);
+  preflightArgs.push('--','true');
   record.settings=settings;record.usage=null;save(root,record);
+  try {
+    const probe=await execute({command:env.ARCNEXUS_CODEX_EXECUTABLE,args:preflightArgs},record.workspace,join(dir,'sandbox-preflight.log'),signal,{env:preflightEnv,timeoutMs:5000});
+    record.sandboxPreflight={...probe,status:'passed'};
+  } catch(error) {
+    record.sandboxPreflight={status:'failed',error:String(error),...(error&&typeof error==='object'&&'commandResult'in error?error.commandResult as object:{})};
+    throw new Error(`Codex permission sandbox preflight failed: ${String(error)}`);
+  } finally {
+    writeFileSync(join(dir,'sandbox-preflight.json'),JSON.stringify(record.sandboxPreflight,null,2)+'\n',{mode:0o600});save(root,record);
+  }
+  const codex=new Codex({codexPathOverride:launcher,env,config:{features:{multi_agent:false,multi_agent_v2:false}},configOverrides:permissions.configOverrides});
+  const thread=codex.startThread({model,modelReasoningEffort:'medium',workingDirectory:record.workspace,approvalPolicy:'never',webSearchMode:'live'});
   let final='',completed=false;
   const killGroup=()=>{if(existsSync(pidFile)){const pid=Number(readFileSync(pidFile,'utf8').trim());if(Number.isSafeInteger(pid)&&pid>1)try{process.kill(-pid,'SIGKILL');}catch{}}};
   let termination:Promise<void>|undefined;

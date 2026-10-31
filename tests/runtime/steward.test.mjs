@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,rmSync} from 'node:fs';
+import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,existsSync,rmSync} from 'node:fs';
 import {join,resolve} from 'node:path';
 import {tmpdir} from 'node:os';
 import {spawnSync,spawn} from 'node:child_process';
@@ -13,11 +13,19 @@ function fixture(t,mode='success') {
  git('init','-b','main');git('config','user.name','Test');git('config','user.email','test@example.invalid');
  writeFileSync(join(repo,'source.txt'),'before');writeFileSync(join(repo,'.gitignore'),'.env\n');
  writeFileSync(join(repo,'architecture/environment.json'),JSON.stringify({prerequisites:[],setup:[],generatedDirectories:[]}));
- const component={id:'sample',type:'library',purpose:'test responsibility',path:'source.txt',objectives:[],constraints:[],allowedWritePaths:['source.txt','new.txt'],verification:[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='broken')process.exit(1)"]}]};
+ const component={id:'sample',type:'library',purpose:'test responsibility',path:'source.txt',objectives:[],constraints:[],access:{readPaths:['.'],writeDirectories:['.']},allowedWritePaths:['source.txt','new.txt'],verification:[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='broken')process.exit(1)"]}]};
  writeFileSync(join(repo,'architecture/components/sample.json'),JSON.stringify(component));
  const fake=join(root,'fake-codex');
  writeFileSync(fake,`#!/usr/bin/env node\nconst fs=require('fs'), cp=require('child_process');
- const args=process.argv.slice(2); if(!args.includes('--ignore-user-config')||!args.includes('workspace-write'))process.exit(7);
+ const args=process.argv.slice(2);
+ if(args[0]==='--version'){console.log('fake codex 1');process.exit(0);}
+ if(args[0]==='sandbox'){
+   if(!args.includes('--permission-profile')||args[args.indexOf('--permission-profile')+1]!=='arcnexus'||!args.includes('--cd')||!args.some(a=>a.includes('permissions.arcnexus.filesystem')))process.exit(8);
+   if(${JSON.stringify(mode)}==='preflight-fail')process.exit(9);
+   if(${JSON.stringify(mode)}==='preflight-hang'){setInterval(()=>{},1000);return;}
+   process.exit(0);
+ }
+ if(args[0]!=='exec'||!args.includes('--ignore-user-config')||args.some(a=>a==='workspace-write'||a==='--sandbox')||!args.some(a=>a.includes('default_permissions=\"arcnexus\"'))||!args.some(a=>a.includes('permissions.arcnexus.filesystem')))process.exit(7);
  fs.writeFileSync(${JSON.stringify(sdkArgs)},JSON.stringify(args));
  const cwd=args[args.indexOf('--cd')+1];process.chdir(cwd);
  let prompt='';process.stdin.on('data',x=>prompt+=x);process.stdin.on('end',()=>{
@@ -51,6 +59,7 @@ function fixture(t,mode='success') {
 for(const [name,options,expected] of [['default model',[],'gpt-6-luna'],['explicit model',['--model','synthetic-worker-model'],'synthetic-worker-model']])test(`run selects ${name} in report and SDK arguments`,t=>{
  const f=fixture(t),r=f.run(...options);assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
  assert.equal(record.settings.model,expected);assert.ok(JSON.parse(readFileSync(f.sdkArgs,'utf8')).includes(expected));
+ assert.equal(record.settings.permissionProfile,'arcnexus');
 });
 test('built CLI runs the SDK boundary and retains observed changes, context and evidence',t=>{
  const f=fixture(t);const r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout);
@@ -65,6 +74,7 @@ test('built CLI records execution inputs, requested SDK capabilities and availab
  const r=f.run();assert.equal(r.status,0,r.stderr);const record=JSON.parse(r.stdout),dir=join(f.state,'runs',record.id);
  const args=JSON.parse(readFileSync(f.sdkArgs,'utf8')),execution=JSON.parse(readFileSync(join(dir,'execution.json'),'utf8'));
  assert.ok(args.includes('web_search="live"'));assert.ok(args.some(a=>a.includes('features.multi_agent=false')));assert.ok(args.some(a=>a.includes('features.multi_agent_v2=false')));
+ assert.ok(args.some(a=>a.includes('default_permissions="arcnexus"')));assert.ok(!args.some(a=>a.includes('workspace-write')||a.includes('network_access')));
  assert.equal(record.settings.webSearch,'live');assert.equal(record.settings.network,false);
  assert.match(readFileSync(join(dir,'prompt.txt'),'utf8'),/primary sources and URLs/);
  assert.deepEqual(JSON.parse(readFileSync(join(dir,'response-schema.json'),'utf8')).required,['status','summary','blockers']);
@@ -98,8 +108,24 @@ test('missing and cyclic ancestors are rejected before inference',t=>{
  const f=fixture(t);f.component.parentId='missing';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();assert.match(f.run().stderr,/missing/);
  writeFileSync(join(f.repo,'architecture/components/missing.json'),JSON.stringify({...f.component,id:'missing',parentId:'sample',type:'package'}));f.commit();const result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/cyclic/);
 });
+test('missing or invalid access policies on any component ancestor stop before inference',t=>{
+ const f=fixture(t);delete f.component.access;writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ let result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/access/);assert.equal(JSON.parse(result.stdout).threadId,undefined);
+ f.component.access={readPaths:['../escape'],writeDirectories:['.']};writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
+ result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/relative path/);
+});
+test('ancestor policies are mandatory and their access is retained in execution context',t=>{
+ const f=fixture(t);f.component.parentId='parent';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));
+ writeFileSync(join(f.repo,'architecture/components/parent.json'),JSON.stringify({...f.component,id:'parent',type:'package',parentId:undefined,access:undefined,purpose:'Parent intent'}));f.commit();
+ const result=f.run();assert.equal(result.status,2);assert.match(result.stderr,/access/);
+});
 test('failing baseline prevents SDK activation',t=>{
  const f=fixture(t);writeFileSync(join(f.repo,'source.txt'),'broken');f.commit();const r=f.run();assert.equal(r.status,1);assert.equal(JSON.parse(r.stdout).threadId,undefined);
+});
+test('failed permission preflight prevents inference',t=>{
+ const f=fixture(t,'preflight-fail'),r=f.run();assert.equal(r.status,1);assert.equal(JSON.parse(r.stdout).threadId,undefined);assert.equal(existsSync(f.sdkArgs),false);
+ const evidence=JSON.parse(readFileSync(join(f.state,'runs',JSON.parse(r.stdout).id,'sandbox-preflight.json'),'utf8'));
+ assert.equal(evidence.status,'failed');
 });
 test('complete ancestor definitions are captured root to leaf',t=>{
  const f=fixture(t);f.component.parentId='parent';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));
@@ -133,4 +159,10 @@ test('final verification cannot hide an out-of-scope staged change',t=>{
 test('sandbox handoff does not bypass a failing host check',t=>{
  const f=fixture(t,'sandbox');f.component.verification=[{command:'node',args:['-e',"if(require('fs').readFileSync('source.txt','utf8')==='after')process.exit(5)"]}];writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
  const r=f.run();assert.equal(r.status,1,r.stderr);const record=JSON.parse(r.stdout);assert.equal(record.agent.status,'completed');assert.equal(record.status,'failed');assert.equal(record.stage,'verification');
+});
+
+test('overall timeout interrupts sandbox preflight before inference',t=>{
+ const f=fixture(t,'preflight-hang'),start=Date.now(),r=f.run('--timeout-seconds','0.5');
+ assert.equal(r.status,1);assert.equal(existsSync(f.sdkArgs),false);assert.ok(Date.now()-start<2500,'preflight must honor overall budget');
+ assert.match(r.stderr,/timed out|abort/i);
 });
