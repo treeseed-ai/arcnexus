@@ -1,3 +1,4 @@
+import { targetCommand,targetEnvironment } from './bindings.js';
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { materializeChecks, digest, type ResolvedAssignment } from './assignment.js';
@@ -22,11 +23,11 @@ export async function runSteward(root:string,record:RecordData,id:string,objecti
  const dir=join(root,'runs',record.id),hostChecks=materializeChecks(resolved,join(dir,'acceptance'));
  const turns:Array<Record<string,unknown>>=[];record.turns=turns;record.attempts=[];record.context=resolved.context;record.objective=objective;record.verification=component.verification;record.usage=null;record.usageComplete=true;record.implementationAttempts=0;record.callerInterventions=[];record.requests=[];
  const activities:Array<Record<string,unknown>>=[];record.activities=activities;
- const journal=(activity:string,status:string,detail:unknown)=>{const event={at:new Date().toISOString(),activity,status,detail};activities.push(event);appendFileSync(join(dir,'activities.jsonl'),JSON.stringify(event)+'\n',{mode:0o600});save(root,record);};
+ const journal=(activity:string,status:string,detail:unknown)=>{const event={at:new Date().toISOString(),turn:turns.length,activity,status,detail};activities.push(event);appendFileSync(join(dir,'activities.jsonl'),JSON.stringify(event)+'\n',{mode:0o600});save(root,record);};
  const safe=()=>{assertIdentity(record);checkScope(record.workspace,changes(record),scope);assertGeneratedOutputs(record.workspace,record.environment);};
  const command=async(c:Command,stage:string):Promise<CommandResult>=>{
   record.stage=stage;journal(stage,'started',c);
-  try{const result=await execute(c,record.workspace,join(dir,`command-${record.commands.length}.log`),signal,{timeoutMs:resolved.executionProfile.commandTimeoutSeconds*1000});record.commands.push(result);journal(stage,'completed',result);return result;}
+  try{const result=await execute(targetCommand(record,c),record.workspace,join(dir,`command-${record.commands.length}.log`),signal,{timeoutMs:resolved.executionProfile.commandTimeoutSeconds*1000,env:targetEnvironment(record)});record.commands.push(result);journal(stage,'completed',result);return result;}
   catch(error){if(error&&typeof error==='object'&&'commandResult'in error)record.commands.push(error.commandResult as CommandResult);journal(stage,'failed',String(error));throw error;}
  };
  await prepareWorkspace(root,record,signal);

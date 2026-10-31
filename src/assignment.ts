@@ -1,14 +1,16 @@
+import { loadBindings, type Bindings } from './bindings.js';
+import { resolveMembers, type Member } from './members.js';
 import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, dirname } from 'node:path';
-import { commands, InputError, type Command } from './config.js';
+import { commands, environment, InputError, type Environment, type Command } from './config.js';
 import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, type ExecutionProfile, type CompositionProfile } from './components.js';
 import { validateSchema } from './schema.js';
 import { git } from './process.js';
 export interface HostCheck extends Command { id: string; artifacts: string[] }
 export interface Assignment { schemaVersion: 1; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; changeType?: 'behavior'|'documentation'; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
 export interface ResolvedAssignment {
-  schemaVersion: 1; base: string; owners: string[]; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
+  schemaVersion: 1; environment: Environment; workspaceMembers: Omit<Member,'workspace'|'status'>[]; bindings?: Bindings; base: string; owners: string[]; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
   role: Role; compositionProfile?: CompositionProfile; executionProfile: ExecutionProfile; allowedWritePaths: string[]; verification: Command[];
   artifacts: Array<{path: string; sha256: string; content: string}>; pendingChecks: string[]; digest: string;
 }
@@ -17,9 +19,12 @@ export function resolveBase(repository: string, ref='HEAD'): {source:string;base
   try { const source=realpathSync(git(realpathSync(repository),'rev-parse','--show-toplevel').trim());return {source,base:git(source,'rev-parse','--verify','--end-of-options',`${ref}^{commit}`).trim()}; }
   catch(error){throw new InputError(String(error));}
 }
-export function resolveAssignment(repository:string, base:string, id:string, options:{objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
+export function resolveAssignment(repository:string, base:string, id:string, options:{bindings?:Bindings;objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
   try {
     const catalog=loadCatalog(repository,base),context=ancestry(catalog,id),component=context.at(-1)!;
+    const env=environment(JSON.parse(git(repository,'show',`${base}:architecture/environment.json`)));
+    if(env.workspace && component.repository!==env.workspace.primary.id)throw new InputError('Assignment component must belong to the writable primary repository');
+    const workspaceMembers=resolveMembers(repository,base,'/workspace',env,options.bindings??loadBindings()).map(({workspace,status,...member})=>member);
     if(!['gateway','library','foundation'].includes(component.type)||!component.verification.length)throw new InputError('Executable component requires verification');
     if(options.file && (options.objective!==undefined || options.kind!==undefined))throw new InputError('--assignment excludes objective and --kind');
     const assignment=validateSchema<Assignment>('assignment',options.file?JSON.parse(readFileSync(options.file,'utf8')):{schemaVersion:1,objective:options.objective,kind:options.kind??'change',expectedOutcome:options.objective,acceptanceCriteria:[options.objective],hostChecks:[]});
@@ -44,7 +49,7 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
     const executionProfile={...catalog.profiles[profileId]!};
     if(options.model)executionProfile.model=options.model;
     if(options.timeoutSeconds!==undefined)executionProfile.timeoutSeconds=options.timeoutSeconds;
-    const data={schemaVersion:1 as const,base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
+    const data={schemaVersion:1 as const,environment:env,workspaceMembers,...(options.bindings?{bindings:options.bindings}:{}),base,owners:Object.keys(catalog.components),componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
     return {...data,digest:digest(JSON.stringify(data))};
   }catch(error){throw new InputError(String(error));}
 }
