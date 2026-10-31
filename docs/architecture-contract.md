@@ -1,0 +1,57 @@
+# Architecture and assignment contract
+
+This is the increment-one contract being implemented for #30. Workflow checkpoints
+and composed dependency workspaces follow in separate increments; they are not
+claimed as available by this document.
+
+Architecture files use `schemaVersion: 1`. Built-in JSON Schemas are strict,
+versioned, and resolved locally. Unknown fields, unsupported versions, missing
+references, cyclic ancestry, invalid paths and contradictory ownership fail before
+inference. Historical reports remain evidence and are not migrated.
+
+Components live in `architecture/components/<id>.json`. Each declares its type,
+purpose, repository identity, path, objectives, constraints, questions, patterns,
+interfaces, documentation, tests, related components, exact writable scope,
+directory access policy, verification, role and execution profile. A platform owns
+packages; packages own gateways, libraries and foundations. Parent definitions are
+included completely, root to leaf. Related definitions add context, never authority.
+Parents constrain their descendants; cross-repository package ownership is explicit.
+Composition profiles select packages, not ownership parents.
+
+Roles in `architecture/roles/` describe responsibilities and activities. Execution
+profiles in `architecture/execution-profiles/` declare model, reasoning, research,
+overall/command timeouts and turn limits. Luna/medium is the default. There is no
+automatic model fallback. Environment commands are executable/argument arrays;
+they never imply runtime installation or shell interpretation.
+
+## Read-only commands
+
+```
+arcnexus validate --project <repository> [--base <ref>]
+arcnexus inspect <component-id> "<objective>" --project <repository>
+  [--base <ref>] [--kind change|research|review] [--json]
+```
+
+Both inspect committed configuration at an immutable base. They create no state,
+worktree or model session and do not execute setup. Filesystem existence and sandbox
+capability checks happen after preparation and are reported as pending by inspect.
+Validation checks the whole catalog, including unused definitions.
+
+`run` and `inspect` also accept `--assignment <file>` instead of the objective.
+The versioned assignment declares objective, kind, expected outcome, acceptance
+criteria, optional narrowed writable paths, and host checks. A host check names an
+absolute executable and argument array; file inputs listed in `artifacts` are
+snapshotted with hashes outside candidate control. The caller is responsible for
+declaring all acceptance code inputs; mutable external services are not frozen.
+These checks are trusted caller input, never instructions sourced from the candidate.
+They run after project verification and cannot replace it.
+
+The resolved assignment captures the base, full context, related definitions,
+role, execution profile, permissions and verification, with a deterministic SHA-256
+digest. Run stores this before setup. Explicit model/timeout overrides are captured.
+Issue numbers provide traceability, not an automatically fetched objective.
+
+Assignments can narrow scope but cannot widen component authority. Every exact
+write path must be covered by declared write directories. `.` must be explicit.
+Research/review outcomes and staged workflow enforcement are delivered in increment
+two; increment one rejects their execution rather than treating them as code work.
