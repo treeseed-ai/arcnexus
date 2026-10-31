@@ -50,3 +50,41 @@ rounds, and parks/restores unfinished requester changes. Acceptance is distinct 
 verified delivery. Each assignment retains 900 seconds of cumulative active execution;
 the workday has a 2,400-second wall-clock deadline. Cancellation/interruption retains
 partial evidence and stops dispatch. No resume command or background activation exists.
+
+## Routed execution
+
+```text
+arcnexus workday run <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--issue <number>] [--codex-path <executable>]
+```
+
+Run creates one candidate and two assignment records. Both baselines pass before the
+first model turn. The workday holds the global lock until completion. Exit codes are
+0 verified completion, 1 blocked/failed/exhausted, 2 invalid input/preflight, and 130
+cancellation. Both assignments must complete and combined acceptance must pass.
+
+Workday structured results add nullable `coordination`: action (`request`, `accept`,
+`reject`, `clarify`, `answer`), contract identity, correlated request ID (null for a
+new request), text, and `activityComplete`. A request also carries the existing precise
+boundary-request fields. The host supplies message and assignment identities. Messages
+are bounded to 16 KiB. A request may not replace the captured recipient objective or
+checks. Accept commits intent only; delivery is created by the host after verification.
+
+The recipient decides during its read-only planning turn. Clarification and replies
+are read-only and cannot activate a third owner. One dependency and two clarification
+rounds are permitted. The six workday coordination/continuation turns are additional
+to existing engineering turns; every turn is counted once. Attempts, operation calls,
+plans and frozen tests persist. Incomplete activities continue in the same thread and
+attempt; a completed specification still passes the expected-red gate. A review that
+yields must inspect the assembled candidate again when it resumes.
+
+At suspension the host saves exact working bytes, executable modes, staged blobs and
+deletions, then parks only the requester's paths. A durable intent precedes filesystem
+mutation. Restoration verifies those paths still match the parked baseline and cannot
+overwrite recipient changes. Other-owner edits are checked against captured snapshots,
+not simply excluded from scope checks. Declared refresh commands must preserve source.
+
+Each assignment's active clock includes its commands and turns but pauses while the
+other owner executes. The workday deadline never pauses. All managed resources stop
+at a handoff. Cancellation stops dispatch and attempts safe restoration; ambiguous or
+interrupted transitions remain unresolved and prevent cleanup. There is no restart or
+resume command. The caller owns integration of the final combined diff.

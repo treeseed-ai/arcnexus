@@ -4,6 +4,10 @@
 
 ### Added
 
+- Coordinate two stewards through verified workday handoffs (#57).
+
+### Added
+
 - Inspect durable two-owner workdays and checkpoint steward execution (#56).
 
 ### Added
