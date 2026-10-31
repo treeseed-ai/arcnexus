@@ -32,27 +32,20 @@
       ]
     },
     {
-      "command": ".venv/bin/python",
+      "command": "node",
       "args": [
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        "tests/ci",
-        "-v"
-      ]
-    },
-    {
-      "command": ".venv/bin/python",
-      "args": [
-        "scripts/check_repository.py"
+        "--test",
+        "tests/runtime/report.test.mjs"
       ]
     },
     {
       "command": "node",
       "args": [
-        "--test",
-        "tests/runtime/report.test.mjs"
+        "dist/cli.js",
+        "guidance",
+        "validate",
+        "--project",
+        "."
       ]
     }
   ],

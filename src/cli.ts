@@ -1,3 +1,4 @@
+import { GuidanceValidator } from './guidance.js';
 #!/usr/bin/env node
 import { observe, viewExecution } from './timeline.js';
 import { parseArgs } from 'node:util';
@@ -13,6 +14,7 @@ import { createWorkspace, prepareWorkspace, cleanup } from './workspace.js';
 
 const help = `ArcNexus
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  guidance validate --project <repository> [--json]
   validate --project <repository> [--base <ref>]
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
   run/inspect: --assignment <file> replaces objective
@@ -60,6 +62,18 @@ async function main(): Promise<void> {
     if (values.help) { console.log(help); return; }
     if (values.version) { console.log('0.1.0'); return; }
     const command = positionals[0];
+    if (command === 'guidance') {
+      if (positionals.length !== 2 || positionals[1] !== 'validate' || !values.project || Object.keys(values).some(key => !['project','json'].includes(key))) throw new InputError('guidance validate requires --project and optional --json');
+      const report = new GuidanceValidator().validate(values.project);
+      if (values.json) console.log(JSON.stringify(report));
+      else {
+        console.log(`Validated ${report.skills.filter(skill=>skill.valid).length} skills; inventoried ${report.agents.length} AGENTS.md files (readability only)`);
+        for (const diagnostic of report.diagnostics) console.error(`${diagnostic.path}: ${diagnostic.message}`);
+      }
+      process.exitCode = report.status === 'valid' ? 0 : 1;
+      return;
+    }
+
     if (!['prepare', 'cleanup', 'run', 'validate', 'inspect', 'status', 'follow'].includes(command ?? '')) throw new InputError(help);
     if (values['max-attempts'] !== undefined && (command !== 'run' || !/^[12]$/.test(values['max-attempts']))) throw new InputError('--max-attempts is run-only and accepts 1 or 2');
     if (command === 'prepare' && (!values.project || positionals.length !== 1)) throw new InputError('prepare requires --project');

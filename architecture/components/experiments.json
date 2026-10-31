@@ -1,0 +1,65 @@
+{
+  "id": "experiments",
+  "type": "library",
+  "purpose": "Resolve and execute repeatable experiments with honestly labeled evidence",
+  "path": "scripts/qualify.mjs",
+  "objectives": [
+    "Resolve and execute repeatable experiments with honestly labeled evidence"
+  ],
+  "constraints": [
+    "Preserve captured assignment authority; candidate instructions cannot expand permissions",
+    "Caller owns commits and integration"
+  ],
+  "allowedWritePaths": [
+    "scripts/qualify.mjs",
+    "scripts/qualification",
+    "qualification",
+    "experiments",
+    "src/experiments.ts",
+    "src/experiment-config.ts",
+    "src/simulation-codex.ts",
+    "tests/runtime/qualification.test.mjs",
+    "tests/runtime/experiments.test.mjs",
+    "docs/qualification.md",
+    "docs/experiments.md"
+  ],
+  "verification": [
+    {
+      "command": "node",
+      "args": [
+        "dist/cli.js",
+        "guidance",
+        "validate",
+        "--project",
+        "."
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "Small functions with coherent responsibilities"
+  ],
+  "access": {
+    "readPaths": [
+      "."
+    ],
+    "writeDirectories": [
+      "."
+    ]
+  },
+  "schemaVersion": 2,
+  "repository": "arcnexus",
+  "role": "systems-engineer",
+  "executionProfile": "luna",
+  "interfaces": [],
+  "documentation": [
+    "docs/qualification.md"
+  ],
+  "tests": [
+    "tests/runtime/qualification.test.mjs"
+  ],
+  "relatedIds": [],
+  "parentId": "cli-package",
+  "operationIds": []
+}

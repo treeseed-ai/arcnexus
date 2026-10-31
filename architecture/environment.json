@@ -42,25 +42,10 @@
       ]
     },
     {
-      "command": "uv",
+      "command": "npm",
       "args": [
-        "venv",
-        "--python",
-        "python3",
-        "--no-python-downloads",
-        ".venv"
-      ]
-    },
-    {
-      "command": "uv",
-      "args": [
-        "pip",
-        "install",
-        "--python",
-        ".venv/bin/python",
-        "--no-python-downloads",
-        "-r",
-        "scripts/requirements-ci.txt"
+        "run",
+        "build"
       ]
     }
   ],
