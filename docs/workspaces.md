@@ -45,3 +45,19 @@ secret files). It deletes only declared ignored generated outputs with the workt
 Concurrent external edits during cleanup are unsupported; stop editors/builders first.
 
 Git worktree operations follow the [Git documentation](https://git-scm.com/docs/git-worktree).
+
+## Evidence-preserving cleanup contract
+
+Cleanup must retain `report.json` and `report.md` byte-for-byte, including the original
+status, finish time and elapsed duration. Removal metadata belongs in a separate
+`cleanup.json` in the run directory. CLI cleanup output preserves the run status and
+adds `cleanupStatus: "removed"`; cleanup must not invoke execution finalization.
+Repeated cleanup leaves both reports and removal metadata unchanged. If a new file,
+directory or symlink occupies a previously removed path, refuse to delete it.
+Legacy records already marked `removed` are accepted only when the path is absent;
+they cannot reconstruct evidence overwritten by the earlier implementation.
+
+Removal writes `cleanup.json` atomically with `cleanupStatus: "removed"` and
+`removedAt` (an ISO timestamp). This lifecycle receipt is separate from execution
+evidence and is not rewritten on retries. An absent legacy workspace succeeds
+without creating a receipt or changing its existing reports.

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { environment, InputError, type Environment } from './config.js';
 import { execute, git } from './process.js';
@@ -53,8 +53,12 @@ export function cleanup(root: string, id: string): RecordData {
   if (!/^[a-f0-9-]{36}$/.test(id)) throw new InputError('Invalid workspace ID');
   const record = JSON.parse(readFileSync(join(root,'runs',id,'report.json'),'utf8')) as RecordData;
   if (record.id !== id || record.workspace !== join(root,'workspaces',id)) throw new Error('Workspace ownership mismatch');
-  if (record.status === 'removed') return record;
   if (['preparing','running'].includes(record.status)) throw new Error('Workspace operation is active or incomplete; inspect before cleanup');
+  const cleanupPath = join(root,'runs',id,'cleanup.json');
+  if (record.status === 'removed' || existsSync(cleanupPath)) {
+    if (lstatSync(record.workspace, { throwIfNoEntry: false })) throw new Error('Previously removed workspace path is occupied');
+    return { ...record, cleanupStatus: 'removed' };
+  }
   if (realpathSync(record.workspace) !== record.workspace) throw new Error('Workspace path is redirected');
   const common = realpathSync(git(record.workspace,'rev-parse','--path-format=absolute','--git-common-dir').trim());
   if (common !== record.commonDir || !git(record.source,'worktree','list','--porcelain','-z').split('\0').includes(`worktree ${record.workspace}`)) throw new Error('Workspace registration mismatch');
@@ -62,5 +66,7 @@ export function cleanup(root: string, id: string): RecordData {
   const env = environment(JSON.parse(git(record.workspace,'show',`${record.base}:architecture/environment.json`)));
   assertOutputs(record.workspace,env);
   git(record.source,'worktree','remove',record.workspace);
-  record.status='removed'; save(root,record); return record;
+  writeFileSync(`${cleanupPath}.tmp`, JSON.stringify({ cleanupStatus: 'removed', removedAt: new Date().toISOString() }, null, 2) + '\n', { mode: 0o600 });
+  renameSync(`${cleanupPath}.tmp`, cleanupPath);
+  return { ...record, cleanupStatus: 'removed' };
 }

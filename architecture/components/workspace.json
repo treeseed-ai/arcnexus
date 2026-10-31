@@ -1,0 +1,57 @@
+{
+  "id": "workspace",
+  "type": "library",
+  "purpose": "Prepare and clean workspaces while preserving execution evidence",
+  "path": "src/workspace.ts",
+  "objectives": [
+    "Preserve original run evidence across workspace lifecycle operations"
+  ],
+  "constraints": [
+    "No changes to source checkout or unrelated worktrees",
+    "Retain all existing cleanup safety guards",
+    "Do not weaken captured verification or edit architectural definitions"
+  ],
+  "allowedWritePaths": [
+    "src/workspace.ts",
+    "src/cli.ts",
+    "tests/runtime/workspace.test.mjs",
+    "docs/workspaces.md"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "questions": [],
+  "patterns": [
+    "Evidence-backed completion",
+    "Separate execution outcomes from workspace lifecycle metadata"
+  ]
+}

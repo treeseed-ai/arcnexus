@@ -55,7 +55,7 @@ async function main(): Promise<void> {
     if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 2_147_483) throw new InputError('Invalid timeout');
     root = stateRoot(); unlock = lock(root);
     timer = setTimeout(() => controller.abort(new Error('Operation timed out')), seconds * 1000);
-    if (command === 'cleanup') record = cleanup(root, positionals[1]!);
+    if (command === 'cleanup') console.log(JSON.stringify(cleanup(root, positionals[1]!)));
     else {
       record = createWorkspace(root, { project: values.project!, base: values.base, issue: values.issue });
       if (command === 'run') await runSteward(root, record, positionals[1]!, positionals[2]!, values.model ?? 'gpt-6-astra', values['codex-path'] ?? 'codex', controller.signal);

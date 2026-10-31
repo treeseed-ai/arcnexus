@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync, rmSync, lstatSync, symlinkSync, readlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync, spawn } from 'node:child_process';
@@ -103,4 +103,64 @@ test('worktree creation does not overwrite a colliding branch or directory', asy
   f.git('branch','-D',record.branch);mkdirSync(record.workspace);writeFileSync(join(record.workspace,'precious'),'keep');
   await assert.rejects(prepareWorkspace(root,record,new AbortController().signal));
   assert.equal(readFileSync(join(record.workspace,'precious'),'utf8'),'keep');
+});
+
+function evidence(f, record) {
+  const dir = join(f.state, 'runs', record.id);
+  const reports = ['report.json', 'report.md'].map(name => readFileSync(join(dir, name)));
+  return { dir, assertReports() {
+    for (const [i, name] of ['report.json', 'report.md'].entries()) {
+      assert.deepEqual(readFileSync(join(dir, name)), reports[i], `${name} changed`);
+    }
+  } };
+}
+for (const failed of [false, true]) test(`cleanup preserves ${failed ? 'failed' : 'successful'} run evidence and receipt on retry`, t => {
+  const f = fixture(t, failed ? [{command:'node', args:['-e','process.exit(4)']}] : []);
+  const prepared = f.prepare(); assert.equal(prepared.status, failed ? 1 : 0, prepared.stderr);
+  const record = JSON.parse(prepared.stdout), original = evidence(f, record);
+  const first = f.run('cleanup', record.id); assert.equal(first.status, 0, first.stderr);
+  assert.deepEqual(JSON.parse(first.stdout), {...record, cleanupStatus:'removed'});
+  original.assertReports();
+  const receiptPath = join(original.dir, 'cleanup.json'), receipt = readFileSync(receiptPath);
+  const metadata = JSON.parse(receipt);
+  assert.equal(metadata.cleanupStatus, 'removed');
+  assert.ok(Number.isFinite(Date.parse(metadata.removedAt)));
+  assert.equal(existsSync(record.workspace), false);
+  const second = f.run('cleanup', record.id); assert.equal(second.status, 0, second.stderr);
+  assert.deepEqual(JSON.parse(second.stdout), {...record, cleanupStatus:'removed'});
+  original.assertReports(); assert.deepEqual(readFileSync(receiptPath), receipt);
+});
+for (const legacy of [false, true]) test(`cleanup refuses replacement paths and safely handles ${legacy ? 'legacy' : 'current'} removal`, t => {
+  const f = fixture(t), prepared = f.prepare(); assert.equal(prepared.status, 0, prepared.stderr);
+  const record = JSON.parse(prepared.stdout);
+  if (legacy) {
+    f.git('worktree', 'remove', record.workspace);
+    record.status = 'removed';
+    writeFileSync(join(f.state, 'runs', record.id, 'report.json'), JSON.stringify(record));
+  } else {
+    const result = f.run('cleanup', record.id); assert.equal(result.status, 0, result.stderr);
+  }
+  const original = evidence(f, record), receiptPath = join(original.dir, 'cleanup.json');
+  const receipt = legacy ? undefined : readFileSync(receiptPath);
+  const checkEvidence = () => {
+    original.assertReports();
+    if (legacy) assert.equal(existsSync(receiptPath), false);
+    else assert.deepEqual(readFileSync(receiptPath), receipt);
+  };
+  for (const kind of ['file', 'directory', 'symlink', 'dangling symlink']) {
+    if (kind === 'file') writeFileSync(record.workspace, 'keep');
+    else if (kind === 'directory') { mkdirSync(record.workspace); writeFileSync(join(record.workspace, 'keep'), 'keep'); }
+    else symlinkSync(kind === 'symlink' ? f.repo : join(f.root, 'missing'), record.workspace);
+    const result = f.run('cleanup', record.id);
+    assert.equal(result.status, 1, `${kind}: ${result.stderr}`);
+    if (kind.includes('symlink')) {
+      assert.ok(lstatSync(record.workspace).isSymbolicLink());
+      assert.equal(readlinkSync(record.workspace), kind === 'symlink' ? f.repo : join(f.root, 'missing'));
+    } else assert.equal(readFileSync(kind === 'file' ? record.workspace : join(record.workspace, 'keep'), 'utf8'), 'keep');
+    checkEvidence(); rmSync(record.workspace, {recursive:true});
+  }
+  for (let i = 0; i < 2; i++) {
+    const result = f.run('cleanup', record.id); assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), {...record, cleanupStatus:'removed'}); checkEvidence();
+  }
 });
