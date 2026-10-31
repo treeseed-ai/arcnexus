@@ -12,6 +12,7 @@ export interface AgentResult {status:'completed'|'blocked'|'failed';summary:stri
 const schema={type:'object',properties:{status:{type:'string',enum:['completed','blocked','failed']},summary:{type:'string'},blockers:{type:'array',items:{type:'string'}}},required:['status','summary','blockers'],additionalProperties:false};
 export async function runCodex(root:string,record:RecordData,prompt:string,executable:string,model:string,signal:AbortSignal,resumeId?:string):Promise<AgentResult>{
   const dir=join(root,'runs',record.id), launcher=join(dir,'codex-launcher'),pidFile=join(dir,'codex.pid');
+  appendFileSync(join(dir,'events.jsonl'),'',{mode:0o600});
   const context=record.context as Array<{access?:unknown;allowedWritePaths?:unknown}>|undefined;
   const resolved=record.resolvedAssignment as ResolvedAssignment|undefined;
   const component=context?.at(-1);

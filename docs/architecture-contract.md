@@ -16,7 +16,9 @@ directory access policy, verification, role and execution profile. A platform ow
 packages; packages own gateways, libraries and foundations. Parent definitions are
 included completely, root to leaf. Related definitions add context, never authority.
 Parents constrain their descendants; cross-repository package ownership is explicit.
-Composition profiles select packages, not ownership parents.
+Composition profiles select packages, not ownership parents. `--composition-profile`
+selects one for inspection/run; `--execution-profile` selects a declared worker
+profile. Selected composition must include the component's owning package.
 
 Roles in `architecture/roles/` describe responsibilities and activities. Execution
 profiles in `architecture/execution-profiles/` declare model, reasoning, research,

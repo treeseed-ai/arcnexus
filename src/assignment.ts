@@ -2,14 +2,14 @@ import { createHash } from 'node:crypto';
 import { readFileSync, realpathSync, statSync, mkdirSync, writeFileSync } from 'node:fs';
 import { isAbsolute, join, dirname } from 'node:path';
 import { commands, InputError, type Command } from './config.js';
-import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, type ExecutionProfile } from './components.js';
+import { ancestry, covered, loadCatalog, scopePath, type Component, type Role, type ExecutionProfile, type CompositionProfile } from './components.js';
 import { validateSchema } from './schema.js';
 import { git } from './process.js';
 export interface HostCheck extends Command { id: string; artifacts: string[] }
 export interface Assignment { schemaVersion: 1; objective: string; kind: 'change'|'research'|'review'; expectedOutcome: string; acceptanceCriteria: string[]; allowedWritePaths?: string[]; hostChecks: HostCheck[] }
 export interface ResolvedAssignment {
   schemaVersion: 1; base: string; componentId: string; assignment: Assignment; context: Component[]; related: Component[];
-  role: Role; executionProfile: ExecutionProfile; allowedWritePaths: string[]; verification: Command[];
+  role: Role; compositionProfile?: CompositionProfile; executionProfile: ExecutionProfile; allowedWritePaths: string[]; verification: Command[];
   artifacts: Array<{path: string; sha256: string; content: string}>; pendingChecks: string[]; digest: string;
 }
 export const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
@@ -17,7 +17,7 @@ export function resolveBase(repository: string, ref='HEAD'): {source:string;base
   try { const source=realpathSync(repository);return {source,base:git(source,'rev-parse','--verify','--end-of-options',`${ref}^{commit}`).trim()}; }
   catch(error){throw new InputError(String(error));}
 }
-export function resolveAssignment(repository:string, base:string, id:string, options:{objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number}):ResolvedAssignment {
+export function resolveAssignment(repository:string, base:string, id:string, options:{objective?:string;file?:string;kind?:string;model?:string;timeoutSeconds?:number;compositionProfile?:string;executionProfile?:string}):ResolvedAssignment {
   try {
     const catalog=loadCatalog(repository,base),context=ancestry(catalog,id),component=context.at(-1)!;
     if(!['gateway','library','foundation'].includes(component.type)||!component.verification.length)throw new InputError('Executable component requires verification');
@@ -36,10 +36,14 @@ export function resolveAssignment(repository:string, base:string, id:string, opt
         if(!artifacts.some(a=>a.path===p)){const data=readFileSync(p);artifacts.push({path:p,sha256:digest(data),content:data.toString('base64')});}
       }
     }
-    const executionProfile={...catalog.profiles[component.executionProfile]!};
+    const profileId=options.executionProfile??component.executionProfile;
+    if(!Object.hasOwn(catalog.profiles,profileId))throw new InputError(`Unknown execution profile: ${profileId}`);
+    const compositionProfile=options.compositionProfile?catalog.compositions[options.compositionProfile]:undefined;
+    if(options.compositionProfile && (!Object.hasOwn(catalog.compositions,options.compositionProfile)||!context.some(c=>c.type==='package'&&compositionProfile!.packageIds.includes(c.id))))throw new InputError('Component is outside selected composition profile');
+    const executionProfile={...catalog.profiles[profileId]!};
     if(options.model)executionProfile.model=options.model;
     if(options.timeoutSeconds!==undefined)executionProfile.timeoutSeconds=options.timeoutSeconds;
-    const data={schemaVersion:1 as const,base,componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
+    const data={schemaVersion:1 as const,base,componentId:id,assignment,context,related:component.relatedIds.map(id=>catalog.components[id]!),role:catalog.roles[component.role]!,...(compositionProfile?{compositionProfile}:{}),executionProfile,allowedWritePaths,verification:component.verification,artifacts,pendingChecks:['Environment prerequisites/setup','Prepared path and symlink validation','Installed Codex sandbox compatibility']};
     return {...data,digest:digest(JSON.stringify(data))};
   }catch(error){throw new InputError(String(error));}
 }

@@ -12,7 +12,8 @@ export interface Component {
 }
 export interface Role { schemaVersion: 1; id: string; purpose: string; responsibilities: string[]; activities: string[] }
 export interface ExecutionProfile { schemaVersion: 1; id: string; model: string; reasoning: 'low'|'medium'|'high'; webSearch: 'live'|'disabled'; timeoutSeconds: number; commandTimeoutSeconds: number; maxTurns: 3; maxCorrectiveTurns: 2 }
-export interface Catalog { components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
+export interface CompositionProfile {schemaVersion:1;id:string;platformId:string;packageIds:string[]}
+export interface Catalog { compositions: Record<string,CompositionProfile>; components: Record<string, Component>; roles: Record<string, Role>; profiles: Record<string, ExecutionProfile> }
 export const covered = (path: string, scope: string[]) => scope.some(p => p === '.' || path === p || path.startsWith(`${p}/`));
 export const scopePath = (path: string) => path === '.' ? path : relativePath(path);
 function read<T>(repository: string, base: string, path: string, schema: string): T {
@@ -33,7 +34,7 @@ export function ancestry(catalog: Catalog, id: string): Component[] {
 }
 export function loadCatalog(repository: string, base: string): Catalog {
   try {
-    const catalog: Catalog = { components: {}, roles: {}, profiles: {} };
+    const catalog: Catalog = { compositions: {}, components: {}, roles: {}, profiles: {} };
     const paths = git(repository, 'ls-tree', '-r', '--name-only', base, '--', 'architecture').split('\n').sort();
     const groups = [['components','component',catalog.components],['roles','role',catalog.roles],['execution-profiles','execution-profile',catalog.profiles]] as const;
     for (const [directory, schema, target] of groups) for (const path of paths.filter(p => p.startsWith(`architecture/${directory}/`) && p.endsWith('.json'))) {
@@ -68,8 +69,9 @@ export function loadCatalog(repository: string, base: string): Catalog {
       }
     }
     for (const path of paths.filter(p=>p.startsWith('architecture/composition-profiles/') && p.endsWith('.json'))) {
-      const profile = read<{id:string;platformId:string;packageIds:string[]}>(repository,base,path,'composition-profile');
+      const profile = read<CompositionProfile>(repository,base,path,'composition-profile');
       if(path !== `architecture/composition-profiles/${profile.id}.json` || catalog.components[profile.platformId]?.type !== 'platform') throw new InputError('Invalid composition platform');
+      Object.defineProperty(catalog.compositions,profile.id,{value:profile,enumerable:true});
       for(const id of profile.packageIds) if(catalog.components[id]?.type !== 'package' || catalog.components[id]?.parentId !== profile.platformId) throw new InputError(`Invalid composition package: ${id}`);
     }
     return catalog;

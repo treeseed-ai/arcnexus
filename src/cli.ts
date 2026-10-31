@@ -21,6 +21,7 @@ Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <sec
 function argumentsForCommand() {
   try {
     return parseArgs({ allowPositionals: true, options: {
+      'composition-profile': {type:'string'}, 'execution-profile': {type:'string'},
       assignment: { type: 'string' }, kind: { type: 'string' }, json: { type: 'boolean' },
       project: { type: 'string' }, model: { type: 'string' }, 'codex-path': { type: 'string' },
       'max-attempts': { type: 'string' },
@@ -67,7 +68,7 @@ async function main(): Promise<void> {
       const catalog=loadCatalog(source,base);console.log(JSON.stringify({base,components:Object.keys(catalog.components),status:'valid'}));return;
     }
     const selection=['run','inspect'].includes(command!)?resolveBase(values.project!,values.base):undefined;
-    const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],file:values.assignment,kind:values.kind,model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;
+    const resolved=selection?resolveAssignment(selection.source,selection.base,positionals[1]!,{objective:positionals[2],file:values.assignment,kind:values.kind,compositionProfile:values['composition-profile'],executionProfile:values['execution-profile'],model:values.model,timeoutSeconds:values['timeout-seconds']===undefined?undefined:seconds}):undefined;
     if(command==='inspect'){
       console.log(values.json?JSON.stringify(resolved):`Assignment ${resolved!.digest}\n${JSON.stringify(resolved,null,2)}`);return;
     }
