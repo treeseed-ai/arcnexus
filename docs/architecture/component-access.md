@@ -23,8 +23,10 @@ file/path checks still apply after execution and may be narrower than the direct
 sandbox. No parent directory is inferred from a writable file. Parent component
 policies are captured as context; the executable leaf supplies the command policy.
 
-After preparation, declared writable paths must be real directories, not files or
-symlinks. Missing declared writable directories may be created empty before the
+`validate` rejects write-directory paths that are already tracked files or that
+traverse tracked symlinks at the captured revision. Missing directories remain valid
+configuration. After preparation, declared writable paths must be real directories,
+not files or symlinks. Missing declared writable directories may be created empty before the
 worker starts. Read paths must exist. Reject symlink components in either kind of
 path. Invalid, missing or unsupported policies stop before inference.
 
