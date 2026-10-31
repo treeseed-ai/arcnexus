@@ -107,3 +107,10 @@ An incomplete planning turn may retain a proposed plan and progress claims, but 
 claims do not update an accepted checklist. After delivery, planning continues and
 must produce a valid initial plan. Checklist activities use the role's engineering
 activity names; `specification` is a host stage, not a separate role activity.
+
+The model-facing coordination schema is narrowed by host state on every turn. A
+requester may request only before its dependency exists; a recipient may accept,
+reject or clarify only while its planning decision is pending. A clarification reply
+may answer. Other turns require `coordination: null`; observations belong in findings
+and activities. Host validation independently rejects unavailable actions even when a
+controlled executable ignores the supplied output schema.
