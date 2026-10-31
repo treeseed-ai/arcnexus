@@ -145,3 +145,9 @@ The reporting owner declares a focused built report-test command in addition to
 full repository verification. Use that command for the expected-red and captured
 regression checkpoints; full verification still runs at baseline and after changes.
 This keeps repeated regression checks bounded without weakening integration checks.
+
+Research/review has exactly one execution turn after planning. Source-read-only
+means no source edits; it does not prohibit declared test or service operations.
+The steward must perform its selected permitted work and update the checklist in
+that turn, or report a precise blocker. Activity names are not promises of additional
+model turns. Incomplete checklist claims fail rather than silently adding a turn.
