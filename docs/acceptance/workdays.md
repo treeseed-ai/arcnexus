@@ -25,3 +25,11 @@ rejected its incomplete specification because its own documentation was unchange
 The explicit source-change requirement is now included in the actual specification
 prompt. The checkpoint remains mandatory; no planning repair or caller code fix was
 introduced. Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/fixture-live-2/campaign.json`.
+
+`fixture-live-3`, workday `dc029af9-8ecc-40bb-a1f5-e9a82ad404f0`, used supervisor
+`4b0dcc1540b57a18ff84dc2ced9b9bb4c9b1b1f1`. Gateway documentation and tests changed,
+but the model paraphrased an assertion diagnostic (`Expected: "Identity: Ada"`)
+that did not occur literally in the real output. The host rejected the expected-red
+claim before implementation. The fixture assignment now names stable assertion
+messages explicitly; host matching is unchanged. Campaign:
+`/home/adrian/.local/state/arcnexus/qualification/workday-60/fixture-live-3/campaign.json`.
