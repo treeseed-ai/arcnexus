@@ -23,3 +23,12 @@ file ordering, and JSON evidence are preserved.
 service id, status, and `endpointClosed` boolean. Absent or empty service history
 produces exactly `No managed services recorded.` Both summaries use only captured
 record fields and leave the records unchanged.
+
+## Coordination evidence
+
+Reports summarize planned/actual/corrective turns, implementation attempts, elapsed
+time, captured usage and its completeness/accounting basis. Supplied prompt bytes
+and provenance references describe host-supplied context, not complete effective
+Codex context. Host command results and independent acceptance remain distinct from
+agent findings, uncertainty, boundary requests and caller interventions. Missing
+historical fields say unavailable; they are not interpreted as zero or none.
