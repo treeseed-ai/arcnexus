@@ -4,6 +4,8 @@
 
 ### Added
 
+- Show sorted changed files in execution reports through self-development (#13).
+
 - Add repeatable live coding acceptance and self-development definitions (#11).
 
 - Execute one component steward through the Codex SDK (#9).
