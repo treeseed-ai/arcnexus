@@ -3,7 +3,7 @@
 `arcnexus run <component-id> "<objective>" --project <repository>` creates a fresh
 managed worktree and prepares its environment. Optional flags: `--base`, `--issue`,
 `--model`, `--timeout-seconds`, and `--codex-path`. Workspace rules and cleanup are
-in [workspaces.md](workspaces.md). Default model: `gpt-6-astra`; reasoning: medium;
+in [workspaces.md](workspaces.md). Default model: `gpt-6-luna`; reasoning: medium;
 overall limit: 900 seconds. Verification commands have a 120-second individual limit.
 
 Commit a definition at `architecture/components/<id>.json`:

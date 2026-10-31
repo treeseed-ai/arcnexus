@@ -29,8 +29,7 @@ Later architect decisions refine the historical sequence:
   not wait for the UI or the completion of the first three milestones.
 - Use `gpt-6-luna` for subsequent live tests. Luna-sized models are the intended
   steward baseline; earlier Astra evidence does not establish Luna readiness.
-  Select it explicitly with `--model gpt-6-luna`; the currently shipped CLI default
-  is still Astra. A larger-model fallback requires an explicit decision, not a
+  The CLI defaults to `gpt-6-luna`; explicit `--model` overrides remain supported. A larger-model fallback requires an explicit decision, not a
   silent retry. Track verified outcomes, execution count, elapsed time and usage.
 
 ## Historical planning transcription

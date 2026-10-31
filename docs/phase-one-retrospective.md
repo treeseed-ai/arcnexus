@@ -8,11 +8,12 @@ to delay use until a complete platform exists.
 
 ## Model and session behavior today
 
-The shipped CLI defaults to `gpt-6-astra`; `--model` overrides it. The architect's
+The CLI now defaults to `gpt-6-luna`; `--model` overrides it. The architect's
 updated direction is to use **`gpt-6-luna` for live tests and Luna-sized models as
 the intended steward baseline**. Invoke subsequent tests with `--model gpt-6-luna`.
 The earlier Astra results below remain valid historical evidence, but do not prove
-small-model readiness. This documentation change does not change the CLI default.
+small-model readiness. The follow-up in issue #20 makes this the application default, rather than relying
+on callers to remember a flag.
 
 The [adapter](../src/codex.ts) uses medium reasoning, workspace-write, approval
 never, no agent network/web search, and a launcher inserting `--ignore-user-config`.

@@ -1,0 +1,55 @@
+{
+  "id": "cli",
+  "type": "library",
+  "purpose": "Expose predictable command-line execution settings and lifecycle operations",
+  "path": "src/cli.ts",
+  "objectives": [
+    "Use affordable Luna-sized stewards by default while respecting explicit model selection"
+  ],
+  "constraints": [
+    "Do not change sandbox permissions or verification requirements",
+    "Caller owns commits and integration",
+    "Do not edit architecture or unrelated files"
+  ],
+  "allowedWritePaths": [
+    "src/cli.ts",
+    "tests/runtime/steward.test.mjs",
+    "docs/stewards.md"
+  ],
+  "verification": [
+    {
+      "command": "npm",
+      "args": [
+        "run",
+        "check"
+      ]
+    },
+    {
+      "command": "npm",
+      "args": [
+        "test"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/ci",
+        "-v"
+      ]
+    },
+    {
+      "command": ".venv/bin/python",
+      "args": [
+        "scripts/check_repository.py"
+      ]
+    }
+  ],
+  "patterns": [
+    "Document intent, test observable behavior, implement",
+    "Verify actual SDK executable arguments and report settings"
+  ]
+}
