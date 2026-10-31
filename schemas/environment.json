@@ -59,6 +59,125 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-zA-Z0-9_-]+$"
+            },
+            "repository": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^https://"
+            }
+          },
+          "required": [
+            "id",
+            "repository"
+          ],
+          "additionalProperties": false
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "repository": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^https://"
+              },
+              "commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "prerequisites": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "command": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "command",
+                    "args"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "setup": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "command": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "args": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "command",
+                    "args"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "generatedDirectories": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "id",
+              "repository",
+              "commit",
+              "path",
+              "prerequisites",
+              "setup",
+              "generatedDirectories"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "primary",
+        "dependencies"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
