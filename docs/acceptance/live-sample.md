@@ -18,7 +18,9 @@ CI tests that the independent checker rejects missing and incorrect implementati
 and accepts the specified boundary. Those synthetic checker tests are not live evidence.
 
 For self-development, `architecture/environment.json` installs this repository's
-npm dependencies. The `report` component permits only its implementation, dedicated
+npm dependencies and creates a local Python venv for the repository checks.
+The captured verification includes TypeScript, built-CLI tests, Python acceptance
+and skill validation. Their declared generated directories stay cleanup-safe. The `report` component permits only its implementation, dedicated
 report tests and report documentation. A stable runner outside the candidate drives
 that assignment; the caller supplies an issue and refreshed staging base.
 
