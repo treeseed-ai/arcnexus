@@ -33,3 +33,11 @@ that did not occur literally in the real output. The host rejected the expected-
 claim before implementation. The fixture assignment now names stable assertion
 messages explicitly; host matching is unchanged. Campaign:
 `/home/adrian/.local/state/arcnexus/qualification/workday-60/fixture-live-3/campaign.json`.
+
+The first real guidance invocation, `guidance-live-1` / workday
+`55f1a6de-9875-4d2a-988e-849df452b84f`, stopped after the validator prepared its
+regression. It emitted an unsolicited coordination `answer` during specification,
+although no clarification was pending. The host rejected it and no implementation
+was integrated. The SDK output schema is now narrowed to currently eligible actions,
+with an independent host check; observations remain findings/activity evidence.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-1/campaign.json`.

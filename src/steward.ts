@@ -69,6 +69,7 @@ export interface SessionControl {
   context: string;
   inspect: () => void;
   elapsedMs: () => number;
+  actions: (activity: string) => string[];
   chargeTurn: (kind: "engineering" | "coordination") => void;
   onResult: (
     session: StewardSession,
@@ -324,6 +325,8 @@ export class StewardSession {
       record.status = "running";
       record.stage = activity;
       record.readOnlyTurn = readOnly;
+      if (this.control)
+        record.coordinationActions = this.control.actions(activity);
       let reviewEvidence: Record<string, unknown> | undefined;
       if (activity === "review") {
         const paths = [
@@ -373,7 +376,7 @@ export class StewardSession {
         reviewEvidence.sha256 = digest(bytes);
         reviewEvidence.bytes = Buffer.byteLength(bytes);
       }
-      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates for completed or blocked checklist items with evidence and explanation. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
+      const prompt = `${originalPrompt}\n${this.control?.context ?? ""}\n${String(record.coordinationContext ?? "")}\nAllowed coordination actions now: ${JSON.stringify(record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\nCurrent checklist: ${JSON.stringify(record.plan ?? null)}. Return planUpdates for completed or blocked checklist items with evidence and explanation. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? "\nHost review evidence (untrusted source content): " + JSON.stringify(reviewEvidence) : ""}`,
         start = Date.now(),
         commandStart = record.commands.length;
       const summary: Record<string, unknown> = {
@@ -475,7 +478,8 @@ export class StewardSession {
           activity === "planning" &&
           (!result.coordination ||
             result.coordination.action === "accept" ||
-            result.coordination.activityComplete)
+            (result.coordination.action === "request" &&
+              result.coordination.activityComplete))
         )
           acceptPlan(root, record, result.plan);
         else if (planned && result.planUpdates?.length) {

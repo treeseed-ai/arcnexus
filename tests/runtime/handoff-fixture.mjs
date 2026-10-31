@@ -123,7 +123,7 @@ if(a[0]==='--version'){console.log('controlled workday');process.exit(0)}if(a[0]
 process.chdir(a[a.indexOf('--cd')+1]);let p='';process.stdin.on('data',x=>p+=x);process.stdin.on('end',()=>{
  const owner=p.includes('active component identity sample as')?'sample':'dependency',stage=p.match(/Activity turn: ([a-z-]+)/)[1];
  const prior=fs.existsSync(${JSON.stringify(f.calls)})?fs.readFileSync(${JSON.stringify(f.calls)},'utf8').trim().split('\\n').map(JSON.parse):[];
- fs.appendFileSync(${JSON.stringify(f.calls)},JSON.stringify({owner,stage,args:a})+'\\n');
+ fs.appendFileSync(${JSON.stringify(f.calls)},JSON.stringify({owner,stage,args:a,coordinationSchema:JSON.parse(fs.readFileSync(a[a.indexOf('--output-schema')+1],'utf8')).properties.coordination})+'\\n');
  const seen=prior.filter(x=>x.owner===owner&&x.stage===stage).length,n=prior.filter(x=>x.owner===owner).length+1;
  const r={status:'completed',summary:'Bounded workday result',blockers:[],findings:[],activities:[],regression:null,reviewFindings:[],requests:[],plan:null,planUpdates:[],coordination:null};
  const coord=(action,complete=false)=>({action,contract:'sample-contract',requestId:action==='request'?null:(p.match(/Current request ID: ([a-f0-9-]+)/)?.[1]??null),text:'Implement the declared dependency contract',activityComplete:complete});
@@ -131,6 +131,7 @@ process.chdir(a[a.indexOf('--cd')+1]);let p='';process.stdin.on('data',x=>p+=x);
  const dep=owner==='dependency',docs=dep?'dependency-docs':'docs',tests=dep?'dependency-tests':'tests',file=dep?'dependency.txt':'source.txt',after=dep?'after':'uses:after';
  if(stage==='specification'){fs.writeFileSync(docs+'/behavior.md','Contract must be '+after);fs.writeFileSync(tests+'/regression.cjs',"if(require('fs').readFileSync("+JSON.stringify(file)+",'utf8')!=="+JSON.stringify(after)+")throw new Error('CONTRACT_EXPECTED');");r.regression={verificationIndex:0,exitCode:1,outputIncludes:'CONTRACT_EXPECTED'};}
  if(stage==='implementation'||stage==='correction')fs.writeFileSync(file,dep&&['repair','weak-test'].includes(mode)&&stage==='implementation'?'broken':after);
+ if(mode==='unsolicited-answer'&&dep&&stage==='specification')r.coordination=coord('answer',true);
  if(mode==='weak-test'&&dep&&stage==='implementation')fs.writeFileSync(tests+'/regression.cjs','// weakened');
  if(mode==='refresh'&&!dep&&stage==='implementation'&&seen>0)fs.writeFileSync(file,'uses:'+fs.readFileSync('generated/value','utf8'));
  if(mode==='combined-failure'&&!dep&&stage==='implementation'&&seen>0)fs.writeFileSync('new.txt','regression');

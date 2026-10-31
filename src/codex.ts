@@ -38,7 +38,8 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const component=context?.at(-1);
   const profile=resolved?.executionProfile;
   const schema=structuredClone(baseSchema);if(profile?.schemaVersion===2){schema.required=Object.keys(schema.properties);}else{delete schema.properties.plan;delete schema.properties.planUpdates;}
-  if(record.workdayId){schema.properties.coordination={anyOf:[{type:'null'},{type:'object',properties:{action:{enum:['request','accept','reject','clarify','answer']},contract:{type:'string'},requestId:{type:['string','null']},text:{type:'string'},activityComplete:{type:'boolean'}},required:['action','contract','requestId','text','activityComplete'],additionalProperties:false}]};schema.required.push('coordination');}
+  const coordinationActions=Array.isArray(record.coordinationActions)?record.coordinationActions as string[]:[];
+  if(record.workdayId){schema.properties.coordination=coordinationActions.length?{anyOf:[{type:'null'},{type:'object',properties:{action:{enum:coordinationActions},contract:{type:'string'},requestId:{type:['string','null']},text:{type:'string'},activityComplete:{type:'boolean'}},required:['action','contract','requestId','text','activityComplete'],additionalProperties:false}]}:{type:'null'};schema.required.push('coordination');}
   const readOnly=record.readOnlyTurn===true;
   const allowedWritePaths=readOnly?[]:resolved?.allowedWritePaths??component?.allowedWritePaths;
   const declared=component?.access as AccessPolicy;
@@ -51,7 +52,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   env.ARCNEXUS_CODEX_EXECUTABLE=executable.includes('/')?resolve(executable):executable;env.ARCNEXUS_CODEX_PID=pidFile;
   env.ARCNEXUS_NODE=process.execPath;env.ARCNEXUS_CODEX_SUPERVISOR=fileURLToPath(new URL('./codex-supervisor.js',import.meta.url));env.ARCNEXUS_HOST_PID=String(process.pid);env.ARCNEXUS_HOST_START=processStart(process.pid)!;
   env.TMPDIR=permissions.tmpDirectory;env.PATH=targetEnvironment(record).PATH!;
-  const settings={evidenceMode:record.evidenceMode??'unspecified',model,reasoning:profile?.reasoning??'medium',permissionProfile:'arcnexus',access,allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:profile?.webSearch??'live',nestedDelegation:false,managedTools:profile?.schemaVersion===2?['plan.update',...(operations?.tools.map(t=>t.name)??[])]:[],executable:env.ARCNEXUS_CODEX_EXECUTABLE};
+  const settings={coordinationActions:record.workdayId?coordinationActions:undefined,evidenceMode:record.evidenceMode??'unspecified',model,reasoning:profile?.reasoning??'medium',permissionProfile:'arcnexus',access,allowedWritePaths,filesystem:permissions.filesystem,approval:'never',network:false,webSearch:profile?.webSearch??'live',nestedDelegation:false,managedTools:profile?.schemaVersion===2?['plan.update',...(operations?.tools.map(t=>t.name)??[])]:[],executable:env.ARCNEXUS_CODEX_EXECUTABLE};
   persistExecutionEvidence(root,record,prompt,env.ARCNEXUS_CODEX_EXECUTABLE,settings,schema,env);
   const preflightHome=join(dir,`sandbox-preflight-home-${(record.turns as unknown[]).length}`);mkdirSync(preflightHome,{recursive:true,mode:0o700});
   const preflightEnv={...env,CODEX_HOME:preflightHome};
@@ -94,6 +95,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     if(!completed)throw new Error('Codex stream ended without completed turn');
     writeFileSync(join(dir,'agent-result.raw.txt'),final,{mode:0o600});
     const result=validateSchema<AgentResult>(record.workdayId?'workday-agent-result':'agent-result',JSON.parse(final));
+    if(record.workdayId&&result.coordination&&!coordinationActions.includes(result.coordination.action)){const error=new Error('Coordination action unavailable at this checkpoint'+(result.coordination.action==='request'?'; nested/reverse dependency needs architectural escalation':''));if(result.coordination.action==='request')error.name='WorkdayBlocked';throw error;}
     if(profile?.schemaVersion===2&&(!Object.hasOwn(result,'plan')||!Array.isArray(result.planUpdates)))throw new Error('Planned response requires plan and planUpdates');
     writeFileSync(join(dir,'agent-result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     return result;

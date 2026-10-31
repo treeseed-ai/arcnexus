@@ -436,7 +436,8 @@ export class WorkdayRunner {
         issue,
         bindings: input.requester.resolved.bindings,
       });
-      this.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? "live";
+      this.workspace.evidenceMode =
+        process.env.ARCNEXUS_EXPERIMENT_MODE ?? "live";
       this.directory = join(this.root, "workdays", this.workspace.id);
       mkdirSync(this.directory, { recursive: true, mode: 0o700 });
       writeFileSync(
@@ -509,6 +510,16 @@ export class WorkdayRunner {
               owner.foreign,
             ),
           elapsedMs: () => budget.elapsedMs,
+          actions: (activity) =>
+            owner === this.owners[0]
+              ? activity === "coordination"
+                ? ["answer"]
+                : this.requestId
+                  ? []
+                  : ["request"]
+              : activity === "planning" && !this.accepted
+                ? ["accept", "reject", "clarify"]
+                : [],
           chargeTurn: (kind) => {
             if (kind === "coordination") {
               if (++this.coordinationTurns > 6)
