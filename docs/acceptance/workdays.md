@@ -108,3 +108,13 @@ two attempts, allowing one bounded repair and review under the unchanged active-
 budgets. CLI defaults remain one attempt. The validator objective also calls for
 tracked symlink fixtures. No caller implementation fixes were made.
 Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-8/campaign.json`.
+
+`guidance-live-9`, workday `f0c0d76a-bc80-44ad-819d-3ec17a098596`, stopped at expected-red
+validation. The model put the marker in a later diagnostic assertion, while the first
+exit-status assertion failed without it. This repeats the diagnostic-mismatch class
+seen in fixture-live-3 and guidance-live-2. Instead of retrying that custom assertion
+message approach, qualification now uses a named TAP test and captures its actual
+`not ok ...` line from operation feedback. The negative fixture remains an empty
+references array, and production diagnostics retain their existing file-oriented code.
+Host literal matching and independent final acceptance remain mandatory and unchanged.
+Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-9/campaign.json`.
