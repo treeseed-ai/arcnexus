@@ -114,3 +114,8 @@ reject or clarify only while its planning decision is pending. A clarification r
 may answer. Other turns require `coordination: null`; observations belong in findings
 and activities. Host validation independently rejects unavailable actions even when a
 controlled executable ignores the supplied output schema.
+
+Readable reports include unrouted owner requests as agent claims when host authorization
+rejects the destination. Their requested owner, evidence and acceptance conditions remain
+visible even though no inbox delivery occurred. An unrouted request is never presented
+as accepted work or as a reason to activate an additional steward.
