@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { handoffFixture } from "./handoff-fixture.mjs";
 for (const stage of [
   "planning",
+  "planning-updates",
   "specification",
   "implementation",
   "review",

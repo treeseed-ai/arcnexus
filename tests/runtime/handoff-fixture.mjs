@@ -143,9 +143,10 @@ process.chdir(a[a.indexOf('--cd')+1]);let p='';process.stdin.on('data',x=>p+=x);
   if(mode==='reject'){r.status='blocked';r.blockers=['Request rejected with evidence'];}
  }
  if(owner==='sample'&&stage==='coordination'){r.coordination=coord('answer',true);}
- const trigger=mode==='completed-specification'?'specification':['planning','specification','review'].includes(mode)?mode:'implementation';
+ const trigger=mode==='planning-updates'?'planning':mode==='completed-specification'?'specification':['planning','specification','review'].includes(mode)?mode:'implementation';
  if(owner==='sample'&&stage===trigger&&(seen===0||mode==='duplicate')){
   if(stage==='implementation')fs.writeFileSync(file,'partial');
+  if(mode==='planning-updates')r.planUpdates=[{id:'work',status:'blocked',explanation:'Awaiting owner',evidence:[]}];
   r.status='blocked';r.blockers=['Requires dependency owner'];r.coordination=coord('request',mode==='completed-specification');r.requests=[{fromComponent:mode==='forged'?'dependency':'sample',ownerId:mode==='unknown-owner'?'unknown':'dependency',request:'Implement dependency value',evidence:['dependency.txt'],acceptanceCriteria:['Dependency becomes after'],reason:'Dependency is outside sample authority'}];
  }
  console.log(JSON.stringify({type:'thread.started',thread_id:owner+'-thread'}));console.log(JSON.stringify({type:'item.completed',item:{id:'result',type:'agent_message',text:JSON.stringify(r)}}));console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:n*10,cached_input_tokens:0,output_tokens:n*2}}));

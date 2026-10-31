@@ -478,8 +478,22 @@ export class StewardSession {
             result.coordination.activityComplete)
         )
           acceptPlan(root, record, result.plan);
-        else if (planned && result.planUpdates?.length)
-          updatePlan(root, record, result.planUpdates);
+        else if (planned && result.planUpdates?.length) {
+          if (
+            activity === "planning" &&
+            this.control &&
+            result.coordination &&
+            !result.coordination.activityComplete &&
+            !record.plan
+          )
+            observe(root, record, "plan.proposed", {
+              plan: result.plan,
+              updates: result.planUpdates,
+              basis:
+                "Unaccepted agent claims; planning must complete after handoff",
+            });
+          else updatePlan(root, record, result.planUpdates);
+        }
         summary.coordinationAction = result.coordination?.action ?? null;
         summary.status = result.coordination ? "yielded" : "completed";
         journal(activity, String(summary.status), { turn: turns.length });
@@ -660,7 +674,7 @@ export class StewardSession {
       if (planned)
         await turn(
           "planning",
-          "Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.",
+          "Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Use only the role activity names research, documentation, testing, implementation, review, release (restricted further by the captured role). Host stage names such as specification and planning are not checklist activity names. Every initial item is pending, including dependencies awaiting another owner; progress claims apply only after the host accepts the plan. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.",
           true,
         );
       if (assignment.kind !== "change") {
