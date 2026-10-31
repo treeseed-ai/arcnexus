@@ -3,9 +3,11 @@ type: library
 purpose: Maintain build, formatting, lint and repository structural checks
 path: tests/development-tooling
 objectives:
-  - Make actual execution outcomes easy to inspect
+  - Keep builds and deterministic tests reproducible
+  - Maintain formatting, linting, CI and shared test infrastructure
 constraints:
-  - Preserve captured authority and evidence
+  - Do not weaken independent acceptance to make candidate work pass
+  - Keep generated output separate from maintained source
 allowedWritePaths:
   - tests/development-tooling
   - docs/development-tooling
@@ -32,8 +34,7 @@ verification:
       - .
 questions: []
 patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
+  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -48,8 +49,8 @@ repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - "loadCatalog: immutable graph validation"
-  - "resolveAssignment: captured authority and deterministic digest"
+  - npm run build, npm run check and npm test
+  - Stable dist/cli.js executable entry point
 documentation:
   - docs/development-tooling/ci.md
 tests:
@@ -58,6 +59,7 @@ tests:
   - tests/development-tooling/operations-fixture.mjs
   - tests/development-tooling/workflow-fixture.mjs
 relatedIds:
-  - assignment
+  - cli
+  - architecture
 parentId: cli-package
 operationIds: []

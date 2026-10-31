@@ -3,9 +3,11 @@ type: library
 purpose: Initialize assignments and propose accountable owners before execution
 path: src/task-intake
 objectives:
-  - Make actual execution outcomes easy to inspect
+  - Interpret requests and identify accountable existing owners
+  - Report missing responsibilities and architectural questions precisely
 constraints:
-  - Preserve captured authority and evidence
+  - Intake runtime is introduced in increment three; this definition does not claim it is delivered
+  - Never silently broaden a captured assignment or grant write authority
 allowedWritePaths:
   - src/task-intake
   - tests/task-intake
@@ -27,8 +29,7 @@ verification:
       - .
 questions: []
 patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
+  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -41,11 +42,12 @@ repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - "loadCatalog: immutable graph validation"
-  - "resolveAssignment: captured authority and deterministic digest"
+  - Planned initialization result and task proposal contract
 documentation: []
 tests: []
 relatedIds:
+  - architecture-maintenance
   - assignment
+  - workday
 parentId: cli-package
 operationIds: []

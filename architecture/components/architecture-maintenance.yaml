@@ -3,9 +3,11 @@ type: library
 purpose: Maintain architectural ownership definitions under caller authority
 path: architecture
 objectives:
-  - Make actual execution outcomes easy to inspect
+  - Maintain readable definitions with accountable, disjoint ownership
+  - Propose architectural changes with explicit acceptance criteria
 constraints:
-  - Preserve captured authority and evidence
+  - Caller accepts architectural authority changes
+  - Candidate definition edits never change authority for an active execution
 allowedWritePaths:
   - architecture
   - README.md
@@ -32,8 +34,7 @@ verification:
       - .
 questions: []
 patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
+  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -46,11 +47,13 @@ repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - "loadCatalog: immutable graph validation"
-  - "resolveAssignment: captured authority and deterministic digest"
+  - Maintained architecture catalog and ownership policy
+  - Reviewable component and ownership proposals
 documentation: []
 tests: []
 relatedIds:
-  - assignment
+  - architecture
+  - agent-guidance
+  - task-intake
 parentId: cli-package
 operationIds: []

@@ -3,9 +3,11 @@ type: library
 purpose: Execute declared commands and supervise local services and probes
 path: src/operations
 objectives:
-  - Make actual execution outcomes easy to inspect
+  - Execute captured engineering operations and preserve their evidence
+  - Stop managed subprocesses and services when their execution scope ends
 constraints:
-  - Preserve captured authority and evidence
+  - Never infer setup commands or broaden captured operation authority
+  - Preserve caller cancellation and resource ownership checks
 allowedWritePaths:
   - src/operations
   - tests/operations
@@ -27,8 +29,7 @@ verification:
       - .
 questions: []
 patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
+  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -41,14 +42,15 @@ repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - "loadCatalog: immutable graph validation"
-  - "resolveAssignment: captured authority and deterministic digest"
+  - Declared operation execution and results
+  - Managed service lifecycle and functional probes
 documentation:
   - docs/operations/steward-operations.md
 tests:
   - tests/operations/operations.test.mjs
   - tests/operations/services.test.mjs
 relatedIds:
-  - assignment
+  - workspace
+  - steward
 parentId: cli-package
 operationIds: []
