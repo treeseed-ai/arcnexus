@@ -15,7 +15,11 @@
       "minLength": 1
     },
     "kind": {
-      "const": "command"
+      "enum": [
+        "command",
+        "service",
+        "http"
+      ]
     },
     "repository": {
       "type": "string",
@@ -95,6 +99,61 @@
           "args"
         ]
       }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "readinessPath": {
+          "type": "string",
+          "pattern": "^/[^/]*"
+        },
+        "expectedStatus": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "startupTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 120
+        }
+      },
+      "required": [
+        "port",
+        "readinessPath",
+        "expectedStatus",
+        "startupTimeoutSeconds"
+      ]
+    },
+    "http": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/[^/]*"
+        },
+        "expectedStatus": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        }
+      },
+      "required": [
+        "serviceId",
+        "path",
+        "expectedStatus"
+      ]
     }
   },
   "required": [
@@ -106,11 +165,125 @@
     "cwd",
     "category",
     "activities",
-    "command",
-    "args",
     "timeoutSeconds",
     "generatedDirectories",
     "artifacts",
     "probes"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "http"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "http": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "serviceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/[^/]*"
+              },
+              "expectedStatus": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+              }
+            },
+            "required": [
+              "serviceId",
+              "path",
+              "expectedStatus"
+            ]
+          },
+          "command": false,
+          "args": false,
+          "service": false
+        },
+        "required": [
+          "http"
+        ]
+      },
+      "else": {
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "command",
+          "args"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "service"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "service": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "port": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "readinessPath": {
+                "type": "string",
+                "pattern": "^/[^/]*"
+              },
+              "expectedStatus": {
+                "type": "integer",
+                "minimum": 200,
+                "maximum": 299
+              },
+              "startupTimeoutSeconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 120
+              }
+            },
+            "required": [
+              "port",
+              "readinessPath",
+              "expectedStatus",
+              "startupTimeoutSeconds"
+            ]
+          },
+          "http": false
+        },
+        "required": [
+          "service"
+        ]
+      },
+      "else": {
+        "properties": {
+          "service": false
+        }
+      }
+    }
   ]
 }

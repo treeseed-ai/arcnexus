@@ -91,5 +91,5 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
     if(profile?.schemaVersion===2&&(!Object.hasOwn(result,'plan')||!Array.isArray(result.planUpdates)))throw new Error('Planned response requires plan and planUpdates');
     writeFileSync(join(dir,'agent-result.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     return result;
-  } catch(error){throw bridgeError??error;} finally {operations?.disconnect();await bridge?.close();signal.removeEventListener('abort',abort);await termination;killGroup();save(root,record);}
+  } catch(error){throw bridgeError??error;} finally {try{await operations?.close();}finally{operations?.disconnect();try{await bridge?.close();}finally{signal.removeEventListener('abort',abort);await termination;killGroup();save(root,record);}}}
 }

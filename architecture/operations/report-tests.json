@@ -20,5 +20,13 @@
   "timeoutSeconds": 120,
   "generatedDirectories": [],
   "artifacts": [],
-  "probes": []
+  "probes": [
+    {
+      "command": "node",
+      "args": [
+        "-e",
+        "console.log(process.version);if(require('child_process').spawnSync(process.execPath,['-e','process.exit(0)']).status!==0)process.exit(1)"
+      ]
+    }
+  ]
 }

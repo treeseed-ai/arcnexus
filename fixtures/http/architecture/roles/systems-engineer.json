@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "systems-engineer",
+  "purpose": "Maintain an architectural responsibility under human direction",
+  "responsibilities": [
+    "Research uncertain facts and preserve sources",
+    "Document intended behavior before implementation",
+    "Verify bounded changes and expose evidence",
+    "Escalate requests beyond component authority"
+  ],
+  "activities": [
+    "research",
+    "documentation",
+    "testing",
+    "implementation",
+    "review",
+    "release"
+  ]
+}

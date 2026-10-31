@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "prerequisites": [
+    {
+      "command": "node",
+      "args": [
+        "--version"
+      ]
+    }
+  ],
+  "setup": [],
+  "generatedDirectories": []
+}

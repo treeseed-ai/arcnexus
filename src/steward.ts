@@ -1,3 +1,4 @@
+import { prepareCapabilities } from './probes.js';
 import { operationBridge, operationEnvironment } from './operations.js';
 import { observe } from './timeline.js';
 import { acceptPlan, updatePlan, completePlan } from './plan.js';
@@ -36,6 +37,7 @@ export async function runSteward(root:string,record:RecordData,id:string,objecti
  };
  await prepareWorkspace(root,record,signal);
  if(existsSync(join(record.workspace,'.codex/config.toml')))throw new Error('Setup introduced Codex configuration');
+ await prepareCapabilities(root,record,signal);
  for(const c of component.verification)await command(c,'baseline');
  assertIdentity(record);assertOutputs(record.workspace,record.environment);
  const operations=operationBridge(root,record,signal,()=>{safe();if(record.stage==='specification')checkScope(record.workspace,changes(record),documentationOnly?component.documentation:[...component.documentation,...component.tests]);});
