@@ -117,12 +117,11 @@ do not build a pattern framework in advance.
 
 These are open decisions, not hidden prerequisites for a complete platform design.
 
-- Phase one: which tiny target change best proves the first steward, and which
-  subsequent ArcNexus improvement will prove self-development?
-- Phase one: which installed harness/authentication arrangement and bounded execution
-  settings can demonstrate real work reliably? What is the minimal result contract?
-- Before modifying ArcNexus itself: how will a stable runner execute and verify a
-  candidate revision without replacing the process currently supervising it?
+Phase-one target, harness, result-contract and stable-supervisor questions are
+resolved in the [retrospective](phase-one-retrospective.md), with linked acceptance
+evidence. Luna-sized models are the intended steward baseline; use `gpt-6-luna`
+for subsequent live tests and assess their results separately from earlier Astra runs.
+
 - Phase two: what precise dependency milestone resumes each assignment, and how
   should interrupted work be resumed without duplicating changes or requests?
 - Later: which architectural decisions may stewards accept themselves, and which
