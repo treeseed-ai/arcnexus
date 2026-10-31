@@ -9,6 +9,9 @@ sorted by path in ascending, case-sensitive string order regardless of input ord
 Paths are rendered as literal text, including Markdown punctuation, HTML, and line
 breaks. Absent or empty changes produce `No changed files observed.`
 
-The report uses only the captured execution record; it does not inspect target
-files or mutate the record or its changes array. Existing report fields and JSON
-evidence are preserved.
+Markdown also includes `## Outcome` with the captured workflow outcome and
+`## Activities` with each captured activity/status pair. These sections use only
+fields already present in the execution record; records without workflow fields
+render safely without `undefined` or `null` text. The report does not inspect
+target files or mutate the record or its arrays. Existing report fields, changed
+file ordering, and JSON evidence are preserved.

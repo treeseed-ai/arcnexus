@@ -4,6 +4,8 @@
 
 ### Added
 
+- Summarize captured workflow activities and outcomes in Markdown reports (#32).
+
 - Run repeatable single-steward qualification campaigns with retained acceptance evidence (#32).
 
 - Prepare composed workspaces with pinned read-only repository members (#32).
