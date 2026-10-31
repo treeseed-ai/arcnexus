@@ -22,6 +22,8 @@
 
 ### Changed
 
+- Default steward execution to Luna (#20).
+
 - Resolve guidance edge cases for self-development (#5).
 
 - Align ArcNexus guidance with iterative self-development (#1).

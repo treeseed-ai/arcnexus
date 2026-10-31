@@ -16,6 +16,8 @@ node dist/cli.js prepare --project /path/to/repository
 node dist/cli.js run identity "Implement the objective" --project /path/to/repository
 ```
 
+Runs default to `gpt-6-luna` with medium reasoning; `--model` explicitly overrides it.
+
 Targets declare [environment setup](docs/workspaces.md) and [components](docs/stewards.md).
 The application creates and retains a dedicated worktree. Review its evidence and
 changes; commits, PRs and integration remain caller-owned. Use `cleanup <workspace-id>`

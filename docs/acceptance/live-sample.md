@@ -1,9 +1,8 @@
 # Repeatable live coding acceptance
 
-The original Astra acceptance used `npm ci && npm run build`, then
-`node scripts/live-sample.mjs`. That script currently inherits the CLI model default;
-do not use it unchanged for the Luna baseline. Subsequent live tests must pass
-`--model gpt-6-luna` to each `dist/cli.js run` invocation.
+After `npm ci && npm run build`, run `node scripts/live-sample.mjs`.
+The script inherits the CLI default, now `gpt-6-luna`. Historical Astra results
+below predate that default change.
 This explicitly invokes live Codex twice, sequentially, using the current login.
 It is never part of CI. Each attempt gets a new application-managed worktree from
 the same committed fixture revision, runs `npm ci`, then baseline and final tests.

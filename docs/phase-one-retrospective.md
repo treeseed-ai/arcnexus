@@ -8,11 +8,12 @@ to delay use until a complete platform exists.
 
 ## Model and session behavior today
 
-The shipped CLI defaults to `gpt-6-astra`; `--model` overrides it. The architect's
+The CLI now defaults to `gpt-6-luna`; `--model` overrides it. The architect's
 updated direction is to use **`gpt-6-luna` for live tests and Luna-sized models as
 the intended steward baseline**. Invoke subsequent tests with `--model gpt-6-luna`.
 The earlier Astra results below remain valid historical evidence, but do not prove
-small-model readiness. This documentation change does not change the CLI default.
+small-model readiness. The follow-up in issue #20 makes this the application default, rather than relying
+on callers to remember a flag.
 
 The [adapter](../src/codex.ts) uses medium reasoning, workspace-write, approval
 never, no agent network/web search, and a launcher inserting `--ignore-user-config`.
@@ -75,6 +76,16 @@ completion, blocked runs, retries and aggregate
 usage under Luna; do not optimize for the number of messages or lines generated.
 No large-model fallback should occur silently after a Luna failure.
 
+## Intended supervisor and worker split
+
+The architect wants an Astra supervisor directing many Luna stewards. Reserve
+Astra for high-level reasoning, decomposition and review; default component
+engineering to Luna. This is distinct from the deterministic application supervisor
+that creates workspaces, dispatches executions and verifies evidence. An LLM
+supervisor does not replace those controls or the human architect. Phase two should
+prove this arrangement with two Luna workers before increasing scale. The current
+CLI has one worker role; automated Astra supervision is planned, not delivered.
+
 ## Before the first two-steward slice
 
 1. **Close the demonstrated readiness ambiguity.** Implement issue #14 with an
@@ -92,7 +103,9 @@ No large-model fallback should occur silently after a Luna failure.
    for the first slice: sequential scoped ownership in one workday workspace, or
    separate candidates with an explicit integration step. Define the revision used
    by resumed work and test it. Do not accidentally build cross-repository merging.
-4. **Extend the model baseline.** Two Luna sample runs now pass. Use Luna for self-development and coordination acceptance objectives,
+4. **Extend the model baseline.** Two Luna sample runs and a [self-development
+   change with corrective feedback](acceptance/self-development.md) now pass.
+   Use Luna for coordination acceptance objectives,
    with unchanged independent checks. A two-agent success needs both contributions
    and the original objective verified. Failures should identify missing context,
    unclear state or insufficient capability before anyone proposes a larger model.
