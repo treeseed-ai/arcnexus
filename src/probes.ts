@@ -26,5 +26,6 @@ export async function prepareCapabilities(root:string,record:RecordData,signal:A
  const config=(bridge.config.mcp_servers as {arcnexus:{command:string;args:string[]}}).arcnexus;
  const abort=()=>{void client.close();};signal.addEventListener('abort',abort,{once:true});
  try{signal.throwIfAborted();await client.connect(new StdioClientTransport({command:config.command,args:config.args}),{timeout:5000});const result=await client.callTool({name:'probe',arguments:{}},undefined,{timeout:5000});signal.throwIfAborted();if(result.isError)throw new Error('Bridge functional probe failed');const evidence={route:'stdio-mcp',status:'passed',durationMs:Date.now()-start,transport:'ArcNexus bridge',runtime:process.version};probes.push(evidence);observe(root,record,'probe.completed',evidence);}
+ catch(error){probes.push({route:'stdio-mcp',status:'failed',error:String(error),durationMs:Date.now()-start});observe(root,record,'probe.failed',probes.at(-1));throw error;}
  finally{signal.removeEventListener('abort',abort);await client.close();await bridge.close();save(root,record);}
 }
