@@ -1,7 +1,10 @@
 # ArcNexus
 
 Architecture-directed software development, with ArcNexus itself as an early target.
-See the [charter](docs/charter.md) for purpose and the [phase-one sequence](docs/plans/phase-one.md).
+See the [charter](docs/charter.md) for purpose, the [development journey](docs/dev.md)
+for all five phases, and the [phase-one retrospective](docs/phase-one-retrospective.md)
+for evidence and coordination readiness. The [phase-one sequence](docs/plans/phase-one.md)
+records the delivered implementation slices.
 
 Requires Linux, Node 22, npm, Git, `setsid`, and an authenticated Codex CLI on PATH.
 

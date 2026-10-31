@@ -4,6 +4,8 @@
 
 ### Added
 
+- Preserve the development journey and phase-one lessons (#18).
+
 - Show sorted changed files in execution reports through self-development (#13).
 
 - Add repeatable live coding acceptance and self-development definitions (#11).
