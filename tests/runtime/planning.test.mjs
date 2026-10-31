@@ -70,3 +70,10 @@ test('built SDK schema constrains final updates to steward items and rejects for
  writeFileSync(f.executable,code.replace("id:'work',status:'completed'","id:'final-verification',status:'completed'"));
  const bad=f.run();assert.equal(bad.status,1);assert.match(bad.stderr,/Unknown checklist item/);
 });
+
+test('planning prompt states activity membership and host diagnoses omitted selection',t=>{
+ const f=planned(t);let code=readFileSync(f.executable,'utf8');
+ code=code.replace("if(stage==='planning')result.plan=", "if(stage==='planning'&&!prompt.includes('Every checklist item activity must also appear in plan.activities'))throw new Error('ACTIVITY_MEMBERSHIP_REQUIRED');if(stage==='planning')result.plan=");
+ code=code.replace("items:[{id:'work',activity:'implementation'", "items:[{id:'work',activity:'research'");
+ writeFileSync(f.executable,code);const r=f.run();assert.equal(r.status,1);assert.match(r.stderr,/Checklist item work activity research is absent from plan.activities/);
+});
