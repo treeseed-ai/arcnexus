@@ -124,3 +124,9 @@ Documentation-only specification requires actual edits in the assigned documenta
 scope. A prose description of intended edits is still planning and cannot satisfy that
 checkpoint. Behavioral regression is skipped explicitly, while documentation changes,
 project verification, independent acceptance and review remain mandatory.
+
+Final-result checklist updates are constrained to the steward item IDs captured at
+turn start. Host acceptance entries are read-only and cannot be completed by a model.
+A plan revision introduced during a turn can update its new items through `plan.update`;
+the final result uses only the IDs advertised for that turn. Host validation still
+checks every update against the current accepted plan and requires completion evidence.

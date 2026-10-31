@@ -72,3 +72,11 @@ The [Codex security documentation](https://learn.chatgpt.com/docs/agent-approval
 describes protected agent directories. The guidance definition must declare its skill
 directory explicitly, and inspection must preserve that declaration.
 Campaign: `/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-4/campaign.json`.
+
+`guidance-live-5`, workday `a2261237-8129-403b-85e7-51e0c33a81e5`, successfully
+implemented both owners' files with the explicit skill-directory grant. Its final
+review result then tried to complete the host-owned `final-verification` checklist
+entry; the host rejected that unauthorized checklist update. No candidate changes
+were integrated. The model-facing final-result schema now advertises only captured
+steward item IDs; independent host validation remains unchanged. Campaign:
+`/home/adrian/.local/state/arcnexus/qualification/workday-60/guidance-live-5/campaign.json`.
