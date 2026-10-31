@@ -76,6 +76,16 @@ completion, blocked runs, retries and aggregate
 usage under Luna; do not optimize for the number of messages or lines generated.
 No large-model fallback should occur silently after a Luna failure.
 
+## Intended supervisor and worker split
+
+The architect wants an Astra supervisor directing many Luna stewards. Reserve
+Astra for high-level reasoning, decomposition and review; default component
+engineering to Luna. This is distinct from the deterministic application supervisor
+that creates workspaces, dispatches executions and verifies evidence. An LLM
+supervisor does not replace those controls or the human architect. Phase two should
+prove this arrangement with two Luna workers before increasing scale. The current
+CLI has one worker role; automated Astra supervision is planned, not delivered.
+
 ## Before the first two-steward slice
 
 1. **Close the demonstrated readiness ambiguity.** Implement issue #14 with an

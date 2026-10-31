@@ -120,7 +120,12 @@ These are open decisions, not hidden prerequisites for a complete platform desig
 Phase-one target, harness, result-contract and stable-supervisor questions are
 resolved in the [retrospective](phase-one-retrospective.md), with linked acceptance
 evidence. Luna-sized models are the intended steward baseline; use `gpt-6-luna`
-for subsequent live tests and assess their results separately from earlier Astra runs.
+for worker live tests and assess their results separately from earlier Astra runs.
+The architect specifies **an Astra supervisor directing Luna stewards**: reserve
+Astra for high-level decomposition, architectural reasoning and review; use Luna
+for bounded component engineering. Human architectural authority remains final.
+Deterministic runtime code still schedules, bounds and records execution. Prove
+the arrangement with two Luna workers before scaling the number of stewards.
 
 - Phase two: what precise dependency milestone resumes each assignment, and how
   should interrupted work be resumed without duplicating changes or requests?
