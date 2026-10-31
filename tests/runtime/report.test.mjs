@@ -32,6 +32,26 @@ test('absent and empty changes have an explicit empty section', () => {
   }
 });
 
+test('workflow outcome and activity statuses render from captured data without mutation', () => {
+  const activities = Object.freeze([
+    Object.freeze({ activity: 'documentation', status: 'completed' }),
+    Object.freeze({ activity: 'testing', status: 'skipped' }),
+  ]);
+  const captured = Object.freeze({ ...record, outcome: 'ready_for_integration', activities });
+  const before = JSON.stringify(captured);
+  const report = markdownReport(captured);
+  assert.equal(report.split('## Outcome\n\n')[1]?.split('\n\n')[0], 'ready_for_integration', 'captured workflow outcome is rendered');
+  assert.equal(report.split('## Activities\n\n')[1]?.split('\n\n')[0], '- documentation — completed\n- testing — skipped');
+  assert.equal(JSON.stringify(captured), before);
+});
+
+test('historical records without workflow fields render safely', () => {
+  const report = markdownReport(record);
+  assert.ok(report.includes('## Outcome\n\n'));
+  assert.ok(report.includes('## Activities\n\n'));
+  assert.doesNotMatch(report, /undefined|null/);
+});
+
 test('filenames remain text instead of Markdown or HTML', () => {
   const path = '[link](https://bad) `code` <img> &amp;\n# heading\r\t*em*_x|';
   const report = markdownReport({ ...record, changes: [{ path, kind: 'A' }] });
