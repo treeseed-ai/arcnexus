@@ -21,3 +21,8 @@ export function targetCommand(record:RecordData,command:Command):Command {
  const bindings=record.bindings as Bindings|undefined;
  return {...command,command:bindings&&Object.hasOwn(bindings.tools,command.command)?bindings.tools[command.command]!:command.command};
 }
+
+export function toolDirectories(record:RecordData):string[] {
+ const bindings=record.bindings as Bindings|undefined;
+ return [...new Set(Object.values(bindings?.tools??{}).map(dirname))];
+}

@@ -1,4 +1,4 @@
-import { targetEnvironment } from './bindings.js';
+import { targetEnvironment, toolDirectories } from './bindings.js';
 import type { Member } from './members.js';
 import { validateSchema } from './schema.js';
 import type { ResolvedAssignment } from './assignment.js';
@@ -32,7 +32,7 @@ export async function runCodex(root:string,record:RecordData,prompt:string,execu
   const declared=component?.access as AccessPolicy;
   const access=readOnly?{readPaths:[...new Set([...declared.readPaths,...declared.writeDirectories])],writeDirectories:[]}:declared;
   const inherited=context?.slice(0,-1).map(item=>({access:item.access,allowedWritePaths:item.allowedWritePaths}))??[];
-  const permissions=preparePermissions(record.workspace,access,allowedWritePaths,join(dir,'tmp'),inherited,((record.members??[]) as Member[]).map(m=>m.workspace));
+  const permissions=preparePermissions(record.workspace,access,allowedWritePaths,join(dir,'tmp'),inherited,((record.members??[]) as Member[]).map(m=>m.workspace),toolDirectories(record));
   writeFileSync(launcher,'#!/bin/sh\n[ "$1" = exec ] || exit 64\nshift\necho $$ > "$ARCNEXUS_CODEX_PID"\nexec setsid "$ARCNEXUS_CODEX_EXECUTABLE" exec --ignore-user-config "$@"\n',{mode:0o700});
   const env:Record<string,string>={};
   for(const name of ['HOME','PATH','CODEX_HOME','TMPDIR','LANG','SSL_CERT_FILE','SSL_CERT_DIR','HTTPS_PROXY','HTTP_PROXY','NO_PROXY','XDG_CONFIG_HOME','XDG_DATA_HOME'])if(process.env[name])env[name]=process.env[name]!;

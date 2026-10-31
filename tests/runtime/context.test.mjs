@@ -7,11 +7,13 @@ const calls=f=>readFileSync(f.calls,'utf8').trim().split('\n').map(JSON.parse);
 test('bound command executes from supplied context with reset PATH and read-only tool visibility',t=>{
  const f=workflowFixture(t),bin=join(f.root,'tool directory');mkdirSync(bin);
  const tool=join(bin,'target-node');writeFileSync(tool,'#!/bin/sh\nexec '+process.execPath+' "$@"\n',{mode:0o755});
+ writeFileSync(join(f.repo,'verify.cjs'),readFileSync(join(f.repo,'verify.cjs'),'utf8')+"if(require('child_process').spawnSync('target-node',['-e','process.exit(0)']).status!==0)throw new Error('NESTED_TOOL_UNAVAILABLE');");
  f.component.verification[0].command='target-node';writeFileSync(join(f.repo,'architecture/components/sample.json'),JSON.stringify(f.component));f.commit();
  const binding=join(f.root,'bindings.json');writeFileSync(binding,JSON.stringify({schemaVersion:1,repositories:{},tools:{'target-node':tool}}));
  let executable=readFileSync(f.executable,'utf8');
  executable=executable.replace("const stage=prompt.match",`const commands=JSON.parse(prompt.split('Captured verification commands (zero-based index): ')[1].split('\\n')[0]);
- const probe=cp.spawnSync(commands[0].command,commands[0].args,{env:{...process.env,PATH:'/nonexistent'}});
+ const supplied=JSON.parse(prompt.split('Target command environment: ')[1].split('\\n')[0]);
+ const probe=cp.spawnSync(commands[0].command,commands[0].args,{env:{...process.env,PATH:'/nonexistent',...supplied}});
  if(probe.status!==0)throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
  const stage=prompt.match`);
  writeFileSync(f.executable,executable);
