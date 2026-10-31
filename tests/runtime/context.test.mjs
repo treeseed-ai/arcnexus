@@ -37,3 +37,11 @@ test('revision review evidence excludes paths outside declared read authority',t
  writeFileSync(join(f.repo,'source.txt'),'SECRET_OUTSIDE_READ_SCOPE');writeFileSync(join(f.repo,'docs/behavior.md'),'VISIBLE_CHANGE');f.commit();
  const r=f.run('--kind','review');assert.equal(r.status,0,r.stderr);const prompt=calls(f)[0].prompt;assert.match(prompt,/VISIBLE_CHANGE/);assert.doesNotMatch(prompt,/SECRET_OUTSIDE_READ_SCOPE/);
 });
+test('specification delegates unavailable sandbox checks to the authoritative host',t=>{
+ const f=workflowFixture(t);let program=readFileSync(f.executable,'utf8');
+ program=program.replace("if(stage==='specification'&&mode!=='no-changes'){",`if(stage==='specification'&&mode!=='no-changes'){
+  if(!prompt.includes('If sandbox restrictions prevent running the regression'))throw new Error('HOST_CHECK_HANDOFF_MISSING');
+  result.findings.push({summary:'Sandbox regression execution unavailable',evidence:['Observed EPERM from sandbox command'],uncertainty:'Proposed assertion must be checked by host'});`);
+ writeFileSync(f.executable,program);const r=f.run();assert.equal(r.status,0,r.stderr);const report=JSON.parse(r.stdout);
+ assert.equal(report.outcome,'ready_for_integration');assert.ok(report.commands.some(c=>c.exitCode===1));assert.ok(report.regressionCheckpoint.outputIncludes==='BOUNDARY_EXPECTED');
+});
