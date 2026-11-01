@@ -173,3 +173,8 @@ or the policy checkpoint remains uncertain. A completed policy record does not
 block recovery; the host still validates the candidate and engineering checkpoints.
 Stopping retains the uncertainty and evidence with the old workday. Starting a new
 run uses only a compatible verified candidate, never unfinished policy state.
+
+An inbox or verified-delivery transition that makes work relevant to an idle
+workday atomically wakes that run. Idle ticks without changed input remain quiet.
+Incoming work cannot override a user pause, a stop, an interruption or an attention
+state; those lifecycle decisions continue to require their normal control flow.
