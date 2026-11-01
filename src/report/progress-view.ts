@@ -107,7 +107,11 @@ function observedCommand(events: Array<{ type: string; payload: any }>): unknown
       event.type === 'initialization.event' && event.payload?.type ? event.payload : event;
     if (['setup.started', 'initializer.check.started'].includes(type)) command = payload.command;
     if (['initializer.check.completed', 'initialization.finished'].includes(type)) command = null;
-    if (type === 'setup.result' || type === 'operation.completed' || type === 'operation.failed')
+    if (
+      ['setup.result', 'operation.finished', 'operation.completed', 'operation.failed'].includes(
+        type,
+      )
+    )
       command = null;
     if (type === 'activity.started' && payload.detail?.command) command = payload.detail;
     if (type === 'activity.completed' || type === 'activity.failed') command = null;

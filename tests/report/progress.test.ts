@@ -28,6 +28,19 @@ class ProgressProjectionTests {
     assert.equal(result.status, 0, result.stderr);
     assert.equal(JSON.parse(result.stdout).progress.currentCommand, 'initializer-tool --version');
   }
+  finishedOperation(t: TestContext): void {
+    const f = workflowFixture(t);
+    const record = this.preparingRecord(f);
+    observe(f.state, record, 'operation.started', { id: 'report-tests' });
+    observe(f.state, record, 'operation.finished', { id: 'report-tests', result: { exitCode: 0 } });
+    const result = spawnSync(process.execPath, [cli, 'status', record.id, '--json'], {
+      encoding: 'utf8',
+      env: f.env,
+      timeout: 30 * 60 * 1000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).progress.currentCommand, null);
+  }
   private preparingRecord(f: ReturnType<typeof workflowFixture>): any {
     const prepared = spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo], {
       encoding: 'utf8',
@@ -71,3 +84,6 @@ test('status and readable report separate checklist claims from verified progres
 
 test('parent status exposes the currently observed initializer command', (t) =>
   suite.initializerCommand(t));
+
+test('status clears a finished operation before the next activity transition', (t) =>
+  suite.finishedOperation(t));
