@@ -1,7 +1,7 @@
 import { SessionProgress } from './session-progress.js';
 import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
-import { completePlan } from './plan.js';
+import { completePlan, PlanValidationError } from './plan.js';
 import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
@@ -46,7 +46,10 @@ export class SessionWorkflow {
       await this.advance(stage);
       safe = true;
     } catch (error) {
-      if (!(error instanceof Error && error.name === 'AssignmentYield')) {
+      if (
+        !(error instanceof Error && error.name === 'AssignmentYield') &&
+        !this.retainPlanning(stage, error)
+      ) {
         this.failure(error);
         throw error;
       }
@@ -63,11 +66,26 @@ export class SessionWorkflow {
     }
   }
 
+  /** Returns rejected read-only plan content to the same stage without retrying other failure classes. */
+  private retainPlanning(stage: string, error: unknown): boolean {
+    const { record, signal } = this.state.options;
+    if (!record.generalExecution || stage !== 'planning' || !(error instanceof PlanValidationError))
+      return false;
+    signal.throwIfAborted();
+    record.planningFeedback = new SessionProgress(this.state).failure(
+      'plan-validation',
+      error.message,
+    );
+    record.status = 'running';
+    return true;
+  }
+
   /** Applies stage transitions only after the corresponding host checks pass. */
   private async advance(stage: string): Promise<void> {
     const { record } = this.state.options;
     if (stage === 'planning') {
       await this.planning();
+      delete record.planningFeedback;
       record.nextStage = this.state.assignment.kind === 'change' ? 'specification' : 'research';
     } else if (stage === 'specification') {
       await this.specification();
@@ -124,7 +142,10 @@ export class SessionWorkflow {
     if (this.state.planned)
       await this.turns.perform(
         'planning',
-        'Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Use only the role activity names research, documentation, testing, implementation, review, release (restricted further by the captured role). Host stage names such as specification and planning are not checklist activity names. Every initial item is pending, including dependencies awaiting another owner; progress claims apply only after the host accepts the plan. Every checklist item activity must also appear in plan.activities with a reason. Before returning, check this membership, unique item IDs, existing acyclic dependency IDs, and valid zero-based criterion indices. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.',
+        (this.state.options.record.planningFeedback
+          ? `Plan validation feedback: ${String(this.state.options.record.planningFeedback)}\n`
+          : '') +
+          'Plan the assignment without source edits. Return plan with approach, assumptions, activities with reasons, questions, and checklist items: stable id, activity, result, criteria (zero-based acceptance criterion indices), expectedEvidence, dependencies (item IDs), status=pending, evidence=[], explanation=empty string. Use only the role activity names research, documentation, testing, implementation, review, release (restricted further by the captured role). Host stage names such as specification and planning are not checklist activity names. Every initial item is pending, including dependencies awaiting another owner; progress claims apply only after the host accepts the plan. Every checklist item activity must also appear in plan.activities with a reason. Before returning, check this membership, unique item IDs, existing acyclic dependency IDs, and valid zero-based criterion indices. Cover every acceptance criterion. Plan only within captured permissions; host checkpoints cannot be waived. No publication. Return before executing the plan.',
         true,
       );
   }

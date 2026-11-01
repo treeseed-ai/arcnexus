@@ -100,7 +100,7 @@ export class ControlledGeneral {
       result.status = owner === 'a' ? 'completed' : 'blocked';
       result.blockers = ['Needs supplier evidence'];
       result.requests = [this.request(owner!)];
-    } else if (stage === 'planning') result.plan = this.plan();
+    } else if (stage === 'planning') result.plan = this.plan(prompt);
     else
       result.planUpdates = [
         {
@@ -150,7 +150,7 @@ export class ControlledGeneral {
   }
 
   /** Creates a valid minimal plan covering the captured research acceptance criterion. */
-  private plan() {
+  private plan(prompt: string) {
     return {
       approach: 'Inspect source',
       assumptions: [],
@@ -161,7 +161,7 @@ export class ControlledGeneral {
           id: 'research',
           activity: 'research',
           result: 'Evidence-backed result',
-          criteria: [0],
+          criteria: prompt.includes('Plan omits acceptance criterion') ? [0, 1] : [0],
           expectedEvidence: ['source.txt'],
           dependencies: [],
           status: 'pending',
