@@ -98,12 +98,16 @@ export class AssignmentExecution {
   /** Returns actionable independent findings to the existing assignment without resetting its evidence. */
   private repair(record: RecordData, issue: VerificationIssue): ActivationResult {
     const feedback = JSON.stringify(issue.result);
-    new ProgressObserver(this.root, record).failed(
+    const gaps = issue.result.criteria
+      .filter((criterion) => criterion.verdict !== 'verified' || !criterion.evidence.length)
+      .map((criterion) => criterion.index)
+      .sort((left, right) => left - right);
+    const warning = new ProgressObserver(this.root, record, 'independentProgress').failed(
       { activity: 'independent-verification' },
-      feedback,
+      JSON.stringify({ gaps, status: issue.result.status }),
       candidateDigest(record),
     );
-    record.correctiveFeedback = feedback;
+    record.correctiveFeedback = warning ? `${feedback}\n${warning}` : feedback;
     record.independentFindings = issue.result;
     const assignment = (record.resolvedAssignment as ResolvedAssignment).assignment;
     record.nextStage = assignment.kind === 'change' ? 'implementation' : 'research';

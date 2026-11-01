@@ -218,6 +218,7 @@ export class ControlledGeneral {
       evidence: ['source.txt'],
       explanation: 'Controlled observed source',
     }));
+    if (prompt.includes('REPEATED_REVIEW_GAP')) return this.repeatedGap(criteria);
     if (prompt.includes('VERIFY_OMIT')) assessments.pop();
     if (prompt.includes('VERIFY_DUPLICATE')) assessments[1]!.index = 0;
     if (prompt.includes('VERIFY_UNKNOWN')) assessments[1]!.index = criteria.length;
@@ -231,6 +232,22 @@ export class ControlledGeneral {
       summary: 'Controlled verification',
       criteria: assessments,
       deficiencies: deficient ? ['Missing goal evidence'] : [],
+    };
+  }
+
+  /** Varies review prose without changing which acceptance criterion lacks evidence. */
+  private repeatedGap(criteria: string[]) {
+    const wording = 'Still missing observed acceptance at ' + Date.now();
+    return {
+      status: 'blocked',
+      summary: wording,
+      deficiencies: [wording],
+      criteria: criteria.map((_criterion, index) => ({
+        index,
+        verdict: 'gap',
+        evidence: [],
+        explanation: wording,
+      })),
     };
   }
 
