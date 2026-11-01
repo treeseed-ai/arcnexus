@@ -327,6 +327,9 @@ export class ExecutionStore {
 
   /** Wakes satisfied waiters and propagates rejected deliveries without disturbing unrelated work. */
   private wake(runId: string): void {
+    const run = this.run(runId);
+    if (run.mode === 'workday' && run.status === 'idle')
+      this.db.put('run', { ...run, status: 'running' });
     const assignments = this.assignments(runId);
     for (const item of assignments) {
       if (!['waiting', 'ready'].includes(item.status)) continue;
