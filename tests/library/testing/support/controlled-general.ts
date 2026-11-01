@@ -1,6 +1,7 @@
 import { ControlledEvidence } from './controlled-evidence.js';
 import { StructuredOutputCheck } from './structured-output-check.js';
 import { appendFileSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 
 /** Supplies deterministic SDK events while exercising the production host, permissions and scheduler. */
@@ -34,12 +35,13 @@ export class ControlledGeneral {
     const result = prompt.startsWith('ArcNexus task direction.')
       ? this.direction(prompt)
       : this.worker(prompt);
-    this.emit(result);
+    this.emit(result, prompt);
   }
 
   /** Emits the SDK event stream for a completed controlled inference. */
-  private emit(result: unknown): void {
+  private emit(result: unknown, prompt: string): void {
     console.log(JSON.stringify({ type: 'thread.started', thread_id: 'general-thread' }));
+    this.observation(prompt);
     console.log(
       JSON.stringify({
         type: 'item.completed',
@@ -52,6 +54,27 @@ export class ControlledGeneral {
         usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
       }),
     );
+  }
+
+  /** Emits controlled tool output from the real fixture file for evidence-boundary acceptance. */
+  private observation(prompt: string): void {
+    if (prompt.includes('READ_TOOL_OBSERVATIONS') && prompt.includes('Activity turn: research'))
+      console.log(
+        JSON.stringify({
+          type: 'item.completed',
+          item: {
+            id: 'observed-read',
+            type: 'command_execution',
+            command: 'cat source.txt',
+            aggregated_output: readFileSync(
+              join(process.argv[process.argv.indexOf('--cd') + 1]!, 'source.txt'),
+              'utf8',
+            ),
+            exit_code: 0,
+            status: 'completed',
+          },
+        }),
+      );
   }
 
   /** Holds a real managed process at a test-controlled turn boundary, without an execution deadline. */
@@ -118,7 +141,8 @@ export class ControlledGeneral {
       ownerId: owner,
       objective: correction
         ? 'Additional goal evidence'
-        : (prompt.includes('RECOVER_CYCLE') ? 'RECOVER_CYCLE: ' : '') +
+        : (prompt.includes('READ_TOOL_OBSERVATIONS') ? 'READ_TOOL_OBSERVATIONS: ' : '') +
+          (prompt.includes('RECOVER_CYCLE') ? 'RECOVER_CYCLE: ' : '') +
           'Research the dependency chain',
       kind: 'research',
       changeType: 'behavior',

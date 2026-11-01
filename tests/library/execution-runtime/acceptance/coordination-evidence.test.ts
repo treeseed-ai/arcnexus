@@ -17,7 +17,7 @@ class CoordinationEvidenceScenarios {
     const context = new ExecutionContext().resolve(f.repo);
     const host = new ProjectHost(f.state, context);
     t.after(() => host.store.close());
-    const run = host.submit('READ_HOST_EVIDENCE: verify dynamically discovered dependency work');
+    const run = host.submit('READ_HOST_EVIDENCE READ_TOOL_OBSERVATIONS: verify dependency work');
     for (
       let activation = 0;
       activation < 30 && host.store.run(run.id).status === 'running';
@@ -40,6 +40,26 @@ class CoordinationEvidenceScenarios {
     assert.equal(execution.source.head, context.base);
     assert.equal(execution.source.status, '');
     this.requestsPrecedeWork(execution);
+    this.observations(execution);
+  }
+
+  /** Retained SDK reads and host-check output reach the verifier as distinct evidence classes. */
+  private observations(execution: any): void {
+    const record = execution.assignments.find((a: any) => a.owner === 'a').record;
+    const observations = record.observations;
+    assert.ok(observations, 'Verifier needs observed tool output, not only completed turns');
+    assert.equal(observations.timeline.complete, true);
+    const read = observations.timeline.events.find(
+      (event: any) => event.payload.item?.id === 'observed-read',
+    );
+    assert.equal(read.payload.item.command, 'cat source.txt');
+    assert.equal(read.payload.item.exit_code, 0);
+    assert.ok(read.payload.item.aggregated_output);
+    assert.ok(read.observedAt && read.turn);
+    assert.ok(
+      observations.hostCommands.some((command: any) => typeof command.output.content === 'string'),
+    );
+    assert.doesNotMatch(JSON.stringify(observations.timeline.events), /agent_message/);
   }
 
   /** A foreign record reference cannot substitute another task's observations or disclose its contents. */

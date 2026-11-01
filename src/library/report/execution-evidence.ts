@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import type { ExecutionStore } from '../coordination-store/execution-store.js';
 import type { ExecutionAssignment, ExecutionRun } from '../coordination-store/execution-types.js';
 import type { RecordData } from '../workspace/state.js';
+import { ExecutionObservations } from './execution-observations.js';
 
 /** Projects current-run host observations without granting arbitrary access to private state files. */
 export class ExecutionEvidence {
@@ -126,6 +127,7 @@ export class ExecutionEvidence {
       finalVerifiedBase: record.finalVerifiedBase,
       finalVerifiedDigest: record.finalVerifiedDigest,
       reconciliationId: record.reconciliationId,
+      observations: new ExecutionObservations(join(this.root, 'runs', record.id)).capture(record),
     };
   }
 }
