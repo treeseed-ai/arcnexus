@@ -1,4 +1,5 @@
-import { appendFileSync } from 'node:fs';
+import { StructuredOutputCheck } from '../../testing/support/structured-output-check.js';
+import { appendFileSync, readFileSync } from 'node:fs';
 
 /** Supplies deterministic SDK events while exercising the production host, permissions and scheduler. */
 export class ControlledGeneral {
@@ -13,6 +14,9 @@ export class ControlledGeneral {
       return;
     }
     if (args[0] === 'sandbox') return;
+    new StructuredOutputCheck().inspect(
+      JSON.parse(readFileSync(args[args.indexOf('--output-schema') + 1]!, 'utf8')),
+    );
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
     appendFileSync(this.calls, JSON.stringify({ args, prompt }) + '\n');
@@ -90,6 +94,8 @@ export class ControlledGeneral {
   /** Requests the next owner without predeclaring the full chain to task intake. */
   private request(owner: string) {
     return {
+      assignmentId: null,
+      milestone: 'delivered',
       fromComponent: owner,
       ownerId: owner === 'a' ? 'b' : 'c',
       request: 'Research supplier evidence',

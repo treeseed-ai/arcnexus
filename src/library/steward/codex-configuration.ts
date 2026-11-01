@@ -74,6 +74,7 @@ export class CodexConfiguration {
       delete schema.properties.plan;
       delete schema.properties.planUpdates;
     }
+    if (this.input.record.generalExecution) schema.required = Object.keys(schema.properties);
     const plan = this.input.record.plan as Plan | undefined;
     if ((this.profile?.schemaVersion ?? 1) >= 2 && plan)
       schema.properties.planUpdates.items.properties.id.enum = plan.items.map((item) => item.id);

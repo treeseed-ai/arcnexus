@@ -129,6 +129,10 @@ export class ExecutionContext {
     for (const id of ids) {
       const profile = catalog.profiles[id];
       if (!profile) throw new InputError('Unknown execution profile: ' + id);
+      if (profile.schemaVersion < 2)
+        throw new InputError(
+          `Migrate profile ${id} to a planned execution schema (version 2 or 3)`,
+        );
       for (const key of obsolete)
         if (Object.hasOwn(profile, key))
           throw new InputError(`Remove obsolete work budget ${key} from profile ${id}`);

@@ -154,7 +154,9 @@
           "request",
           "evidence",
           "acceptanceCriteria",
-          "reason"
+          "reason",
+          "assignmentId",
+          "milestone"
         ],
         "additionalProperties": false
       }
