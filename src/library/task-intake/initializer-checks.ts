@@ -19,7 +19,7 @@ export class InitializerChecks {
     private snapshot: InitializationSnapshot,
   ) {}
 
-  /** Handles verify within this component’s captured contract. */
+  /** Runs captured intake verification before model activation. */
   async verify(signal: AbortSignal): Promise<void> {
     const before = candidateDigest(this.record);
     await prepareCapabilities(this.root, this.record, signal);
@@ -44,7 +44,7 @@ export class InitializerChecks {
     }
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Executes one intake check with cancellation and retained command evidence. */
   private command(command: import('../architecture/config.js').Command, signal: AbortSignal) {
     return execute(
       targetCommand(this.record, command),

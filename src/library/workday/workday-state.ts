@@ -81,7 +81,7 @@ export class WorkdayContext {
     public executable: string,
   ) {}
 
-  /** Handles state within this component’s captured contract. */
+  /** Returns the current participant checkpoint and execution state. */
   state() {
     return {
       host: { pid: process.pid, start: processStart(process.pid) },
@@ -108,7 +108,7 @@ export class WorkdayContext {
     };
   }
 
-  /** Handles persist within this component’s captured contract. */
+  /** Durably records participant progress before another activation. */
   persist(type: string, payload: unknown, messages: Message[] = []) {
     const start = Date.now();
     this.store.commit(type, payload, {
@@ -128,7 +128,7 @@ export class WorkdayContext {
       this.routingMs += Date.now() - start;
   }
 
-  /** Handles sync within this component’s captured contract. */
+  /** Refreshes the participant record from its retained session state. */
   sync(owner: Owner) {
     const checkpoint = owner.record.checkpoint as { path: string; sha256: string } | undefined;
     if (checkpoint) {
@@ -157,14 +157,14 @@ export class WorkdayContext {
     });
   }
 
-  /** Handles activate within this component’s captured contract. */
+  /** Resumes this owner with its original authority and remaining counters. */
   activate(owner: Owner) {
     this.activeOwner = owner.participant.resolved.componentId;
     owner.budget.start();
     this.persist('assignment.activated', { owner: this.activeOwner });
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Runs a captured owner command and retains timing and result evidence. */
   async command(owner: Owner, c: Command, stage: string) {
     owner.budget.signal.throwIfAborted();
     const before = candidateDigest(owner.record),
@@ -194,7 +194,7 @@ export class WorkdayContext {
     assertGeneratedOutputs(owner.record.workspace, owner.record.environment);
   }
 
-  /** Handles execute check within this component’s captured contract. */
+  /** Runs the captured verification command under owner execution accounting. */
   private async executeCheck(owner: Owner, c: Command, log: string) {
     return execute(
       targetCommand(owner.record, c),
@@ -208,12 +208,12 @@ export class WorkdayContext {
     );
   }
 
-  /** Handles refresh within this component’s captured contract. */
+  /** Rebuilds declared generated artifacts when switching candidate views. */
   async refresh(owner: Owner) {
     for (const c of owner.participant.refresh) await this.command(owner, c, 'handoff-refresh');
   }
 
-  /** Handles message within this component’s captured contract. */
+  /** Appends an immutable correlated message through the coordination store. */
   message(
     from: Owner,
     to: Owner,
@@ -231,7 +231,7 @@ export class WorkdayContext {
     };
   }
 
-  /** Handles context within this component’s captured contract. */
+  /** Constructs the relevant delivery and dependency context for continuation. */
   context(owner: Owner): string {
     return `Workday participant: ${owner.participant.resolved.componentId}. Exactly two captured owners; no delegation. Contract: ${this.input.dependency.contract}. Required delivery: ${this.input.dependency.delivery}. ${owner === this.owners[0] ? 'If the captured objective needs the recipient, return status=blocked, one precise requests entry, and coordination action=request, requestId=null.' : 'During planning decide accept, reject, or one precise clarification. Acceptance must include a valid plan and activityComplete=true; it is not delivery.'} Coordination includes action, contract, requestId, text and activityComplete. Copy the captured contract value exactly, without paraphrasing; it is an authority identifier. Set coordination=null on ordinary turns. A partial activity sets activityComplete=false and will continue after verified delivery. Do not invent messages or acceptance checks. No new owner or contract may be selected.`;
   }

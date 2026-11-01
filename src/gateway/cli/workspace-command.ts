@@ -8,7 +8,7 @@ export class WorkspaceCommand {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly values: CliValues) {}
 
-  /** Handles create within this component’s captured contract. */
+  /** Prepares a fresh application-owned worktree and its declared environment. */
   create(root: string, input: ReturnType<AssignmentCommand['resolve']>): RecordData {
     return createWorkspace(root, {
       project: this.values.project!,

@@ -11,7 +11,7 @@ export class ObservedProgress {
     private record: RecordData,
   ) {}
 
-  /** Handles accept within this component’s captured contract. */
+  /** Classifies observable completion or failure for progress and loop tracking. */
   accept(event: ThreadEvent): void {
     if (event.type !== 'item.completed' || event.item.type !== 'command_execution') return;
     const item = event.item;

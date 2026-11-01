@@ -86,7 +86,7 @@ export class ServiceManager {
     record.services ??= [];
   }
 
-  /** Handles update within this component’s captured contract. */
+  /** Records the latest managed service state and associated evidence. */
   private update(value: ServiceRecord) {
     this.current = value;
     const records = this.record.services as ServiceRecord[],
@@ -136,7 +136,7 @@ export class ServiceManager {
     return record;
   }
 
-  /** Handles launch within this component’s captured contract. */
+  /** Starts the declared foreground command under parent-liveness supervision. */
   private launch(op: Extract<Operation, { command: string }>, record: ServiceRecord): ChildProcess {
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     if (relative(this.record.workspace, cwd).startsWith('..'))
@@ -215,7 +215,7 @@ export class ServiceManager {
     }
   }
 
-  /** Handles status within this component’s captured contract. */
+  /** Returns the retained service state without restarting it. */
   status(id: string): ServiceRecord {
     if (!this.current || this.current.id !== id) throw new Error('Service lease unavailable');
     if (this.current.status !== 'ready') return this.current;
@@ -228,7 +228,7 @@ export class ServiceManager {
     return this.current;
   }
 
-  /** Handles logs within this component’s captured contract. */
+  /** Returns a bounded excerpt of retained service output. */
   logs(id: string): { log: string; output: string } {
     const r = this.status(id);
     return { log: r.log, output: readFileSync(r.log).subarray(0, 16384).toString('utf8') };

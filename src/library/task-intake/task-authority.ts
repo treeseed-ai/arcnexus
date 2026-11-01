@@ -24,7 +24,7 @@ export class TaskAuthority {
     };
   }
 
-  /** Handles verify within this component’s captured contract. */
+  /** Rejects changed captured inputs before a proposal can execute. */
   verify(snapshot: TaskAuthoritySnapshot): void {
     if (
       digest(readFileSync(snapshot.executable)) !== snapshot.executableHash ||
@@ -33,7 +33,7 @@ export class TaskAuthority {
       throw new InputError('Supervising build or executable changed; create a new task plan');
   }
 
-  /** Handles executable within this component’s captured contract. */
+  /** Locates the supervising CLI used outside the candidate workspace. */
   private executable(value: string): string {
     const paths =
       isAbsolute(value) || value.includes('/')

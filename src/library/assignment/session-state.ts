@@ -138,7 +138,7 @@ export class SessionState {
       throw new InputError('Target Codex configuration is unsupported');
   }
 
-  /** Handles initialize within this component’s captured contract. */
+  /** Creates the retained activity journal and captures initial session evidence. */
   private initialize(): void {
     const { record, root, objective } = this.options;
     materializeEvidence(this.resolved, join(this.dir, 'prior-evidence'));
@@ -160,7 +160,7 @@ export class SessionState {
     });
   }
 
-  /** Handles journal within this component’s captured contract. */
+  /** Appends an activity transition to the retained execution evidence. */
   journal(activity: string, status: string, detail: unknown) {
     const event = {
       at: new Date().toISOString(),
@@ -177,7 +177,7 @@ export class SessionState {
     save(this.options.root, this.options.record);
   }
 
-  /** Handles safe within this component’s captured contract. */
+  /** Checks candidate identity and exact scope before further execution. */
   safe() {
     assertIdentity(this.options.record);
     if (this.options.control) {
@@ -193,7 +193,7 @@ export class SessionState {
     assertGeneratedOutputs(this.options.record.workspace, this.options.record.environment);
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Runs one captured host command and retains its result under the assignment. */
   async command(c: Command, stage: string): Promise<CommandResult> {
     this.options.record.stage = stage;
     this.journal(stage, 'started', c);
@@ -223,7 +223,7 @@ export class SessionState {
     }
   }
 
-  /** Handles checkpoint within this component’s captured contract. */
+  /** Persists thread, plan and verification state for continuation. */
   checkpoint(): void {
     persistCheckpoint(this.dir, this.options.record, this.checkpointData());
   }

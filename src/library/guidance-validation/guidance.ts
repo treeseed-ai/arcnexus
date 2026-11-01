@@ -161,7 +161,7 @@ class GuidanceReferences {
       throw new Error(`referenced file is not tracked: ${reference}`);
   }
 
-  /** Handles check file within this component’s captured contract. */
+  /** Reads one tracked guidance file and emits stable file-oriented diagnostics. */
   private checkFile(reference: string): void {
     let current = this.root;
     const parts = reference.split('/');

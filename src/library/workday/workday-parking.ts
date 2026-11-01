@@ -131,7 +131,7 @@ export class WorktreeParking {
     syncPath(dirname(this.path));
   }
 
-  /** Handles park within this component’s captured contract. */
+  /** Retains requester bytes and staging state before restoring the recipient view. */
   park(scope: string[]): void {
     assertIdentity(this.record);
     this.entries = snapshotChanges(this.record);
@@ -170,7 +170,7 @@ export class WorktreeParking {
     }
   }
 
-  /** Handles restore within this component’s captured contract. */
+  /** Restores parked requester files only after ownership and transition checks. */
   restore(): void {
     if (this.status === 'restored' || this.status === 'none') return;
     if (this.status !== 'parked') throw new Error('Parking transition is unresolved');

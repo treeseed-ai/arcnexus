@@ -27,7 +27,7 @@ export class PendingCalls {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly execute: (name: string, args: unknown) => Promise<unknown>) {}
 
-  /** Handles call within this component’s captured contract. */
+  /** Starts a tool request or resumes observation of an existing pending request. */
   async call(name: string, args: unknown): Promise<unknown> {
     if (name === this.tool.name) return this.complete(this.identity(args));
     const id = randomUUID();
@@ -48,13 +48,13 @@ export class PendingCalls {
     return this.wait(id);
   }
 
-  /** Handles drain within this component’s captured contract. */
+  /** Waits for pending requests to settle before releasing their references. */
   async drain(): Promise<void> {
     await Promise.all([...this.calls.values()].map((call) => call.settled));
     this.calls.clear();
   }
 
-  /** Handles identity within this component’s captured contract. */
+  /** Rejects unknown request IDs rather than creating new work on a wait call. */
   private identity(args: unknown): string {
     if (
       !args ||
@@ -68,7 +68,7 @@ export class PendingCalls {
     return args.requestId;
   }
 
-  /** Handles complete within this component’s captured contract. */
+  /** Returns the settled result exactly once and propagates its recorded error. */
   private async complete(id: string): Promise<unknown> {
     const pending = this.calls.get(id)!;
     await pending.settled;
@@ -77,7 +77,7 @@ export class PendingCalls {
     return pending.result;
   }
 
-  /** Handles wait within this component’s captured contract. */
+  /** Returns a pending receipt after a short observation window without timing out execution. */
   private async wait(id: string): Promise<unknown> {
     const pending = this.calls.get(id)!;
     let timer: NodeJS.Timeout | undefined;

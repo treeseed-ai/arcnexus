@@ -46,7 +46,7 @@ class DirectoryPermissionAcceptance {
     writeFileSync(join(this.unrelated, 'secret.txt'), 'secret');
   }
 
-  /** Handles arguments within this component’s captured contract. */
+  /** Builds the explicit permission-probe invocation. */
   private arguments(): string[] {
     const permissions = preparePermissions(
       this.project,
@@ -72,7 +72,7 @@ class DirectoryPermissionAcceptance {
     ];
   }
 
-  /** Handles probe within this component’s captured contract. */
+  /** Exercises the configured permission boundary rather than trusting its declaration. */
   private probe(): void {
     const result = spawnSync(process.env.CODEX_PATH ?? 'codex', this.arguments(), {
       cwd: this.work,
@@ -88,7 +88,7 @@ class DirectoryPermissionAcceptance {
       );
   }
 
-  /** Handles program within this component’s captured contract. */
+  /** Constructs the controlled program used to test filesystem permissions. */
   private program(): string {
     return `import {readFileSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';

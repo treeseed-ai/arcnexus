@@ -27,7 +27,7 @@ export class TestDiscovery {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly project: string) {}
 
-  /** Handles discover within this component’s captured contract. */
+  /** Enumerates owner-declared suite files without executing their modules. */
   discover(component: Component, outputRoot: string): DiscoveredSuite[] {
     const paths = new Set<string>();
     const excluded = component.discovery?.exclude ?? [];
@@ -48,7 +48,7 @@ export class TestDiscovery {
     } else if (stat.isFile() && path.endsWith('.test.ts')) paths.add(path);
   }
 
-  /** Handles safe within this component’s captured contract. */
+  /** Rejects escaping paths and symlink traversal before reading test source. */
   private safe(path: string): string {
     const root = resolve(this.project);
     const absolute = resolve(root, path);

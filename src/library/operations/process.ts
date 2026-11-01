@@ -124,7 +124,7 @@ class DirectCommand {
     reject(Object.assign(failure, { commandResult: this.result }));
   }
 
-  /** Handles terminate within this component’s captured contract. */
+  /** Requests managed process termination and schedules forced cleanup if necessary. */
   private terminate(reason: Error): void {
     this.failure ??= reason;
     if (!this.child.pid) return;
@@ -132,7 +132,7 @@ class DirectCommand {
     this.killTimer ??= setTimeout(() => this.kill('SIGKILL'), this.options.killGraceMs ?? 300);
   }
 
-  /** Handles kill within this component’s captured contract. */
+  /** Sends the cleanup signal to the managed process group. */
   private kill(signal: NodeJS.Signals): void {
     if (!this.child.pid) return;
     try {
@@ -154,7 +154,7 @@ class DirectCommand {
       this.terminate(new Error('Command output limit exceeded'));
   }
 
-  /** Handles closed within this component’s captured contract. */
+  /** Finalizes retained output and command status after subprocess completion. */
   private closed(code: number | null): void {
     clearTimeout(this.timer);
     this.signal.removeEventListener('abort', this.abort);
@@ -224,7 +224,7 @@ class SupervisedCommand {
     });
   }
 
-  /** Handles error within this component’s captured contract. */
+  /** Retains spawn or stream failure and rejects the command execution. */
   private error(): Error | undefined {
     if (!this.failure && !this.response?.error && this.response?.result) return;
     return Object.assign(

@@ -106,7 +106,7 @@ export class StewardSession {
     this.record.initialization = this.initialization;
   }
 
-  /** Handles control turn within this component’s captured contract. */
+  /** Runs a read-only coordination turn on the retained assignment thread. */
   async controlTurn(instructions: string): Promise<AgentResult> {
     if (!this.turns) throw new Error('Session not active');
     return this.turns.run('coordination', instructions, true, 'coordination');

@@ -58,7 +58,7 @@ export class WorkdayStore {
     }
   }
 
-  /** Handles initialize within this component’s captured contract. */
+  /** Creates initial workday and assignment rows in the private SQLite database. */
   initialize(id: string, data: unknown, owners: string[]): void {
     this.transaction(() => {
       this.db
@@ -70,7 +70,7 @@ export class WorkdayStore {
     });
   }
 
-  /** Handles transaction within this component’s captured contract. */
+  /** Commits all coordination changes together or rolls them back on failure. */
   private transaction(action: () => void): void {
     this.db.exec('BEGIN IMMEDIATE');
     try {
@@ -82,14 +82,14 @@ export class WorkdayStore {
     }
   }
 
-  /** Handles event within this component’s captured contract. */
+  /** Appends an ordered coordination event within the current transaction. */
   private event(type: string, payload: unknown): void {
     this.db
       .prepare('INSERT INTO events(observed_at,type,data) VALUES(?,?,?)')
       .run(new Date().toISOString(), type, JSON.stringify(payload));
   }
 
-  /** Handles commit within this component’s captured contract. */
+  /** Atomically persists delivery, readiness and the corresponding coordination event. */
   commit(
     type: string,
     payload: unknown,
@@ -115,7 +115,7 @@ export class WorkdayStore {
     });
   }
 
-  /** Handles update within this component’s captured contract. */
+  /** Updates exactly one known workday or assignment row. */
   private update(table: 'workdays' | 'assignments', value: Update): void {
     const result = this.db
       .prepare(`UPDATE ${table} SET status=?,data=? WHERE id=?`)
@@ -124,7 +124,7 @@ export class WorkdayStore {
       throw new Error(table === 'workdays' ? 'Unknown workday' : 'Unknown assignment');
   }
 
-  /** Handles snapshot within this component’s captured contract. */
+  /** Reads the authoritative coordination projection for inspection and reports. */
   snapshot() {
     const rows = this.db.prepare('SELECT * FROM workdays').all();
     if (rows.length !== 1) throw new InputError('Incomplete workday database');
@@ -140,7 +140,7 @@ export class WorkdayStore {
     };
   }
 
-  /** Handles events within this component’s captured contract. */
+  /** Reads ordered coordination events after the caller’s cursor. */
   events(after = 0): WorkdayEvent[] {
     return this.db
       .prepare('SELECT * FROM events WHERE sequence>? ORDER BY sequence')

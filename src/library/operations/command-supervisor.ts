@@ -14,14 +14,14 @@ class CommandSupervisor {
 
   private started = false;
 
-  /** Handles listen within this component’s captured contract. */
+  /** Registers command completion and parent-liveness handlers. */
   listen(): void {
     process.on('disconnect', () => this.controller.abort(new Error('Command parent disconnected')));
     process.on('SIGTERM', () => this.controller.abort(new Error('Command supervisor terminated')));
     process.on('message', (message: Start | { cancel: string }) => this.receive(message));
   }
 
-  /** Handles receive within this component’s captured contract. */
+  /** Processes the parent control message without accepting arbitrary new commands. */
   private receive(message: Start | { cancel: string }): void {
     if ('cancel' in message) {
       this.controller.abort(new Error(message.cancel));

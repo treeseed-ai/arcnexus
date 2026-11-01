@@ -92,14 +92,14 @@ class OperationRuntime {
     }
   }
 
-  /** Handles disconnect within this component’s captured contract. */
+  /** Stops managed work when its operation bridge loses its owner. */
   disconnect(): void {
     this.generation++;
     this.active?.abort(new Error('Operation bridge disconnected'));
     void this.services.stop().catch(() => {});
   }
 
-  /** Handles call within this component’s captured contract. */
+  /** Accounts for and authorizes a tool request before execution. */
   async call(name: string, args: unknown): Promise<unknown> {
     if (name === 'operations.list') return this.list(args);
     const op = this.authorize(name, args);
@@ -119,7 +119,7 @@ class OperationRuntime {
     return execution;
   }
 
-  /** Handles perform within this component’s captured contract. */
+  /** Dispatches an authorized operation through the managed execution service. */
   private async perform(op: Operation, number: number, generation: number) {
     if (generation !== this.generation)
       throw new Error('Operation scope closed before queued execution');
@@ -137,7 +137,7 @@ class OperationRuntime {
     return result;
   }
 
-  /** Handles list within this component’s captured contract. */
+  /** Lists only operations captured for this assignment. */
   private list(args: unknown) {
     if (args && Object.keys(args).length) throw new Error('Operation listing accepts no arguments');
     return {
@@ -147,7 +147,7 @@ class OperationRuntime {
     };
   }
 
-  /** Handles authorize within this component’s captured contract. */
+  /** Rejects unavailable operation IDs or activity permissions. */
   private authorize(name: string, args: unknown): Operation {
     const { root, record, resolved } = this;
     this.request(args);
@@ -186,7 +186,7 @@ class OperationRuntime {
       throw new Error('Operation activity denied: ' + stage);
   }
 
-  /** Handles request within this component’s captured contract. */
+  /** Validates tool request data before executing any operation. */
   private request(args: unknown): void {
     const { root, record, resolved } = this;
     record.operationCalls = Number(record.operationCalls) + 1;
@@ -199,7 +199,7 @@ class OperationRuntime {
       throw new Error('Operation request budget exhausted');
   }
 
-  /** Handles service within this component’s captured contract. */
+  /** Routes declared service lifecycle actions through the service manager. */
   private async service(name: string, op: Operation): Promise<unknown> {
     switch (name) {
       case 'services.start':
@@ -217,7 +217,7 @@ class OperationRuntime {
     }
   }
 
-  /** Handles begin within this component’s captured contract. */
+  /** Records the authorized operation start and its execution context. */
   private begin(op: Operation): { cwd: string; combined: AbortSignal; start: number } {
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     const path = relative(this.record.workspace, cwd);
@@ -276,7 +276,7 @@ class OperationRuntime {
     }
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Executes the fixed command and retains its output and exit evidence. */
   private async command(op: Operation, cwd: string, signal: AbortSignal): Promise<CommandResult> {
     const { root, record, resolved } = this;
     const log = join(root, 'runs', record.id, `operation-${this.activeNumber}.log`);
@@ -303,7 +303,7 @@ class OperationRuntime {
     });
   }
 
-  /** Handles artifact within this component’s captured contract. */
+  /** Validates and records declared result artifacts produced by the operation. */
   private artifact(path: string) {
     const { root, record } = this;
     const source = join(record.workspace, path);

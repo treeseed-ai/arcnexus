@@ -83,7 +83,7 @@ class SimulationCodex {
       throw new Error('Incompatible simulation fixture');
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Produces a scripted checklist through the real SDK response boundary. */
   private plan(): void {
     this.result.plan = {
       approach: 'SIMULATED bounded fixture change',
@@ -106,7 +106,7 @@ class SimulationCodex {
     };
   }
 
-  /** Handles boundary within this component’s captured contract. */
+  /** Produces the declared simulated owner escalation without unauthorized edits. */
   private boundary(): void {
     this.result.status = 'blocked';
     this.result.blockers = ['SIMULATED dependency contract boundary'];
@@ -122,7 +122,7 @@ class SimulationCodex {
     ];
   }
 
-  /** Handles specification within this component’s captured contract. */
+  /** Writes the fixture’s scripted regression evidence before implementation. */
   private specification(): void {
     writeFileSync('docs/behavior.md', 'SIMULATED: source must become after.\n');
     writeFileSync(
@@ -165,7 +165,7 @@ class SimulationCodex {
     }
   }
 
-  /** Handles edit within this component’s captured contract. */
+  /** Applies the declared simulated fixture edit to real candidate files. */
   private edit(): void {
     if (this.stage === 'specification') this.specification();
     if (this.stage === 'implementation' || this.stage === 'correction')
@@ -175,7 +175,7 @@ class SimulationCodex {
       );
   }
 
-  /** Handles feedback within this component’s captured contract. */
+  /** Obtains real host-operation feedback for the scripted scenario. */
   private async feedback(client: Client): Promise<void> {
     const update = await client.callTool({
       name: 'plan.update',
@@ -193,13 +193,13 @@ class SimulationCodex {
     if (update.isError) throw new Error('Simulation checklist update denied');
   }
 
-  /** Handles option within this component’s captured contract. */
+  /** Reads a fixed protocol argument from the controlled executable invocation. */
   private option(name: 'command'): string;
 
-  /** Handles option within this component’s captured contract. */
+  /** Reads a fixed protocol argument from the controlled executable invocation. */
   private option(name: 'args'): string[];
 
-  /** Handles option within this component’s captured contract. */
+  /** Reads a fixed protocol argument from the controlled executable invocation. */
   private option(name: 'command' | 'args'): string | string[] {
     const prefix = 'mcp_servers.arcnexus.' + name + '=',
       value = this.args.find((arg) => arg.startsWith(prefix));
@@ -215,7 +215,7 @@ class SimulationCodex {
     throw new Error('Invalid bridge configuration');
   }
 
-  /** Handles emit within this component’s captured contract. */
+  /** Writes one labeled protocol event to stdout. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }

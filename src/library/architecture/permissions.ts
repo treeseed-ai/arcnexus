@@ -121,7 +121,7 @@ class PermissionPreparation {
     return permissionSettings(filesystem, temp, createdDirectories);
   }
 
-  /** Handles validate policy within this component’s captured contract. */
+  /** Checks directory grants against exact ownership and documented exceptions. */
   private validatePolicy(policy: { access: AccessPolicy; writes: unknown }): void {
     const { workspace } = this;
     if (!Array.isArray(policy.writes) || !policy.writes.every((path) => typeof path === 'string'))
@@ -140,7 +140,7 @@ class PermissionPreparation {
     }
   }
 
-  /** Handles directory within this component’s captured contract. */
+  /** Checks a declared directory before adding it to the sandbox policy. */
   private directory(path: string): void {
     const { workspace, createdDirectories } = this;
     if (path === '.') return;
@@ -163,7 +163,7 @@ class PermissionPreparation {
     if (!checked.directory) throw new InputError(`Write access path is not a directory: ${path}`);
   }
 
-  /** Handles temporary within this component’s captured contract. */
+  /** Prepares the temporary path needed by permission enforcement. */
   private temporary(tmpDirectory: string): string {
     const { workspace } = this;
     const temp = resolve(tmpDirectory);
@@ -176,7 +176,7 @@ class PermissionPreparation {
     return temp;
   }
 
-  /** Handles filesystem within this component’s captured contract. */
+  /** Builds the filesystem policy consumed by the execution adapter. */
   private filesystem(temp: string, readOnlyRoots: string[], toolReadDirectories: string[]) {
     const { workspace, access } = this;
     const filesystem: Record<string, 'read' | 'write'> = { ':minimal': 'read' };

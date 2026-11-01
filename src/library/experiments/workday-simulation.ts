@@ -65,7 +65,7 @@ class WorkdaySimulation {
       throw new Error('Incompatible workday fixture');
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Produces a scripted checklist through the real SDK response boundary. */
   private plan(): void {
     this.result.plan = {
       approach: 'SIMULATED bounded contract change',
@@ -95,7 +95,7 @@ class WorkdaySimulation {
     this.coordinate();
   }
 
-  /** Handles coordinate within this component’s captured contract. */
+  /** Produces the scripted request or response for the captured handoff stage. */
   private coordinate(): void {
     if (this.owner === 'gateway' && !this.delivered) this.request();
     if (this.owner === 'identity')
@@ -108,7 +108,7 @@ class WorkdaySimulation {
       };
   }
 
-  /** Handles request within this component’s captured contract. */
+  /** Produces the fixture’s authorized dependency request. */
   private request(): void {
     this.result.status = 'blocked';
     this.result.blockers = ['Requires identity owner'];
@@ -131,7 +131,7 @@ class WorkdaySimulation {
     ];
   }
 
-  /** Handles specification within this component’s captured contract. */
+  /** Writes the fixture’s scripted regression evidence before implementation. */
   private specification(): void {
     writeFileSync(
       this.owner + '/README.md',
@@ -152,7 +152,7 @@ class WorkdaySimulation {
     };
   }
 
-  /** Handles implementation within this component’s captured contract. */
+  /** Edits the fixture implementation through the captured owner scope. */
   private implementation(): void {
     writeFileSync(
       this.owner + '/index.mjs',
@@ -162,7 +162,7 @@ class WorkdaySimulation {
     );
   }
 
-  /** Handles review within this component’s captured contract. */
+  /** Returns the scripted read-only handoff after implementation. */
   private review(): void {
     this.result.planUpdates = [
       {
@@ -174,7 +174,7 @@ class WorkdaySimulation {
     ];
   }
 
-  /** Handles output within this component’s captured contract. */
+  /** Builds the structured scripted turn result. */
   private output(): void {
     const n =
       ['planning', 'specification', 'implementation', 'review'].indexOf(this.stage ?? '') +
@@ -199,7 +199,7 @@ class WorkdaySimulation {
     });
   }
 
-  /** Handles emit within this component’s captured contract. */
+  /** Writes one labeled protocol event to stdout. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }

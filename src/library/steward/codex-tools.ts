@@ -29,12 +29,12 @@ export class CodexTools {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly configuration: CodexConfiguration) {}
 
-  /** Handles signal within this component’s captured contract. */
+  /** Returns the cancellation signal governing the current tool scope. */
   get signal(): AbortSignal {
     return AbortSignal.any([this.configuration.input.signal, this.controller.signal]);
   }
 
-  /** Handles open within this component’s captured contract. */
+  /** Creates the MCP transport exposing the parent-authorized capability set. */
   async open(): Promise<object> {
     if ((this.configuration.profile?.schemaVersion ?? 1) < 2) return {};
     const { operations, responseContract } = this.configuration.input;
@@ -46,7 +46,7 @@ export class CodexTools {
     return this.bridge.config as object;
   }
 
-  /** Handles call within this component’s captured contract. */
+  /** Routes tool calls through pending-call handling without resetting execution limits. */
   private async call(name: string, args: unknown): Promise<unknown> {
     const { operations, root, record } = this.configuration.input;
     try {
@@ -65,7 +65,7 @@ export class CodexTools {
     }
   }
 
-  /** Handles update within this component’s captured contract. */
+  /** Applies a bounded checklist update through the parent-owned plan contract. */
   private update(args: unknown) {
     const { root, record } = this.configuration.input;
     record.planUpdateCalls = Number(record.planUpdateCalls ?? 0) + 1;

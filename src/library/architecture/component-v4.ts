@@ -64,7 +64,7 @@ export class ComponentV4Resolver {
     return owner;
   }
 
-  /** Handles component within this component’s captured contract. */
+  /** Resolves a leaf’s package-relative ownership and effective repository context. */
   private component(component: Component): void {
     if (
       ['platform', 'package'].includes(component.type) &&
@@ -98,7 +98,7 @@ export class ComponentV4Resolver {
       : [];
   }
 
-  /** Handles path within this component’s captured contract. */
+  /** Normalizes a package-relative path before repository-boundary enforcement. */
   private path(root: string, path: string): string {
     scopePath(path);
     const resolved = posix.join(root, path);
@@ -124,7 +124,7 @@ export class ComponentV4Resolver {
     };
   }
 
-  /** Handles inventory within this component’s captured contract. */
+  /** Discovers declared roots at the captured revision and records file hashes. */
   private inventory(component: Component, root: string): void {
     component.inventory = [];
     if (!component.discovery || !this.artifacts) return;
@@ -144,12 +144,12 @@ export class ComponentV4Resolver {
     component.discovery.exclude = excluded;
   }
 
-  /** Handles covers within this component’s captured contract. */
+  /** Tests path containment without treating sibling prefixes as descendants. */
   private covers(root: string, path: string): boolean {
     return root === '.' || root === path || path.startsWith(root + '/');
   }
 
-  /** Handles members within this component’s captured contract. */
+  /** Derives package membership from authoritative parent relationships. */
   private members(component: Component): void {
     const children = Object.values(this.catalog.components).filter(
       (c) => c.parentId === component.id,

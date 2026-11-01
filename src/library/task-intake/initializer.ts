@@ -118,7 +118,7 @@ class Initializer {
     }
   }
 
-  /** Handles fail within this component’s captured contract. */
+  /** Retains initializer failure evidence and prevents downstream activation. */
   private fail(error: unknown): void {
     this.child.error = String(error);
     if (error instanceof Error && error.name === 'NeedsAttention') {
@@ -154,7 +154,7 @@ class Initializer {
     return record;
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Builds the read-only intake assignment from the caller’s captured envelope. */
   private assignment(): ResolvedAssignment {
     const { digest: _digest, ...base } = this.input.resolved;
     const data = {
@@ -176,7 +176,7 @@ class Initializer {
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
 
-  /** Handles infer within this component’s captured contract. */
+  /** Executes one intake model turn and retains the structured result. */
   private async infer(): Promise<InitializationResult> {
     const prompt = this.prompt();
     this.child.suppliedContext = {
@@ -201,7 +201,7 @@ class Initializer {
     );
   }
 
-  /** Handles operations within this component’s captured contract. */
+  /** Selects initializer capabilities without adding worker authority. */
   private operations() {
     const before = candidateDigest(this.child);
     const checks = new InitializerChecks(this.input.root, this.child, this.snapshot);
@@ -211,7 +211,7 @@ class Initializer {
     );
   }
 
-  /** Handles prompt within this component’s captured contract. */
+  /** Supplies routing context and constraints for a read-only initialization decision. */
   private prompt(): string {
     return [
       'ArcNexus initialization: source-read-only routing confirmation. Do not implement, edit source, commit, delegate, or initialize recursively.',

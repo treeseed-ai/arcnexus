@@ -17,7 +17,7 @@ class WorkdayReportAcceptance {
     for (const assignment of report.assignments) this.assignment(assignment);
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Checks retained participant evidence for the required workday behavior. */
   private assignment(value: any): void {
     assert.equal(value.status, 'completed');
     const seconds =

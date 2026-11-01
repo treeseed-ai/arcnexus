@@ -24,7 +24,7 @@ class ReportFaultInjection {
     process.exitCode = result.status ?? 1;
   }
 
-  /** Handles inject within this component’s captured contract. */
+  /** Introduces the labeled implementation defect and records its evidence. */
   private inject(): void {
     const path =
         ['src/library/report/report.ts', 'src/report/report.ts', 'src/report.ts'].find(

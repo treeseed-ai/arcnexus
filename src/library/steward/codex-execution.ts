@@ -56,7 +56,7 @@ export class CodexExecution<T extends object = AgentResult> {
     }
   }
 
-  /** Handles thread within this component’s captured contract. */
+  /** Starts or resumes the retained SDK thread under explicit runtime settings. */
   private thread(bridge: object) {
     const { launcher, env, permissions, profile } = this.configuration;
     const codex = new Codex({
@@ -77,7 +77,7 @@ export class CodexExecution<T extends object = AgentResult> {
       : codex.startThread(options);
   }
 
-  /** Handles event within this component’s captured contract. */
+  /** Retains each SDK event before projecting observable progress. */
   private event(event: ThreadEvent): void {
     const { root, record, resumeId } = this.input;
     observe(root, record, 'codex.event', event);
@@ -101,7 +101,7 @@ export class CodexExecution<T extends object = AgentResult> {
     if (event.type === 'error') throw new Error(event.message);
   }
 
-  /** Handles progress within this component’s captured contract. */
+  /** Emits host-observed execution progress without exposing private reasoning. */
   private progress(event: ThreadEvent): void {
     try {
       new ObservedProgress(this.input.root, this.input.record).accept(event);
@@ -112,7 +112,7 @@ export class CodexExecution<T extends object = AgentResult> {
     }
   }
 
-  /** Handles result within this component’s captured contract. */
+  /** Parses and validates the structured result returned by the model. */
   private result(): T {
     const { record } = this.input;
     const { dir, profile } = this.configuration;

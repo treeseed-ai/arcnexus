@@ -79,7 +79,7 @@ export class TaskRunner {
           throw new InputError('Combined acceptance changed');
   }
 
-  /** Handles single within this component’s captured contract. */
+  /** Executes an accepted one-owner proposal through the shared steward engine. */
   private async single(proposal: TaskProposal, resolved: ResolvedAssignment) {
     const record = createWorkspace(this.root, {
       project: proposal.source,

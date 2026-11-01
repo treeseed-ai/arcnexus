@@ -51,7 +51,7 @@ export class ComponentTesting {
     }
   }
 
-  /** Handles selection within this component’s captured contract. */
+  /** Combines captured catalog/profile authority with current discovered test metadata. */
   private selection(project: string, filters: TestFilters, bindings: Bindings): TestSelection {
     this.filters(filters);
     project = resolve(project);
@@ -156,7 +156,7 @@ export class ComponentTesting {
     }
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Runs fixed preparation or test commands and persists output even on failure. */
   private async command(
     result: TestExecution,
     command: { command: string; args: string[] },

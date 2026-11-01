@@ -35,7 +35,7 @@ export class SessionWorkflow {
     }
   }
 
-  /** Handles planning within this component’s captured contract. */
+  /** Requires a valid read-only assignment plan before engineering stages. */
   private async planning(): Promise<void> {
     if (this.state.planned)
       await this.turns.perform(
@@ -45,7 +45,7 @@ export class SessionWorkflow {
       );
   }
 
-  /** Handles research within this component’s captured contract. */
+  /** Completes read-only research or review without forcing source edits. */
   private async research(): Promise<void> {
     await this.turns.perform(
       this.state.assignment.kind,
@@ -56,7 +56,7 @@ export class SessionWorkflow {
     this.state.options.record.outcome = `${this.state.assignment.kind}_completed`;
   }
 
-  /** Handles specification within this component’s captured contract. */
+  /** Requires documentation and regression evidence before implementation. */
   private async specification(): Promise<void> {
     const spec = await this.turns.perform(
       'specification',
@@ -67,7 +67,7 @@ export class SessionWorkflow {
     if (!this.state.specificationFinished) await this.verification.specification(spec);
   }
 
-  /** Handles change within this component’s captured contract. */
+  /** Coordinates the behavior-change stages and their host checkpoints. */
   private async change(): Promise<void> {
     await this.specification();
     let feedback = '';
@@ -95,7 +95,7 @@ export class SessionWorkflow {
     throw new Error('Implementation attempts exhausted');
   }
 
-  /** Handles implement within this component’s captured contract. */
+  /** Runs implementation and any justified correction within retained attempt state. */
   private async implement(attempt: number, feedback: string): Promise<void> {
     const { record } = this.state.options;
     record.implementationAttempts = attempt;
@@ -134,7 +134,7 @@ export class SessionWorkflow {
     }
   }
 
-  /** Handles review within this component’s captured contract. */
+  /** Runs source-read-only review and requires final host verification. */
   private async review(attempt: number): Promise<string | undefined> {
     const review = await this.turns.perform(
       'review',
@@ -157,7 +157,7 @@ export class SessionWorkflow {
     });
   }
 
-  /** Handles failure within this component’s captured contract. */
+  /** Records failed checkpoint evidence for bounded correction or terminal reporting. */
   private failure(error: unknown): void {
     const { record, signal, control } = this.state.options;
     if (control && error instanceof Error && error.name === 'WorkdayBlocked')

@@ -104,7 +104,7 @@ export class CodexConfiguration {
     };
   }
 
-  /** Handles authority within this component’s captured contract. */
+  /** Builds execution permissions from captured assignment authority. */
   private authority(resolved: ResolvedAssignment | undefined) {
     const { record } = this.input;
     const context = record.context as
@@ -144,7 +144,7 @@ export class CodexConfiguration {
     );
   }
 
-  /** Handles environment within this component’s captured contract. */
+  /** Constructs the restricted environment used by the Codex launcher. */
   private environment(): Record<string, string> {
     const env: Record<string, string> = {};
     for (const name of [
@@ -176,7 +176,7 @@ export class CodexConfiguration {
     return env;
   }
 
-  /** Handles execution settings within this component’s captured contract. */
+  /** Builds explicit SDK settings independently of personal user configuration. */
   private executionSettings(authority: ReturnType<CodexConfiguration['authority']>) {
     return {
       coordinationActions: this.input.record.workdayId ? this.coordinationActions : undefined,
@@ -241,7 +241,7 @@ export class CodexConfiguration {
       throw new Error('Target Codex configuration is unsupported');
   }
 
-  /** Handles preflight within this component’s captured contract. */
+  /** Checks installed CLI compatibility before relying on execution settings. */
   async preflight(): Promise<void> {
     const { root, record } = this.input;
     try {
@@ -268,7 +268,7 @@ export class CodexConfiguration {
     }
   }
 
-  /** Handles probe within this component’s captured contract. */
+  /** Runs the declared sandbox compatibility probe and retains its result. */
   private async probe() {
     const { record, signal } = this.input;
     const turn = (record.turns as unknown[]).length;

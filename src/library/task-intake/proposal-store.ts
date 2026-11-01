@@ -47,7 +47,7 @@ export class ProposalStore {
     return proposal;
   }
 
-  /** Handles load within this component’s captured contract. */
+  /** Reads a retained proposal and checks its identity before inspection or execution. */
   load(id: string): TaskProposal {
     if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid proposal identity');
     try {
@@ -63,7 +63,7 @@ export class ProposalStore {
     }
   }
 
-  /** Handles markdown within this component’s captured contract. */
+  /** Renders a caller-reviewable proposal without applying architectural changes. */
   private markdown(value: TaskProposal): string {
     return `# Task proposal ${value.id}\n\nStatus: ${value.status}\n\nRevision: ${value.base}\n\n${value.request.text}\n\n## Captured initialization\n\n\`\`\`json\n${JSON.stringify(value.initialization, null, 2)}\n\`\`\`\n\nExecution requires explicit task run; architectural changes require caller integration and a new plan.\n`;
   }

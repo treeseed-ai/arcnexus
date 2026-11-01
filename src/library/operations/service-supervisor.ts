@@ -28,7 +28,7 @@ class ServiceSupervisor {
 
   private requestedPort = 0;
 
-  /** Handles listen within this component’s captured contract. */
+  /** Registers parent-liveness and service-process event handlers. */
   listen(): void {
     process.on('disconnect', () => {
       void this.stop('parent disconnected');
@@ -42,7 +42,7 @@ class ServiceSupervisor {
     });
   }
 
-  /** Handles persist within this component’s captured contract. */
+  /** Writes current service ownership and lifecycle evidence for inspection. */
   private persist(): void {
     if (!this.record) return;
     writeFileSync(this.record.recordPath + '.tmp', JSON.stringify(this.record, null, 2), {
@@ -56,7 +56,7 @@ class ServiceSupervisor {
     return (this.stopping ??= this.shutdown(reason));
   }
 
-  /** Handles shutdown within this component’s captured contract. */
+  /** Terminates the service process group after cancellation or parent loss. */
   private async shutdown(reason: string): Promise<void> {
     if (!this.record) {
       process.disconnect?.();
@@ -137,7 +137,7 @@ class ServiceSupervisor {
     if (stdout) this.announcements(chunk);
   }
 
-  /** Handles announcements within this component’s captured contract. */
+  /** Parses complete stdout lines for the declared endpoint announcement. */
   private announcements(chunk: Buffer): void {
     this.line += chunk.toString();
     if (this.line.length > 65536) {
@@ -152,7 +152,7 @@ class ServiceSupervisor {
     }
   }
 
-  /** Handles announcement within this component’s captured contract. */
+  /** Validates an announced loopback endpoint before reporting readiness. */
   private announcement(text: string): void {
     try {
       const endpoint = JSON.parse(text).arcnexusEndpoint;

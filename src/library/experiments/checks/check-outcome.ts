@@ -29,7 +29,7 @@ class OutcomeAcceptance {
     );
   }
 
-  /** Handles boundary within this component’s captured contract. */
+  /** Independently verifies the required owner request and absence of unauthorized edits. */
   private boundary(): void {
     const record = this.record;
     assert.equal(record.outcome, 'blocked');
@@ -43,7 +43,7 @@ class OutcomeAcceptance {
     assert.match(JSON.stringify(request), /schema|contract|interface/i);
   }
 
-  /** Handles read only within this component’s captured contract. */
+  /** Checks that research or review completed without candidate source changes. */
   private readOnly(): void {
     const record = this.record;
     assert.equal(record.outcome, this.kind + '_completed');
@@ -55,7 +55,7 @@ class OutcomeAcceptance {
       assert.match(JSON.stringify(record.agent.findings), /architecture/);
   }
 
-  /** Handles change within this component’s captured contract. */
+  /** Checks a real candidate change against the declared qualification outcome. */
   private change(): void {
     const record = this.record;
     assert.equal(record.outcome, 'ready_for_integration');
@@ -67,7 +67,7 @@ class OutcomeAcceptance {
     if (this.kind === 'repair') this.repair();
   }
 
-  /** Handles repair within this component’s captured contract. */
+  /** Requires recorded fault failure, corrective editing and subsequent passing acceptance. */
   private repair(): void {
     const record = this.record;
     assert.equal(record.implementationAttempts, 2);

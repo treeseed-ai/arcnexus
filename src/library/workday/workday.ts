@@ -78,7 +78,7 @@ export class WorkdayRunner {
     if (digest(JSON.stringify(captured)) !== hash) throw new InputError('Captured workday changed');
   }
 
-  /** Handles initialize within this component’s captured contract. */
+  /** Creates the durable workday lifecycle before participant dispatch. */
   private async initialize(issue?: string): Promise<void> {
     const state = this.state,
       input = state.input;
@@ -107,7 +107,7 @@ export class WorkdayRunner {
     await prepareWorkspace(state.root, state.workspace, state.signal);
   }
 
-  /** Handles preparation policy within this component’s captured contract. */
+  /** Combines captured participant preparation requirements without broadening scope. */
   private preparationPolicy(): void {
     const state = this.state,
       input = state.input;
@@ -118,7 +118,7 @@ export class WorkdayRunner {
     state.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? 'live';
   }
 
-  /** Handles initialize store within this component’s captured contract. */
+  /** Writes initial coordination rows and captured input references. */
   private initializeStore(): void {
     const state = this.state;
     state.store = new WorkdayStore(join(state.directory, 'workday.sqlite'), true);
@@ -183,7 +183,7 @@ export class WorkdayRunner {
     this.observe(owner);
   }
 
-  /** Handles control within this component’s captured contract. */
+  /** Executes a coordination turn through the retained participant session. */
   private control(owner: Owner): SessionControl {
     return {
       prepared: true,
@@ -199,7 +199,7 @@ export class WorkdayRunner {
     };
   }
 
-  /** Handles actions within this component’s captured contract. */
+  /** Builds deterministic handoff actions for the current coordination state. */
   private actions(owner: Owner, activity: string): string[] {
     if (owner === this.state.owners[0])
       return activity === 'coordination' ? ['answer'] : this.state.requestId ? [] : ['request'];
@@ -226,7 +226,7 @@ export class WorkdayRunner {
       throw new Error('Engineering turn budget exhausted');
   }
 
-  /** Handles observe within this component’s captured contract. */
+  /** Records ordered coordination observations with retained evidence references. */
   private observe(owner: Owner): void {
     const { root, store } = this.state,
       { record, participant } = owner;
@@ -266,7 +266,7 @@ export class WorkdayRunner {
     save(state.root, state.workspace);
   }
 
-  /** Handles baselines within this component’s captured contract. */
+  /** Verifies both owners against the prepared initial candidate. */
   private async baselines(): Promise<void> {
     for (const owner of this.state.owners) {
       this.state.activate(owner);
@@ -277,7 +277,7 @@ export class WorkdayRunner {
     }
   }
 
-  /** Handles initialize owners within this component’s captured contract. */
+  /** Creates distinct participant sessions from their captured assignments. */
   private async initializeOwners(initialization?: InitializationEvidence): Promise<void> {
     const state = this.state;
     state.status = 'initializing';
@@ -360,7 +360,7 @@ export class WorkdayRunner {
     requester.budget.pause();
   }
 
-  /** Handles failure within this component’s captured contract. */
+  /** Stops dispatch and attempts safe restoration while retaining failure evidence. */
   private failure(error: unknown): void {
     this.state.error = String(error);
     this.state.status =
@@ -377,7 +377,7 @@ export class WorkdayRunner {
               : 'failed';
   }
 
-  /** Handles finalize within this component’s captured contract. */
+  /** Writes final workday projections after resource and candidate checks. */
   private finalize(): void {
     const state = this.state;
     for (const owner of state.owners) owner.budget.pause();
@@ -405,7 +405,7 @@ export class WorkdayRunner {
     }
   }
 
-  /** Handles finalize owner within this component’s captured contract. */
+  /** Retains one participant’s final checkpoint, counters and result. */
   private finalizeOwner(owner: Owner): void {
     const state = this.state;
     try {
@@ -424,7 +424,7 @@ export class WorkdayRunner {
     }
   }
 
-  /** Handles finalize workspace within this component’s captured contract. */
+  /** Records the final shared candidate and unresolved lifecycle state. */
   private finalizeWorkspace(): void {
     const { workspace, root, status, error } = this.state;
     if (workspace.workday) (workspace.workday as { active: boolean }).active = false;
@@ -436,7 +436,7 @@ export class WorkdayRunner {
     saveMarkdown(root, workspace);
   }
 
-  /** Handles report within this component’s captured contract. */
+  /** Builds the caller-facing result from captured coordination evidence. */
   private report() {
     if (!this.state.store) throw new InputError(this.state.error ?? 'Workday preparation failed');
     try {
@@ -456,7 +456,7 @@ export class WorkdayRunner {
     }
   }
 
-  /** Handles projection within this component’s captured contract. */
+  /** Projects authoritative state without creating a competing coordination store. */
   private projection() {
     const state = this.state,
       snapshot = state.store.snapshot();

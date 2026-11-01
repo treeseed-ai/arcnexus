@@ -22,7 +22,7 @@ export class TurnEvidence {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly state: SessionState) {}
 
-  /** Handles review within this component’s captured contract. */
+  /** Marks test and instruction changes for caller inspection. */
   review(): Record<string, unknown> {
     const evidence = {
       basis: this.state.assignment.kind === 'review' ? 'base-first-parent' : 'candidate',
@@ -133,7 +133,7 @@ export class TurnEvidence {
     save(root, record);
   }
 
-  /** Handles usage within this component’s captured contract. */
+  /** Preserves raw usage and derives accounting without counting cumulative values twice. */
   private usage(summary: Record<string, unknown>): void {
     const { record } = this.state.options;
     summary.reportedUsage = record.attemptReportedUsage ?? null;

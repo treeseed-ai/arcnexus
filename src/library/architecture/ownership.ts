@@ -101,7 +101,7 @@ export class OwnershipValidator {
       }
   }
 
-  /** Handles owner within this component’s captured contract. */
+  /** Resolves the unique leaf responsible for a covered repository path. */
   private owner(file: string, policy: OwnershipPolicy): Owner {
     const owners = policy.owners.filter((o) => o.paths.some((p) => covers(file, p)));
     if (owners.length !== 1)
@@ -147,7 +147,7 @@ export class OwnershipValidator {
     }
   }
 
-  /** Handles imports within this component’s captured contract. */
+  /** Checks cross-owner references through declared public entry points. */
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {
     const text = git(this.repository, 'show', `${this.base}:${file}`);
     const edges: string[] = [];
@@ -158,7 +158,7 @@ export class OwnershipValidator {
     this.graph.set(file, edges);
   }
 
-  /** Handles target within this component’s captured contract. */
+  /** Resolves a module reference to its maintained source counterpart. */
   private target(file: string, specifier: string): string | undefined {
     if (!specifier.startsWith('.')) return;
     let target = posix.normalize(posix.join(posix.dirname(file), specifier));

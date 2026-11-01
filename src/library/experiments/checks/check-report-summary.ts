@@ -58,7 +58,7 @@ class SummaryAcceptance {
     console.log('Independent activity/outcome summary acceptance passed');
   }
 
-  /** Handles historical within this component’s captured contract. */
+  /** Checks that records missing newer fields remain readable. */
   private historical(markdownReport: (record: any) => string): void {
     const historical = markdownReport({
       id: 'historical',

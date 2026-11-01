@@ -102,7 +102,7 @@ export class ExperimentRunner {
     writeFileSync(join(this.output, 'campaign.md'), text, { mode: 0o600 });
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Runs a supervised campaign command and retains its output. */
   private async command(
     command: string,
     args: string[],
@@ -131,7 +131,7 @@ export class ExperimentRunner {
     }
   }
 
-  /** Handles command failure within this component’s captured contract. */
+  /** Records the failed command while preserving the case’s evidence. */
   private commandFailure(error: unknown, stdout: string, stderr: string): Execution {
     if (error && typeof error === 'object' && 'commandResult' in error)
       return {
@@ -171,7 +171,7 @@ export class ExperimentRunner {
     return this.finalize(input);
   }
 
-  /** Handles initialize within this component’s captured contract. */
+  /** Creates the campaign output and captures all case inputs before dispatch. */
   private initialize(input: ExperimentInput, output: string): string {
     this.validateOutput(input, output);
     const initialHash = runnerHash(input.runner);
@@ -192,7 +192,7 @@ export class ExperimentRunner {
     return initialHash;
   }
 
-  /** Handles validate output within this component’s captured contract. */
+  /** Rejects output locations that could overwrite existing or candidate evidence. */
   private validateOutput(input: ExperimentInput, output: string): void {
     const { digest: capturedDigest, ...captured } = input;
     if (hash(JSON.stringify(captured)) !== capturedDigest)
@@ -255,7 +255,7 @@ export class ExperimentRunner {
     return entry;
   }
 
-  /** Handles arguments within this component’s captured contract. */
+  /** Builds fixed CLI arguments from the resolved case definition. */
   private arguments(c: PreparedCase, input: ExperimentInput): string[] {
     const args = c.workdayPath
       ? [input.runner, 'workday', 'run', c.workdayPath, '--project', c.project, '--base', c.base]
@@ -311,7 +311,7 @@ export class ExperimentRunner {
     report.services = owners.flatMap((o) => (Array.isArray(o.services) ? o.services : []));
   }
 
-  /** Handles verify outcome within this component’s captured contract. */
+  /** Requires the observed outcome and independent checks to agree. */
   private verifyOutcome(c: PreparedCase, entry: CaseRecord, report: RecordData): void {
     if (
       entry.execution!.exitCode !== (c.expectedOutcome === 'blocked' ? 1 : 0) ||
@@ -333,7 +333,7 @@ export class ExperimentRunner {
       throw new Error('Qualification requires Luna at medium reasoning');
   }
 
-  /** Handles acceptance within this component’s captured contract. */
+  /** Runs separately captured post-case acceptance without exposing its implementation to the steward. */
   private async acceptance(
     c: PreparedCase,
     entry: CaseRecord,
@@ -354,7 +354,7 @@ export class ExperimentRunner {
     }
   }
 
-  /** Handles finalize within this component’s captured contract. */
+  /** Writes the campaign summary, including failed cases and incomplete resources. */
   private finalize(input: ExperimentInput): Campaign {
     if (!this.campaign.finalRunnerHash)
       try {

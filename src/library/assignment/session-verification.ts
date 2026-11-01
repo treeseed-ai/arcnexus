@@ -13,7 +13,7 @@ export class SessionVerification {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly state: SessionState) {}
 
-  /** Handles specification within this component’s captured contract. */
+  /** Freezes regression files and requires the declared expected-red checkpoint. */
   async specification(spec: AgentResult) {
     if (!this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
@@ -51,7 +51,7 @@ export class SessionVerification {
     );
   }
 
-  /** Handles regression within this component’s captured contract. */
+  /** Matches the observed failure to the steward’s declared diagnostic. */
   private async regression(spec: AgentResult): Promise<void> {
     this.state.regression = spec.regression;
     if (
@@ -95,7 +95,7 @@ export class SessionVerification {
     return failed;
   }
 
-  /** Handles final within this component’s captured contract. */
+  /** Rechecks scope, captured suites, frozen tests and independent acceptance. */
   async final() {
     this.state.safe();
     if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {

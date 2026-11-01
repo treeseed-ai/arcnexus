@@ -44,7 +44,7 @@ class OperationCampaignAcceptance {
     console.log('QUALIFIED_' + this.kind);
   }
 
-  /** Handles outcome within this component’s captured contract. */
+  /** Checks the retained report outcome against the campaign expectation. */
   private outcome(): void {
     const record = this.record;
     if (this.kind === 'change' || this.kind === 'repair') {
@@ -62,7 +62,7 @@ class OperationCampaignAcceptance {
     }
   }
 
-  /** Handles repair within this component’s captured contract. */
+  /** Requires recorded fault failure, corrective editing and subsequent passing acceptance. */
   private repair(): void {
     const record = this.record;
     assert.equal(record.implementationAttempts, 2);

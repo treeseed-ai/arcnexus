@@ -40,7 +40,7 @@ class BridgeClient {
     });
   }
 
-  /** Handles request within this component’s captured contract. */
+  /** Sends one correlated request over the private parent connection. */
   private request(method: string, name?: string, args?: unknown): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const id = ++this.sequence;
@@ -49,7 +49,7 @@ class BridgeClient {
     });
   }
 
-  /** Handles receive within this component’s captured contract. */
+  /** Buffers incoming bytes until complete response frames are available. */
   private receive(data: Buffer): void {
     this.input += data.toString();
     if (Buffer.byteLength(this.input) > 256 * 1024) {
@@ -64,7 +64,7 @@ class BridgeClient {
     }
   }
 
-  /** Handles message within this component’s captured contract. */
+  /** Resolves the pending call associated with one received response. */
   private message(line: string): void {
     try {
       const message = JSON.parse(line);
@@ -77,7 +77,7 @@ class BridgeClient {
     }
   }
 
-  /** Handles disconnected within this component’s captured contract. */
+  /** Rejects pending requests when the parent connection is lost. */
   private disconnected(): void {
     for (const pending of this.pending.values())
       pending.reject(new Error('ArcNexus host disconnected'));
@@ -86,7 +86,7 @@ class BridgeClient {
     process.stdin.destroy();
   }
 
-  /** Handles call within this component’s captured contract. */
+  /** Invokes the named host capability through the constrained bridge protocol. */
   private async call(name: string, args: unknown) {
     try {
       const result = await this.request('call', name, args);

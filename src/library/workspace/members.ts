@@ -99,7 +99,7 @@ class MemberResolver {
     return path;
   }
 
-  /** Handles revision within this component’s captured contract. */
+  /** Resolves a declared member ref to an immutable commit before worktree creation. */
   private revision(path: string, definition: Dependency): string {
     const pinned = git(
       path,

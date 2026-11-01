@@ -20,7 +20,7 @@ export class SchemaPackager {
     );
   }
 
-  /** Handles copy within this component’s captured contract. */
+  /** Copies trusted schema resources into the assembled distribution. */
   private copy(root: string, source: string, name: string): void {
     const id = name.slice(0, -5);
     if (Object.hasOwn(this.registry, id)) throw new Error(`Duplicate runtime schema: ${id}`);

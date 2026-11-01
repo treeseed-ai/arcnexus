@@ -40,7 +40,7 @@ export class TaskPlanner {
     private signal: AbortSignal,
   ) {}
 
-  /** Handles plan within this component’s captured contract. */
+  /** Runs read-only intake and retains a validated caller-reviewable proposal. */
   async plan(input: TaskPlanInput): Promise<TaskProposal> {
     const { text, bindings, shortlist, owner, captured, record } = this.prepare(input);
     try {
@@ -187,7 +187,7 @@ export class TaskPlanner {
     });
   }
 
-  /** Handles identity within this component’s captured contract. */
+  /** Captures repository identity and the immutable planning revision. */
   private identity(record: RecordData, input: TaskPlanInput, text: string) {
     return {
       schemaVersion: 1 as const,

@@ -121,7 +121,7 @@ class WorkdayResolver {
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
 
-  /** Handles checks within this component’s captured contract. */
+  /** Captures trusted final checks outside participant write authority. */
   private checks(checks: HostCheck[], directory: string): HostCheck[] {
     return checks.map((check) => ({
       ...check,
@@ -133,7 +133,7 @@ class WorkdayResolver {
     }));
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Resolves a participant assignment within its approved envelope. */
   private assignment(path: string): Assignment {
     const file = resolve(dirname(this.path), path);
     const source = new ConfigurationReader().file(file);
@@ -147,7 +147,7 @@ class WorkdayResolver {
     return value;
   }
 
-  /** Handles participant within this component’s captured contract. */
+  /** Checks a selected owner and captures its effective authority. */
   private participant(participant: Participant): WorkdayParticipant {
     const value = this.assignment(participant.assignment);
     const resolved = resolveAssignment(
@@ -199,7 +199,7 @@ class WorkdayResolver {
       throw new InputError('Workday owner writable scopes overlap');
   }
 
-  /** Handles artifacts within this component’s captured contract. */
+  /** Snapshots acceptance artifacts before preparing the shared candidate. */
   private artifacts(checks: HostCheck[]): ResolvedAssignment['artifacts'] {
     const artifacts: ResolvedAssignment['artifacts'] = [],
       ids = new Set<string>();

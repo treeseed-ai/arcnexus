@@ -35,7 +35,7 @@ class CodexSupervisor {
     this.child.on('close', (code) => this.close(code));
   }
 
-  /** Handles alive within this component’s captured contract. */
+  /** Checks whether the supervising parent still owns this execution. */
   private alive(): boolean {
     return (
       Number.isSafeInteger(this.parent) &&
@@ -45,7 +45,7 @@ class CodexSupervisor {
     );
   }
 
-  /** Handles signal within this component’s captured contract. */
+  /** Propagates termination to the managed Codex process group. */
   private signal(signal: NodeJS.Signals): void {
     if (!this.child.pid) return;
     try {

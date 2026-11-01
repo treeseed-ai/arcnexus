@@ -44,7 +44,7 @@ class WorkdayViewer {
     }
   }
 
-  /** Handles view within this component’s captured contract. */
+  /** Reads retained state and optionally follows until terminal outcome or viewer cancellation. */
   async view(follow: boolean): Promise<void> {
     do {
       const { snapshot, events, terminal, interrupted } = this.read();
@@ -71,7 +71,7 @@ class WorkdayViewer {
     } while (!this.signal.aborted);
   }
 
-  /** Handles emit within this component’s captured contract. */
+  /** Formats one observed state or event without changing workday execution. */
   private emit(events: ReturnType<WorkdayStore['events']>): void {
     for (const event of events) {
       console.log(

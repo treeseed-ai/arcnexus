@@ -58,7 +58,7 @@ export class ArchitectureReferences {
     }
   }
 
-  /** Handles contracts within this component’s captured contract. */
+  /** Resolves provided and consumed contract identities and supported versions. */
   private contracts() {
     const result = new Map<
       string,
@@ -81,7 +81,7 @@ export class ArchitectureReferences {
     return result;
   }
 
-  /** Handles pattern within this component’s captured contract. */
+  /** Loads the referenced standard and optional supporting artifacts. */
   private pattern(id: string) {
     relativePath(id);
     if (id.includes('/')) throw new Error(`Invalid pattern identity: ${id}`);
@@ -120,7 +120,7 @@ export class ArchitectureReferences {
     return resolved;
   }
 
-  /** Handles artifact within this component’s captured contract. */
+  /** Captures referenced content and its digest without granting additional authority. */
   private artifact(path: string, repository: string): ReferenceArtifact | undefined {
     const revision = this.catalog.repositoryRevisions?.[repository];
     if (!revision) return undefined;

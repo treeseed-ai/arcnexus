@@ -214,7 +214,7 @@ class ExperimentResolver {
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Resolves a fixed command through the caller’s tool bindings. */
   private command(check: HostCheck, directory: string): HostCheck {
     const executablePath = Object.hasOwn(this.tools, check.command)
       ? this.tools[check.command]!
@@ -231,7 +231,7 @@ class ExperimentResolver {
     };
   }
 
-  /** Handles resolve case within this component’s captured contract. */
+  /** Validates one ordered campaign case before any execution. */
   private resolveCase(c: DefinitionCase): ExperimentCase {
     if (this.ids.has(c.id)) throw new InputError('Duplicate experiment case identity');
     this.ids.add(c.id);
@@ -259,7 +259,7 @@ class ExperimentResolver {
       : this.assignmentCase(c, project, captured.source, base);
   }
 
-  /** Handles workday case within this component’s captured contract. */
+  /** Resolves a captured workday case through the existing coordination contract. */
   private workdayCase(
     c: DefinitionCase,
     project: LocalProject,
@@ -312,7 +312,7 @@ class ExperimentResolver {
     for (const a of workday.artifacts) this.files[a.path] = a.content;
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Loads the case assignment from its declared manifest-relative reference. */
   private assignment(c: DefinitionCase): Assignment {
     const path = resolve(dirname(this.manifestPath), c.assignment),
       assignment = validateSchema<Assignment>('assignment', this.read(path));
@@ -350,7 +350,7 @@ class ExperimentResolver {
     }
   }
 
-  /** Handles assignment case within this component’s captured contract. */
+  /** Resolves one steward case and its expected outcome and acceptance. */
   private assignmentCase(
     c: DefinitionCase,
     project: LocalProject,

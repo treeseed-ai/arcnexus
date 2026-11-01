@@ -53,7 +53,7 @@ class OperationReportAcceptance {
     console.log('INDEPENDENT_REPORT_OPERATIONS_PASSED');
   }
 
-  /** Handles renderer within this component’s captured contract. */
+  /** Loads the candidate renderer from its supported historical or current layout. */
   private async renderer(): Promise<(record: any) => string> {
     const { markdownReport } = await import(
       pathToFileURL(
@@ -67,7 +67,7 @@ class OperationReportAcceptance {
     return markdownReport;
   }
 
-  /** Handles historical within this component’s captured contract. */
+  /** Checks that records missing newer fields remain readable. */
   private historical(markdownReport: (record: any) => string): void {
     const historical = markdownReport(this.base);
     assert.match(historical, /No managed operations recorded\./);

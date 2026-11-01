@@ -232,7 +232,7 @@ class AssignmentResolver {
           throw new InputError(`Missing repository binding for captured contract: ${contract.id}`);
   }
 
-  /** Handles sources within this component’s captured contract. */
+  /** Collects source snapshots used to reconstruct assignment authority. */
   private sources() {
     const { catalog, options, assignmentSource } = this;
     return [
@@ -242,7 +242,7 @@ class AssignmentResolver {
     ];
   }
 
-  /** Handles execution within this component’s captured contract. */
+  /** Builds the effective execution settings from captured profile and caller overrides. */
   private execution() {
     const { repository, base, env, options } = this;
     const { compositionProfile, executionProfile } = this.profiles();
@@ -261,7 +261,7 @@ class AssignmentResolver {
     };
   }
 
-  /** Handles profiles within this component’s captured contract. */
+  /** Resolves execution and composition selections without confusing their responsibilities. */
   private profiles() {
     const { catalog, component, context, options } = this;
     const profileId = options.executionProfile ?? component.executionProfile;
@@ -283,7 +283,7 @@ class AssignmentResolver {
     return { compositionProfile, executionProfile };
   }
 
-  /** Handles operations within this component’s captured contract. */
+  /** Selects only operations authorized by both component and assignment. */
   private operations(executionProfile: ExecutionProfile): Operation[] {
     const { assignment, component, catalog, env } = this;
     const requestedOperations = assignment.operationIds ?? component.operationIds ?? [];

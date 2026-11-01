@@ -36,12 +36,12 @@ export class ProgressObserver {
     this.state = (record.progress ??= { failures: {}, warnings: [] }) as ProgressState;
   }
 
-  /** Handles before within this component’s captured contract. */
+  /** Fingerprints the next observable action before it can repeat a diagnosed failure. */
   before(action: unknown, candidate: string): void {
     if (this.state.forbidden === fingerprint({ action, candidate })) this.stop(action);
   }
 
-  /** Handles failed within this component’s captured contract. */
+  /** Records an equivalent failure and diagnoses repeated actions without progress. */
   failed(action: unknown, diagnostic: string, candidate: string): string | undefined {
     const normalized = diagnosticText(diagnostic);
     const key = fingerprint({ action, normalized, candidate });
@@ -64,7 +64,7 @@ export class ProgressObserver {
     return 'Three equivalent failed actions without material progress. Diagnose the loop and choose a fundamentally different action; repeating it stops dispatch.';
   }
 
-  /** Handles verified within this component’s captured contract. */
+  /** Advances the progress baseline using independently observed state. */
   verified(evidence: unknown): void {
     if (fingerprint(this.state.lastVerified?.evidence) === fingerprint(evidence)) return;
     this.state.failures = {};

@@ -90,7 +90,7 @@ class CliApplication {
     }
   }
 
-  /** Handles dispatch within this component’s captured contract. */
+  /** Routes a validated command to its adapter and preserves shared cancellation. */
   private async dispatch(): Promise<void> {
     switch (this.command) {
       case 'test':
@@ -234,7 +234,7 @@ class CliApplication {
     else await workspace.prepare(root, record, this.controller.signal);
   }
 
-  /** Handles failure within this component’s captured contract. */
+  /** Translates a thrown error into public output and the appropriate process exit code. */
   private failure(error: unknown): void {
     if (this.record) {
       this.record.status = this.cancelled

@@ -58,7 +58,7 @@ export class ProposalResolution {
     return true;
   }
 
-  /** Handles non ready within this component’s captured contract. */
+  /** Retains clarification or architectural gaps instead of inventing executable authority. */
   private nonReady(result: InitializationResult): undefined {
     if (result.status === 'architecture_change_required' && !result.architectureProposal)
       throw new InputError('Architecture change requires a concrete proposal');
@@ -67,14 +67,14 @@ export class ProposalResolution {
     return undefined;
   }
 
-  /** Handles clarify within this component’s captured contract. */
+  /** Builds the precise unresolved questions that prevent safe routing. */
   private clarify(result: InitializationResult, question: string): undefined {
     result.status = 'needs_clarification';
     result.questions.push(question);
     return undefined;
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Constructs a supported single-owner execution proposal. */
   private assignment(value: ProposedAssignment): ResolvedAssignment {
     if (!value.objective.trim() || !value.acceptanceCriteria.length)
       throw new InputError('Proposed assignment requires objective and acceptance');
@@ -94,7 +94,7 @@ export class ProposalResolution {
     });
   }
 
-  /** Handles workday within this component’s captured contract. */
+  /** Constructs the supported two-owner handoff proposal. */
   private workday(result: InitializationResult, assignments: ResolvedAssignment[]): WorkdayInput {
     const edge = result.dependency;
     const requester = assignments.find((a) => a.componentId === edge?.from);
@@ -119,7 +119,7 @@ export class ProposalResolution {
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
 
-  /** Handles participant within this component’s captured contract. */
+  /** Validates a selected component against the captured catalog. */
   private participant(resolved: ResolvedAssignment): WorkdayParticipant {
     return {
       resolved,
@@ -128,7 +128,7 @@ export class ProposalResolution {
     };
   }
 
-  /** Handles compatibility within this component’s captured contract. */
+  /** Checks proposed routing against the caller’s original envelope. */
   private compatibility(a: ResolvedAssignment, b: ResolvedAssignment): void {
     const first = a.context.at(-1)!,
       second = b.context.at(-1)!;

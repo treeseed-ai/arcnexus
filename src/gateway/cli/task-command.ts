@@ -39,7 +39,7 @@ export class TaskCommand {
     }
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Reads the caller’s request text and invokes retained task planning. */
   private plan(root: string) {
     return new TaskPlanner(root, this.signal).plan({
       input: this.values.input as string,

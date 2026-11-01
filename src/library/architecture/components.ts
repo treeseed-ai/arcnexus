@@ -184,7 +184,7 @@ class CatalogLoader {
       .sort();
   }
 
-  /** Handles load within this component’s captured contract. */
+  /** Loads all catalog definitions before validating cross-references. */
   load(): Catalog {
     this.definitions();
     for (const path of this.files('operations')) this.operation(path);
@@ -216,14 +216,14 @@ class CatalogLoader {
     return this.catalog;
   }
 
-  /** Handles files within this component’s captured contract. */
+  /** Enumerates supported definition files in the captured repository revision. */
   private files(directory: string): string[] {
     return this.paths.filter(
       (path) => path.startsWith(`architecture/${directory}/`) && isConfiguration(path),
     );
   }
 
-  /** Handles definitions within this component’s captured contract. */
+  /** Parses and schema-validates each declared catalog definition. */
   private definitions(): void {
     const { catalog, repository, base, paths } = this;
     const groups = [
@@ -250,7 +250,7 @@ class CatalogLoader {
       }
   }
 
-  /** Handles operation within this component’s captured contract. */
+  /** Loads a referenced operation without granting it to unrelated owners. */
   private operation(path: string): void {
     const { catalog, repository, base } = this;
     const operation = read<Operation>(
@@ -274,7 +274,7 @@ class CatalogLoader {
     });
   }
 
-  /** Handles composition within this component’s captured contract. */
+  /** Resolves declared package selection independently of ownership parents. */
   private composition(path: string): void {
     const { catalog, repository, base } = this;
     const profile = read<CompositionProfile>(
@@ -318,7 +318,7 @@ class CatalogComponentValidator {
     this.members(c);
   }
 
-  /** Handles paths within this component’s captured contract. */
+  /** Validates the component’s paths before they can become execution scope. */
   private paths(c: Component): void {
     scopePath(c.path);
     validateAccess(c.access);
@@ -328,7 +328,7 @@ class CatalogComponentValidator {
       throw new InputError(`Uncovered writable scope: ${c.id}`);
   }
 
-  /** Handles operations within this component’s captured contract. */
+  /** Checks referenced operations against the component profile and environment. */
   private operations(c: Component): void {
     const { catalog, env } = this;
     for (const id of c.operationIds ?? []) {
@@ -350,7 +350,7 @@ class CatalogComponentValidator {
     );
   }
 
-  /** Handles ancestors within this component’s captured contract. */
+  /** Checks inherited constraints across the complete parent chain. */
   private ancestors(c: Component): void {
     const { catalog } = this;
     const ancestors = ancestry(catalog, c.id).slice(0, -1);
@@ -376,7 +376,7 @@ class CatalogComponentValidator {
     }
   }
 
-  /** Handles related within this component’s captured contract. */
+  /** Validates context relationships without adding write authority. */
   private related(c: Component): void {
     const { catalog } = this;
     for (const id of c.relatedIds)
@@ -386,7 +386,7 @@ class CatalogComponentValidator {
       throw new InputError(`Package requires member declarations: ${c.id}`);
   }
 
-  /** Handles members within this component’s captured contract. */
+  /** Checks package membership and referenced component identities. */
   private members(c: Component): void {
     const { catalog } = this;
     if (c.members) {

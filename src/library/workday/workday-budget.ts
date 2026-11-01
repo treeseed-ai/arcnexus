@@ -37,7 +37,7 @@ export class ActiveBudget {
       );
   }
 
-  /** Handles pause within this component’s captured contract. */
+  /** Excludes dependency waiting from the assignment’s active-time accounting. */
   pause() {
     if (this.since !== undefined) this.used += Date.now() - this.since;
     this.since = undefined;

@@ -65,7 +65,7 @@ class HostBridge {
     chmodSync(this.directory, 0o700);
   }
 
-  /** Handles listen within this component’s captured contract. */
+  /** Registers socket events and retains connection lifecycle ownership. */
   async listen(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       this.server.once('error', reject);
@@ -74,7 +74,7 @@ class HostBridge {
     chmodSync(this.path, 0o600);
   }
 
-  /** Handles connect within this component’s captured contract. */
+  /** Accepts a private bridge connection for the active assignment. */
   private connect(socket: Socket): void {
     this.sockets.add(socket);
     socket.on('close', () => {
@@ -84,7 +84,7 @@ class HostBridge {
     new BridgeConnection(socket, this.tools, this.call).listen();
   }
 
-  /** Handles configuration within this component’s captured contract. */
+  /** Returns explicit MCP launch settings for this run’s bridge. */
   configuration(): Record<string, unknown> {
     return {
       mcp_optional_startup_grace_ms: 0,
@@ -125,7 +125,7 @@ class BridgeConnection {
     private readonly call: ToolCall,
   ) {}
 
-  /** Handles listen within this component’s captured contract. */
+  /** Registers socket events and retains connection lifecycle ownership. */
   listen(): void {
     this.socket.on('error', () => {});
     this.socket.on('data', (data) => this.receive(data));
@@ -134,7 +134,7 @@ class BridgeConnection {
     });
   }
 
-  /** Handles receive within this component’s captured contract. */
+  /** Decodes complete request frames from incoming socket data. */
   private receive(data: Buffer): void {
     this.input += data.toString();
     if (Buffer.byteLength(this.input) > 128 * 1024) {
@@ -151,7 +151,7 @@ class BridgeConnection {
     }
   }
 
-  /** Handles request within this component’s captured contract. */
+  /** Validates request framing before handing it to host authorization. */
   private async request(line: string): Promise<void> {
     let request: Request | undefined;
     try {
@@ -165,7 +165,7 @@ class BridgeConnection {
     }
   }
 
-  /** Handles dispatch within this component’s captured contract. */
+  /** Routes only supported bridge capabilities to the parent runtime. */
   private dispatch(request: Request): Promise<unknown> | BridgeTool[] {
     if (request.method === 'list') return this.tools;
     if (request.method === 'call' && this.tools.some((tool) => tool.name === request.name))

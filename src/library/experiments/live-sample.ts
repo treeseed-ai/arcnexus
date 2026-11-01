@@ -45,7 +45,7 @@ class LiveSampleCampaign {
       this.command('git', args, this.source);
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Executes the explicit sample command and retains its result. */
   private command(executable: string, args: string[], cwd = this.supervisor): string {
     const result = spawnSync(executable, args, {
       cwd,
@@ -61,7 +61,7 @@ class LiveSampleCampaign {
   private readonly objective =
     'Add and export isSessionExpired(expiresAtMs, nowMs) in src/identity.mjs. Return nowMs >= expiresAtMs. Document the behavior in README.md, add tests for before, exactly at, and after expiry, and preserve normalizeIdentity. Document first, observe the new tests fail before implementing, then verify.';
 
-  /** Handles sample within this component’s captured contract. */
+  /** Runs one fresh live sample and checks the expiration boundary independently. */
   private sample(attempt: number) {
     console.error(`Live sample ${attempt}/2; evidence root: ${this.root}`);
     const output = this.command(process.execPath, [

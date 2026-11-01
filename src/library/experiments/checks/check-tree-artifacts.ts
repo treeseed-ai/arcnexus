@@ -25,7 +25,7 @@ class TreeArtifactsAcceptance {
     console.log('Independent real-archive diagnostics acceptance passed');
   }
 
-  /** Handles inventory within this component’s captured contract. */
+  /** Builds the genuine package-artifact view used by independent diagnostics checks. */
   private inventory(owner: string) {
     return spawnSync(
       'bun',

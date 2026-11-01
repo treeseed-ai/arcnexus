@@ -21,12 +21,12 @@ class SummaryFaultInjection {
     await checkSummary();
   }
 
-  /** Handles hash within this component’s captured contract. */
+  /** Computes artifact identity so qualification can detect changed inputs. */
   private hash(value: string | Buffer): string {
     return createHash('sha256').update(value).digest('hex');
   }
 
-  /** Handles inject within this component’s captured contract. */
+  /** Introduces the labeled implementation defect and records its evidence. */
   private inject(): void {
     const before = readFileSync(this.path, 'utf8');
     const signature = 'export function markdownReport(record: RecordData): string {';

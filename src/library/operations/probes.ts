@@ -78,7 +78,7 @@ class CapabilityProbes {
     }
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Runs the functional probe through the same route required by execution. */
   private command(probe: Command, cwd: string) {
     const { root, record, signal, probes, resolved } = this;
     return execute(
@@ -152,7 +152,7 @@ class BridgeProbe {
     if (result.isError) throw new Error('Bridge functional probe failed');
   }
 
-  /** Handles passed within this component’s captured contract. */
+  /** Records successful capability evidence before model activation. */
   private passed(): void {
     const evidence = {
       route: 'stdio-mcp',
@@ -165,7 +165,7 @@ class BridgeProbe {
     observe(this.root, this.record, 'probe.completed', evidence);
   }
 
-  /** Handles failed within this component’s captured contract. */
+  /** Records an unavailable required capability and its diagnostic. */
   private failed(error: unknown): void {
     this.probes.push({
       route: 'stdio-mcp',

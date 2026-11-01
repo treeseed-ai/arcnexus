@@ -28,7 +28,7 @@ export class ExperimentCapture {
     return input.cases.map((c) => this.prepareCase(c, input));
   }
 
-  /** Handles snapshot within this component’s captured contract. */
+  /** Writes immutable campaign inputs and artifact hashes before the first case. */
   private snapshot(path: string, directory: string, input: ExperimentInput): string {
     if (!isAbsolute(path) || !Object.hasOwn(input.files, path))
       throw new InputError('Missing captured artifact: ' + path);
@@ -81,7 +81,7 @@ export class ExperimentCapture {
     };
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Captures one assignment and its independently maintained checks. */
   private assignment(
     value: Assignment,
     name: string,
@@ -102,7 +102,7 @@ export class ExperimentCapture {
     return path;
   }
 
-  /** Handles participant within this component’s captured contract. */
+  /** Captures the owner envelope used by a workday participant. */
   private participant(
     owner: WorkdayParticipant,
     name: string,
@@ -118,7 +118,7 @@ export class ExperimentCapture {
     };
   }
 
-  /** Handles codex within this component’s captured contract. */
+  /** Captures the selected executable and simulation/live execution identity. */
   private codex(c: ExperimentCase, directory: string, input: ExperimentInput): string | undefined {
     let codexPath = input.codexPath;
     if (input.evidenceMode === 'simulation') {
@@ -144,7 +144,7 @@ export class ExperimentCapture {
     return pathToFileURL(module).href;
   }
 
-  /** Handles workday within this component’s captured contract. */
+  /** Captures the combined workday input and final acceptance artifacts. */
   private workday(
     c: ExperimentCase,
     directory: string,

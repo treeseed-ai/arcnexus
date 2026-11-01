@@ -13,7 +13,7 @@ export class OwnerRetrieval {
   /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly catalog: Component[]) {}
 
-  /** Handles select within this component’s captured contract. */
+  /** Returns a lexical shortlist with related and ancestor context for model assessment. */
   select(request: string): RetrievedOwner[] {
     const tokens = words(request);
     const scores = this.catalog
@@ -25,7 +25,7 @@ export class OwnerRetrieval {
     return selected;
   }
 
-  /** Handles score within this component’s captured contract. */
+  /** Ranks an owner using request terms and declared architectural metadata. */
   private score(component: Component, tokens: string[]): RetrievedOwner {
     const text = words(
       JSON.stringify([
@@ -44,7 +44,7 @@ export class OwnerRetrieval {
     };
   }
 
-  /** Handles expand within this component’s captured contract. */
+  /** Adds declared hierarchy and relationship context to the retrieved shortlist. */
   private expand(match: RetrievedOwner, selected: RetrievedOwner[]): void {
     const component = this.catalog.find((c) => c.id === match.id)!;
     for (const id of [

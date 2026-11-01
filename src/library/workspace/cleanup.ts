@@ -77,7 +77,7 @@ export class WorkspaceCleanup {
     return { ...this.record, cleanupStatus: 'removed' };
   }
 
-  /** Handles resources within this component’s captured contract. */
+  /** Requires managed resources to be stopped before destructive removal. */
   private resources(): void {
     const { root, id, record } = this;
     if (['preparing', 'initializing', 'running'].includes(record.status))
@@ -104,7 +104,7 @@ export class WorkspaceCleanup {
     assertServicesStopped(this.root, initialization.runId);
   }
 
-  /** Handles identity within this component’s captured contract. */
+  /** Checks captured repository and worktree identity before touching paths. */
   private identity() {
     const { record, members, id } = this;
     return {
@@ -142,7 +142,7 @@ export class WorkspaceCleanup {
     renameSync(this.intentPath + '.tmp', this.intentPath);
   }
 
-  /** Handles reconcile within this component’s captured contract. */
+  /** Resolves durable cleanup progress against current Git and filesystem state. */
   private reconcile(): void {
     const { intent, record } = this;
     if (!intent || !['removing', 'removed'].includes(intent.status))
@@ -176,7 +176,7 @@ export class WorkspaceCleanup {
     }
   }
 
-  /** Handles remove within this component’s captured contract. */
+  /** Removes only validated owned worktrees and records each completed transition. */
   private remove(stat: Stats): void {
     const { record, intent, root } = this;
     this.validateExisting(stat);
@@ -194,7 +194,7 @@ export class WorkspaceCleanup {
     observe(root, timeline, 'cleanup.completed', { status: 'removed' });
   }
 
-  /** Handles validate existing within this component’s captured contract. */
+  /** Rejects replacement paths or registrations that no longer match ownership. */
   private validateExisting(stat: Stats): void {
     const { record, intent } = this;
     if (
@@ -211,7 +211,7 @@ export class WorkspaceCleanup {
       throw new Error('Workspace registration mismatch');
   }
 
-  /** Handles captured environment within this component’s captured contract. */
+  /** Reads the declared disposable-output policy from retained preparation evidence. */
   private capturedEnvironment() {
     const { record, members } = this;
     // Use the immutable base configuration, not potentially edited report settings.
@@ -238,7 +238,7 @@ export class WorkspaceCleanup {
     return env;
   }
 
-  /** Handles receipt within this component’s captured contract. */
+  /** Atomically records completed cleanup without rewriting execution reports. */
   private receipt(formatted: boolean): void {
     const receipt = { cleanupStatus: 'removed', removedAt: new Date().toISOString() };
     const text = formatted ? JSON.stringify(receipt, null, 2) + '\n' : JSON.stringify(receipt);
@@ -246,7 +246,7 @@ export class WorkspaceCleanup {
     renameSync(this.receiptPath + '.tmp', this.receiptPath);
   }
 
-  /** Handles timeline record within this component’s captured contract. */
+  /** Appends cleanup observations to the retained execution timeline. */
   private timelineRecord(): RecordData {
     return { ...this.record, timelineSequence: readTimeline(this.directory).events.length };
   }

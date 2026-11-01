@@ -34,7 +34,7 @@ class GuidanceReferenceAcceptance {
     }
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Executes the fixture Git command and fails if its expected setup cannot be established. */
   private git(...args: string[]): void {
     const result = spawnSync('git', ['-C', this.root, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
@@ -104,7 +104,7 @@ class GuidanceReferenceAcceptance {
     };
   }
 
-  /** Handles combined within this component’s captured contract. */
+  /** Checks the assembled guidance and validator change through independent fixtures. */
   private combined(): void {
     const skill = readFileSync('.agents/skills/documentation-writer/SKILL.md', 'utf8');
     assert.match(skill, /references:/);

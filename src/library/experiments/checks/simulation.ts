@@ -15,7 +15,7 @@ class SimulationAcceptance {
     console.log('SIMULATED acceptance ' + scenario);
   }
 
-  /** Handles change within this component’s captured contract. */
+  /** Checks a real candidate change against the declared qualification outcome. */
   private change(record: any, scenario: string): void {
     assert.equal(record.outcome, 'ready_for_integration');
     assert.equal(readFileSync(record.workspace + '/source.txt', 'utf8'), 'after');

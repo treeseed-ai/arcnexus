@@ -7,7 +7,7 @@ export type FixtureKind = 'identity' | 'http' | 'simulation' | 'workday';
 
 /** Materializes known fixture contracts and compiled payloads for deterministic experiments. */
 export class FixtureCatalog {
-  /** Handles files within this component’s captured contract. */
+  /** Copies the declared fixture payload without inferring additional repository members. */
   files(kind: FixtureKind): Record<string, string> {
     const output: Record<string, string> = {};
     const compiled = fileURLToPath(new URL(`../../../.fixture-build/${kind}`, import.meta.url));
