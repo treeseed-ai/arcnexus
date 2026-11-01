@@ -51,3 +51,17 @@ General inbox requests remain available independently of the legacy coordination
 protocol's action list. The model uses structured requests for eligible owners and
 inboxActions for correlated responses; an empty legacy action list does not disable
 these capabilities.
+
+A completed model response that reports a blocker is a durable blocked assignment
+outcome after scope and owned-operation checks. Retain its safe checkpoint so a
+later diagnosed continuation can use the same plan, thread and partial work.
+This does not satisfy a dependency or claim delivery. Incomplete execution and
+authority violations remain unsafe. Dependency context distinguishes accepted
+intent from verified delivery; only completed deliveries receive the latter label.
+To wait for a stronger milestone, the worker explicitly requests that milestone
+against the same accepted assignment and matching scope/acceptance conditions.
+
+Worker response schemas advertise only activities permitted by the captured role,
+including plan activities. Review and caller handoff do not require publication or
+an additional role permission. Host validation remains authoritative even when a
+response bypasses the constrained schema.
