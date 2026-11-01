@@ -50,7 +50,11 @@ Recheck assembled changes before promotion. Workers cannot publish, switch branc
 or commit. Captured architecture, instructions, checks and supervising build remain
 stable; candidate edits cannot redefine active authority.
 
-Trusted checks come from captured project declarations. Behavioral changes retain
+Trusted checks come from captured project declarations. General assignments run
+the owner’s declared checks followed by checks from containing package/platform
+definitions, deduplicated by executable and arguments. Owner check indices remain
+stable for regression references. Container checks apply to the assembled candidate
+and cannot be omitted because the selected owner’s own checks passed. Behavioral changes retain
 expected-red regression evidence; other assignment kinds use appropriate workflows.
 A separate read-only verifier assesses acceptance against observed evidence. Task
 completion additionally requires director assessment. Missing proof remains explicit.
