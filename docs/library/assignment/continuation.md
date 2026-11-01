@@ -16,3 +16,10 @@ where missing, and observes passing captured checks before implementation. Retai
 those test sources outside the candidate and rerun them after implementation. A
 refactor does not require manufactured changed documentation or an expected-red
 behavioral assertion. Independent verification still checks the original criteria.
+
+A missing retained model thread is distinct from an uncertain model turn. The host
+may replace a thread only after an explicit thread/session-not-found response,
+before any model activity or operation, and with an unchanged checkpoint candidate.
+It records the old identity and reason and supplies captured continuation evidence
+to the fresh thread. Transport errors, partial turns and uncertain operations do
+not permit automatic replay.
