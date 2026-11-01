@@ -138,3 +138,13 @@ owner's existing test sources and tracked command-argument files automatically.
 When these inputs change in a candidate, the host reruns checks with their captured
 source contents restored temporarily, retaining both candidate and baseline results.
 Worker regressions and independent review remain additional, distinguishable evidence.
+
+## Supervising runner capture
+
+Before launching a background host, the client captures the installed distribution,
+package metadata and installed dependencies in private application state. The host
+and its managed helpers execute from that retained copy. Rebuilding the caller’s
+installation cannot replace a running host’s modules. Capture compares content
+hashes before and after copying and refuses an installation that changes during
+capture. Host evidence records the retained runner location and content hash.
+Machine-bound external executables remain separately identified by captured bindings.
