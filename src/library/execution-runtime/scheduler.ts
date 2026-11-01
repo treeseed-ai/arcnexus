@@ -42,7 +42,7 @@ export class Scheduler {
 
   /** Journals an observed outcome before applying idempotent scheduling transitions. */
   commit(id: string, result: ActivationResult): void {
-    this.store.updateAssignment(id, 'running', { pendingOutcome: result });
+    this.store.updateAssignment(id, this.store.assignment(id).status, { pendingOutcome: result });
     this.apply(id, result);
     this.store.updateAssignment(id, this.store.assignment(id).status, {
       pendingOutcome: null,

@@ -131,6 +131,7 @@ export class ProjectHost {
     this.store.updateRun(run.id, 'running', {
       candidateRevision: this.latestCandidate(),
       authorityBase: this.context.base,
+      packageId: this.context.packageId,
     });
     return this.store.run(run.id);
   }
@@ -391,10 +392,6 @@ export class ProjectHost {
 
   /** Keeps the candidate revision and its verified workspace evidence paired across run handoffs. */
   private latestDelivery(): ExecutionRun | undefined {
-    return this.store
-      .runs()
-      .filter((r) => r.data.authorityBase === this.context.base && r.data.verifiedEvidence)
-      .sort((a, b) => String(a.data.promotedAt).localeCompare(String(b.data.promotedAt)))
-      .at(-1);
+    return this.store.latestDelivery(this.context.base, this.context.packageId);
   }
 }

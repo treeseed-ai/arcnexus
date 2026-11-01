@@ -84,6 +84,30 @@ class InboxScenarios {
     assert.equal(store.assignment(a.id).data.pendingOutcome, null);
   }
 
+  /** Duplicate crash-recovery delivery cannot rewind the accumulated candidate after later verified work. */
+  promotions(t: TestContext): void {
+    const store = this.store(t);
+    const first = store.createRun('task', ['a'], 'First');
+    const second = store.createRun('task', ['a'], 'Second');
+    for (const run of [first, second])
+      store.updateRun(run.id, 'running', { authorityBase: 'base', packageId: 'package' });
+    const a = store.enqueue(first.id, 'a', 'First change');
+    const b = store.enqueue(second.id, 'a', 'Next change');
+    const candidate = { candidateRevision: 'first', verifiedEvidence: ['first proof'] };
+    store.complete(a.id, ['first proof'], candidate);
+    store.complete(b.id, ['second proof'], {
+      candidateRevision: 'second',
+      verifiedEvidence: ['second proof'],
+    });
+    const scheduler = new Scheduler(store, async () => {
+      throw new Error('No model replay');
+    });
+    scheduler.commit(a.id, { kind: 'completed', evidence: ['first proof'], candidate });
+    assert.equal(store.latestDelivery('base', 'package')!.data.candidateRevision, 'second');
+    assert.equal(store.assignment(a.id).status, 'completed');
+    assert.throws(() => store.complete(a.id, ['forged proof'], candidate), /disagrees/);
+  }
+
   /** Creates a private store with deterministic cleanup. */
   private store(t: TestContext): ExecutionStore {
     const directory = mkdtempSync(join(tmpdir(), 'arcnexus-inbox-'));
@@ -103,5 +127,8 @@ test('inbox acceptance milestones and atomic fan-out', (t) => scenarios.mileston
 test('correlated clarification and transitive rejection', (t) => scenarios.decisions(t));
 
 test('durable scheduling outcomes deduplicate crash replay', (t) => scenarios.replay(t));
+
+test('duplicate verified delivery cannot rewind the accumulated candidate', (t) =>
+  scenarios.promotions(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

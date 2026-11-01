@@ -64,7 +64,7 @@ export class InboxDecisions {
     requester.data.questions = ((requester.data.questions ?? []) as InboxDecision[]).filter(
       (q) => q.requestId !== decision.requestId,
     );
-    requester.status = 'waiting';
+    requester.status = (requester.data.questions as InboxDecision[]).length ? 'ready' : 'waiting';
     recipient.data.answer = decision.text;
     delete recipient.data.clarification;
     recipient.status = 'ready';

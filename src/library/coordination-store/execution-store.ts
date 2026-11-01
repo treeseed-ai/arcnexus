@@ -302,23 +302,48 @@ export class ExecutionStore {
   complete(id: string, evidence: string[], candidate?: Record<string, unknown>): void {
     this.db.transaction('assignment.delivered', { id, evidence }, () => {
       const assignment = this.assignment(id);
+      if (assignment.status === 'completed') {
+        if (
+          JSON.stringify(assignment.evidence) !== JSON.stringify(evidence) ||
+          assignment.data.deliveredRevision !== candidate?.candidateRevision
+        )
+          throw new Error('Duplicate delivery disagrees with retained verification');
+        return;
+      }
       if (!evidence.length) throw new Error('Verified delivery requires evidence');
       if (assignment.dependencies.some((dep) => !this.satisfied(assignment, dep)))
         throw new Error('Undelivered dependencies');
-      this.db.put('assignment', { ...assignment, status: 'completed', evidence });
-      if (candidate) {
-        const run = this.run(assignment.runId);
-        this.db.put('run', {
-          ...run,
-          data: { ...run.data, ...candidate, promotedAt: new Date().toISOString() },
-        });
-      }
-      for (const dependent of this.assignments(assignment.runId)) {
-        if (dependent.status !== 'waiting') continue;
-        if (dependent.dependencies.every((dep) => this.satisfied(dependent, dep)))
-          this.db.put('assignment', { ...dependent, status: 'ready' });
-      }
+      this.db.put('assignment', {
+        ...assignment,
+        status: 'completed',
+        evidence,
+        data: { ...assignment.data, deliveredRevision: candidate?.candidateRevision },
+      });
+      if (candidate) this.promote(assignment.runId, candidate);
+      this.wake(assignment.runId);
     });
+  }
+
+  /** Advances the project candidate in the same transaction as its verified assignment delivery. */
+  private promote(runId: string, candidate: Record<string, unknown>): void {
+    const run = this.run(runId);
+    this.db.put('candidate', {
+      id: JSON.stringify([run.data.authorityBase, run.data.packageId]),
+      runId,
+    });
+    this.db.put('run', {
+      ...run,
+      data: { ...run.data, ...candidate, promotedAt: new Date().toISOString() },
+    });
+  }
+
+  /** Reads the transactional candidate pointer rather than inferring promotion order from wall-clock timestamps. */
+  latestDelivery(authorityBase: string, packageId: string): ExecutionRun | undefined {
+    const id = JSON.stringify([authorityBase, packageId]);
+    const pointer = this.db
+      .all<{ id: string; runId: string }>('candidate')
+      .find((p) => p.id === id);
+    return pointer ? this.run(pointer.runId) : undefined;
   }
 
   /** Blocks dependents transitively while leaving unrelated work runnable. */
