@@ -89,3 +89,9 @@ deficiencies prevent completion. Workers cannot supply this assessment themselve
 Task goal assessment includes the original external goal and the retained assignment
 criteria; verified owner deliveries alone do not establish whole-goal completion.
 Historical ordinary agent-result review records remain inspectable.
+
+A later prompt may include a retained task UUID to refer to its question, goal,
+assignment outcomes and verified evidence. The director receives that retained
+context explicitly. The invocation still creates a new task and uses current
+captured authority; referencing prior work neither resumes uncertain operations nor
+imports unfinished candidate edits. The referenced task keeps its original outcome.
