@@ -39,7 +39,9 @@ Owner selection first retrieves lexical matches from identities, purposes, inter
 owned paths and declared relationships. The initializer assesses those candidates and
 explains selections, rejections and uncertainty. The host validates proposed owners,
 permissions, checks and dependency direction. It supports one owner or the existing
-sequential two-owner workday. Necessary larger teams require architectural decomposition;
+sequential two-owner workday. A dependency points from the requesting consumer to
+the supplying owner, not in delivery order. Intake receives eligible directed edges
+from captured related-owner declarations and must select that direction. Necessary larger teams require architectural decomposition;
 they are never silently truncated. Retrieval is not an embedding service or database.
 
 Existing explicit assignments may be confirmed or questioned, never silently broadened.
