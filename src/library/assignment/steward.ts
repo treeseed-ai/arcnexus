@@ -96,7 +96,7 @@ export class StewardSession {
     });
     if (!retained) await this.prepare();
     if (this.initialization) this.acceptInitialization();
-    if (!retained && !control?.initialized && !this.initialization)
+    if (!retained && !control?.initialized && !this.initialization && !record.directionAccepted)
       await initializeExecution({
         root,
         record,

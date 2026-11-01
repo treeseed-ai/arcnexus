@@ -54,6 +54,6 @@ export interface InboxRequest extends OwnerRequest {
 
 export type ActivationResult =
   | { kind: 'request'; requests: OwnerRequest[] }
-  | { kind: 'completed'; evidence: string[] }
+  | { kind: 'completed'; evidence: string[]; candidate?: Record<string, unknown> }
   | { kind: 'continue' }
   | { kind: 'blocked'; reason: string };

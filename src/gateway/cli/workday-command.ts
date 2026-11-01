@@ -1,3 +1,4 @@
+import { ExecutionCommand } from './execution-command.js';
 import { resolveWorkday } from '../../library/workday/workday-config.js';
 import { stateRoot } from '../../library/workspace/state.js';
 import { InputError } from '../../library/architecture/config.js';
@@ -16,6 +17,14 @@ export class WorkdayCommand {
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const action = this.positionals[1];
+    if (
+      this.positionals.length === 2 &&
+      ['start', 'pause', 'resume', 'stop', 'status'].includes(action ?? '')
+    ) {
+      if (Object.keys(this.values).length)
+        throw new InputError('Workday controls accept no options');
+      return new ExecutionCommand(this.signal).workday(action!);
+    }
     if (this.positionals.length !== 3)
       throw new InputError('workday requires action and manifest/identity');
     if (action === 'inspect') return this.inspectWorkday();

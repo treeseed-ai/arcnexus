@@ -122,22 +122,38 @@ export class ExecutionStore {
 
   /** Routes a request once; conflicting reuse of a request identity is rejected. */
   request(from: string, request: OwnerRequest): ExecutionAssignment {
-    return this.db.transaction('request.delivered', { from, request }, () => {
-      const existing = this.db
-        .all<InboxRequest>('request')
-        .find((item) => item.from === from && item.key === request.key);
-      if (existing) return this.repeated(existing, request);
-      const sender = this.assignment(from);
-      const recipient = this.create(
-        sender.runId,
-        request.owner,
-        request.objective,
-        request.acceptance,
-      );
-      this.db.put('request', { ...request, id: randomUUID(), from, assignmentId: recipient.id });
-      this.connect(sender, recipient);
-      return recipient;
-    });
+    return this.requests(from, [request])[0]!;
+  }
+
+  /** Delivers an entire fan-out atomically so invalid recipients cannot leave partial dispatch. */
+  requests(from: string, requests: OwnerRequest[]): ExecutionAssignment[] {
+    return this.db.transaction('requests.delivered', { from, requests }, () =>
+      requests.map((request) => this.route(from, request)),
+    );
+  }
+
+  /** Routes within the caller's transaction, preserving request identity and recipient intent. */
+  private route(from: string, request: OwnerRequest): ExecutionAssignment {
+    const existing = this.db
+      .all<InboxRequest>('request')
+      .find((item) => item.from === from && item.key === request.key);
+    if (existing) return this.repeated(existing, request);
+    const sender = this.assignment(from);
+    const recipient = this.create(
+      sender.runId,
+      request.owner,
+      request.objective,
+      request.acceptance,
+    );
+    const proposal = sender.data.proposal as Record<string, unknown> | undefined;
+    recipient.data.proposal = {
+      kind: proposal?.kind ?? 'change',
+      changeType: proposal?.changeType ?? 'behavior',
+    };
+    this.db.put('assignment', recipient);
+    this.db.put('request', { ...request, id: randomUUID(), from, assignmentId: recipient.id });
+    this.connect(sender, recipient);
+    return recipient;
   }
 
   /** Rejects accidental mutation of an already delivered request. */
@@ -177,13 +193,20 @@ export class ExecutionStore {
   }
 
   /** Marks verified delivery and wakes all satisfied dependents in the same transaction. */
-  complete(id: string, evidence: string[]): void {
+  complete(id: string, evidence: string[], candidate?: Record<string, unknown>): void {
     this.db.transaction('assignment.delivered', { id, evidence }, () => {
       const assignment = this.assignment(id);
       if (!evidence.length) throw new Error('Verified delivery requires evidence');
       if (assignment.dependencies.some((dep) => this.assignment(dep).status !== 'completed'))
         throw new Error('Undelivered dependencies');
       this.db.put('assignment', { ...assignment, status: 'completed', evidence });
+      if (candidate) {
+        const run = this.run(assignment.runId);
+        this.db.put('run', {
+          ...run,
+          data: { ...run.data, ...candidate, promotedAt: new Date().toISOString() },
+        });
+      }
       for (const dependent of this.assignments(assignment.runId)) {
         if (dependent.status !== 'waiting') continue;
         if (dependent.dependencies.every((dep) => this.assignment(dep).status === 'completed'))

@@ -25,6 +25,7 @@ export class CandidateSnapshots {
       this.git(workspace, ['read-tree', parent], env);
       this.git(workspace, ['add', '-A', '--', '.'], env);
       const tree = this.git(workspace, ['write-tree'], env);
+      if (tree === this.git(workspace, ['rev-parse', `${parent}^{tree}`])) return parent;
       return this.commit(tree, [parent]);
     } finally {
       rmSync(index, { force: true });

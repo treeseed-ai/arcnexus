@@ -61,6 +61,7 @@ ownership:
     - docs/library/execution-runtime
     - architecture/components/execution-runtime.yaml
   publicModules:
+    - src/library/execution-runtime/host-client.ts
     - src/library/execution-runtime/project-host.ts
     - src/library/execution-runtime/scheduler.ts
   directoryExceptions:

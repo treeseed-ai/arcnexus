@@ -2,6 +2,8 @@ import { parseArgs } from 'node:util';
 import { InputError } from '../../library/architecture/config.js';
 
 export const help = `ArcNexus
+  workday start|pause|resume|stop|status
+  task run "<prompt>"
   test inspect|run [component-id] --project <repository> [--level unit|integration|acceptance] [--category regression] [--tag <tag>] [--json]
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
   workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]

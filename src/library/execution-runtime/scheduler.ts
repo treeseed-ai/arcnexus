@@ -34,12 +34,12 @@ export class Scheduler {
 
   /** Translates structured results into durable transitions; completion requires verification evidence. */
   private apply(id: string, result: ActivationResult): void {
-    if (result.kind === 'completed') this.store.complete(id, result.evidence);
+    if (result.kind === 'completed') this.store.complete(id, result.evidence, result.candidate);
     else if (result.kind === 'blocked') this.store.fail(id, 'blocked', result.reason);
     else if (result.kind === 'continue') this.store.updateAssignment(id, 'ready');
     else {
       if (!result.requests.length) throw new Error('Yield requires at least one request');
-      for (const request of result.requests) this.store.request(id, request);
+      this.store.requests(id, result.requests);
     }
   }
 }
