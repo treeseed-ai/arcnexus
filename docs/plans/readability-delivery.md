@@ -69,3 +69,9 @@ passing lines. Keep the 16-KiB model-facing bound, include a diagnostic window a
 trailing output when truncated, and retain the complete log reference. Shared test
 results, finite operation feedback and corrective prompts use the same excerpt
 service. Add deterministic late-failure coverage before repeating live qualification.
+
+The second invocation stopped at its baseline before inference: the newly supplied
+log filename changed the loop fingerprint on every attempt. Retained-log references
+are feedback metadata, not material progress. Keep them visible to the steward but
+outside the diagnostic used to compare repeated failed checkpoints. The existing
+built-CLI repeated-checkpoint acceptance is the regression for this distinction.
