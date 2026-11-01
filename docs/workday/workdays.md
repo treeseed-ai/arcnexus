@@ -51,10 +51,10 @@ regression evidence, attempt/operation counters, consumed active time, authority
 and candidate evidence. Standalone execution uses the same session engine. A checkpoint
 is inspection evidence, not authorization to recover a process or reset a budget.
 
-The runtime routes one dependency request, permits at most two clarification
-rounds, and parks/restores unfinished requester changes. Acceptance is distinct from
-verified delivery. Each assignment retains 900 seconds of cumulative active execution;
-the workday has a 2,400-second wall-clock deadline. Cancellation/interruption retains
+The runtime routes one dependency request and parks/restores unfinished requester
+changes. Clarification is governed by observable loop guards, not a default round
+quota. Acceptance is distinct from verified delivery. Assignment active time and
+workday wall-clock time remain observable; neither has an implicit deadline. Cancellation/interruption retains
 partial evidence and stops dispatch. No resume command or background activation exists.
 
 ## Routed execution
@@ -76,9 +76,9 @@ are bounded to 16 KiB. A request may not replace the captured recipient objectiv
 checks. Accept commits intent only; delivery is created by the host after verification.
 
 The recipient decides during its read-only planning turn. Clarification and replies
-are read-only and cannot activate a third owner. One dependency and two clarification
-rounds are permitted. The six workday coordination/continuation turns are additional
-to existing engineering turns; every turn is counted once. Attempts, operation calls,
+are read-only and cannot activate a third owner. One dependency is permitted; clarification
+and coordination have no default turn quota. Every turn is counted once, with
+explicit caller limits enforced when present. Attempts, operation calls,
 plans and frozen tests persist. Incomplete activities continue in the same thread and
 attempt; a completed specification still passes the expected-red gate. A review that
 yields must inspect the assembled candidate again when it resumes.

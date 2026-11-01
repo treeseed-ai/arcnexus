@@ -1,6 +1,6 @@
 # Managed workspaces
 
-Phase-one contract: Linux/POSIX, Node 22 and Git installed on the host.
+Supported host: Linux/POSIX, Node 22.13 or newer within Node 22, and Git.
 Build with `npm ci && npm run build`; invoke `node dist/cli.js`.
 
 `arcnexus prepare --project /absolute/repository [--base ref] [--issue number]`
@@ -17,18 +17,25 @@ After a hard interruption, inspect the lock's PID and retained record; only afte
 confirming the process is gone may the caller remove the stale lock. No automatic
 recovery is attempted. State is private to the current OS user.
 
-Commit `architecture/environment.json` in the target repository:
+Commit `architecture/environment.yaml` in the target repository:
 
-```json
-{
-  "schemaVersion": 1,
-  "prerequisites": [{"command": "node", "args": ["--version"]}],
-  "setup": [{"command": "npm", "args": ["ci"]}],
-  "generatedDirectories": ["node_modules", "dist"]
-}
+```yaml
+schemaVersion: 3
+prerequisites:
+  - command: node
+    args:
+      - --version
+setup:
+  - command: npm
+    args:
+      - ci
+generatedDirectories:
+  - node_modules
+  - dist
 ```
 
-Version 1 and all three arrays are required. Commands run without a shell from the worktree root,
+Schema versions 1, 2 and 3 remain readable; use version 3 for new configuration.
+All three arrays are required. Commands run without a shell from the worktree root,
 using installed host tools and normal environment credentials. Setup commands are
 trusted project code and can use the network. They must not change tracked files;
 new outputs must be ignored by Git and inside declared generated directories.
@@ -37,8 +44,8 @@ Submodules are unsupported in this initial slice. No system runtimes are install
 
 Records snapshot the configuration, base, source, branch, timestamps and command
 results. Full stdout/stderr is retained in per-command logs. Failed and cancelled
-workspaces remain available. Each command has a 120-second limit and preparation
-has a 900-second overall limit (`--timeout-seconds` can shorten/extend the latter).
+workspaces remain available. Commands and preparation have no implicit deadline. Optional captured command
+limits and `--timeout-seconds` are enforced when explicitly supplied.
 SIGINT exits 130; invalid/preflight input exits 2; operational failures exit 1.
 Successful preparation exits 0 and prints the record, including workspace ID/path.
 Cleanup refuses changed tracked/untracked files and unknown ignored files (including

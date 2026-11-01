@@ -2,34 +2,46 @@
 
 `arcnexus run <component-id> "<objective>" --project <repository>` creates a fresh
 managed worktree and prepares its environment. Optional flags: `--base`, `--issue`,
-`--model`, `--timeout-seconds`, and `--codex-path`. Workspace rules and cleanup are
+`--model`, `--initializer-model`, `--timeout-seconds`, `--max-attempts`, and `--codex-path`. Workspace rules and cleanup are
 in [workspaces.md](../workspace/workspaces.md). Default model: `gpt-6-luna`; reasoning: medium;
-overall limit: 900 seconds. Verification commands have a 120-second individual limit.
+execution limits are optional and unset by default. Explicit caller limits remain enforced.
 
-Commit a definition at `architecture/components/<id>.json`:
+Commit a definition at `architecture/components/<id>.yaml`:
 
-```json
-{
-  "schemaVersion": 1,
-  "repository": "identity",
-  "role": "systems-engineer",
-  "executionProfile": "luna",
-  "interfaces": [],
-  "documentation": ["README.md"],
-  "tests": ["tests"],
-  "relatedIds": [],
-  "questions": [],
-  "patterns": [],
-  "id": "identity",
-  "type": "library",
-  "purpose": "Session expiration semantics",
-  "path": "src",
-  "objectives": ["Predictable expiration boundaries"],
-  "constraints": ["No network access needed"],
-  "allowedWritePaths": ["src", "tests", "README.md"],
-  "access": {"readPaths": ["."], "writeDirectories": ["."]},
-  "verification": [{"command": "npm", "args": ["test"]}]
-}
+```yaml
+schemaVersion: 3
+repository: identity
+role: systems-engineer
+executionProfile: luna
+interfaces: []
+documentation:
+  - README.md
+tests:
+  - tests
+relatedIds: []
+questions: []
+patterns: []
+id: identity
+type: library
+purpose: Session expiration semantics
+path: src
+objectives:
+  - Predictable expiration boundaries
+constraints:
+  - No network access needed
+allowedWritePaths:
+  - src
+  - tests
+  - README.md
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - .
+verification:
+  - command: npm
+    args:
+      - test
 ```
 
 Commit matching role and execution profile definitions as in the
@@ -40,9 +52,10 @@ hyphen. Library, gateway and foundation responsibilities can execute. Paths are 
 or directories, not globs. Definitions and verification commands are captured before
 setup/agent execution; changing them cannot authorize new work in that execution.
 
-The steward follows [host-checked activities](../assignment/steward-workflow.md): specification
-and regression tests, implementation, then read-only review in the same thread.
-Research/review assignments use one read-only turn and can succeed without edits. The caller owns Git commits, issues, PRs and integration. The runtime
+After mandatory read-only initialization, the steward follows
+[host-checked activities](../assignment/steward-workflow.md): planning, specification
+and regression tests, implementation, then read-only review in the same worker thread.
+Research/review assignments use planning plus one read-only execution turn and can succeed without edits. The caller owns Git commits, issues, PRs and integration. The runtime
 never embeds ArcNexus repository policy in generic target prompts. Read target
 instructions normally; report conflicts rather than claiming unperformed work.
 
@@ -97,10 +110,11 @@ verification handoff and exact prompt/configuration evidence.
 Every definition must declare [component filesystem access](../architecture/component-access.md);
 whole-worktree access is allowed only when explicitly declared as `.`.
 
-See [bounded corrective attempts](../assignment/corrective-attempts.md) for opt-in `--max-attempts 2`.
+Use `--max-attempts <positive-integer>` only when a caller wants an explicit attempt ceiling.
+See [progress and limits](../assignment/progress.md) for corrective work and loop guards.
 
 Workflow evidence lives in `activities.jsonl` and `turns/<n>/`. Implementation
 attempts are counted separately from activity turns. See the workflow reference
-for four planned turns (including planning) and six maximum with opt-in correction.
-[Workdays](../workday/workdays.md) retain those engineering allowances per assignment and add
-a shared, bounded coordination/continuation allowance; handoffs do not reset counters.
+for planned engineering stages and finding-driven corrective work.
+[Workdays](../workday/workdays.md) retain per-assignment accounting and captured optional
+limits; handoffs do not reset counters. Neither mode imposes an implicit turn ceiling.
