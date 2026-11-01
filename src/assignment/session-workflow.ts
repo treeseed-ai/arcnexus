@@ -63,7 +63,11 @@ export class SessionWorkflow {
   private async change(): Promise<void> {
     await this.specification();
     let feedback = '';
-    for (let attempt = 1; attempt <= this.state.options.maxAttempts; attempt++) {
+    for (
+      let attempt = 1;
+      this.state.options.maxAttempts === undefined || attempt <= this.state.options.maxAttempts;
+      attempt++
+    ) {
       await this.implement(attempt, feedback);
       const failed = await this.checkImplementation(attempt);
       if (failed !== undefined) {

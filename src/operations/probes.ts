@@ -1,3 +1,4 @@
+import { milliseconds } from '../architecture/config.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { realpathSync } from 'node:fs';
@@ -18,7 +19,7 @@ export async function prepareCapabilities(
   signal: AbortSignal,
 ): Promise<void> {
   const resolved = record.resolvedAssignment as ResolvedAssignment;
-  if (resolved.executionProfile.schemaVersion !== 2) return;
+  if (resolved.executionProfile.schemaVersion < 2) return;
   await new CapabilityProbes(root, record, signal, resolved).run();
 }
 
@@ -81,7 +82,7 @@ class CapabilityProbes {
       signal,
       {
         env: operationEnvironment(record),
-        timeoutMs: resolved.executionProfile.commandTimeoutSeconds * 1000,
+        timeoutMs: milliseconds(resolved.executionProfile.commandTimeoutSeconds),
       },
     );
   }

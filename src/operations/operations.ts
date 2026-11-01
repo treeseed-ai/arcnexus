@@ -2,7 +2,7 @@ import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 
 import { join, relative } from 'node:path';
 import { digest, type ResolvedAssignment } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
-import type { Command } from '../architecture/config.js';
+import { milliseconds, minimumLimit, type Command } from '../architecture/config.js';
 import { observe } from '../report/timeline.js';
 import type { BridgeTool } from '../steward/bridge.js';
 import { save, type RecordData } from '../workspace/state.js';
@@ -11,14 +11,14 @@ import { execute, type CommandResult } from './process.js';
 import { ServiceManager, type HttpDefinition, type ServiceDefinition } from './services.js';
 export { operationEnvironment } from './environment.js';
 export type Operation = {
-  schemaVersion: 2;
+  schemaVersion: 2 | 3;
   id: string;
   purpose: string;
   repository: string;
   cwd: string;
   category: string;
   activities: string[];
-  timeoutSeconds: number;
+  timeoutSeconds?: number;
   generatedDirectories: string[];
   artifacts: string[];
   probes: Command[];
@@ -89,7 +89,7 @@ class OperationRuntime {
     if (args && Object.keys(args).length) throw new Error('Operation listing accepts no arguments');
     return {
       operations: this.resolved.operations,
-      budget: this.resolved.executionProfile.maxOperationCalls ?? 24,
+      budget: this.resolved.executionProfile.maxOperationCalls ?? null,
       used: this.record.operationCalls,
     };
   }
@@ -136,7 +136,10 @@ class OperationRuntime {
     record.operationCalls = Number(record.operationCalls) + 1;
     observe(root, record, 'operation.requested', { number: record.operationCalls, args });
     save(root, record);
-    if (Number(record.operationCalls) > (resolved.executionProfile.maxOperationCalls ?? 24))
+    if (
+      resolved.executionProfile.maxOperationCalls !== undefined &&
+      Number(record.operationCalls) > resolved.executionProfile.maxOperationCalls
+    )
       throw new Error('Operation request budget exhausted');
   }
 
@@ -221,10 +224,12 @@ class OperationRuntime {
       return this.services.check(
         op,
         log,
-        AbortSignal.any([
-          signal,
-          AbortSignal.timeout(Math.max(1, Math.floor(op.timeoutSeconds * 1000))),
-        ]),
+        op.timeoutSeconds === undefined
+          ? signal
+          : AbortSignal.any([
+              signal,
+              AbortSignal.timeout(Math.max(1, Math.floor(op.timeoutSeconds * 1000))),
+            ]),
       );
     const command = targetCommand(record, {
       command: op.command,
@@ -232,8 +237,9 @@ class OperationRuntime {
     });
     return execute(command, cwd, log, signal, {
       env: operationEnvironment(record),
-      timeoutMs:
-        Math.min(op.timeoutSeconds, resolved.executionProfile.commandTimeoutSeconds) * 1000,
+      timeoutMs: milliseconds(
+        minimumLimit(op.timeoutSeconds, resolved.executionProfile.commandTimeoutSeconds),
+      ),
     });
   }
 

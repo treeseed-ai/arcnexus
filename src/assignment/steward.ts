@@ -50,7 +50,7 @@ export class StewardSession {
     private readonly model: string,
     private readonly executable: string,
     private readonly signal: AbortSignal,
-    private readonly maxAttempts = 1,
+    private readonly maxAttempts?: number,
     private readonly control?: SessionControl,
   ) {}
   async run(): Promise<void> {
@@ -104,7 +104,7 @@ export async function runSteward(
   model: string,
   executable: string,
   signal: AbortSignal,
-  maxAttempts = 1,
+  maxAttempts?: number,
 ): Promise<void> {
   await new StewardSession(
     root,

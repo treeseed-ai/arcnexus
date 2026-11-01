@@ -25,7 +25,7 @@ export class CodexExecution {
   }
 
   async run(): Promise<AgentResult> {
-    this.configuration.capture();
+    await this.configuration.capture();
     await this.configuration.preflight();
     const thread = this.thread(await this.tools.open());
     this.input.signal.addEventListener('abort', this.abort, { once: true });
@@ -99,7 +99,7 @@ export class CodexExecution {
     );
     this.checkCoordination(result);
     if (
-      profile?.schemaVersion === 2 &&
+      (profile?.schemaVersion ?? 1) >= 2 &&
       (!Object.hasOwn(result, 'plan') || !Array.isArray(result.planUpdates))
     )
       throw new Error('Planned response requires plan and planUpdates');

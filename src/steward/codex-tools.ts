@@ -30,7 +30,7 @@ export class CodexTools {
   }
 
   async open(): Promise<object> {
-    if (this.configuration.profile?.schemaVersion !== 2) return {};
+    if ((this.configuration.profile?.schemaVersion ?? 1) < 2) return {};
     const { operations } = this.configuration.input;
     this.bridge = await openBridge(
       [...(operations?.tools ?? []), planTool],
@@ -59,7 +59,9 @@ export class CodexTools {
   private update(args: unknown) {
     const { root, record } = this.configuration.input;
     record.planUpdateCalls = Number(record.planUpdateCalls ?? 0) + 1;
-    if (Number(record.planUpdateCalls) > 24) throw new Error('Plan update budget exhausted');
+    const limit = this.configuration.profile?.maxChecklistCalls;
+    if (limit !== undefined && Number(record.planUpdateCalls) > limit)
+      throw new Error('Plan update budget exhausted');
     if (record.stage === 'planning') throw new Error('Plan updates require an accepted plan');
     if (
       !args ||

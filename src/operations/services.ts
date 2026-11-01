@@ -16,7 +16,7 @@ export interface ServiceDefinition {
   port: number;
   readinessPath: string;
   expectedStatus: number;
-  startupTimeoutSeconds: number;
+  startupTimeoutSeconds?: number;
 }
 export interface HttpDefinition {
   serviceId: string;
@@ -34,7 +34,6 @@ export function localRequest(
     const req = request({ hostname: '127.0.0.1', port, path, method: 'GET', signal }, (res) => {
       collectResponse(req, res, resolve, reject);
     });
-    req.setTimeout(1000, () => req.destroy(new Error('HTTP request timed out')));
     req.on('error', reject);
     req.end();
   });
@@ -155,7 +154,10 @@ export class ServiceManager {
   ): Promise<ServiceRecord> {
     const service = op.service!;
     const start = Date.now();
-    while (Date.now() - start < service.startupTimeoutSeconds * 1000) {
+    while (
+      service.startupTimeoutSeconds === undefined ||
+      Date.now() - start < service.startupTimeoutSeconds * 1000
+    ) {
       this.signal.throwIfAborted();
       const record = this.current!;
       if (child.exitCode !== null || record.status === 'stopped' || record.status === 'unresolved')

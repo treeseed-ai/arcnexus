@@ -60,10 +60,8 @@
             "minLength": 1
           },
           "maxAttempts": {
-            "enum": [
-              1,
-              2
-            ]
+            "type": "integer",
+            "minimum": 1
           },
           "acceptance": {
             "type": "array",

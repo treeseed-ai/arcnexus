@@ -14,7 +14,7 @@ import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
 export interface Component {
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   operationIds?: string[];
   id: string;
   type: string;
@@ -44,27 +44,29 @@ export interface Component {
   };
 }
 export interface Role {
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
   id: string;
   purpose: string;
   responsibilities: string[];
   activities: string[];
 }
 export interface ExecutionProfile {
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   id: string;
   model: string;
   reasoning: 'low' | 'medium' | 'high';
   webSearch: 'live' | 'disabled';
-  timeoutSeconds: number;
-  commandTimeoutSeconds: number;
+  timeoutSeconds?: number;
+  commandTimeoutSeconds?: number;
   operationCategories?: string[];
   maxOperationCalls?: number;
-  maxTurns: 3 | 4;
-  maxCorrectiveTurns: 2;
+  maxTurns?: number;
+  maxCorrectiveTurns?: number;
+  maxChecklistCalls?: number;
+  maxAttempts?: number;
 }
 export interface CompositionProfile {
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
   id: string;
   platformId: string;
   packageIds: string[];
@@ -86,7 +88,7 @@ export function validateOperations(
   env: Environment,
 ): void {
   for (const op of operations) {
-    if (profile.schemaVersion !== 2 || !profile.operationCategories?.includes(op.category))
+    if (profile.schemaVersion < 2 || !profile.operationCategories?.includes(op.category))
       throw new InputError('Operation category not permitted by execution profile: ' + op.id);
     for (const path of op.generatedDirectories)
       if (!env.generatedDirectories.includes(path))

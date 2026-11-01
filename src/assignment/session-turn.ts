@@ -67,11 +67,13 @@ export class SessionTurn {
   private begin(activity: string, readOnly: boolean, kind: TurnKind): string | undefined {
     const { root, record, signal, control, maxAttempts } = this.state.options;
     signal.throwIfAborted();
+    const profile = this.state.resolved.executionProfile;
+    const limit =
+      profile.maxTurns === undefined
+        ? undefined
+        : profile.maxTurns + (maxAttempts === 1 ? 0 : (profile.maxCorrectiveTurns ?? 0));
     if (control) control.chargeTurn(kind);
-    else if (
-      this.state.turns.length >=
-      this.state.resolved.executionProfile.maxTurns + (maxAttempts === 2 ? 2 : 0)
-    )
+    else if (limit !== undefined && this.state.turns.length >= limit)
       throw new Error('Workflow turn budget exhausted');
     const before = readOnly ? candidateDigest(record) : undefined;
     beginAttempt(root, record);

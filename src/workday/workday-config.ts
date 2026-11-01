@@ -16,11 +16,13 @@ import { validateSchema } from '../architecture/schema.js';
 interface Participant {
   component: string;
   assignment: string;
-  maxAttempts?: 1 | 2;
+  maxAttempts?: number;
   refresh: Command[];
 }
 interface Definition {
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
+  timeoutSeconds?: number;
+  maxCoordinationTurns?: number;
   requester: Participant;
   recipient: Participant;
   dependency: { from: string; to: string; contract: string; delivery: string };
@@ -28,12 +30,14 @@ interface Definition {
 }
 export interface WorkdayParticipant {
   resolved: ResolvedAssignment;
-  maxAttempts: 1 | 2;
+  maxAttempts?: number;
   refresh: Command[];
 }
 export interface WorkdayInput {
   configurationSources?: import('../architecture/configuration.js').ConfigurationSource[];
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
+  timeoutSeconds?: number;
+  maxCoordinationTurns?: number;
   source: string;
   base: string;
   requester: WorkdayParticipant;
@@ -82,7 +86,9 @@ class WorkdayResolver {
     const acceptance = this.checks(this.definition.acceptance, dirname(this.path));
     const data = {
       configurationSources: this.sources,
-      schemaVersion: 1 as const,
+      schemaVersion: this.definition.schemaVersion,
+      timeoutSeconds: this.definition.timeoutSeconds,
+      maxCoordinationTurns: this.definition.maxCoordinationTurns,
       ...this.selection,
       requester,
       recipient,
@@ -102,8 +108,8 @@ class WorkdayResolver {
       ),
     }));
   }
-  private participant(participant: Participant): WorkdayParticipant {
-    const file = resolve(dirname(this.path), participant.assignment);
+  private assignment(path: string): Assignment {
+    const file = resolve(dirname(this.path), path);
     const source = new ConfigurationReader().file(file);
     this.sources.push(source);
     const value = validateSchema<Assignment>('assignment', structuredClone(source.value));
@@ -112,6 +118,10 @@ class WorkdayResolver {
       ...ref,
       path: resolve(dirname(file), ref.path),
     }));
+    return value;
+  }
+  private participant(participant: Participant): WorkdayParticipant {
+    const value = this.assignment(participant.assignment);
     const resolved = resolveAssignment(
       this.selection.source,
       this.selection.base,
@@ -127,7 +137,11 @@ class WorkdayResolver {
       resolved.executionProfile.reasoning !== 'medium'
     )
       throw new InputError('Workdays require Luna/medium profiles');
-    return { resolved, maxAttempts: participant.maxAttempts ?? 1, refresh: participant.refresh };
+    return {
+      resolved,
+      maxAttempts: participant.maxAttempts ?? resolved.executionProfile.maxAttempts,
+      refresh: participant.refresh,
+    };
   }
   private validateOwners(requester: WorkdayParticipant, recipient: WorkdayParticipant): void {
     if (

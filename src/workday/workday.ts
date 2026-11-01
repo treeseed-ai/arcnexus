@@ -1,3 +1,4 @@
+import { milliseconds } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -35,7 +36,13 @@ export class WorkdayRunner {
     this.validate(input);
     this.state.input = input;
     const timeout = new AbortController();
-    const timer = setTimeout(() => timeout.abort(new Error('Workday deadline exhausted')), 2400000);
+    const timer =
+      input.timeoutSeconds === undefined
+        ? undefined
+        : setTimeout(
+            () => timeout.abort(new Error('Workday deadline exhausted')),
+            milliseconds(input.timeoutSeconds),
+          );
     this.state.signal = AbortSignal.any([this.state.parentSignal, timeout.signal]);
     try {
       await this.initialize(issue);
@@ -58,9 +65,7 @@ export class WorkdayRunner {
   private validate(input: WorkdayInput): void {
     const { digest: hash, ...captured } = input;
     if (
-      [input.requester, input.recipient].some(
-        (p) => p.resolved.executionProfile.schemaVersion !== 2,
-      )
+      [input.requester, input.recipient].some((p) => p.resolved.executionProfile.schemaVersion < 2)
     )
       throw new InputError('Workday execution requires planned version-2 profiles');
     if (digest(JSON.stringify(captured)) !== hash) throw new InputError('Captured workday changed');
@@ -130,7 +135,7 @@ export class WorkdayRunner {
       record = this.createRecord(participant);
     const budget = new ActiveBudget(
       state.signal,
-      Math.min(900, participant.resolved.executionProfile.timeoutSeconds) * 1000,
+      milliseconds(participant.resolved.executionProfile.timeoutSeconds),
     );
     const owner = new Owner(participant, record, budget);
     const control = this.control(owner);
@@ -172,15 +177,20 @@ export class WorkdayRunner {
 
   private chargeTurn(owner: Owner, kind: 'coordination' | 'engineering'): void {
     if (kind === 'coordination') {
-      if (++this.state.coordinationTurns > 6) throw new Error('Coordination turn budget exhausted');
-    } else if (
-      ++owner.engineering >
-      Math.min(
-        owner.participant.resolved.executionProfile.maxTurns,
-        owner.participant.resolved.assignment.kind === 'change' ? 4 : 2,
-      ) +
-        (owner.participant.maxAttempts === 2 ? 2 : 0)
-    )
+      this.state.coordinationTurns++;
+      const limit = this.state.input.maxCoordinationTurns;
+      if (limit !== undefined && this.state.coordinationTurns > limit)
+        throw new Error('Coordination turn budget exhausted');
+      return;
+    }
+    owner.engineering++;
+    const profile = owner.participant.resolved.executionProfile;
+    const limit =
+      profile.maxTurns === undefined
+        ? undefined
+        : profile.maxTurns +
+          (owner.participant.maxAttempts === 1 ? 0 : (profile.maxCorrectiveTurns ?? 0));
+    if (limit !== undefined && owner.engineering > limit)
       throw new Error('Engineering turn budget exhausted');
   }
 

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { digest } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
-import { type Command } from '../architecture/config.js';
+import { milliseconds, type Command } from '../architecture/config.js';
 import { candidateDigest } from '../assignment/checkpoints.js';
 import { StewardSession } from '../assignment/steward.js';
 import { WorkdayStore, type Message } from '../coordination-store/workday-store.js';
@@ -67,7 +67,12 @@ export class WorkdayContext {
       clarificationRounds: this.clarificationRounds,
       routingMs: this.routingMs,
       parking: { status: this.parking.status, path: this.parking.path },
-      budgets: { workdaySeconds: 2400, assignmentSeconds: 900 },
+      budgets: {
+        workdaySeconds: this.input.timeoutSeconds ?? null,
+        assignmentSeconds: this.owners.map(
+          (owner) => owner.participant.resolved.executionProfile.timeoutSeconds ?? null,
+        ),
+      },
       inputHash: this.input.digest,
       evidenceMode: this.workspace.evidenceMode,
     };
@@ -157,10 +162,7 @@ export class WorkdayContext {
       log,
       owner.budget.signal,
       {
-        timeoutMs: Math.min(
-          120000,
-          owner.participant.resolved.executionProfile.commandTimeoutSeconds * 1000,
-        ),
+        timeoutMs: milliseconds(owner.participant.resolved.executionProfile.commandTimeoutSeconds),
         env: operationEnvironment(owner.record),
       },
     );

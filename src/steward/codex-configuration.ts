@@ -2,6 +2,7 @@ import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
+import { milliseconds } from '../architecture/config.js';
 import { targetEnvironment, toolDirectories } from '../architecture/bindings.js';
 import { preparePermissions, type AccessPolicy } from '../architecture/permissions.js';
 import type { Plan } from '../assignment/plan.js';
@@ -54,13 +55,13 @@ export class CodexConfiguration {
     const schema = JSON.parse(
       readFileSync(new URL('../../schemas/agent-result.json', import.meta.url), 'utf8'),
     );
-    if (this.profile?.schemaVersion === 2) schema.required = Object.keys(schema.properties);
+    if ((this.profile?.schemaVersion ?? 1) >= 2) schema.required = Object.keys(schema.properties);
     else {
       delete schema.properties.plan;
       delete schema.properties.planUpdates;
     }
     const plan = this.input.record.plan as Plan | undefined;
-    if (this.profile?.schemaVersion === 2 && plan)
+    if ((this.profile?.schemaVersion ?? 1) >= 2 && plan)
       schema.properties.planUpdates.items.properties.id.enum = plan.items.map((item) => item.id);
     if (this.input.record.workdayId) {
       schema.properties.coordination = this.coordinationSchema();
@@ -174,14 +175,14 @@ export class CodexConfiguration {
       webSearch: this.profile?.webSearch ?? 'live',
       nestedDelegation: false,
       managedTools:
-        this.profile?.schemaVersion === 2
+        (this.profile?.schemaVersion ?? 1) >= 2
           ? ['plan.update', ...(this.input.operations?.tools.map((t) => t.name) ?? [])]
           : [],
       executable: this.env.ARCNEXUS_CODEX_EXECUTABLE!,
     };
   }
 
-  capture(): void {
+  async capture(): Promise<void> {
     appendFileSync(join(this.dir, 'events.jsonl'), '', { mode: 0o600 });
     writeFileSync(
       this.launcher,
@@ -189,7 +190,7 @@ export class CodexConfiguration {
       { mode: 0o700 },
     );
     const { root, record, prompt } = this.input;
-    persistExecutionEvidence(
+    await persistExecutionEvidence(
       root,
       record,
       prompt,
@@ -197,6 +198,7 @@ export class CodexConfiguration {
       this.settings,
       this.schema,
       this.env,
+      this.input.signal,
     );
     record.settings = this.settings;
     record.attemptReportedUsage = undefined;
@@ -241,7 +243,10 @@ export class CodexConfiguration {
       record.workspace,
       join(this.dir, `sandbox-preflight-${turn}.log`),
       signal,
-      { env: { ...this.env, CODEX_HOME: home }, timeoutMs: 5000 },
+      {
+        env: { ...this.env, CODEX_HOME: home },
+        timeoutMs: milliseconds(this.profile?.commandTimeoutSeconds),
+      },
     );
   }
 }

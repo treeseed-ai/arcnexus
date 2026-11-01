@@ -37,7 +37,7 @@ export interface EvidenceSnapshot extends PriorEvidence {
 }
 export interface Assignment {
   priorEvidence?: PriorEvidence[];
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   operationIds?: string[];
   objective: string;
   kind: 'change' | 'research' | 'review';

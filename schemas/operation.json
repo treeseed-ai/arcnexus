@@ -4,7 +4,10 @@
   "additionalProperties": false,
   "properties": {
     "schemaVersion": {
-      "const": 2
+      "enum": [
+        2,
+        3
+      ]
     },
     "id": {
       "type": "string",
@@ -60,7 +63,7 @@
     "timeoutSeconds": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "maximum": 120
+      "maximum": 2147483
     },
     "generatedDirectories": {
       "type": "array",
@@ -122,14 +125,13 @@
         "startupTimeoutSeconds": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "maximum": 120
+          "maximum": 2147483
         }
       },
       "required": [
         "port",
         "readinessPath",
-        "expectedStatus",
-        "startupTimeoutSeconds"
+        "expectedStatus"
       ]
     },
     "http": {
@@ -166,7 +168,6 @@
     "cwd",
     "category",
     "activities",
-    "timeoutSeconds",
     "generatedDirectories",
     "artifacts",
     "probes"
@@ -264,14 +265,13 @@
               "startupTimeoutSeconds": {
                 "type": "number",
                 "exclusiveMinimum": 0,
-                "maximum": 120
+                "maximum": 2147483
               }
             },
             "required": [
               "port",
               "readinessPath",
-              "expectedStatus",
-              "startupTimeoutSeconds"
+              "expectedStatus"
             ]
           },
           "http": false

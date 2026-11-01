@@ -95,7 +95,7 @@ export class ExperimentRunner {
     args: string[],
     prefix: string,
     cwd: string,
-    timeoutMs: number,
+    timeoutMs: number | undefined,
     mode: string,
   ): Promise<Execution> {
     const stdout = prefix + '.stdout',
@@ -108,7 +108,7 @@ export class ExperimentRunner {
           env,
           stdout,
           stderr,
-          killGraceMs: timeoutMs > 120000 ? 2000 : 300,
+          killGraceMs: 2000,
         })),
         stdout,
         stderr,
@@ -203,7 +203,7 @@ export class ExperimentRunner {
         args,
         join(c.directory, 'execution'),
         c.directory,
-        c.workdayPath ? 2420000 : 920000,
+        undefined,
         input.evidenceMode,
       );
       const report = this.captureReport(c, entry);
@@ -310,7 +310,7 @@ export class ExperimentRunner {
         check.args.map((arg) => arg.replaceAll('{report}', entry.reportPath!)),
         join(c.directory, `acceptance-${index}`),
         c.directory,
-        120000,
+        undefined,
         input.evidenceMode,
       );
       entry.acceptance.push(result);

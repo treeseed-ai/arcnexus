@@ -18,7 +18,7 @@ import { lock, save, stateRoot, type RecordData } from '../workspace/state.js';
 import { cleanup, createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
 
 const help = `ArcNexus
-  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
   workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]
   workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
   workday status <workday-id> [--json]
@@ -85,7 +85,7 @@ class CliApplication {
   private values: ReturnType<typeof argumentsForCommand>['values'] = {};
   private positionals: string[] = [];
   private command = '';
-  private seconds = 900;
+  private seconds?: number;
   private record?: RecordData;
   private root?: string;
   private unlock?: () => void;
@@ -143,13 +143,19 @@ class CliApplication {
       return;
     }
     const root = this.acquire();
-    this.timer = setTimeout(
-      () => this.controller.abort(new Error('Operation timed out')),
-      (input.resolved?.executionProfile.timeoutSeconds ?? this.seconds) * 1000,
-    );
+    this.startTimer(input.resolved?.executionProfile.timeoutSeconds);
     if (this.command === 'cleanup')
       console.log(JSON.stringify(cleanup(root, this.positionals[1]!)));
     else await this.execute(input, root);
+  }
+
+  private startTimer(seconds?: number): void {
+    const timeout = seconds ?? this.seconds;
+    if (timeout !== undefined)
+      this.timer = setTimeout(
+        () => this.controller.abort(new Error('Operation timed out')),
+        timeout * 1000,
+      );
   }
 
   private acquire(): string {
@@ -294,9 +300,11 @@ class CliApplication {
       throw new InputError(help);
     if (
       values['max-attempts'] !== undefined &&
-      (command !== 'run' || !/^[12]$/.test(values['max-attempts']))
+      (command !== 'run' ||
+        !/^[1-9]\d*$/.test(values['max-attempts']) ||
+        !Number.isSafeInteger(Number(values['max-attempts'])))
     )
-      throw new InputError('--max-attempts is run-only and accepts 1 or 2');
+      throw new InputError('--max-attempts is run-only and requires a positive integer');
     if (command === 'prepare' && (!values.project || positionals.length !== 1))
       throw new InputError('prepare requires --project');
     if (
@@ -315,7 +323,9 @@ class CliApplication {
     const { values } = this;
     if (values.issue && !/^[1-9]\d*$/.test(values.issue))
       throw new InputError('Invalid issue number');
-    const seconds = (this.seconds = Number(values['timeout-seconds'] ?? 900));
+    const seconds = (this.seconds =
+      values['timeout-seconds'] === undefined ? undefined : Number(values['timeout-seconds']));
+    if (seconds === undefined) return;
     if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 2_147_483)
       throw new InputError('Invalid timeout');
   }
@@ -394,7 +404,9 @@ class CliApplication {
         resolved!.executionProfile.model,
         values['codex-path'] ?? 'codex',
         this.controller.signal,
-        Number(values['max-attempts'] ?? 1),
+        values['max-attempts'] === undefined
+          ? resolved!.executionProfile.maxAttempts
+          : Number(values['max-attempts']),
       );
     else await prepareWorkspace(root, record, this.controller.signal);
   }

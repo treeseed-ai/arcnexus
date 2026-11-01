@@ -40,7 +40,7 @@ interface DefinitionCase {
   assignment: string;
   expectedOutcome: string;
   acceptance: HostCheck[];
-  maxAttempts?: 1 | 2;
+  maxAttempts?: number;
   faultInjection?: string;
   scenario?: Scenario;
   priorEvidenceIds?: string[];
@@ -61,7 +61,7 @@ export interface ExperimentCase {
   acceptance: HostCheck[];
   bindings?: string;
   issue?: string;
-  maxAttempts?: 1 | 2;
+  maxAttempts?: number;
   faultInjection?: string;
   scenario?: Scenario;
   assignmentDigest?: string;
