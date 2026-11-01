@@ -56,6 +56,36 @@ class BlockedContinuationScenarios {
     assert.equal(record.status, 'needs_attention');
   }
 
+  /** A real worker cycle is diagnosed and continued without creating a replacement owner or invented delivery. */
+  async cycle(t: TestContext): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    const run = host.submit('RECOVER_CYCLE: diagnose the dependency cycle and complete the goal');
+    let blocked: string | undefined;
+    for (let observation = 0; observation < 30; observation++) {
+      await host.tick();
+      const supplier = host.store.assignments(run.id).find((a) => a.owner === 'c');
+      if (supplier?.status === 'blocked') {
+        blocked = supplier.id;
+        assert.match(String(supplier.data.reason), /Blocking dependency cycle/);
+      }
+      if (host.store.run(run.id).status !== 'running') break;
+    }
+    assert.ok(blocked, 'The worker must actually propose a blocking cycle');
+    assert.equal(
+      host.store.run(run.id).status,
+      'completed',
+      JSON.stringify(host.store.run(run.id).data),
+    );
+    assert.equal(host.store.assignments(run.id).length, 3);
+    assert.equal(host.store.assignment(blocked).status, 'completed');
+    assert.match(
+      String(host.store.assignment(blocked).data.continuationReason),
+      /clarified retained scope/,
+    );
+  }
+
   /** Captures one real planned supplier activation before introducing a retained blocker. */
   private async fixture(t: TestContext) {
     const f = new GeneralFixture(t).fixture;
@@ -94,5 +124,8 @@ test('director continuation cannot replay an unsafe checkpoint', (t) => scenario
 
 test('equivalent blocked continuations require diagnosis and material progress', (t) =>
   scenarios.loop(t));
+
+test('worker dependency cycles can be diagnosed and continued through verified delivery', (t) =>
+  scenarios.cycle(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

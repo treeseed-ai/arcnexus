@@ -66,7 +66,7 @@ export class ControlledGeneral {
     const idle = prompt.includes('Self-directed stewardship for');
     const correction = prompt.includes('Goal correction');
     const blocked = prompt.includes('Blocked task diagnosis');
-    if (blocked && prompt.includes('RECOVER_BLOCKED')) return this.continuation(prompt);
+    if (blocked && /RECOVER_BLOCKED|RECOVER_CYCLE/.test(prompt)) return this.continuation(prompt);
     const owner = idle
       ? prompt.match(/Self-directed stewardship for ([a-z]+)/)![1]!
       : correction
@@ -80,7 +80,7 @@ export class ControlledGeneral {
         : [{ id: owner, reason: idle ? 'Reviewed owner; no action' : 'Starting owner' }],
       rejectedOwners: [],
       questions: blocked ? ['Which authorized resolution should replace the blocked work?'] : [],
-      assignments: idle || blocked ? [] : [this.assignment(owner, correction)],
+      assignments: idle || blocked ? [] : [this.assignment(owner, correction, prompt)],
       continuations: [],
       dependency: null,
       architectureProposal: null,
@@ -113,10 +113,13 @@ export class ControlledGeneral {
   }
 
   /** Supplies bounded initial or corrective research without changing the external goal. */
-  private assignment(owner: string, correction: boolean) {
+  private assignment(owner: string, correction: boolean, prompt: string) {
     return {
       ownerId: owner,
-      objective: correction ? 'Additional goal evidence' : 'Research the dependency chain',
+      objective: correction
+        ? 'Additional goal evidence'
+        : (prompt.includes('RECOVER_CYCLE') ? 'RECOVER_CYCLE: ' : '') +
+          'Research the dependency chain',
       kind: 'research',
       changeType: 'behavior',
       acceptanceCriteria: ['Evidence-backed result'],
@@ -130,24 +133,31 @@ export class ControlledGeneral {
     if (prompt.startsWith('Independent read-only verification.')) return this.review(prompt);
     const owner = prompt.match(/active component identity ([a-z]+) as fromComponent/)?.[1];
     const stage = prompt.match(/Activity turn: ([a-z]+)/)?.[1];
+    if (stage === 'planning') return this.planning(result, prompt, owner!);
+    result.planUpdates = [
+      {
+        id: 'research',
+        status: 'completed',
+        evidence: ['source.txt'],
+        explanation: 'Source inspected',
+      },
+    ];
+    return result;
+  }
+
+  /** Emits initial supplier requests, a deliberate cycle, or the accepted retained research plan. */
+  private planning(result: any, prompt: string, owner: string): any {
     if (
-      stage === 'planning' &&
-      owner !== 'c' &&
-      !prompt.includes('Verified dependency deliveries:')
-    ) {
+      owner === 'c' &&
+      prompt.includes('RECOVER_CYCLE') &&
+      !prompt.includes('Use the clarified retained scope')
+    )
+      return this.cycle(result);
+    if (owner !== 'c' && !prompt.includes('Verified dependency deliveries:')) {
       result.status = owner === 'a' ? 'completed' : 'blocked';
       result.blockers = ['Needs supplier evidence'];
-      result.requests = [this.request(owner!)];
-    } else if (stage === 'planning') result.plan = this.plan(prompt);
-    else
-      result.planUpdates = [
-        {
-          id: 'research',
-          status: 'completed',
-          evidence: ['source.txt'],
-          explanation: 'Source inspected',
-        },
-      ];
+      result.requests = [this.request(owner, prompt)];
+    } else result.plan = this.plan(prompt);
     return result;
   }
 
@@ -193,7 +203,7 @@ export class ControlledGeneral {
   }
 
   /** Requests the next owner without predeclaring the full chain to task intake. */
-  private request(owner: string) {
+  private request(owner: string, prompt: string) {
     return {
       assignmentId: null,
       kind: null,
@@ -202,11 +212,23 @@ export class ControlledGeneral {
       milestone: 'delivered',
       fromComponent: owner,
       ownerId: owner === 'a' ? 'b' : 'c',
-      request: 'Research supplier evidence',
+      request:
+        (prompt.includes('RECOVER_CYCLE') ? 'RECOVER_CYCLE: ' : '') + 'Research supplier evidence',
       evidence: ['source.txt'],
       acceptanceCriteria: ['Evidence-backed result'],
       reason: 'Dependency',
     };
+  }
+
+  /** Produces an actual blocking ancestor request before accepting the director's retained diagnosis. */
+  private cycle(result: any): any {
+    const request = this.request('c', 'RECOVER_CYCLE');
+    request.ownerId = 'a';
+    request.request = 'RECOVER_CYCLE: Research the dependency chain';
+    result.status = 'blocked';
+    result.blockers = ['Need ancestor delivery'];
+    result.requests = [request];
+    return result;
   }
 
   /** Supplies the required evidence fields shared by worker and verifier responses. */
