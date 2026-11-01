@@ -24,6 +24,7 @@ generatedDirectories:
   - dist
   - .test-build
   - .fixture-build
+  - .tool-build
 schemaVersion: 3
 workspace:
   primary:

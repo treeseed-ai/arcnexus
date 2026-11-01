@@ -71,6 +71,7 @@ ownership:
     - tsconfig.tooling.json
     - architecture/components/foundation.yaml
     - architecture/patterns/readable-typescript.yaml
+    - tsconfig.build.json
   publicModules: []
   directoryExceptions:
     - path: .

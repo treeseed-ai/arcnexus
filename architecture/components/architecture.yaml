@@ -67,6 +67,7 @@ ownership:
     - src/library/architecture/initialization.ts
     - src/library/architecture/permissions.ts
     - src/library/architecture/schema.ts
+    - src/library/architecture/build-schemas.ts
   directoryExceptions:
     - path: architecture/components
       reason: Directory-only sandbox grants; only this component definition is

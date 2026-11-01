@@ -2,13 +2,10 @@ import { copyFileSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
 /** Packages trusted application schemas independently of any target catalog. */
-class SchemaPackager {
+export class SchemaPackager {
   private readonly registry: Record<string, string> = {};
 
   build(): void {
-    writeFileSync('dist/cli.js', "#!/usr/bin/env node\nimport './gateway/cli/cli.js';\n", {
-      mode: 0o755,
-    });
     const root = resolve('src');
     for (const entry of readdirSync(root, { recursive: true, withFileTypes: true })) {
       if (!entry.isFile() || !entry.name.endsWith('.json')) continue;
@@ -31,5 +28,3 @@ class SchemaPackager {
     this.registry[id] = relative('dist/library/architecture', destination);
   }
 }
-
-new SchemaPackager().build();

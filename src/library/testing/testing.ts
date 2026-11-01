@@ -28,6 +28,14 @@ export interface TestExecution {
 /** Selects owner-declared suites and executes their fixed Node profile with retained evidence. */
 export class ComponentTesting {
   inspect(project: string, filters: TestFilters = {}): TestSelection {
+    try {
+      return this.selection(project, filters);
+    } catch (error) {
+      throw error instanceof InputError ? error : new InputError(String(error));
+    }
+  }
+
+  private selection(project: string, filters: TestFilters): TestSelection {
     this.filters(filters);
     project = resolve(project);
     const revision = git(project, 'rev-parse', 'HEAD').trim();
@@ -127,7 +135,11 @@ export class ComponentTesting {
   ): Promise<void> {
     const log = join(result.evidence, `${result.commands.length}.log`);
     try {
-      result.commands.push(await execute(command, result.selection.project, log, signal));
+      result.commands.push(
+        await execute(command, result.selection.project, log, signal, {
+          env: { ...process.env, NODE_TEST_CONTEXT: undefined },
+        }),
+      );
     } catch (error) {
       const commandResult = (error as { commandResult?: CommandResult }).commandResult;
       if (commandResult) result.commands.push(commandResult);

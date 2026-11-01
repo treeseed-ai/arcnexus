@@ -18,6 +18,7 @@ generatedDirectories:
   - dist
   - .fixture-build
   - .test-build
+  - .tool-build
 artifacts: []
 probes:
   - command: node
