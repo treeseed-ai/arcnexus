@@ -69,6 +69,7 @@ export function validateRequests(
   componentId: string,
   owners: string[],
   allowUnknownOwner = false,
+  generalYield = false,
 ): void {
   for (const request of result.requests) {
     if (request.fromComponent !== componentId)
@@ -78,9 +79,13 @@ export function validateRequests(
         `Unknown boundary owner: ${request.ownerId}; use null for an architectural question`,
       );
   }
-  if (result.requests.length && result.status !== 'blocked')
+  if (!generalYield && result.requests.length && result.status !== 'blocked')
     throw new Error('Unresolved boundary requests must report blocked');
-  if (result.status === 'blocked' && !result.blockers.length)
+  if (
+    result.status === 'blocked' &&
+    !result.blockers.length &&
+    !(generalYield && result.requests.length)
+  )
     throw new Error('Blocked result requires a reason');
 }
 

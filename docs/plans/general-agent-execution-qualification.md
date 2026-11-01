@@ -14,7 +14,7 @@ held stable for each live attempt.
 | `cfbe2b2` | Recovery tests, `/tmp/arcnexus-78-reconcile-tests.log` | 5 passed; uncertain reconciliation does not replay setup |
 | `70115a3` | Scheduler, inbox and recovery tests, `/tmp/arcnexus-81-green-final.log` | 14 passed; queue and rotation regressions first failed against the prior build |
 | `510b877` | Inbox/CLI checks, `/tmp/arcnexus-78-request-green.log`, and additional inbox check, `/tmp/arcnexus-78-request-inbox-final.log` | Passed; recipient workflow/scope regression first failed against the prior build |
-| `510b877` | Full declared suite, `/tmp/arcnexus-78-full-suite-v5.log` | Running at this record's creation; no pass claimed |
+| `510b877` | Full declared suite, `/tmp/arcnexus-78-full-suite-v5.log` | 356 passed, zero failures; retained test-run `6c5fb74a-eb73-487e-93ab-e49dabfa87e2` |
 
 Ownership and guidance validation passed at `510b877`. Build, strict type checking,
 formatting and lint have local evidence in `/tmp/arcnexus-78-*-v5.log` and
@@ -43,7 +43,7 @@ and report owners discovered during execution. No simulated output counts here.
 | v2 | `635ca2b` | IPC remained responsive. Baseline passed, then the provider rejected optional properties in the strict inbox response schema. Issue 80 records the actual HTTP 400 and schema correction. |
 | v3 | `b760d1f` | Preflight rejected an undeclared cross-owner test helper import. Public boundary declaration was corrected in `d4f65f8`; no model work counted. |
 | v4 | `90cf16d` | Real task-intake steward edited its own documentation and dynamically requested workday/report owners. Its additional exact-scope/read-only request could not be expressed by the captured protocol. Cancelled during recipient baseline; partial edits and evidence retained, no verified delivery claimed. |
-| v5 | `510b877` | Running with explicit recipient workflow/scope fields, durable FIFO scheduling and automatic independent-review instructions. Outcome pending. |
+| v5 | `510b877` | Baseline passed. Real steward returned correctly scoped workday/report requests requiring delivery, but legacy validation rejected its completed turn status before scheduling the yield. Issue 83 records the defect. No delivery claimed. |
 
 v4 task: `70d5d427-2dcc-4e6d-8659-3b176c297a2f`.
 Its task-intake record is `59692f1c-e30d-4b9c-9eaf-5b29939fea0c`.

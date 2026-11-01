@@ -1,10 +1,14 @@
 import { StructuredOutputCheck } from '../../testing/support/structured-output-check.js';
-import { appendFileSync, readFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { setTimeout as delay } from 'node:timers/promises';
 
 /** Supplies deterministic SDK events while exercising the production host, permissions and scheduler. */
 export class ControlledGeneral {
   /** Retains an external trace that survives candidate workspace switches. */
-  constructor(private readonly calls: string) {}
+  constructor(
+    private readonly calls: string,
+    private readonly gate?: string,
+  ) {}
 
   /** Handles version/preflight or emits one structured inference result. */
   async run(): Promise<void> {
@@ -20,9 +24,15 @@ export class ControlledGeneral {
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
     appendFileSync(this.calls, JSON.stringify({ args, prompt }) + '\n');
+    await this.checkpointGate(prompt);
     const result = prompt.startsWith('ArcNexus task direction.')
       ? this.direction(prompt)
       : this.worker(prompt);
+    this.emit(result);
+  }
+
+  /** Emits the SDK event stream for a completed controlled inference. */
+  private emit(result: unknown): void {
     console.log(JSON.stringify({ type: 'thread.started', thread_id: 'general-thread' }));
     console.log(
       JSON.stringify({
@@ -36,6 +46,13 @@ export class ControlledGeneral {
         usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
       }),
     );
+  }
+
+  /** Holds a real managed process at a test-controlled turn boundary, without an execution deadline. */
+  private async checkpointGate(prompt: string): Promise<void> {
+    if (!this.gate || !prompt.includes('Activity turn: planning')) return;
+    writeFileSync(this.gate + '.entered', String(process.pid));
+    while (!existsSync(this.gate)) await delay(10);
   }
 
   /** Selects only the first owner for tasks and reports no work during unchanged stewardship. */
@@ -75,7 +92,7 @@ export class ControlledGeneral {
       owner !== 'c' &&
       !prompt.includes('Verified dependency deliveries:')
     ) {
-      result.status = 'blocked';
+      result.status = owner === 'a' ? 'completed' : 'blocked';
       result.blockers = ['Needs supplier evidence'];
       result.requests = [this.request(owner!)];
     } else if (stage === 'planning') result.plan = this.plan();

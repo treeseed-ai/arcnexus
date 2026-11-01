@@ -59,7 +59,13 @@ export class ProjectHost {
   /** Queues a goal without interrupting an in-flight safe checkpoint. */
   submit(prompt: string): ExecutionRun {
     if (!prompt.trim()) throw new InputError('Task prompt must not be empty');
-    return this.create('task', prompt);
+    const task = this.create('task', prompt);
+    const workday = this.workday();
+    if (workday && ['running', 'idle'].includes(workday.status))
+      this.store.updateRun(workday.id, this.active?.runId === workday.id ? 'pausing' : 'paused', {
+        pauseReason: 'task',
+      });
+    return task;
   }
 
   /** Retains a clarification response and schedules the director on the same task. */

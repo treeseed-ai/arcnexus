@@ -1,6 +1,5 @@
 import { mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { workflowFixture, type WorkflowFixture } from '../../testing/support/workflow-fixture.js';
 
@@ -11,16 +10,14 @@ export class GeneralFixture {
   hostPid?: number;
 
   /** Builds a committed catalog and registers host cleanup before the fixture directory disappears. */
-  constructor(t: TestContext) {
+  constructor(t: TestContext, gate?: string) {
     this.fixture = workflowFixture(t);
     const f = this.fixture;
     this.catalog();
-    const module = pathToFileURL(
-      resolve('.test-build/library/execution-runtime/support/controlled-general.js'),
-    ).href;
+    const module = new URL('./controlled-general.js', import.meta.url).href;
     writeFileSync(
       f.executable,
-      `#!/usr/bin/env node\nimport(${JSON.stringify(module)}).then(({ControlledGeneral}) => new ControlledGeneral(${JSON.stringify(f.calls)}).run());\n`,
+      `#!/usr/bin/env node\nimport(${JSON.stringify(module)}).then(({ControlledGeneral}) => new ControlledGeneral(${JSON.stringify(f.calls)}, ${JSON.stringify(gate)}).run());\n`,
       { mode: 0o755 },
     );
     mkdirSync(join(f.repo, '.git/arcnexus'), { recursive: true });

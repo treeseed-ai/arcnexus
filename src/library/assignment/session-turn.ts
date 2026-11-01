@@ -137,7 +137,13 @@ export class SessionTurn {
     this.checkStage(frame.activity);
     if (readOnly && candidateDigest(record) !== frame.before)
       throw new Error('Read-only turn changed candidate source/index');
-    validateRequests(result, id, this.state.resolved.owners, !!control);
+    validateRequests(
+      result,
+      id,
+      this.state.resolved.owners,
+      !!control || !!record.generalExecution,
+      !!record.generalExecution,
+    );
     record.requests = result.requests;
     this.claims(result);
     this.checkOutcome(result, frame.activity);
