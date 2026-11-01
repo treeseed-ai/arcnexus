@@ -95,3 +95,14 @@ assignment outcomes and verified evidence. The director receives that retained
 context explicitly. The invocation still creates a new task and uses current
 captured authority; referencing prior work neither resumes uncertain operations nor
 imports unfinished candidate edits. The referenced task keeps its original outcome.
+
+Independent verification receives host-captured change evidence in addition to
+command outcomes and worker claims. The manifest identifies every tracked or
+unignored changed path; retained tracked patches and untracked file contents are
+available through a fixed read-only evidence operation. The operation reads only
+artifacts captured for that assessment, supports explicit paging, and reports full
+length and hashes so partial output cannot masquerade as the complete evidence.
+Owner assessment compares against its assignment candidate base. Whole-goal
+assessment compares the assembled candidate against captured source authority.
+The candidate digest is pinned before capture and checked after assessment.
+Unavailable native Git metadata does not require broader verifier filesystem access.
