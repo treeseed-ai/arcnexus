@@ -4,22 +4,14 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "enum": [
-        1,
-        2,
-        3
-      ]
+      "enum": [1, 2, 3]
     },
     "objective": {
       "type": "string",
       "minLength": 1
     },
     "kind": {
-      "enum": [
-        "change",
-        "research",
-        "review"
-      ]
+      "enum": ["change", "research", "review"]
     },
     "expectedOutcome": {
       "type": "string",
@@ -71,20 +63,12 @@
             "uniqueItems": true
           }
         },
-        "required": [
-          "id",
-          "command",
-          "args",
-          "artifacts"
-        ],
+        "required": ["id", "command", "args", "artifacts"],
         "additionalProperties": false
       }
     },
     "changeType": {
-      "enum": [
-        "behavior",
-        "documentation"
-      ]
+      "enum": ["behavior", "documentation"]
     },
     "operationIds": {
       "type": "array",
@@ -117,12 +101,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "path",
-          "sourceId",
-          "revision",
-          "reason"
-        ],
+        "required": ["path", "sourceId", "revision", "reason"],
         "additionalProperties": false
       }
     }

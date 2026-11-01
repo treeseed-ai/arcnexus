@@ -104,6 +104,78 @@ class ComponentV4Fixture {
     });
   }
 
+  dependencyCatalog(dependency: ComponentV4Fixture): void {
+    this.git('remote', 'add', 'origin', 'https://example.invalid/sample.git');
+    dependency.git('remote', 'add', 'origin', 'https://example.invalid/other.git');
+    this.put('architecture/environment.json', {
+      schemaVersion: 1,
+      prerequisites: [],
+      setup: [],
+      generatedDirectories: [],
+      workspace: {
+        primary: { id: 'sample', repository: 'https://example.invalid/sample.git' },
+        dependencies: [
+          {
+            id: 'other',
+            repository: 'https://example.invalid/other.git',
+            commit: dependency.git('rev-parse', 'HEAD'),
+            path: 'dependencies/other',
+            prerequisites: [],
+            setup: [],
+            generatedDirectories: [],
+          },
+        ],
+      },
+    });
+    this.put('architecture/bindings.json', {
+      schemaVersion: 1,
+      repositories: { other: dependency.root },
+      tools: {},
+    });
+    this.otherOwner();
+  }
+
+  private otherOwner(): void {
+    this.put(
+      'architecture/components/other-package.json',
+      this.component('other-package', 'package', {
+        parentId: 'platform',
+        repository: 'other',
+        repositoryRoot: 'package',
+      }),
+    );
+    this.put(
+      'architecture/components/other.json',
+      this.component('other', 'library', {
+        parentId: 'other-package',
+        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['src'] },
+        provides: [
+          {
+            id: 'remote-value',
+            version: '1',
+            kind: 'typescript',
+            path: 'src/value.ts',
+            compatibility: 'Preserve exported value',
+          },
+        ],
+      }),
+    );
+    this.consumer();
+  }
+
+  private consumer(): void {
+    this.put(
+      'architecture/components/sample.json',
+      this.component('sample', 'library', {
+        parentId: 'package',
+        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['src'] },
+        consumes: [{ id: 'remote-value', version: '1' }],
+      }),
+    );
+  }
+
   component(id: string, type: string, extra: object): any {
     return {
       schemaVersion: 4,
@@ -130,9 +202,10 @@ class ComponentV4Fixture {
     writeFileSync(join(this.root, path), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
-  git(...args: string[]): void {
+  git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.root, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
   }
 
   commit(): void {
@@ -266,6 +339,30 @@ class ComponentV4Tests {
     assert.equal(JSON.parse(result.stdout).context.at(-1).schemaVersion, 4);
   }
 
+  capturesPinnedDependencyContract(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    const dependency = new ComponentV4Fixture(t);
+    dependency.put('package/src/value.ts', 'export const remote = 42;');
+    dependency.commit();
+    f.dependencyCatalog(dependency);
+    f.commit();
+    const result = f.run(
+      'inspect',
+      'sample',
+      'Read dependency contract',
+      '--json',
+      '--bindings',
+      join(f.root, 'architecture/bindings.json'),
+    );
+    assert.equal(result.status, 0, result.stderr);
+    const resolved = JSON.parse(result.stdout);
+    assert.equal(
+      resolved.context.at(-1).contractSnapshots[0].artifact.text,
+      'export const remote = 42;',
+    );
+    assert.equal(resolved.workspaceMembers[0].base, dependency.git('rev-parse', 'HEAD'));
+  }
+
   rejectsUnownedTrackedFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('orphan.txt', 'unowned');
@@ -296,3 +393,6 @@ test('v4 distinguishes identical paths owned in independent repositories', (t) =
 
 test('packaged CLI resolves trusted schemas without the source schema tree', (t) =>
   suite.packagedCliUsesItsOwnSchemas(t));
+
+test('v4 captures consumed contracts from pinned bound repositories', (t) =>
+  suite.capturesPinnedDependencyContract(t));

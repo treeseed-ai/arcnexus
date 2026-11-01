@@ -59,12 +59,7 @@
               "uniqueItems": true
             }
           },
-          "required": [
-            "id",
-            "command",
-            "args",
-            "artifacts"
-          ],
+          "required": ["id", "command", "args", "artifacts"],
           "additionalProperties": false
         }
       }
@@ -87,20 +82,13 @@
               }
             }
           },
-          "required": [
-            "command",
-            "args"
-          ],
+          "required": ["command", "args"],
           "additionalProperties": false
         }
       }
     }
   },
-  "required": [
-    "schemaVersion",
-    "repositories",
-    "tools"
-  ],
+  "required": ["schemaVersion", "repositories", "tools"],
   "additionalProperties": false,
   "$id": "https://arcnexus.local/schemas/bindings-v1"
 }

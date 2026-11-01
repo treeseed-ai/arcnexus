@@ -10,10 +10,7 @@
       "minItems": 1,
       "uniqueItems": true,
       "items": {
-        "enum": [
-          "simulation",
-          "live"
-        ]
+        "enum": ["simulation", "live"]
       }
     },
     "cases": {
@@ -76,11 +73,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "command",
-                    "args",
-                    "artifacts"
-                  ],
+                  "required": ["command", "args", "artifacts"],
                   "additionalProperties": false
                 }
               },
@@ -93,12 +86,7 @@
                 "minLength": 1
               },
               "scenario": {
-                "enum": [
-                  "success",
-                  "repair",
-                  "boundary",
-                  "failure"
-                ]
+                "enum": ["success", "repair", "boundary", "failure"]
               },
               "priorEvidenceIds": {
                 "type": "array",
@@ -158,11 +146,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "command",
-                    "args",
-                    "artifacts"
-                  ],
+                  "required": ["command", "args", "artifacts"],
                   "additionalProperties": false
                 }
               },
@@ -171,33 +155,20 @@
                 "minLength": 1
               },
               "expectedOutcome": {
-                "enum": [
-                  "completed",
-                  "blocked"
-                ]
+                "enum": ["completed", "blocked"]
               },
               "scenario": {
                 "const": "handoff"
               }
             },
-            "required": [
-              "id",
-              "project",
-              "workday",
-              "expectedOutcome",
-              "acceptance"
-            ],
+            "required": ["id", "project", "workday", "expectedOutcome", "acceptance"],
             "additionalProperties": false
           }
         ]
       }
     }
   },
-  "required": [
-    "schemaVersion",
-    "modes",
-    "cases"
-  ],
+  "required": ["schemaVersion", "modes", "cases"],
   "additionalProperties": false,
   "$id": "https://arcnexus.local/schemas/experiment-v2-v1"
 }

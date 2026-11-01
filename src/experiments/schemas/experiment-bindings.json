@@ -31,9 +31,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "path"
-        ],
+        "required": ["path"],
         "additionalProperties": false
       }
     },
@@ -66,12 +64,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "path",
-          "sourceId",
-          "revision",
-          "reason"
-        ],
+        "required": ["path", "sourceId", "revision", "reason"],
         "additionalProperties": false
       }
     },
@@ -83,12 +76,7 @@
       }
     }
   },
-  "required": [
-    "schemaVersion",
-    "runner",
-    "projects",
-    "tools"
-  ],
+  "required": ["schemaVersion", "runner", "projects", "tools"],
   "additionalProperties": false,
   "$id": "https://arcnexus.local/schemas/experiment-bindings-v1"
 }

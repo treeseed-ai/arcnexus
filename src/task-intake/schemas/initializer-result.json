@@ -3,11 +3,7 @@
   "type": "object",
   "properties": {
     "status": {
-      "enum": [
-        "ready",
-        "needs_clarification",
-        "architecture_change_required"
-      ]
+      "enum": ["ready", "needs_clarification", "architecture_change_required"]
     },
     "summary": {
       "type": "string"
@@ -24,10 +20,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "reason"
-        ],
+        "required": ["id", "reason"],
         "additionalProperties": false
       }
     },
@@ -43,10 +36,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "id",
-          "reason"
-        ],
+        "required": ["id", "reason"],
         "additionalProperties": false
       }
     },
@@ -68,17 +58,10 @@
             "type": "string"
           },
           "kind": {
-            "enum": [
-              "change",
-              "research",
-              "review"
-            ]
+            "enum": ["change", "research", "review"]
           },
           "changeType": {
-            "enum": [
-              "behavior",
-              "documentation"
-            ]
+            "enum": ["behavior", "documentation"]
           },
           "acceptanceCriteria": {
             "type": "array",
@@ -125,12 +108,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "from",
-            "to",
-            "contract",
-            "delivery"
-          ],
+          "required": ["from", "to", "contract", "delivery"],
           "additionalProperties": false
         }
       ]
@@ -161,10 +139,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "owner",
-                  "path"
-                ],
+                "required": ["owner", "path"],
                 "additionalProperties": false
               }
             },
