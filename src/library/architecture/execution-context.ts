@@ -1,3 +1,4 @@
+import { PlatformExecution } from './platform-execution.js';
 import { existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { digest, resolveAssignment, resolveBase, type Assignment } from './assignment.js';
@@ -38,7 +39,7 @@ export class ExecutionContext {
     const path = join(commonDir, 'arcnexus', 'bindings.yaml');
     const bindings = loadBindings(existsSync(path) ? path : undefined);
     const catalog = loadCatalog(source, base, bindings);
-    const config = this.defaults(source, base);
+    const config = this.defaults(source, base, catalog);
     const selected = this.package(catalog, relative(source, resolve(cwd)), config.defaultPackage);
     const owners = this.owners(catalog, selected.id);
     this.profiles(catalog, [
@@ -101,7 +102,9 @@ export class ExecutionContext {
   }
 
   /** Reads declarative director/reviewer profiles without selecting models in scheduling code. */
-  private defaults(source: string, base: string) {
+  private defaults(source: string, base: string, catalog: Catalog) {
+    if (Object.values(catalog.components).some((c) => c.schemaVersion === 5))
+      return new PlatformExecution(catalog).defaults(source, base);
     const value = new ConfigurationReader().definition(source, base, 'architecture/execution')
       .value as Record<string, unknown>;
     this.validateDefaults(value);
@@ -151,9 +154,7 @@ export class ExecutionContext {
     if (selected.length === 1) return selected[0]!;
     const fallback = selected.find((c) => c.id === defaultId);
     if (fallback) return fallback;
-    throw new InputError(
-      'Ambiguous or missing package; declare defaultPackage in architecture/execution.yaml',
-    );
+    throw new InputError('Ambiguous or missing package; declare defaultPackage on the platform');
   }
 
   /** Rejects obsolete work budgets rather than silently changing their meaning. */
