@@ -1,9 +1,12 @@
+import { OperationExecution } from './operation-execution.js';
+import { OperationOrder } from './operation-definition.js';
 import { readDiagnosticExcerpt } from './diagnostics.js';
 import { materialCandidate } from '../change-inspection/changes.js';
 import { ProgressObserver } from '../report/progress.js';
-import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { realpathSync } from 'node:fs';
+import { OperationArtifacts } from './operation-artifacts.js';
 import { join, relative } from 'node:path';
-import { digest, type ResolvedAssignment } from '../architecture/assignment.js';
+import { type ResolvedAssignment } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
 import { milliseconds, minimumLimit, type Command } from '../architecture/config.js';
 import { observe } from '../report/timeline.js';
@@ -16,7 +19,12 @@ import { ServiceManager, type HttpDefinition, type ServiceDefinition } from './s
 export { operationEnvironment } from './environment.js';
 
 export type Operation = {
-  schemaVersion: 2 | 3;
+  schemaVersion: 2 | 3 | 4;
+  prerequisites?: string[];
+  network?: boolean;
+  argumentTokens?: import('./operation-definition.js').ArgumentToken[];
+  definitionDigest?: string;
+  resolvedContext?: import('./operation-definition.js').OperationContext;
   id: string;
   purpose: string;
   repository: string;
@@ -130,6 +138,18 @@ class OperationRuntime {
     const action = { activity: this.record.stage, operation: op.id };
     const candidate = materialCandidate(this.record);
     progress.before(action, candidate);
+    if (op.schemaVersion === 4) {
+      const registry = Object.fromEntries(
+        this.resolved.operations.map((entry) => [entry.id, entry]),
+      );
+      for (const prerequisite of new OperationOrder(registry)
+        .resolve([op.id])
+        .filter((entry) => entry.id !== op.id))
+        await new OperationExecution(this.root, this.record, this.signal).run(
+          prerequisite,
+          'agent-prerequisite',
+        );
+    }
     const result = await this.finite(op);
     if (result.status === 'failed') {
       const warning = progress.failed(action, result.output, candidate);
@@ -280,6 +300,8 @@ class OperationRuntime {
   /** Executes the fixed command and retains its output and exit evidence. */
   private async command(op: Operation, cwd: string, signal: AbortSignal): Promise<CommandResult> {
     const { root, record, resolved } = this;
+    if (op.schemaVersion === 4 && op.kind === 'command')
+      return new OperationExecution(root, record, signal).run(op, 'agent');
     const log = join(root, 'runs', record.id, `operation-${this.activeNumber}.log`);
     if (op.kind === 'http')
       return this.services.check(
@@ -306,17 +328,7 @@ class OperationRuntime {
 
   /** Validates and records declared result artifacts produced by the operation. */
   private artifact(path: string) {
-    const { root, record } = this;
-    const source = join(record.workspace, path);
-    if (!lstatSync(source).isFile() || realpathSync(source) !== source)
-      throw new Error('Operation artifact must be a regular non-symlink file');
-    const bytes = readFileSync(source);
-    if (bytes.length > 64 * 1024 * 1024) throw new Error('Operation artifact limit exceeded');
-    const dir = join(root, 'runs', record.id, 'operation-artifacts', String(this.activeNumber));
-    mkdirSync(dir, { recursive: true, mode: 0o700 });
-    const sha256 = digest(bytes);
-    writeFileSync(join(dir, sha256), bytes, { mode: 0o600 });
-    return { path, sha256, artifact: relative(join(root, 'runs', record.id), join(dir, sha256)) };
+    return new OperationArtifacts(this.root, this.record).capture(path, String(this.activeNumber));
   }
 
   /** Finalizes the current lifecycle while preserving its recorded outcome. */

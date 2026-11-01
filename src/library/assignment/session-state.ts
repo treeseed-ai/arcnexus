@@ -1,3 +1,5 @@
+import { OperationExecution } from '../operations/operation-execution.js';
+import type { Operation } from '../operations/operations.js';
 import {
   appendFileSync,
   closeSync,
@@ -127,6 +129,8 @@ export class SessionState {
   /** Intersects assignment authority with the activity-specific writable roots. */
   private assignmentScope(): string[] {
     const { assignment, documentationOnly, resolved, component } = this;
+    if (component.schemaVersion === 5)
+      return assignment.kind === 'change' ? resolved.allowedWritePaths : [];
     return assignment.kind === 'change'
       ? documentationOnly
         ? [...new Set([...resolved.allowedWritePaths, ...component.documentation])].filter(
@@ -141,6 +145,7 @@ export class SessionState {
     const { assignment, component, documentationOnly } = this;
     const { record } = this.options;
     if (
+      component.schemaVersion !== 5 &&
       assignment.kind === 'change' &&
       ((assignment.changeType !== 'refactor' && !component.documentation.length) ||
         (!documentationOnly && !component.tests.length))
@@ -216,16 +221,7 @@ export class SessionState {
     this.options.record.stage = stage;
     this.journal(stage, 'started', c);
     try {
-      const result = await execute(
-        targetCommand(this.options.record, c),
-        this.options.record.workspace,
-        join(this.dir, `command-${this.options.record.commands.length}.log`),
-        this.options.signal,
-        {
-          timeoutMs: milliseconds(this.resolved.executionProfile.commandTimeoutSeconds),
-          env: operationEnvironment(this.options.record),
-        },
-      );
+      const result = await this.executeCommand(c, stage);
       result.stage = stage;
       this.options.record.commands.push(result);
       this.journal(stage, 'completed', result);
@@ -239,6 +235,28 @@ export class SessionState {
       this.journal(stage, 'failed', String(error));
       throw error;
     }
+  }
+
+  /** Routes captured operations through the same service used by engineering and setup. */
+  private async executeCommand(c: Command, stage: string): Promise<CommandResult> {
+    if ((c as Operation).schemaVersion === 4)
+      return new OperationExecution(
+        this.options.root,
+        this.options.record,
+        this.options.signal,
+      ).run(c as Operation, stage);
+    if (this.component.schemaVersion === 5)
+      throw new Error('Version-five execution requires a captured shared operation');
+    return execute(
+      targetCommand(this.options.record, c),
+      this.options.record.workspace,
+      join(this.dir, `command-${this.options.record.commands.length}.log`),
+      this.options.signal,
+      {
+        timeoutMs: milliseconds(this.resolved.executionProfile.commandTimeoutSeconds),
+        env: operationEnvironment(this.options.record),
+      },
+    );
   }
 
   /** Persists thread, plan and verification state for continuation. */

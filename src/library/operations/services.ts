@@ -1,3 +1,5 @@
+import { OperationConfinement } from './operation-confinement.js';
+import type { SourceConfinement } from './confinement.js';
 import { fork, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
@@ -73,6 +75,8 @@ function collectResponse(
 export class ServiceManager {
   private child?: ChildProcess;
 
+  private confinement?: SourceConfinement;
+
   private current?: ServiceRecord;
 
   private stopped?: Promise<void>;
@@ -101,6 +105,10 @@ export class ServiceManager {
   async start(op: Operation): Promise<ServiceRecord> {
     if (op.kind !== 'service' || !op.service) throw new Error('Not a service operation');
     if (this.child) throw new Error('Only one active service lease is permitted');
+    this.confinement =
+      op.schemaVersion === 4
+        ? await new OperationConfinement(this.root, this.record, this.signal).prepare(op)
+        : undefined;
     const record = this.createRecord(op.id);
     const child = this.launch(op, record);
     const timeout = new AbortController();
@@ -146,6 +154,25 @@ export class ServiceManager {
       stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
       env: operationEnvironment(this.record),
     });
+    this.watch(child, record);
+    const command = targetCommand(this.record, {
+      command: op.command,
+      args: op.args.map((a) => (a === '{workspace}' ? this.record.workspace : a)),
+    });
+    child.send({
+      record,
+      ...(this.confinement ? this.confinement.command(command, cwd) : command),
+      cwd,
+      env:
+        this.confinement?.environment(operationEnvironment(this.record)) ??
+        operationEnvironment(this.record),
+      port: op.service!.port,
+    });
+    return child;
+  }
+
+  /** Retains the managed lease and subscribes to supervisor evidence before dispatch. */
+  private watch(child: ChildProcess, record: ServiceRecord): void {
     this.child = child;
     this.current = record;
     child.on('error', () => {});
@@ -154,18 +181,6 @@ export class ServiceManager {
       if (message.record) this.update(message.record);
     });
     this.watchCancellation(child);
-    const command = targetCommand(this.record, {
-      command: op.command,
-      args: op.args.map((a) => (a === '{workspace}' ? this.record.workspace : a)),
-    });
-    child.send({
-      record,
-      ...command,
-      cwd,
-      env: operationEnvironment(this.record),
-      port: op.service!.port,
-    });
-    return child;
   }
 
   /** Propagates caller cancellation to managed work without creating a deadline. */

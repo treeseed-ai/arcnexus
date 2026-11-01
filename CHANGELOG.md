@@ -4,7 +4,7 @@
 
 ### Added
 
-- Validate minimal version-five component declarations with inherited policies and derived ownership and file classification (#109).
+- Validate minimal version-five component declarations with inherited policies, derived ownership and file classification, shared operation plans, and checked-edit runtime foundations (#109).
 
 - Run prompt-driven tasks and persistent workdays with dynamic owner assignments and retained candidate evidence (#78).
 

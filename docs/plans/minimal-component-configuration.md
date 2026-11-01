@@ -130,3 +130,25 @@ object keys, 96 inline command declarations and 11 distinct command/argument pai
 No before/after reduction is claimed until the real project configuration is migrated.
 The installed sandbox probe allowed declared generated output and rejected a source
 write with EROFS; this is feasibility evidence, not the required enforcement matrix.
+
+The next bootstrap checkpoint adds shared operation definitions with fixed host argv
+inputs and deterministic prerequisite ordering. Checked edit transactions validate the
+whole batch, retain before/after images, and recover after actual child-process exits
+at journal publication and partial source replacement. The assignment bridge binds
+these edits to the active owner, stage and frozen regression evidence. New execution
+remains explicitly disabled until all lifecycle paths use the checked runtime.
+
+Twelve focused assembled-program cases pass, including two installed-runtime cases:
+source and configuration-home writes are denied, and generated output is allowed;
+separate agent and later failing verification invocations retain different artifacts.
+The installed runtime is `codex-cli 0.163.0-alpha.10.2`. Its configuration home needs
+an explicit read-only grant: merely placing it outside declared writable paths did
+not prevent modification. This finding is specific to the tested permissions profile.
+The maintained live probe requires `ARCNEXUS_TEST_CODEX`; skipping it is not a pass.
+These are enforcement probes, not the six real task/workday acceptance gates.
+
+Shared setup/refresh/test preparation, complete invocation recovery, platform execution
+configuration, stable regression operation identities, HTTP verification checkpoints,
+and continuation reconciliation still need integration. Mandatory HTTP verification
+currently fails explicitly rather than disappearing from the captured check plan.
+Migration and removal of old executable configuration have not been delivered.

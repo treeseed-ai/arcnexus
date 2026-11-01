@@ -1,3 +1,5 @@
+import { normalizeOperation } from '../operations/operation-definition.js';
+import { ComponentOperationPlans } from './component-operation-plans.js';
 import { ancestry, covered, scopePath } from './component-paths.js';
 import { ComponentV5Resolver } from './component-v5.js';
 import type { ComponentV5Fields } from './component-v5-policy.js';
@@ -125,7 +127,11 @@ function read<T>(
   try {
     const version = (source.value as { schemaVersion?: number }).schemaVersion;
     return validateSchema<T>(
-      schema === 'component' && (version === 4 || version === 5) ? `component-v${version}` : schema,
+      schema === 'component' && (version === 4 || version === 5)
+        ? `component-v${version}`
+        : schema === 'operation' && version === 4
+          ? 'operation-v4'
+          : schema,
       source.value,
     );
   } catch (error) {
@@ -184,6 +190,7 @@ class CatalogLoader {
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
     validateInitialization(this.catalog);
     captureComponentTests(this.catalog, this.repository, this.base);
+    new ComponentOperationPlans(this.catalog).resolve();
     new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
     this.ownership();
@@ -243,12 +250,8 @@ class CatalogLoader {
   /** Loads a referenced operation without granting it to unrelated owners. */
   private operation(path: string): void {
     const { catalog, repository, base } = this;
-    const operation = read<Operation>(
-      repository,
-      base,
-      path,
-      'operation',
-      catalog.configurationSources,
+    const operation = normalizeOperation(
+      read<Operation>(repository, base, path, 'operation', catalog.configurationSources),
     );
     if (path.replace(/\.(json|ya?ml)$/, '') !== `architecture/operations/${operation.id}`)
       throw new InputError('Operation identity must match filename');

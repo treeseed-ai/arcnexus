@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { digest } from '../architecture/assignment.js';
-import { covered, type Component } from '../architecture/components.js';
+import { classifyComponentPath, covered, type Component } from '../architecture/components.js';
 import { changes, checkScope } from '../change-inspection/changes.js';
 import type { AgentResult } from '../steward/codex.js';
 import type { RecordData } from '../workspace/state.js';
@@ -19,21 +19,39 @@ export function specificationFiles(
   selected = changes(record),
 ): FrozenTest[] {
   const observed = selected;
+  const { documentation, testPaths } = specificationPaths(component, observed);
   checkScope(
     record.workspace,
     observed,
-    documentationOnly ? component.documentation : [...component.documentation, ...component.tests],
+    documentationOnly ? documentation : [...documentation, ...testPaths],
   );
-  if (!observed.some((c) => covered(c.path, component.documentation)))
+  if (!observed.some((c) => covered(c.path, documentation)))
     throw new Error('Specification must document changed intent');
   if (documentationOnly) return [];
-  const tests = observed.filter((c) => covered(c.path, component.tests));
+  const tests = observed.filter((c) => covered(c.path, testPaths));
   if (!tests.length) throw new Error('Specification must add or update regression tests');
   return tests.map((c) => {
     if (c.kind === 'D') throw new Error('Regression checkpoint cannot delete tests');
     const content = readFileSync(join(record.workspace, c.path));
     return { path: c.path, content: content.toString('base64'), sha256: digest(content) };
   });
+}
+
+/** Applies the captured classifier to proposed files without inventing documentation or test evidence. */
+function specificationPaths(component: Component, observed: ReturnType<typeof changes>) {
+  const documentation =
+    component.schemaVersion === 5
+      ? observed
+          .filter((c) => classifyComponentPath(component, c.path) === 'documentation')
+          .map((c) => c.path)
+      : component.documentation;
+  const testPaths =
+    component.schemaVersion === 5
+      ? observed
+          .filter((c) => classifyComponentPath(component, c.path) === 'tests')
+          .map((c) => c.path)
+      : component.tests;
+  return { documentation, testPaths };
 }
 
 export async function withFrozenTests(

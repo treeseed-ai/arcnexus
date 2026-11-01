@@ -1,4 +1,6 @@
+import { CheckedEditBridge } from './checked-edit-bridge.js';
 import { targetCommand, targetEnvironment, type Bindings } from '../architecture/bindings.js';
+import { classifyComponentPath } from '../architecture/components.js';
 import { checkScope } from '../change-inspection/changes.js';
 import { operationBridge } from '../operations/operations.js';
 import { observe } from '../report/timeline.js';
@@ -36,7 +38,17 @@ export class SessionTurn {
     this.originalPrompt = this.prompt();
     this.evidence = new TurnEvidence(state);
     const { root, record, signal } = state.options;
-    this.operations = operationBridge(root, record, signal, () => this.checkStage());
+    const operations = operationBridge(root, record, signal, () => this.checkStage());
+    const edits = state.component.schemaVersion === 5 ? new CheckedEditBridge(state) : undefined;
+    edits?.recover();
+    this.operations = {
+      ...operations,
+      tools: [...operations.tools, ...(edits?.tools ?? [])],
+      call: (name: string, args: unknown) =>
+        name === 'source.edit' && edits
+          ? Promise.resolve(edits.call(name, args))
+          : operations.call(name, args),
+    };
   }
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
@@ -121,6 +133,17 @@ export class SessionTurn {
     const { record } = this.state.options;
     const { component, documentationOnly } = this.state;
     this.state.safe();
+    if (this.state.component.schemaVersion === 5) {
+      for (const change of this.state.ownChanges()) {
+        const kind = classifyComponentPath(component, change.path);
+        if (
+          (documentationOnly && kind !== 'documentation') ||
+          (activity === 'specification' && !['documentation', 'tests'].includes(kind))
+        )
+          throw new Error(`Change outside workflow classification: ${change.path}`);
+      }
+      return;
+    }
     if (activity === 'specification')
       checkScope(
         record.workspace,

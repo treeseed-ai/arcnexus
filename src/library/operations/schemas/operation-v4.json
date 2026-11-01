@@ -1,0 +1,276 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 4
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "enum": ["command", "service", "http"]
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cwd": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "enum": ["build", "unit-test", "integration-test", "cli-check", "http-check", "lint"]
+    },
+    "activities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1
+    },
+    "args": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["context"],
+            "properties": {
+              "context": {
+                "enum": [
+                  "ownerId",
+                  "ownedPaths",
+                  "packageRoot",
+                  "selectedTestFiles",
+                  "testOutputRoot"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    "generatedDirectories": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "service": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "readinessPath": {
+          "type": "string",
+          "pattern": "^/[^/]*"
+        },
+        "expectedStatus": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "startupTimeoutSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 2147483
+        }
+      },
+      "required": ["port", "readinessPath", "expectedStatus"]
+    },
+    "http": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "serviceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^/[^/]*"
+        },
+        "expectedStatus": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599
+        }
+      },
+      "required": ["serviceId", "path", "expectedStatus"]
+    },
+    "prerequisites": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "network": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "purpose",
+    "kind",
+    "repository",
+    "cwd",
+    "category",
+    "activities",
+    "generatedDirectories",
+    "artifacts"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "http"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "http": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "serviceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/[^/]*"
+              },
+              "expectedStatus": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 599
+              }
+            },
+            "required": ["serviceId", "path", "expectedStatus"]
+          },
+          "command": false,
+          "args": false,
+          "service": false
+        },
+        "required": ["http"]
+      },
+      "else": {
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["context"],
+                  "properties": {
+                    "context": {
+                      "enum": [
+                        "ownerId",
+                        "ownedPaths",
+                        "packageRoot",
+                        "selectedTestFiles",
+                        "testOutputRoot"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": ["command", "args"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "service"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "service": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "port": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535
+              },
+              "readinessPath": {
+                "type": "string",
+                "pattern": "^/[^/]*"
+              },
+              "expectedStatus": {
+                "type": "integer",
+                "minimum": 200,
+                "maximum": 299
+              },
+              "startupTimeoutSeconds": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 2147483
+              }
+            },
+            "required": ["port", "readinessPath", "expectedStatus"]
+          },
+          "http": false
+        },
+        "required": ["service"]
+      },
+      "else": {
+        "properties": {
+          "service": false
+        }
+      }
+    }
+  ],
+  "$id": "https://arcnexus.local/schemas/operation-v4"
+}

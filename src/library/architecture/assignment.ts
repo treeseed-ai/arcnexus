@@ -167,6 +167,10 @@ class AssignmentResolver {
   /** Requires an executable owner in the primary writable repository. */
   private validateTarget(): void {
     const { env, component } = this;
+    if (component.schemaVersion === 5)
+      throw new InputError(
+        'Version-five execution requires the checked-edit runtime; not yet available',
+      );
     if (env.workspace && component.repository !== env.workspace.primary.id)
       throw new InputError('Assignment component must belong to the writable primary repository');
     if (
@@ -290,6 +294,11 @@ class AssignmentResolver {
   /** Selects only operations authorized by both component and assignment. */
   private operations(executionProfile: ExecutionProfile): Operation[] {
     const { assignment, component, catalog, env } = this;
+    if (component.schemaVersion === 5) {
+      if (assignment.operationIds)
+        throw new InputError('Assignments cannot substitute captured operation usages');
+      return component.operationPlan?.agent ?? [];
+    }
     const requestedOperations = assignment.operationIds ?? component.operationIds ?? [];
     if (requestedOperations.some((id) => !(component.operationIds ?? []).includes(id)))
       throw new InputError('Assignment widens operation authority');
