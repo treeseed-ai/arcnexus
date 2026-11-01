@@ -48,7 +48,11 @@ Use isolated assignment workspaces and one accumulated verified candidate. Prese
 unfinished edits; reconcile against the current candidate without silent overwrite.
 Recheck assembled changes before promotion. Workers cannot publish, switch branches
 or commit. Captured architecture, instructions, checks and supervising build remain
-stable; candidate edits cannot redefine active authority.
+stable; candidate edits cannot redefine active authority. Policy and goal-assessment
+workspaces are materialized from the pinned verified revision, not a delivery
+workspace that might have changed later. Validate retained policy workspaces before
+reuse. An integrity mismatch preserves evidence and requires attention; it must not
+automatically resume a paused workday.
 
 Trusted checks come from captured project declarations. General assignments run
 the owner’s declared checks followed by checks from containing package/platform
