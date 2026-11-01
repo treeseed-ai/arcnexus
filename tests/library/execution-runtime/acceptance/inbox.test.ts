@@ -192,6 +192,79 @@ class InboxScenarios {
     assert.throws(() => store.complete(a.id, ['forged proof'], candidate), /disagrees/);
   }
 
+  /** Accepted intent removes an active wait while historical edges remain visible. */
+  historicalCycle(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const b = store.request(a.id, {
+      key: 'b',
+      owner: 'b',
+      objective: 'Supply',
+      acceptance: [],
+      milestone: 'accepted',
+    });
+    store.accept(b.id);
+    store.request(b.id, {
+      key: 'a',
+      owner: 'a',
+      objective: 'Root',
+      acceptance: [],
+      existingAssignmentId: a.id,
+    });
+    assert.deepEqual(
+      store.ready(run.id).map((item) => item.id),
+      [a.id],
+    );
+    store.complete(a.id, ['root evidence']);
+    assert.equal(store.assignment(b.id).status, 'ready');
+    store.complete(b.id, ['supplier evidence']);
+    assert.deepEqual(store.assignment(a.id).dependencies, [b.id]);
+    assert.deepEqual(store.assignment(b.id).dependencies, [a.id]);
+  }
+
+  /** Unsatisfied delivery cycles still fail without persisting half of a request exchange. */
+  blockingCycle(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const b = store.request(a.id, { key: 'b', owner: 'b', objective: 'Supply', acceptance: [] });
+    assert.throws(
+      () =>
+        store.request(b.id, {
+          key: 'a',
+          owner: 'a',
+          objective: 'Root',
+          acceptance: [],
+          existingAssignmentId: a.id,
+        }),
+      /Blocking dependency cycle/,
+    );
+    assert.deepEqual(store.assignment(b.id).dependencies, []);
+    assert.equal(store.inbox(b.id).length, 1);
+    assert.equal(store.assignment(a.id).status, 'waiting');
+  }
+
+  /** Linking shared work cannot weaken an earlier requirement for verified delivery. */
+  sharedMilestones(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const request = { key: 'delivery', owner: 'b', objective: 'Supply', acceptance: [] };
+    const b = store.request(a.id, request);
+    store.request(a.id, {
+      ...request,
+      key: 'intent',
+      existingAssignmentId: b.id,
+      milestone: 'accepted',
+    });
+    store.accept(b.id);
+    assert.equal(store.assignment(a.id).status, 'waiting');
+    assert.throws(() => store.complete(a.id, ['premature proof']), /Undelivered/);
+    store.complete(b.id, ['verified supplier']);
+    assert.equal(store.assignment(a.id).status, 'ready');
+  }
+
   /** Creates a private store with deterministic cleanup. */
   private store(t: TestContext): ExecutionStore {
     const directory = mkdtempSync(join(tmpdir(), 'arcnexus-inbox-'));
@@ -225,5 +298,12 @@ test('accepted inbox requests retain correlated clarification answers', (t) =>
   scenarios.conversation(t));
 
 test('late inbox replies cannot reopen verified deliveries', (t) => scenarios.terminal(t));
+
+test('satisfied intent permits historical cycles without blocking delivery', (t) =>
+  scenarios.historicalCycle(t));
+
+test('unsatisfied cycles roll back their request exchange', (t) => scenarios.blockingCycle(t));
+
+test('shared work retains the strongest required milestone', (t) => scenarios.sharedMilestones(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

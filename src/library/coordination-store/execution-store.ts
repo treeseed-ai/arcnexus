@@ -166,15 +166,22 @@ export class ExecutionStore {
       JSON.stringify(recipient.acceptance) !== JSON.stringify(request.acceptance)
     )
       throw new Error('Shared assignment acceptance differs');
-    sender.data.milestones = {
-      ...((sender.data.milestones ?? {}) as object),
-      [recipient.id]: request.milestone ?? 'delivered',
-    };
+    sender.data.milestones = this.milestones(sender, recipient.id, request);
     this.captureProposal(sender, recipient, request);
     this.db.put('assignment', recipient);
     this.db.put('request', { ...request, id: randomUUID(), from, assignmentId: recipient.id });
     this.connect(sender, recipient);
     return recipient;
+  }
+
+  /** Retains the strongest milestone when multiple requests deliberately share recipient work. */
+  private milestones(sender: ExecutionAssignment, recipient: string, request: OwnerRequest) {
+    const existing = (sender.data.milestones ?? {}) as Record<string, string>;
+    const required = request.milestone ?? 'delivered';
+    return {
+      ...existing,
+      [recipient]: existing[recipient] === 'delivered' ? 'delivered' : required,
+    };
   }
 
   /** Preserves explicit recipient workflow and rejects incompatible reuse of accepted shared work. */
@@ -208,7 +215,7 @@ export class ExecutionStore {
         a.owner === request.owner &&
         a.objective === request.objective &&
         JSON.stringify(a.acceptance) === JSON.stringify(request.acceptance) &&
-        this.reaches(a.id, sender.id, new Set()),
+        this.reaches(a.id, sender.id, new Set(), true),
     );
     if (ancestor)
       throw Object.assign(
@@ -307,7 +314,10 @@ export class ExecutionStore {
   private connect(sender: ExecutionAssignment, recipient: ExecutionAssignment): void {
     if (sender.runId !== recipient.runId)
       throw new Error('Cross-run dependency requires a new assignment');
-    if (this.reaches(recipient.id, sender.id, new Set()))
+    if (
+      !this.satisfied(sender, recipient.id) &&
+      this.reaches(recipient.id, sender.id, new Set(), true)
+    )
       throw Object.assign(new Error('Blocking dependency cycle'), { name: 'DependencyBlocked' });
     if (!sender.dependencies.includes(recipient.id)) sender.dependencies.push(recipient.id);
     sender.status = sender.dependencies.every((id) => this.satisfied(sender, id))
@@ -317,11 +327,16 @@ export class ExecutionStore {
   }
 
   /** Searches the existing wait graph without assuming a fixed number of owners. */
-  private reaches(id: string, target: string, seen: Set<string>): boolean {
+  private reaches(id: string, target: string, seen: Set<string>, blocking = false): boolean {
     if (id === target) return true;
     if (seen.has(id)) return false;
     seen.add(id);
-    return this.assignment(id).dependencies.some((next) => this.reaches(next, target, seen));
+    const assignment = this.assignment(id);
+    return assignment.dependencies.some(
+      (next) =>
+        (!blocking || !this.satisfied(assignment, next)) &&
+        this.reaches(next, target, seen, blocking),
+    );
   }
 
   /** Marks verified delivery and wakes all satisfied dependents in the same transaction. */
