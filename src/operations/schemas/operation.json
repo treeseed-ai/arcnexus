@@ -286,5 +286,6 @@
         }
       }
     }
-  ]
+  ],
+  "$id": "https://arcnexus.local/schemas/operation-v1"
 }

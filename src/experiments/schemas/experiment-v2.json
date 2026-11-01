@@ -198,5 +198,6 @@
     "modes",
     "cases"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/experiment-v2-v1"
 }

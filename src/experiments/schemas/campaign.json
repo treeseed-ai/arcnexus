@@ -114,5 +114,6 @@
     "runner",
     "cases"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/campaign-v1"
 }

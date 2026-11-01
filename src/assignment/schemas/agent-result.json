@@ -374,5 +374,6 @@
     "reviewFindings",
     "requests"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/agent-result-v1"
 }

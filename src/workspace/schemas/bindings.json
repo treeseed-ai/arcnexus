@@ -101,5 +101,6 @@
     "repositories",
     "tools"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/bindings-v1"
 }

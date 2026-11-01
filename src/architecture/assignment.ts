@@ -131,7 +131,7 @@ class AssignmentResolver {
     private readonly id: string,
     private readonly options: AssignmentOptions,
   ) {
-    this.catalog = loadCatalog(repository, base);
+    this.catalog = loadCatalog(repository, base, options.bindings ?? loadBindings());
     this.context = ancestry(this.catalog, id);
     this.component = this.context.at(-1)!;
     this.env = environment(

@@ -245,5 +245,6 @@
     "dependency",
     "architectureProposal"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/initializer-result-v1"
 }

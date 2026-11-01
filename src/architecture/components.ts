@@ -1,3 +1,5 @@
+import { repositoryRevisions, type RepositoryRevision } from './repository-revisions.js';
+import type { Bindings } from './bindings.js';
 import { ComponentV4Resolver, type ComponentV4Fields } from './component-v4.js';
 import { ArchitectureReferences } from './references.js';
 import { validateInitialization } from './initialization.js';
@@ -76,6 +78,8 @@ export interface CompositionProfile {
   packageIds: string[];
 }
 export interface Catalog {
+  primaryRepository?: string;
+  repositoryRevisions?: Record<string, RepositoryRevision>;
   configurationSources: ConfigurationSource[];
   operations: Record<string, Operation>;
   compositions: Record<string, CompositionProfile>;
@@ -136,9 +140,9 @@ export function ancestry(catalog: Catalog, id: string): Component[] {
   }
   return result;
 }
-export function loadCatalog(repository: string, base: string): Catalog {
+export function loadCatalog(repository: string, base: string, bindings?: Bindings): Catalog {
   try {
-    return new CatalogLoader(repository, base).load();
+    return new CatalogLoader(repository, base, bindings).load();
   } catch (error) {
     throw new InputError(String(error));
   }
@@ -157,6 +161,7 @@ class CatalogLoader {
   constructor(
     private readonly repository: string,
     private readonly base: string,
+    private readonly bindings?: Bindings,
   ) {
     this.paths = git(repository, 'ls-tree', '-r', '--name-only', base, '--', 'architecture')
       .split('\n')
@@ -165,7 +170,6 @@ class CatalogLoader {
 
   load(): Catalog {
     this.definitions();
-    new ComponentV4Resolver(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('operations')) this.operation(path);
     const source = new ConfigurationReader().definition(
       this.repository,
@@ -174,6 +178,8 @@ class CatalogLoader {
     );
     this.catalog.configurationSources.push(source);
     const env = environment(source.value);
+    repositoryRevisions(this.catalog, env, this.repository, this.base, this.bindings);
+    new ComponentV4Resolver(this.catalog).resolve();
     if (!Object.keys(this.catalog.components).length) throw new InputError('No components defined');
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
@@ -181,7 +187,12 @@ class CatalogLoader {
     new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);
-    for (const component of Object.values(this.catalog.components)) grants.validate(component);
+    for (const component of Object.values(this.catalog.components))
+      if (
+        !this.catalog.primaryRepository ||
+        component.repository === this.catalog.primaryRepository
+      )
+        grants.validate(component);
     const ownership = new OwnershipValidator(this.repository, this.base).validate(this.catalog);
     if (ownership) this.catalog.configurationSources.push(ownership);
     return this.catalog;

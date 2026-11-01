@@ -181,5 +181,6 @@
     "dependency",
     "acceptance"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/workday-v1"
 }

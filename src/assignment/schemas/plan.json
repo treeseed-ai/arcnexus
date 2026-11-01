@@ -128,5 +128,6 @@
     "activities",
     "items",
     "questions"
-  ]
+  ],
+  "$id": "https://arcnexus.local/schemas/plan-v1"
 }

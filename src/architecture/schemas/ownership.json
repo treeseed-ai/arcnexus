@@ -53,5 +53,6 @@
         }
       }
     }
-  }
+  },
+  "$id": "https://arcnexus.local/schemas/ownership-v1"
 }

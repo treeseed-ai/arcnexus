@@ -422,5 +422,6 @@
     "requests",
     "coordination"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/workday-agent-result-v1"
 }

@@ -89,5 +89,6 @@
     "projects",
     "tools"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/experiment-bindings-v1"
 }

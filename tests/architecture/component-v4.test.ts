@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, symlinkSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
@@ -91,6 +91,19 @@ class ComponentV4Fixture {
     });
   }
 
+  primaryRepository(): void {
+    this.put('architecture/environment.json', {
+      schemaVersion: 1,
+      prerequisites: [],
+      setup: [],
+      generatedDirectories: [],
+      workspace: {
+        primary: { id: 'sample', repository: 'https://example.invalid/sample.git' },
+        dependencies: [],
+      },
+    });
+  }
+
   component(id: string, type: string, extra: object): any {
     return {
       schemaVersion: 4,
@@ -161,6 +174,98 @@ class ComponentV4Tests {
     assert.match(f.run('validate').stderr, /incompatible contract/);
   }
 
+  rejectsOverlappingFutureRoots(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    const other = f.component('other', 'library', {
+      parentId: 'package',
+      ownership: { paths: ['src/future'], publicModules: [], directoryExceptions: [] },
+      access: { readPaths: ['.'], writeDirectories: ['src/future'] },
+    });
+    f.put('architecture/components/other.json', other);
+    f.commit();
+    assert.match(f.run('validate').stderr, /ownership|owner/);
+  }
+
+  rejectsContainerWriteAuthority(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    f.put(
+      'architecture/components/package.json',
+      f.component('package', 'package', {
+        parentId: 'platform',
+        repository: 'sample',
+        repositoryRoot: 'package',
+        ownership: { paths: ['new'], publicModules: [], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['new'] },
+      }),
+    );
+    f.commit();
+    const result = f.run('validate');
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /containment|container/);
+  }
+
+  detectsInventoryChangesAtTheSelectedRevision(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    const first = JSON.parse(f.run('inspect', 'sample', 'Inspect', '--json').stdout);
+    f.put('package/src/new.ts', 'export const added = true;');
+    assert.equal(
+      JSON.parse(f.run('inspect', 'sample', 'Inspect', '--json').stdout).context.at(-1).inventory
+        .length,
+      1,
+    );
+    f.commit();
+    const second = JSON.parse(f.run('inspect', 'sample', 'Inspect', '--json').stdout);
+    assert.equal(second.context.at(-1).inventory.length, 2);
+    assert.notEqual(first.digest, second.digest);
+  }
+
+  separatesRepositoryOwnership(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    f.primaryRepository();
+    f.put(
+      'architecture/components/other-package.json',
+      f.component('other-package', 'package', {
+        parentId: 'platform',
+        repository: 'other',
+        repositoryRoot: 'package',
+      }),
+    );
+    f.put(
+      'architecture/components/other.json',
+      f.component('other', 'library', {
+        parentId: 'other-package',
+        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['src'] },
+      }),
+    );
+    f.commit();
+    const result = f.run('validate');
+    assert.equal(result.status, 0, result.stderr);
+  }
+
+  packagedCliUsesItsOwnSchemas(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    const packageRoot = join(f.root, 'supervisor');
+    cpSync(resolve('dist'), join(packageRoot, 'dist'), { recursive: true });
+    symlinkSync(resolve('node_modules'), join(packageRoot, 'node_modules'));
+    writeFileSync(join(packageRoot, 'package.json'), JSON.stringify({ type: 'module' }));
+    const result = spawnSync(
+      process.execPath,
+      [
+        join(packageRoot, 'dist/cli.js'),
+        'inspect',
+        'sample',
+        'Inspect packaged schemas',
+        '--project',
+        f.root,
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).context.at(-1).schemaVersion, 4);
+  }
+
   rejectsUnownedTrackedFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('orphan.txt', 'unowned');
@@ -178,3 +283,16 @@ test('v4 detects files outside every ownership root', (t) => suite.rejectsUnowne
 
 test('v4 captures referenced standards and contract versions', (t) =>
   suite.capturesStandardsAndRejectsMissingReferences(t));
+
+test('v4 rejects overlapping roots before files exist', (t) =>
+  suite.rejectsOverlappingFutureRoots(t));
+test('v4 rejects write authority on containment nodes', (t) =>
+  suite.rejectsContainerWriteAuthority(t));
+test('v4 discovers added files only at the captured revision', (t) =>
+  suite.detectsInventoryChangesAtTheSelectedRevision(t));
+
+test('v4 distinguishes identical paths owned in independent repositories', (t) =>
+  suite.separatesRepositoryOwnership(t));
+
+test('packaged CLI resolves trusted schemas without the source schema tree', (t) =>
+  suite.packagedCliUsesItsOwnSchemas(t));

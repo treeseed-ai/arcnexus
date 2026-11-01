@@ -54,7 +54,9 @@ export class OwnershipValidator {
   }
 
   private versionFour(catalog: Catalog, files: string[]): void {
-    const components = Object.values(catalog.components);
+    const components = Object.values(catalog.components).filter(
+      (c) => c.type === 'platform' || c.repository === catalog.primaryRepository,
+    );
     const owners = components
       .filter((c) => c.ownership)
       .map((c) => ({
@@ -120,11 +122,16 @@ export class OwnershipValidator {
           throw new Error(`Writable ownership conflict: ${writable}`);
       }
     }
+    this.requireOwners(catalog, identities);
+    policy.maintainedPaths.filter((p) => p !== '.').forEach(relativePath);
+  }
+
+  private requireOwners(catalog: Catalog, identities: Set<string>): void {
     for (const component of Object.values(catalog.components)) {
+      if (catalog.primaryRepository && component.repository !== catalog.primaryRepository) continue;
       if (!['platform', 'package'].includes(component.type) && !identities.has(component.id))
         throw new Error(`Missing declared owner: ${component.id}`);
     }
-    policy.maintainedPaths.filter((p) => p !== '.').forEach(relativePath);
   }
 
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {

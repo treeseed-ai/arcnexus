@@ -52,5 +52,6 @@
     "examples",
     "operationIds"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/pattern-v1"
 }

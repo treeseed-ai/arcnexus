@@ -1,3 +1,4 @@
+import { validateContractSchemas } from './contract-schemas.js';
 import { RevisionArtifacts } from './revision-artifacts.js';
 import { posix } from 'node:path';
 import type { Catalog, Component } from './components.js';
@@ -58,17 +59,22 @@ export class ArchitectureReferences {
   private contracts() {
     const result = new Map<
       string,
-      ContractDefinition & { owner: string; artifact: ReferenceArtifact }
+      ContractDefinition & { owner: string; artifact?: ReferenceArtifact }
     >();
     for (const component of Object.values(this.catalog.components)) {
       for (const definition of component.provides ?? []) {
         if (result.has(definition.id)) throw new Error(`Duplicate contract: ${definition.id}`);
         const path = this.ownedPath(component, definition.path);
-        const artifact = this.artifact(path);
-        if (definition.kind === 'json-schema') JSON.parse(artifact.text);
+        const artifact = this.artifact(path, component.repository);
+        if (definition.kind === 'json-schema' && artifact) JSON.parse(artifact.text);
         result.set(definition.id, { ...definition, path, owner: component.id, artifact });
       }
     }
+    validateContractSchemas(
+      [...result.values()]
+        .filter((entry) => entry.kind === 'json-schema' && entry.artifact)
+        .map((entry) => JSON.parse(entry.artifact!.text)),
+    );
     return result;
   }
 
@@ -90,9 +96,11 @@ export class ArchitectureReferences {
     if (!this.catalog.configurationSources.some((entry) => entry.path === source.path))
       this.catalog.configurationSources.push(source);
     const artifacts = [pattern.document, ...pattern.examples].map((p) =>
-      this.artifact(this.ownedPath(owner, p)),
+      this.artifact(this.ownedPath(owner, p), owner.repository),
     );
-    return { ...pattern, artifacts };
+    if (artifacts.some((artifact) => !artifact))
+      throw new Error(`Pattern requires repository binding: ${pattern.owner}`);
+    return { ...pattern, artifacts: artifacts as ReferenceArtifact[] };
   }
 
   private ownedPath(owner: Component, path: string): string {
@@ -107,7 +115,9 @@ export class ArchitectureReferences {
     return resolved;
   }
 
-  private artifact(path: string): ReferenceArtifact {
-    return new RevisionArtifacts(this.repository, this.base).read(path);
+  private artifact(path: string, repository: string): ReferenceArtifact | undefined {
+    const revision = this.catalog.repositoryRevisions?.[repository];
+    if (!revision) return undefined;
+    return new RevisionArtifacts(revision.source, revision.base).read(path);
   }
 }
