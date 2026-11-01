@@ -7,11 +7,11 @@ uses temporary real Git repositories and subprocesses; live inference stays sepa
 
 The GitHub Actions workflow exposes one stable job, `Repository checks`, on every
 pull request targeting `staging` or `main` and every push to those branches. There
-are no path filters that could leave a required check pending. A run has a five-minute
-timeout; newer runs cancel obsolete runs for the same PR or branch.
+are no path filters that could leave a required check pending. A run has a ten-minute test-infrastructure
+watchdog; newer runs cancel obsolete runs for the same PR or branch.
 
-The job installs a pinned YAML parser, runs subprocess acceptance tests, validates
-tracked skill frontmatter, and uses `git diff --check` to reject whitespace errors
+The job checks Prettier formatting, syntax-based lint, declared ownership, TypeScript,
+built-program acceptance, and tracked guidance metadata, and uses `git diff --check` to reject whitespace errors
 introduced by the change. Existing whitespace outside the change is not a migration
 requirement. Pull requests compare against their base; pushes compare against the
 previous branch head (falling back to the empty tree for a newly created branch).
@@ -29,8 +29,11 @@ Use Node 22 and Git. From the repository root:
 
 ```sh
 npm ci
+npm run format:check
+npm run lint
 npm run check
 npm test
+node dist/cli.js validate --project .
 node dist/cli.js guidance validate --project .
 git diff --check origin/staging...HEAD
 git diff --check
