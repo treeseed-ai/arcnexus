@@ -20,7 +20,7 @@ class WorkdayInterruptionTests {
         [cli, 'workday', 'run', f.manifest, '--project', f.repo, '--codex-path', f.executable],
         f.env,
       );
-    await waitFor(() => existsSync(marker), 'Recipient inference must start', 30000);
+    await child.waitForReady(() => existsSync(marker), 'Recipient inference must start');
     const pid = Number(readFileSync(marker));
     child.kill(signal);
     const code = await child.closed;

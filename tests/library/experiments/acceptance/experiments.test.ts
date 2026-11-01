@@ -49,6 +49,9 @@ class ExperimentsTests {
     assert.deepEqual(
       c.cases.map((c: any) => c.status),
       ['passed', 'passed', 'passed', 'failed'],
+      JSON.stringify(
+        c.cases.map(({ id, error, report }: any) => ({ id, error, errorDetail: report?.error })),
+      ),
     );
     assert.equal(c.cases[1].report.implementationAttempts, 2);
     assert.ok(c.cases[0].report.plan);
@@ -113,7 +116,7 @@ class ExperimentsTests {
     const manifest = join(f.root, 'manifest.json');
     writeFileSync(manifest, JSON.stringify(data));
     const r = f.runCampaign(manifest);
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, r.stderr + readFileSync(join(f.output, 'campaign.json'), 'utf8'));
     assert.equal(readFileSync(path, 'utf8'), 'process.exit(19)');
     assert.ok(
       JSON.parse(String(readFileSync(join(f.output, 'campaign.json')))).cases.every(

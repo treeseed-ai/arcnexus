@@ -1,10 +1,11 @@
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { TestProcess } from '../../testing/support/test-process.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises qualification behavior through observable scenarios. */
@@ -62,21 +63,14 @@ class QualificationTests {
     const f = campaign(t, 'implementation-timeout'),
       manifest = join(f.root, 'manifest.json');
     writeFileSync(manifest, JSON.stringify(f.value));
-    const child = spawn(process.execPath, [program, manifest, f.output], {
-      env: f.env,
-      stdio: 'ignore',
-    });
-    t.after(() => child.kill('SIGKILL'));
-    const exited = new Promise((resolve: any) => child.on('exit', (code: any) => resolve(code)));
-    const deadline = Date.now() + 30000;
-    while (!(
-      existsSync(f.calls) && readFileSync(f.calls, 'utf8').includes('"stage":"implementation"')
-    )) {
-      assert.ok(Date.now() < deadline, 'CLI must reach implementation');
-      await new Promise((r: any) => setTimeout(r, 30));
-    }
+    const child = new TestProcess(t, [program, manifest, f.output], f.env);
+    await child.waitForReady(
+      () =>
+        existsSync(f.calls) && readFileSync(f.calls, 'utf8').includes('"stage":"implementation"'),
+      'CLI must reach implementation',
+    );
     child.kill('SIGINT');
-    assert.equal(await exited, 130);
+    assert.equal(await child.closed, 130);
     const report = JSON.parse(String(readFileSync(join(f.output, 'campaign.json'))));
     assert.equal(report.status, 'cancelled');
     assert.equal(report.cases.length, 1);

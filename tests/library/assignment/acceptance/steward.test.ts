@@ -191,18 +191,22 @@ class StewardTests {
     if (!cancel) {
       const path = join(f.repo, 'architecture/execution-profiles/luna.yaml');
       const profile = JSON.parse(readFileSync(path, 'utf8'));
-      profile.commandTimeoutSeconds = 1;
+      profile.commandTimeoutSeconds = 10;
       writeFileSync(path, JSON.stringify(profile));
     }
     f.commit();
     const child = this.start(t, f, cancel, '60');
     if (cancel) {
-      await waitFor(() => this.hostReady(f), 'Host verification must start');
+      await child.waitForReady(() => this.hostReady(f), 'Host verification must start');
       child.kill('SIGINT');
     }
     assert.equal(await child.closed, cancel ? 130 : 1);
     const v = JSON.parse(child.stdout);
-    assert.equal(v.stage, 'verification');
+    assert.equal(v.stage, 'verification', JSON.stringify({ error: v.error, commands: v.commands }));
+    assert.ok(
+      this.hostReady(f),
+      'The timed or cancelled verification must actually reach HOST_READY',
+    );
     assert.equal(v.agent.status, 'completed');
     assert.equal(v.turns.length, 2);
   }
