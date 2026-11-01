@@ -54,6 +54,35 @@ class ExecutionObservationScenarios {
     assert.doesNotMatch(JSON.stringify(evidence), /FOREIGN_TIMELINE/);
   }
 
+  /** Artifact reads preserve page identity without recursively copying an earlier execution snapshot. */
+  artifact(t: TestContext): void {
+    const { f, store, run, record } = this.fixture(t);
+    const page = {
+      artifact: 'execution',
+      sha256: 'pinned',
+      offset: 0,
+      nextOffset: 17,
+      totalCharacters: 17,
+      complete: true,
+      content: 'RECURSIVE_CONTENT',
+    };
+    observe(f.state, record, 'codex.event', {
+      type: 'item.completed',
+      item: {
+        type: 'mcp_tool_call',
+        server: 'arcnexus',
+        tool: 'verification.evidence',
+        result: { content: [{ type: 'text', text: JSON.stringify(page) }] },
+      },
+    });
+    const evidence = new ExecutionEvidence(f.state, store).capture(run.id);
+    const event = (evidence.assignments[0]!.record as any).observations.timeline.events[0];
+    assert.equal(event.payload.item.result.contentRetainedInPinnedArtifact, true);
+    assert.equal(event.payload.item.result.sha256, 'pinned');
+    assert.equal(event.payload.item.result.complete, true);
+    assert.doesNotMatch(JSON.stringify(evidence), /RECURSIVE_CONTENT/);
+  }
+
   /** Registers a matching host-owned assignment record in a private durable store. */
   private fixture(t: TestContext) {
     const f = new GeneralFixture(t).fixture;
@@ -82,5 +111,8 @@ test('partial tool observations and inaccessible command output remain explicit 
   scenarios.partial(t));
 
 test('independent evidence rejects a foreign assignment timeline', (t) => scenarios.foreign(t));
+
+test('verification artifact observations preserve page provenance without recursive payloads', (t) =>
+  scenarios.artifact(t));
 
 registerSuite({ component: 'report', level: 'acceptance', tags: ['deterministic'] });

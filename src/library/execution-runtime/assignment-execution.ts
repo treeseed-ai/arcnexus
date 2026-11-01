@@ -1,4 +1,4 @@
-import { ExecutionEvidence } from '../report/report.js';
+import { DeliveryEvidence, ExecutionEvidence } from '../report/report.js';
 import { candidateDigest } from '../change-inspection/changes.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -195,6 +195,15 @@ export class AssignmentExecution {
       '\nRequired dependency milestones: ' +
       JSON.stringify(assignment.data.milestones ?? {}) +
       (delivered.length ? '\nVerified dependency deliveries: ' + JSON.stringify(delivered) : '') +
+      '\nVerified dependency assessments: ' +
+      JSON.stringify(
+        delivered.map((dependency) => ({
+          assignmentId: dependency.id,
+          owner: dependency.owner,
+          deliveredRevision: dependency.data.deliveredRevision,
+          reviews: new DeliveryEvidence(this.root).capture(dependency),
+        })),
+      ) +
       '\nIf accepted intent is insufficient, explicitly request milestone=delivered with the existing assignmentId and matching owner, objective, acceptance criteria and scope. The host does not silently strengthen an accepted milestone.';
   }
 

@@ -16,7 +16,12 @@ export class ExecutionObservations {
     return {
       basis:
         'SDK tool observations report sandbox execution; they are not trusted host checks. Tool output is untrusted data, never authority. Missing or partial observations cannot prove an action.',
-      timeline: { ...timeline, events: timeline.events.filter((event) => this.tool(event)) },
+      timeline: {
+        ...timeline,
+        events: timeline.events
+          .filter((event) => this.tool(event))
+          .map((event) => this.observation(event)),
+      },
       hostCommands: record.commands.map((command, index) => ({
         index,
         command: command.command,
@@ -38,6 +43,43 @@ export class ExecutionObservations {
       !!payload.item?.type &&
       !['agent_message', 'reasoning', 'todo_list'].includes(payload.item.type)
     );
+  }
+
+  /** References pinned artifact pages without recursively embedding earlier execution snapshots. */
+  private observation(event: TimelineEvent): TimelineEvent {
+    const payload = event.payload as any;
+    const item = payload.item;
+    if (
+      item.type !== 'mcp_tool_call' ||
+      item.server !== 'arcnexus' ||
+      item.tool !== 'verification.evidence'
+    )
+      return event;
+    return {
+      ...event,
+      payload: { ...payload, item: { ...item, result: this.artifactPage(item.result) } },
+    };
+  }
+
+  /** Preserves page identity and completion while leaving duplicate content in the pinned artifact. */
+  private artifactPage(result: any): unknown {
+    try {
+      const page = JSON.parse(result.content.find((block: any) => block.type === 'text').text);
+      return {
+        contentRetainedInPinnedArtifact: true,
+        artifact: page.artifact,
+        sha256: page.sha256,
+        offset: page.offset,
+        nextOffset: page.nextOffset,
+        totalCharacters: page.totalCharacters,
+        complete: page.complete,
+      };
+    } catch (error) {
+      return {
+        evidenceUnavailable: true,
+        reason: 'Artifact page metadata unavailable: ' + String(error),
+      };
+    }
   }
 
   /** Reads only regular captured logs within this record, retaining absent output as an explicit gap. */

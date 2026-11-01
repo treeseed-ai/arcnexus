@@ -277,3 +277,5 @@ export function saveMarkdown(root: string, record: RecordData): void {
     mode: 0o600,
   });
 }
+
+export { DeliveryEvidence } from './delivery-evidence.js';

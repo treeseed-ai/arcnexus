@@ -40,11 +40,12 @@ class CoordinationEvidenceScenarios {
     assert.equal(execution.source.head, context.base);
     assert.equal(execution.source.status, '');
     this.requestsPrecedeWork(execution);
-    this.observations(execution);
+    this.observations(execution, f.calls);
   }
 
   /** Retained SDK reads and host-check output reach the verifier as distinct evidence classes. */
-  private observations(execution: any): void {
+  private observations(execution: any, calls: string): void {
+    this.deliveries(execution, calls);
     const record = execution.assignments.find((a: any) => a.owner === 'a').record;
     const observations = record.observations;
     assert.ok(observations, 'Verifier needs observed tool output, not only completed turns');
@@ -60,6 +61,38 @@ class CoordinationEvidenceScenarios {
       observations.hostCommands.some((command: any) => typeof command.output.content === 'string'),
     );
     assert.doesNotMatch(JSON.stringify(observations.timeline.events), /agent_message/);
+  }
+
+  /** Consumers and reviewers receive validated supplier assessments and captured routing context. */
+  private deliveries(execution: any, calls: string): void {
+    assert.deepEqual(
+      execution.run.initialDirection.selectedOwners.map((owner: any) => owner.id),
+      ['a'],
+    );
+    for (const assignment of execution.assignments) {
+      assert.ok(
+        assignment.record.activationInput.context.some(
+          (component: any) => component.id === assignment.owner,
+        ),
+      );
+      const review = assignment.verificationReports[0];
+      assert.equal(review.assignmentId, assignment.id);
+      assert.equal(review.parentRecordId, assignment.record.recordId);
+      assert.equal(review.assessment.status, 'completed');
+      assert.ok(review.reviewedCandidate.candidateDigest);
+      assert.ok(review.observations.hostCommands);
+    }
+    const prompts = readFileSync(calls, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line).prompt);
+    assert.ok(
+      prompts.some(
+        (prompt) =>
+          prompt.includes('Verified dependency assessments:') &&
+          prompt.includes('"assessment":{"status":"completed"'),
+      ),
+    );
   }
 
   /** A foreign record reference cannot substitute another task's observations or disclose its contents. */

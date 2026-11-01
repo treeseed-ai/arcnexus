@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import type { ExecutionStore } from '../coordination-store/execution-store.js';
 import type { ExecutionAssignment, ExecutionRun } from '../coordination-store/execution-types.js';
 import type { RecordData } from '../workspace/state.js';
+import { DeliveryEvidence } from './delivery-evidence.js';
 import { ExecutionObservations } from './execution-observations.js';
 
 /** Projects current-run host observations without granting arbitrary access to private state files. */
@@ -32,6 +33,7 @@ export class ExecutionEvidence {
         candidateRevision: run.data.candidateRevision,
         initialCandidateRevision: run.data.initialCandidateRevision,
         initialCandidateSourceRun: run.data.initialCandidateSourceRun,
+        initialDirection: run.data.initialDirection,
       },
       events: this.store
         .events()
@@ -81,6 +83,7 @@ export class ExecutionEvidence {
       milestones: assignment.data.milestones,
       deliveredRevision: assignment.data.deliveredRevision,
       verification: assignment.evidence,
+      verificationReports: new DeliveryEvidence(this.root).capture(assignment),
       record: this.record(assignment.runId, assignment),
     };
   }
@@ -107,10 +110,23 @@ export class ExecutionEvidence {
     }
   }
 
+  /** Retains the actual owner catalog context supplied to engineering, without inferring private reasoning. */
+  private activationInput(record: RecordData) {
+    const captured = record.resolvedAssignment as
+      { context?: unknown; related?: unknown } | undefined;
+    return {
+      context: captured?.context,
+      related: captured?.related,
+      objective: record.objective,
+      authorityBase: (record.resolvedAssignment as { base?: string } | undefined)?.base,
+    };
+  }
+
   /** Includes host-observed turn/checkpoint data while leaving worker claims in their separate report fields. */
   private observations(record: RecordData) {
     return {
       recordId: record.id,
+      activationInput: this.activationInput(record),
       source: record.source,
       base: record.base,
       status: record.status,
