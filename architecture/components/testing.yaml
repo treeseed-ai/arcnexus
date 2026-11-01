@@ -77,6 +77,9 @@ ownership:
     - tests/library/testing/support/test-process.ts
     - tests/library/testing/support/workflow-fixture.ts
     - tests/library/testing/support/structured-output-check.ts
+    - tests/library/testing/support/general-fixture.ts
+    - tests/library/testing/support/controlled-general.ts
+    - tests/library/testing/support/controlled-evidence.ts
     - src/library/testing/captured-tests.ts
   directoryExceptions:
     - path: architecture/components

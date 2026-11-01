@@ -169,3 +169,8 @@ No experiment commits or integrates a candidate into the original checkout.
 
 Legacy manifests and reports remain readable during migration. Legacy scenarios
 must be ported to the shared engine before their execution adapters are removed.
+
+The testing library supplies the reusable multi-owner controlled harness used by
+runtime and prompt-campaign acceptance. Sharing that fixture preserves identical
+SDK, dependency and verification behavior across both entry points; individual
+component suites retain their own scenarios and assertions.
