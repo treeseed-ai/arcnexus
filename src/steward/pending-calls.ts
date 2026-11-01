@@ -12,7 +12,7 @@ export class PendingCalls {
   readonly tool: BridgeTool = {
     name: 'execution.wait',
     description:
-      'Wait for a pending operation response by its host-returned requestId. Repeat while pending. This observes the same operation and does not restart it or consume an operation allowance.',
+      'Wait for a pending operation response by its host-returned requestId. Waits until completion; receive the result before ending the turn. This observes the same operation and does not restart it or consume an operation allowance.',
     inputSchema: {
       type: 'object',
       properties: { requestId: { type: 'string' } },
@@ -22,7 +22,7 @@ export class PendingCalls {
   };
   constructor(private readonly execute: (name: string, args: unknown) => Promise<unknown>) {}
   async call(name: string, args: unknown): Promise<unknown> {
-    if (name === this.tool.name) return this.wait(this.identity(args));
+    if (name === this.tool.name) return this.complete(this.identity(args));
     const id = randomUUID();
     const pending: PendingCall = { settled: Promise.resolve(), complete: false };
     pending.settled = this.execute(name, args)
@@ -55,6 +55,13 @@ export class PendingCalls {
     )
       throw new Error('Unknown pending operation reference');
     return args.requestId;
+  }
+  private async complete(id: string): Promise<unknown> {
+    const pending = this.calls.get(id)!;
+    await pending.settled;
+    this.calls.delete(id);
+    if (pending.error) throw pending.error;
+    return pending.result;
   }
   private async wait(id: string): Promise<unknown> {
     const pending = this.calls.get(id)!;

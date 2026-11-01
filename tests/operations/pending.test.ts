@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { operationFixture } from '../development-tooling/operations-fixture.js';
@@ -11,7 +11,7 @@ class PendingOperationTests {
     delete op.timeoutSeconds;
     op.args = [
       '-e',
-      "setTimeout(()=>console.log('Finished after transport observation window'),2100)",
+      "setTimeout(()=>console.log('Finished after transport observation window'),4100)",
     ];
     writeFileSync(path, JSON.stringify(op));
     f.commit();
@@ -20,11 +20,12 @@ class PendingOperationTests {
     const record = JSON.parse(result.stdout);
     assert.equal(record.operationCalls, 1);
     assert.equal(record.operations.length, 1);
-    assert.ok(
-      existsSync(join(f.root, 'operations.jsonl.pending')),
-      'Host returns pending while work continues',
+    assert.equal(
+      readFileSync(join(f.root, 'operations.jsonl.pending'), 'utf8').trim().split('\n').length,
+      1,
+      'One initial progress response, then wait for completed feedback',
     );
-    assert.ok(record.operations[0].durationMs >= 2100);
+    assert.ok(record.operations[0].durationMs >= 4100);
     assert.match(
       readFileSync(join(f.root, 'operations.jsonl'), 'utf8'),
       /Finished after transport/,
