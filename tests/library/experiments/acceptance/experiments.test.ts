@@ -185,7 +185,7 @@ class ExperimentsTests {
       ...process.env,
       ARCNEXUS_STATE_DIR: f.state,
     });
-    await waitFor(() => existsSync(marker), 'Acceptance must start', 30000);
+    await waitFor(() => this.started(child, marker), 'Acceptance must start', 120_000);
     const pid = Number(readFileSync(marker));
     child.kill(signal);
     const code = await child.closed;
@@ -198,6 +198,15 @@ class ExperimentsTests {
     const report = JSON.parse(String(readFileSync(join(f.output, 'campaign.json'))));
     assert.equal(report.status, signal === 'SIGINT' ? 'cancelled' : 'running');
     assert.ok(existsSync(join(f.output, 'success/report.json')));
+  }
+
+  /** Reports premature campaign failure immediately instead of hiding its output behind readiness polling. */
+  private started(child: TestProcess, marker: string): boolean {
+    if (child.child.exitCode !== null || child.child.signalCode !== null)
+      assert.fail(
+        `Campaign exited before acceptance: ${child.child.exitCode ?? child.child.signalCode}\n${child.stderr}\n${child.stdout}`,
+      );
+    return existsSync(marker);
   }
 
   /** Adds a long-running external check with a PID marker for cancellation assertions. */
