@@ -20,9 +20,11 @@ as it is reliable. Direct bootstrap development supplies only what that loop nee
 1. **Useful immediately:** the first phase accepts an objective for one component,
    executes real engineering work, runs verification, and exposes the actual diff
    and report through a CLI.
-2. **Accountable coordination:** two stewards complete a contract-dependent change
-   through bounded requests and handoffs, with one owner per assignment and
-   explicit blocked states. Demonstrate rejection and interruption as well as success.
+2. **Accountable coordination:** any number of existing package stewards execute
+   sequentially through durable assignments, inboxes and dynamic dependencies.
+   Support self-directed workdays and director-led tasks, with one accountable owner
+   per assignment. The [general execution contract](library/execution-runtime/execution.md)
+   and its live qualification gates must be satisfied before phase three.
 3. **Architect-directed operation:** a small UI lets the architect select a
    component, direct its steward, run a workday, and inspect evidence.
 4. **Self-development:** use ArcNexus to make a real improvement to ArcNexus; retain
@@ -67,8 +69,8 @@ are not automatic context.
   Delegating a dependency does not complete the original assignment.
 - Separate contract acceptance, implementation readiness, and release availability.
   Resume dependent work at the milestone it actually requires.
-- Bound executions and request exchanges; record failed, interrupted, and blocked
-  outcomes. A workday must end with an honest report, including partial results.
+- Govern execution by observed progress and cancellation, without work budgets;
+  record failed, interrupted, and blocked outcomes. A workday must end with an honest report, including partial results.
 - Verify actual changed paths and executed tests. Prompts and agent claims alone
   cannot enforce scope or prove success. Development success does not authorize production.
 - Use concise functions with coherent responsibilities, simple modules, and existing
@@ -129,15 +131,16 @@ Deterministic runtime code still schedules, bounds and records execution. Prove
 the arrangement with two Luna workers before scaling the number of stewards.
 
 - Phase two uses a verified change in the shared candidate as its delivery milestone.
-  Threads continue only within the same live workday; process interruption ends the
-  workday without automatic recovery. See [workdays](library/workday/workdays.md).
+  Durable checkpoints support explicit pause/resume and validated recovery.
+  Uncertain operations are never replayed automatically. Historical two-owner
+  workdays remain inspectable but cannot resume under the new scheduler.
 - Later: which architectural decisions may stewards accept themselves, and which
   require the human or an explicitly authorized parent steward?
 
 ## Sequence, not a large implementation plan
 
 1. Single steward and real CLI engineering result.
-2. Two stewards and bounded contract coordination.
+2. General agent execution, persistent workdays and director-led tasks; live qualification.
 3. Minimal architecture/direct-steward/workday UI.
 4. Expanded inheritance, reusable patterns, and conformance checks.
 5. Multi-project composition and release coordination.

@@ -61,6 +61,8 @@ ownership:
     - architecture/components/coordination-store.yaml
   publicModules:
     - src/library/coordination-store/workday-store.ts
+    - src/library/coordination-store/execution-store.ts
+    - src/library/coordination-store/execution-types.ts
   directoryExceptions:
     - path: architecture/components
       reason: Directory-only sandbox grants; only this component definition is
