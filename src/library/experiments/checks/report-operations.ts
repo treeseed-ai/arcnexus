@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
+
+/** Independently checks operation report against retained candidate evidence. */
 class OperationReportAcceptance {
   private readonly base = {
     id: 'qualification',
@@ -15,6 +17,7 @@ class OperationReportAcceptance {
     environment: {},
     commands: [],
   };
+
   private readonly captured = {
     ...this.base,
     operations: [
@@ -23,6 +26,8 @@ class OperationReportAcceptance {
     ],
     services: [{ id: 'local', status: 'stopped', endpointClosed: true }],
   };
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const markdownReport = await this.renderer();
     const before = JSON.stringify(this.captured),
@@ -47,6 +52,8 @@ class OperationReportAcceptance {
     this.historical(markdownReport);
     console.log('INDEPENDENT_REPORT_OPERATIONS_PASSED');
   }
+
+  /** Loads the candidate renderer from its supported historical or current layout. */
   private async renderer(): Promise<(record: any) => string> {
     const { markdownReport } = await import(
       pathToFileURL(
@@ -59,6 +66,8 @@ class OperationReportAcceptance {
     );
     return markdownReport;
   }
+
+  /** Checks that records missing newer fields remain readable. */
   private historical(markdownReport: (record: any) => string): void {
     const historical = markdownReport(this.base);
     assert.match(historical, /No managed operations recorded\./);
@@ -66,4 +75,5 @@ class OperationReportAcceptance {
     assert.doesNotMatch(historical, /undefined|null/);
   }
 }
+
 await new OperationReportAcceptance().run();

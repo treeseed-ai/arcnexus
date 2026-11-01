@@ -5,7 +5,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises task behavior through observable scenarios. */
 class TaskTests {
+  /** Verifies that changed request invalidates a ready task before worker activation. */
   readyResearch(t: TestContext, stale = false): void {
     const f = workflowFixture(t);
     f.configure({ initializerMode: 'proposal-research' });
@@ -31,6 +34,8 @@ class TaskTests {
       assert.equal(report.acceptedProposal, proposal.id);
     }
   }
+
+  /** Invokes task planning with the controlled initializer and caller input file. */
   private plan(f: ReturnType<typeof workflowFixture>, input: string) {
     return this.command(
       f,
@@ -43,6 +48,8 @@ class TaskTests {
       f.executable,
     );
   }
+
+  /** Spawns the built task CLI with fixture isolation and a test-harness watchdog. */
   private command(f: ReturnType<typeof workflowFixture>, ...args: string[]) {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
@@ -50,6 +57,8 @@ class TaskTests {
       timeout: 30 * 60 * 1000,
     });
   }
+
+  /** Verifies that missing-owner task retains inspectable proposal without worker inference or source edits. */
   missingOwner(t: TestContext): void {
     const f = workflowFixture(t);
     f.configure({ initializerMode: 'proposal-missing' });
@@ -80,11 +89,14 @@ class TaskTests {
     assert.equal(run.status, 2, run.stderr);
   }
 }
+
 const suite = new TaskTests();
+
 test('missing-owner task retains inspectable proposal without worker inference or source edits', (t) =>
   suite.missingOwner(t));
 
 test('ready task executes without duplicate initialization', (t) => suite.readyResearch(t));
+
 test('changed request invalidates a ready task before worker activation', (t) =>
   suite.readyResearch(t, true));
 

@@ -8,6 +8,7 @@ import { ComponentTestFixture } from '../support/component-test-fixture.js';
 
 /** Checks that later checkout edits cannot reduce the captured host selection. */
 class CapturedTests {
+  /** Mutates the candidate test declaration and checks the original captured selection remains authoritative. */
   preservesSelection(t: TestContext, change: 'remove' | 'retag' | 'implementation'): void {
     const fixture = new ComponentTestFixture(t);
     const owner = fixture.assignment().context.at(-1);
@@ -33,7 +34,9 @@ class CapturedTests {
 }
 
 const suite = new CapturedTests();
+
 for (const change of ['remove', 'retag', 'implementation'] as const)
   test(`captured host test selection handles ${change}`, (t) =>
     suite.preservesSelection(t, change));
+
 registerSuite({ component: 'testing', level: 'integration', tags: ['deterministic'] });

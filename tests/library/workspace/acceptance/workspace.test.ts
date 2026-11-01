@@ -1,11 +1,11 @@
+import { cleanupIntent, fixture, evidence, cli } from '../support/workspace-fixture.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import {
   existsSync,
   lstatSync,
   mkdirSync,
-  mkdtempSync,
   readdirSync,
   readFileSync,
   readlinkSync,
@@ -13,14 +13,17 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { groupMembers } from '../../../../dist/library/operations/service-state.js';
 import { TestProcess, waitFor, killProcessGroup } from '../../testing/support/test-process.js';
+
+/** Exercises workspace behavior through observable scenarios. */
 class WorkspaceTests {
-  builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport_1(t: TestContext) {
+  /** Verifies that built prepare creates apinned workspace runs setup there and cleanup retains branch report. */
+  builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport(t: TestContext) {
     const f = fixture(t, [
       {
         command: 'node',
@@ -45,14 +48,18 @@ class WorkspaceTests {
     assert.equal(existsSync(join(f.state, 'runs', record.id, 'report.json')), true);
     assert.equal(f.run('cleanup', record.id).status, 0);
   }
-  dirtySourceIsRejectedWithoutPreparation_2(t: TestContext) {
+
+  /** Verifies that dirty source is rejected without preparation. */
+  dirtySourceIsRejectedWithoutPreparation(t: TestContext) {
     const f = fixture(t);
     writeFileSync(join(f.repo, 'source.txt'), 'dirty');
     const r = f.prepare();
     assert.equal(r.status, 2);
     assert.match(r.stderr, /clean/i);
   }
-  setupFailureRetainsEvidenceAndWorkspace_3(t: TestContext) {
+
+  /** Verifies that setup failure retains evidence and workspace. */
+  setupFailureRetainsEvidenceAndWorkspace(t: TestContext) {
     const f = fixture(t, [
       { command: 'node', args: ['-e', 'console.error("setup broke");process.exit(4)'] },
     ]);
@@ -66,7 +73,9 @@ class WorkspaceTests {
       /setup broke/,
     );
   }
-  setupSourceMutationIsRejectedAndCleanupRefusesToLoseIt_4(t: TestContext) {
+
+  /** Verifies that setup source mutation is rejected and cleanup refuses to lose it. */
+  setupSourceMutationIsRejectedAndCleanupRefusesToLoseIt(t: TestContext) {
     const f = fixture(t, [
       { command: 'node', args: ['-e', "require('fs').writeFileSync('source.txt','changed')"] },
     ]);
@@ -76,7 +85,9 @@ class WorkspaceTests {
     assert.equal(f.run('cleanup', record.id).status, 1);
     assert.equal(readFileSync(join(record.workspace, 'source.txt'), 'utf8'), 'changed');
   }
-  cleanupRefusesUnknownIgnoredFilesAndUntrackedFiles_5(t: TestContext) {
+
+  /** Verifies that cleanup refuses unknown ignored files and untracked files. */
+  cleanupRefusesUnknownIgnoredFilesAndUntrackedFiles(t: TestContext) {
     const f = fixture(t);
     const r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -89,14 +100,18 @@ class WorkspaceTests {
     }
     assert.equal(f.run('cleanup', record.id).status, 0);
   }
-  overallTimeoutRetainsAFailedRecord_6(t: TestContext) {
+
+  /** Verifies that overall timeout retains afailed record. */
+  overallTimeoutRetainsAFailedRecord(t: TestContext) {
     const f = fixture(t, [{ command: 'node', args: ['-e', 'setInterval(()=>{},1000)'] }]);
     const r = f.prepare('--timeout-seconds', '0.2');
     assert.equal(r.status, 1);
     assert.match(r.stderr, /timed out/i);
     assert.equal(JSON.parse(r.stdout).status, 'failed');
   }
-  async SIGINTCancelsCommandAndReleasesLock_7(t: TestContext) {
+
+  /** Verifies that sigintcancels command and releases lock. */
+  async SIGINTCancelsCommandAndReleasesLock(t: TestContext) {
     const f = fixture(t, [
       { command: 'node', args: ['-e', 'console.log("READY");setInterval(()=>{},1000)'] },
     ]);
@@ -124,7 +139,9 @@ class WorkspaceTests {
     assert.equal(JSON.parse(output).status, 'cancelled');
     assert.equal(existsSync(join(f.state, 'active.lock')), false);
   }
-  invalidConfigurationAndMissingPrerequisiteFailAtTheirRespectiveStages_8(t: TestContext) {
+
+  /** Verifies that invalid configuration and missing prerequisite fail at their respective stages. */
+  invalidConfigurationAndMissingPrerequisiteFailAtTheirRespectiveStages(t: TestContext) {
     const f = fixture(t);
     writeFileSync(
       join(f.repo, 'architecture/environment.yaml'),
@@ -153,7 +170,9 @@ class WorkspaceTests {
     assert.equal(r.status, 1);
     assert.equal(JSON.parse(r.stdout).commands.length, 1);
   }
-  lockPreventsOverlappingOperationsAndOwnershipTamperingRefusesCleanup_9(t: TestContext) {
+
+  /** Verifies that lock prevents overlapping operations and ownership tampering refuses cleanup. */
+  lockPreventsOverlappingOperationsAndOwnershipTamperingRefusesCleanup(t: TestContext) {
     const f = fixture(t);
     const r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -166,7 +185,9 @@ class WorkspaceTests {
     assert.equal(f.run('cleanup', record.id).status, 1);
     assert.ok(existsSync(f.repo));
   }
-  explicitBaseRemainsPinnedWhileSourceHEADAdvances_10(t: TestContext) {
+
+  /** Verifies that explicit base remains pinned while source headadvances. */
+  explicitBaseRemainsPinnedWhileSourceHEADAdvances(t: TestContext) {
     const f = fixture(t),
       base = f.git('rev-parse', 'HEAD');
     writeFileSync(join(f.repo, 'source.txt'), 'new');
@@ -180,7 +201,9 @@ class WorkspaceTests {
     );
     assert.equal(readFileSync(join(f.repo, 'source.txt'), 'utf8'), 'new');
   }
-  async worktreeCreationDoesNotOverwriteACollidingBranchOrDirectory_11(t: TestContext) {
+
+  /** Verifies that worktree creation does not overwrite acolliding branch or directory. */
+  async worktreeCreationDoesNotOverwriteACollidingBranchOrDirectory(t: TestContext) {
     const { createWorkspace, prepareWorkspace } =
       await import('../../../../dist/library/workspace/workspace.js');
     const { stateRoot } = await import('../../../../dist/library/workspace/state.js');
@@ -201,7 +224,9 @@ class WorkspaceTests {
     await assert.rejects(prepareWorkspace(root, record, new AbortController().signal));
     assert.equal(readFileSync(join(record.workspace, 'precious'), 'utf8'), 'keep');
   }
-  scenario_12(t: TestContext, failed: any) {
+
+  /** Verifies the scenario preserves cleanup evidence on retry. */
+  preservesCleanupEvidenceOnRetry(t: TestContext, failed: any) {
     const f = fixture(t, failed ? [{ command: 'node', args: ['-e', 'process.exit(4)'] }] : []);
     const prepared = f.prepare();
     assert.equal(prepared.status, failed ? 1 : 0, prepared.stderr);
@@ -223,7 +248,9 @@ class WorkspaceTests {
     original.assertReports();
     assert.deepEqual(readFileSync(receiptPath), receipt);
   }
-  scenario_13(t: TestContext, legacy: any) {
+
+  /** Verifies the scenario rejects replacement during cleanup. */
+  rejectsReplacementDuringCleanup(t: TestContext, legacy: any) {
     const f = fixture(t),
       prepared = f.prepare();
     assert.equal(prepared.status, 0, prepared.stderr);
@@ -249,6 +276,8 @@ class WorkspaceTests {
       checkEvidence();
     }
   }
+
+  /** Removes the initial candidate through current cleanup or a historical receipt fixture. */
   private removeInitialCandidate(f: any, record: any, legacy: boolean): void {
     if (legacy) {
       f.git('worktree', 'remove', record.workspace);
@@ -259,6 +288,8 @@ class WorkspaceTests {
       assert.equal(result.status, 0, result.stderr);
     }
   }
+
+  /** Verifies that assert replacement preserved. */
   private assertReplacementPreserved(f: any, record: any, kind: string): void {
     if (kind === 'file') writeFileSync(record.workspace, 'keep');
     else if (kind === 'directory') {
@@ -279,6 +310,8 @@ class WorkspaceTests {
         'keep',
       );
   }
+
+  /** Verifies that preserves evidence after parent loss. */
   async preservesEvidenceAfterParentLoss(t: TestContext) {
     const f = fixture(t, [
       {
@@ -305,6 +338,8 @@ class WorkspaceTests {
     assert.match(readFileSync(captured.log, 'utf8'), /COMMAND_PID=/);
     assert.equal(JSON.parse(readFileSync(captured.record, 'utf8')).finishedAt, undefined);
   }
+
+  /** Finds a retained setup command PID after its log announces process startup. */
   private runningSetup(f: any): { pid: number; record: string; log: string } | undefined {
     for (const id of readdirSync(join(f.state, 'runs'))) {
       const directory = join(f.state, 'runs', id),
@@ -315,7 +350,9 @@ class WorkspaceTests {
     }
     return undefined;
   }
-  cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent_15(t: TestContext) {
+
+  /** Verifies that cleanup reconciles primary removal only with durable matching intent. */
+  cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent(t: TestContext) {
     const f = fixture(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -335,7 +372,9 @@ class WorkspaceTests {
     );
     assert.equal(f.run('cleanup', record.id).status, 0);
   }
-  cleanupRefusesUnexplainedDisappearanceAndReplacementAfterIntent_16(t: TestContext) {
+
+  /** Verifies that cleanup refuses unexplained disappearance and replacement after intent. */
+  cleanupRefusesUnexplainedDisappearanceAndReplacementAfterIntent(t: TestContext) {
     const f = fixture(t),
       record = JSON.parse(f.prepare().stdout),
       dir = join(f.state, 'runs', record.id);
@@ -349,108 +388,57 @@ class WorkspaceTests {
     assert.equal(readFileSync(join(record.workspace, 'precious'), 'utf8'), 'keep');
   }
 }
+
 const suite = new WorkspaceTests();
 
-const cli = resolve('dist/cli.js');
-function cleanupIntent(record: any) {
-  const stat = lstatSync(record.workspace);
-  return {
-    schemaVersion: 1,
-    id: record.id,
-    source: record.source,
-    commonDir: record.commonDir,
-    base: record.base,
-    branch: record.branch,
-    workspace: record.workspace,
-    device: stat.dev,
-    inode: stat.ino,
-    members: record.members,
-    status: 'removing',
-  };
-}
-function fixture(t: any, setup: any = []): any {
-  const root = mkdtempSync(join(tmpdir(), 'arcnexus-test-'));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
-  const repo = join(root, 'repo'),
-    state = join(root, 'state');
-  mkdirSync(join(repo, 'architecture'), { recursive: true });
-  const git = (...args: any) => {
-    const r = spawnSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
-    assert.equal(r.status, 0, r.stderr);
-    return r.stdout.trim();
-  };
-  git('init', '-b', 'main');
-  git('config', 'user.email', 'test@example.invalid');
-  git('config', 'user.name', 'Test');
-  writeFileSync(join(repo, '.gitignore'), 'generated/\n.env\n');
-  writeFileSync(join(repo, 'source.txt'), 'original\n');
-  writeEnvironment(repo, setup);
-  git('add', '.');
-  git('commit', '-m', 'fixture');
-  const env = { ...process.env, ARCNEXUS_STATE_DIR: state };
-  const run = (...args: any) =>
-    spawnSync(process.execPath, [cli, ...args], { env, encoding: 'utf8' });
-  const prepare = (...args: any) => run('prepare', '--project', repo, ...args);
-  return { root, repo, state, git, env, run, prepare };
-}
-function writeEnvironment(repo: string, setup: any[]): void {
-  writeFileSync(
-    join(repo, 'architecture/environment.yaml'),
-    JSON.stringify({
-      schemaVersion: 1,
-      prerequisites: [],
-      setup,
-      generatedDirectories: ['generated'],
-    }),
-  );
-}
 test('built prepare creates a pinned workspace, runs setup there and cleanup retains branch/report', (t: any) =>
-  suite.builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport_1(t));
-test('dirty source is rejected without preparation', (t: any) =>
-  suite.dirtySourceIsRejectedWithoutPreparation_2(t));
-test('setup failure retains evidence and workspace', (t: any) =>
-  suite.setupFailureRetainsEvidenceAndWorkspace_3(t));
-test('setup source mutation is rejected and cleanup refuses to lose it', (t: any) =>
-  suite.setupSourceMutationIsRejectedAndCleanupRefusesToLoseIt_4(t));
-test('cleanup refuses unknown ignored files and untracked files', (t: any) =>
-  suite.cleanupRefusesUnknownIgnoredFilesAndUntrackedFiles_5(t));
-test('overall timeout retains a failed record', (t: any) =>
-  suite.overallTimeoutRetainsAFailedRecord_6(t));
-test('SIGINT cancels command and releases lock', (t: any) =>
-  suite.SIGINTCancelsCommandAndReleasesLock_7(t));
-test('invalid configuration and missing prerequisite fail at their respective stages', (t: any) =>
-  suite.invalidConfigurationAndMissingPrerequisiteFailAtTheirRespectiveStages_8(t));
-test('lock prevents overlapping operations and ownership tampering refuses cleanup', (t: any) =>
-  suite.lockPreventsOverlappingOperationsAndOwnershipTamperingRefusesCleanup_9(t));
-test('explicit base remains pinned while source HEAD advances', (t: any) =>
-  suite.explicitBaseRemainsPinnedWhileSourceHEADAdvances_10(t));
-test('worktree creation does not overwrite a colliding branch or directory', (t: any) =>
-  suite.worktreeCreationDoesNotOverwriteACollidingBranchOrDirectory_11(t));
+  suite.builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport(t));
 
-function evidence(f: any, record: any): any {
-  const dir = join(f.state, 'runs', record.id);
-  const reports = ['report.json', 'report.md'].map((name: any) => readFileSync(join(dir, name)));
-  return {
-    dir,
-    assertReports() {
-      for (const [i, name] of ['report.json', 'report.md'].entries()) {
-        assert.deepEqual(readFileSync(join(dir, name)), reports[i], `${name} changed`);
-      }
-    },
-  };
-}
+test('dirty source is rejected without preparation', (t: any) =>
+  suite.dirtySourceIsRejectedWithoutPreparation(t));
+
+test('setup failure retains evidence and workspace', (t: any) =>
+  suite.setupFailureRetainsEvidenceAndWorkspace(t));
+
+test('setup source mutation is rejected and cleanup refuses to lose it', (t: any) =>
+  suite.setupSourceMutationIsRejectedAndCleanupRefusesToLoseIt(t));
+
+test('cleanup refuses unknown ignored files and untracked files', (t: any) =>
+  suite.cleanupRefusesUnknownIgnoredFilesAndUntrackedFiles(t));
+
+test('overall timeout retains a failed record', (t: any) =>
+  suite.overallTimeoutRetainsAFailedRecord(t));
+
+test('SIGINT cancels command and releases lock', (t: any) =>
+  suite.SIGINTCancelsCommandAndReleasesLock(t));
+
+test('invalid configuration and missing prerequisite fail at their respective stages', (t: any) =>
+  suite.invalidConfigurationAndMissingPrerequisiteFailAtTheirRespectiveStages(t));
+
+test('lock prevents overlapping operations and ownership tampering refuses cleanup', (t: any) =>
+  suite.lockPreventsOverlappingOperationsAndOwnershipTamperingRefusesCleanup(t));
+
+test('explicit base remains pinned while source HEAD advances', (t: any) =>
+  suite.explicitBaseRemainsPinnedWhileSourceHEADAdvances(t));
+
+test('worktree creation does not overwrite a colliding branch or directory', (t: any) =>
+  suite.worktreeCreationDoesNotOverwriteACollidingBranchOrDirectory(t));
+
 for (const failed of [false, true])
   test(`cleanup preserves ${failed ? 'failed' : 'successful'} run evidence and receipt on retry`, (t: any) =>
-    suite.scenario_12(t, failed));
+    suite.preservesCleanupEvidenceOnRetry(t, failed));
+
 for (const legacy of [false, true])
   test(`cleanup refuses replacement paths and safely handles ${legacy ? 'legacy' : 'current'} removal`, (t: any) =>
-    suite.scenario_13(t, legacy));
+    suite.rejectsReplacementDuringCleanup(t, legacy));
 
 test('hard parent death stops a finite setup process group and preserves incomplete evidence', (t: any) =>
   suite.preservesEvidenceAfterParentLoss(t));
+
 test('cleanup reconciles primary removal only with durable matching intent', (t: any) =>
-  suite.cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent_15(t));
+  suite.cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent(t));
+
 test('cleanup refuses unexplained disappearance and replacement after intent', (t: any) =>
-  suite.cleanupRefusesUnexplainedDisappearanceAndReplacementAfterIntent_16(t));
+  suite.cleanupRefusesUnexplainedDisappearanceAndReplacementAfterIntent(t));
 
 registerSuite({ component: 'workspace', level: 'acceptance', tags: ['deterministic'] });

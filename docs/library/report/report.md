@@ -32,6 +32,14 @@ service id, status, and `endpointClosed` boolean. Absent or empty service histor
 produces exactly `No managed services recorded.` Both summaries use only captured
 record fields and leave the records unchanged.
 
+`## Captured test selection` lists the mandatory test suites captured in each
+component definition under `resolvedAssignment.context`. Each entry shows the
+captured component id, source path, test level, and SHA-256, sorted by source path
+in ascending, case-sensitive string order. Rendering reads only the captured
+assignment context and does not inspect test files or reorder the captured arrays.
+When historical records have no captured test selection, the section says
+`unavailable`. An explicitly captured empty suite list says `No tests captured.`
+
 ## Coordination evidence
 
 Reports summarize planned/actual/corrective turns, implementation attempts, elapsed
@@ -40,3 +48,9 @@ and provenance references describe host-supplied context, not complete effective
 Codex context. Host command results and independent acceptance remain distinct from
 agent findings, uncertainty, boundary requests and caller interventions. Missing
 historical fields say unavailable; they are not interpreted as zero or none.
+
+For report assignments, obtain `report-format` feedback before interpreting
+`report-lint` size results. Neither operation changes files. Captured verification
+checks formatting and lint before expensive repository tests; the focused report
+regression remains verification command 2. A formatting failure must be repaired
+within report scope, not hidden by compressing expressions onto fewer lines.

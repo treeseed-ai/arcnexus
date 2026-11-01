@@ -12,6 +12,7 @@ export interface TestFilters {
   category?: string;
   tags?: string[];
 }
+
 export interface DiscoveredSuite extends SuiteMetadata {
   source: string;
   profile: string;
@@ -23,8 +24,10 @@ export interface DiscoveredSuite extends SuiteMetadata {
 
 /** Discovers current checkout suites within captured, owner-declared test roots. */
 export class TestDiscovery {
+  /** Selects the checkout to inventory without executing its test modules. */
   constructor(private readonly project: string) {}
 
+  /** Enumerates owner-declared suite files without executing their modules. */
   discover(component: Component, outputRoot: string): DiscoveredSuite[] {
     const paths = new Set<string>();
     const excluded = component.discovery?.exclude ?? [];
@@ -32,6 +35,7 @@ export class TestDiscovery {
     return [...paths].sort().map((path) => this.suite(component, path, outputRoot));
   }
 
+  /** Visits regular files within the declared root while respecting exclusions. */
   private walk(path: string, paths: Set<string>, excluded: string[]): void {
     if (excluded.some((root) => path === root || path.startsWith(root + '/'))) return;
     const absolute = this.safe(path);
@@ -44,6 +48,7 @@ export class TestDiscovery {
     } else if (stat.isFile() && path.endsWith('.test.ts')) paths.add(path);
   }
 
+  /** Rejects escaping paths and symlink traversal before reading test source. */
   private safe(path: string): string {
     const root = resolve(this.project);
     const absolute = resolve(root, path);
@@ -57,6 +62,7 @@ export class TestDiscovery {
     return absolute;
   }
 
+  /** Reads literal suite metadata and maps the source to its compiled test artifact. */
   private suite(component: Component, source: string, outputRoot: string): DiscoveredSuite {
     const text = readFileSync(this.safe(source), 'utf8');
     const metadata = new SuiteMetadataReader().read(source, text);

@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+
+/** Independently checks tree artifacts against retained candidate evidence. */
 class TreeArtifactsAcceptance {
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     const expected = JSON.parse(
       readFileSync(
@@ -21,6 +24,8 @@ class TreeArtifactsAcceptance {
     assert.match(invalid.stderr, /ARTIFACT_SELECTION_REQUIRED/);
     console.log('Independent real-archive diagnostics acceptance passed');
   }
+
+  /** Builds the genuine package-artifact view used by independent diagnostics checks. */
   private inventory(owner: string) {
     return spawnSync(
       'bun',
@@ -29,4 +34,5 @@ class TreeArtifactsAcceptance {
     );
   }
 }
+
 new TreeArtifactsAcceptance().run();

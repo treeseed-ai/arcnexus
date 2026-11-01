@@ -5,6 +5,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 export class SchemaPackager {
   private readonly registry: Record<string, string> = {};
 
+  /** Assembles the output consumed by subsequent application stages. */
   build(): void {
     const root = resolve('src');
     for (const entry of readdirSync(root, { recursive: true, withFileTypes: true })) {
@@ -19,6 +20,7 @@ export class SchemaPackager {
     );
   }
 
+  /** Copies trusted schema resources into the assembled distribution. */
   private copy(root: string, source: string, name: string): void {
     const id = name.slice(0, -5);
     if (Object.hasOwn(this.registry, id)) throw new Error(`Duplicate runtime schema: ${id}`);

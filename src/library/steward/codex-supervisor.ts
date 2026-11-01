@@ -1,12 +1,20 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { processStart } from '../operations/service-state.js';
+
+/** Supervises the Codex subprocess so parent loss cannot leave managed execution behind. */
 class CodexSupervisor {
   private readonly parent = Number(process.env.ARCNEXUS_HOST_PID);
+
   private readonly identity = process.env.ARCNEXUS_HOST_START;
+
   private child!: ChildProcess;
+
   private killTimer?: NodeJS.Timeout;
+
   private monitor?: NodeJS.Timeout;
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     if (process.argv[2] !== 'exec' || !this.alive()) process.exit(64);
     this.child = spawn(
@@ -26,6 +34,8 @@ class CodexSupervisor {
     });
     this.child.on('close', (code) => this.close(code));
   }
+
+  /** Checks whether the supervising parent still owns this execution. */
   private alive(): boolean {
     return (
       Number.isSafeInteger(this.parent) &&
@@ -34,17 +44,23 @@ class CodexSupervisor {
       processStart(this.parent) === this.identity
     );
   }
+
+  /** Propagates termination to the managed Codex process group. */
   private signal(signal: NodeJS.Signals): void {
     if (!this.child.pid) return;
     try {
       process.kill(-this.child.pid, signal);
     } catch {}
   }
+
+  /** Stops managed work and retains its final lifecycle evidence. */
   private stop(): void {
     if (!this.child.pid) return;
     this.signal('SIGTERM');
     this.killTimer ??= setTimeout(() => this.signal('SIGKILL'), 300);
   }
+
+  /** Releases resources owned by this instance. */
   private close(code: number | null): void {
     clearInterval(this.monitor);
     clearTimeout(this.killTimer);
@@ -52,4 +68,5 @@ class CodexSupervisor {
     process.exitCode = code ?? 1;
   }
 }
+
 new CodexSupervisor().run();

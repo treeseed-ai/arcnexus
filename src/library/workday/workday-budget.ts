@@ -1,19 +1,29 @@
 /** Pauses only while another assignment owns execution; the workday clock never pauses. */
 export class ActiveBudget {
   private used = 0;
+
   private since: number | undefined;
+
   private timer: NodeJS.Timeout | undefined;
+
   private controller = new AbortController();
+
   readonly signal: AbortSignal;
+
+  /** Combines explicit cancellation with an optional active-time limit; no default timer is created. */
   constructor(
     parent: AbortSignal,
     readonly limitMs?: number,
   ) {
     this.signal = AbortSignal.any([parent, this.controller.signal]);
   }
+
+  /** Returns elapsed wall-clock time without interpreting it as completion percentage. */
   get elapsedMs() {
     return this.used + (this.since === undefined ? 0 : Date.now() - this.since);
   }
+
+  /** Starts managed work and records the state needed for its later shutdown. */
   start() {
     if (this.since !== undefined) return;
     this.signal.throwIfAborted();
@@ -26,6 +36,8 @@ export class ActiveBudget {
         this.limitMs - this.used,
       );
   }
+
+  /** Excludes dependency waiting from the assignment’s active-time accounting. */
   pause() {
     if (this.since !== undefined) this.used += Date.now() - this.since;
     this.since = undefined;

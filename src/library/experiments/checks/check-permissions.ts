@@ -4,13 +4,22 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+/** Independently checks directory permission against retained candidate evidence. */
 class DirectoryPermissionAcceptance {
   private root = mkdtempSync(join(tmpdir(), 'arcnexus-permission-acceptance-'));
+
   private project = join(this.root, 'project');
+
   private home = join(this.root, 'codex-home');
+
   private work = join(this.project, 'work');
+
   private related = join(this.project, 'related');
+
   private unrelated = join(this.project, 'unrelated');
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     try {
       this.prepare();
@@ -21,17 +30,23 @@ class DirectoryPermissionAcceptance {
       rmSync(this.root, { recursive: true, force: true });
     }
   }
+
+  /** Detects changes outside the currently active owner’s authority. */
   private verifyProtectedFiles(): void {
     assert.equal(readFileSync(join(this.related, 'related.txt'), 'utf8'), 'related');
     assert.equal(readFileSync(join(this.unrelated, 'secret.txt'), 'utf8'), 'secret');
     assert.equal(existsSync(join(this.unrelated, 'new.txt')), false);
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(): void {
     for (const path of [this.project, this.home, this.work, this.related, this.unrelated])
       mkdirSync(path);
     writeFileSync(join(this.related, 'related.txt'), 'related');
     writeFileSync(join(this.unrelated, 'secret.txt'), 'secret');
   }
+
+  /** Builds the explicit permission-probe invocation. */
   private arguments(): string[] {
     const permissions = preparePermissions(
       this.project,
@@ -56,6 +71,8 @@ class DirectoryPermissionAcceptance {
       this.unrelated,
     ];
   }
+
+  /** Exercises the configured permission boundary rather than trusting its declaration. */
   private probe(): void {
     const result = spawnSync(process.env.CODEX_PATH ?? 'codex', this.arguments(), {
       cwd: this.work,
@@ -70,6 +87,8 @@ class DirectoryPermissionAcceptance {
         `Codex sandbox acceptance failed (${result.status}): ${result.stderr || result.stdout}`,
       );
   }
+
+  /** Constructs the controlled program used to test filesystem permissions. */
   private program(): string {
     return `import {readFileSync, writeFileSync} from 'node:fs';
 import {join} from 'node:path';
@@ -82,4 +101,5 @@ for (const [path, operation] of [[join(related, 'related.txt'), 'write'], [join(
 }`;
   }
 }
+
 new DirectoryPermissionAcceptance().run();

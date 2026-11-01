@@ -1,6 +1,7 @@
 import type { Operation } from '../operations/operations.js';
 import type { Catalog, Component, ExecutionProfile, Role } from './components.js';
 import { InputError } from './config.js';
+
 export interface InitializationSnapshot {
   operations: Operation[];
   provenance: 'declared-component' | 'runtime-fallback';
@@ -12,10 +13,12 @@ export interface InitializationSnapshot {
   model: string;
   reasoning: 'medium';
 }
+
 export interface OwnerSelection {
   id: string;
   reason: string;
 }
+
 export interface ProposedAssignment {
   ownerId: string;
   objective: string;
@@ -24,6 +27,7 @@ export interface ProposedAssignment {
   acceptanceCriteria: string[];
   allowedWritePaths: string[];
 }
+
 export interface ArchitectureProposal {
   responsibility: string;
   definitionsYaml: string;
@@ -37,6 +41,7 @@ export interface ArchitectureProposal {
   acceptanceCriteria: string[];
   questions: string[];
 }
+
 export interface InitializationResult {
   status: 'ready' | 'needs_clarification' | 'architecture_change_required';
   summary: string;
@@ -47,6 +52,7 @@ export interface InitializationResult {
   dependency: { from: string; to: string; contract: string; delivery: string } | null;
   architectureProposal: ArchitectureProposal | null;
 }
+
 function lineage(catalog: Catalog, component: Component): Component[] {
   const result = [component];
   while (component.parentId) {
@@ -57,6 +63,7 @@ function lineage(catalog: Catalog, component: Component): Component[] {
   }
   return result;
 }
+
 export function validateInitialization(catalog: Catalog): void {
   for (const component of Object.values(catalog.components)) {
     if (component.schemaVersion >= 3 && component.type === 'platform' && !component.initialization)
@@ -71,6 +78,7 @@ export function validateInitialization(catalog: Catalog): void {
       throw new InputError('Initializer role must permit research');
   }
 }
+
 export function captureInitialization(
   catalog: Catalog,
   owner: Component,
@@ -91,6 +99,7 @@ export function captureInitialization(
     reasoning: 'medium',
   };
 }
+
 function fallback(repository: string): Component {
   return {
     schemaVersion: 3,
@@ -125,6 +134,7 @@ function fallbackRole(): Role {
     activities: ['research'],
   };
 }
+
 function initializerProfile(
   catalog: Catalog,
   component: Component,

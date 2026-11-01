@@ -5,12 +5,15 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts workday commands without duplicating runtime orchestration. */
 export class WorkdayCommand {
+  /** Retains workday arguments and the lock acquisition callback used only by execution. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly signal: AbortSignal,
     private readonly acquire: () => string,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const action = this.positionals[1];
     if (this.positionals.length !== 3)
@@ -21,6 +24,7 @@ export class WorkdayCommand {
     throw new InputError('Unknown workday action');
   }
 
+  /** Resolves workday authority without creating a workspace or invoking a model. */
   private inspectWorkday(): void {
     const { values, positionals } = this;
     if (
@@ -47,6 +51,7 @@ export class WorkdayCommand {
     return;
   }
 
+  /** Passes the captured workday to the sequential coordination runtime. */
   private async runWorkday(): Promise<void> {
     const { values, positionals } = this;
     if (
@@ -77,6 +82,7 @@ export class WorkdayCommand {
     return;
   }
 
+  /** Reads retained coordination state for status or event following. */
   private async viewWorkday(): Promise<void> {
     const { values, positionals } = this;
     const action = positionals[1];

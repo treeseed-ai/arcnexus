@@ -7,17 +7,27 @@ import type { TestContext } from 'node:test';
 import { pathToFileURL } from 'node:url';
 import { catalogFixture, componentFields } from './catalog-fixture.js';
 import type { WorkflowOptions } from './controlled-workflow.js';
+
 export const cli = resolve('dist/cli.js');
+
 export function workflowFixture(t: TestContext, mode = 'success'): WorkflowFixture {
   return new WorkflowFixture(t, mode);
 }
+
+/** Exercises workflow fixture behavior through observable scenarios. */
 export class WorkflowFixture {
   readonly root = mkdtempSync(join(tmpdir(), 'arcnexus-workflow-'));
+
   readonly repo = join(this.root, 'repo');
+
   readonly state = join(this.root, 'state');
+
   readonly calls = join(this.root, 'calls.jsonl');
+
   readonly executable = join(this.root, 'codex');
+
   readonly env = { ...process.env, ARCNEXUS_STATE_DIR: this.state };
+
   readonly component: any = {
     ...componentFields,
     id: 'sample',
@@ -32,7 +42,10 @@ export class WorkflowFixture {
     allowedWritePaths: ['source.txt', 'docs', 'tests', 'new.txt'],
     verification: [{ command: 'node', args: ['verify.cjs'] }],
   };
+
   private options: WorkflowOptions;
+
+  /** Creates a committed engineering fixture and controlled executable with temporary cleanup. */
   constructor(t: TestContext, mode: string) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     this.options = { mode, calls: this.calls };
@@ -45,15 +58,18 @@ export class WorkflowFixture {
     this.configure({});
     this.commit();
   }
+
   git = (...args: string[]): string => {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   };
+
   commit = (): void => {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');
   };
+
   run = (...args: string[]) => {
     return spawnSync(
       process.execPath,
@@ -71,6 +87,7 @@ export class WorkflowFixture {
       { encoding: 'utf8', env: this.env, timeout: 30 * 60 * 1000 },
     );
   };
+
   configure = (options: Partial<WorkflowOptions>): void => {
     Object.assign(this.options, options);
     const module = pathToFileURL(
@@ -82,6 +99,8 @@ export class WorkflowFixture {
       { mode: 0o755 },
     );
   };
+
+  /** Writes baseline source, documentation and a regression-aware verification executable. */
   private files(): void {
     catalogFixture(this.repo);
     mkdirSync(join(this.repo, 'docs'));
@@ -95,6 +114,8 @@ export class WorkflowFixture {
       "const fs=require('fs');if(fs.existsSync('tests/regression.cjs'))require('./tests/regression.cjs');if(fs.readFileSync('source.txt','utf8')==='broken')process.exit(6);",
     );
   }
+
+  /** Writes component definitions and disposable-output declarations for the fixture workspace. */
   private catalog(): void {
     writeFileSync(
       join(this.repo, 'architecture/components/sample.json'),

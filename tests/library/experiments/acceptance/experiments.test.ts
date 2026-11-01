@@ -9,8 +9,11 @@ import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+
+/** Exercises experiments behavior through observable scenarios. */
 class ExperimentsTests {
-  builtExperimentInspectResolvesPinnedCasesWithoutWorkspacesOrInference_1(t: TestContext) {
+  /** Verifies that built experiment inspect resolves pinned cases without workspaces or inference. */
+  builtExperimentInspectResolvesPinnedCasesWithoutWorkspacesOrInference(t: TestContext) {
     const f = fixture(t),
       r = f.run('inspect', f.manifest, '--bindings', f.bindings, '--json');
     assert.equal(r.status, 0, r.stderr);
@@ -20,7 +23,9 @@ class ExperimentsTests {
     assert.ok(d.digest);
     assert.equal(existsSync(f.state), false);
   }
-  experimentRunRequiresExplicitModeAndRejectsIncompatibleFixture_2(t: TestContext) {
+
+  /** Verifies that experiment run requires explicit mode and rejects incompatible fixture. */
+  experimentRunRequiresExplicitModeAndRejectsIncompatibleFixture(t: TestContext) {
     const f = fixture(t);
     assert.equal(f.run('run', f.manifest, '--bindings', f.bindings).status, 2);
     writeFileSync(join(f.repo, 'source.txt'), 'different');
@@ -33,7 +38,9 @@ class ExperimentsTests {
     assert.match(r.stderr, /fixture contract/i);
     assert.equal(existsSync(f.output), false);
   }
-  simulationUsesProductionSDKWorkflowAndLabelsSuccessRepairBoundaryAndFailure_3(t: TestContext) {
+
+  /** Verifies that simulation uses production sdkworkflow and labels success repair boundary and failure. */
+  simulationUsesProductionSDKWorkflowAndLabelsSuccessRepairBoundaryAndFailure(t: TestContext) {
     const f = fixture(t),
       r = f.runCampaign();
     assert.equal(r.status, 1, r.stderr);
@@ -51,6 +58,8 @@ class ExperimentsTests {
     assert.equal(f.git('rev-parse', 'HEAD'), f.base);
     assert.equal(f.runCampaign().status, 2);
   }
+
+  /** Verifies that experiment without an attempt limit preserves the unset runtime limit. */
   omittedAttempts(t: TestContext): void {
     const f = fixture(t);
     const data = parse(readFileSync(f.manifest, 'utf8'));
@@ -74,7 +83,9 @@ class ExperimentsTests {
     const campaign = JSON.parse(readFileSync(join(f.output, 'campaign.json'), 'utf8'));
     assert.equal(campaign.cases[0].report.executionLimits.maxAttempts, null);
   }
-  experimentRejectsMissingBindingsAndUnpinnedRevisionsBeforeCreatingOutput_4(t: TestContext) {
+
+  /** Verifies that experiment rejects missing bindings and unpinned revisions before creating output. */
+  experimentRejectsMissingBindingsAndUnpinnedRevisionsBeforeCreatingOutput(t: TestContext) {
     const f = fixture(t);
     for (const projects of [{}, { fixture: { path: f.repo, base: 'HEAD' } }]) {
       f.value.projects = projects;
@@ -83,7 +94,9 @@ class ExperimentsTests {
       assert.equal(existsSync(f.output), false);
     }
   }
-  allAcceptanceInputsAreCapturedBeforeTheFirstCaseExecutes_5(t: TestContext) {
+
+  /** Verifies that all acceptance inputs are captured before the first case executes. */
+  allAcceptanceInputsAreCapturedBeforeTheFirstCaseExecutes(t: TestContext) {
     const f = fixture(t),
       path = join(f.root, 'check.mjs');
     writeFileSync(
@@ -108,7 +121,9 @@ class ExperimentsTests {
       ),
     );
   }
-  async changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(
+
+  /** Verifies that changed supervisor invalidates campaign before another case. */
+  async changedSupervisorInvalidatesCampaignBeforeAnotherCase(
     t: TestContext,
     artifact = 'dist/report.js',
   ) {
@@ -138,6 +153,8 @@ class ExperimentsTests {
     assert.match(report.error, /Supervising build changed/);
     assert.notEqual(report.runnerHash, report.finalRunnerHash);
   }
+
+  /** Writes an acceptance fixture that deliberately changes the supervising executable. */
   private supervisorMutation(check: string): void {
     writeFileSync(
       check,
@@ -145,6 +162,7 @@ class ExperimentsTests {
     );
   }
 
+  /** Copies the built supervisor outside the candidate while sharing installed dependencies. */
   private async copySupervisor(f: ExperimentFixture): Promise<string> {
     const { symlinkSync } = await import('node:fs');
     const runner = join(f.root, 'supervisor');
@@ -156,7 +174,9 @@ class ExperimentsTests {
     writeFileSync(f.bindings, JSON.stringify(f.value));
     return runner;
   }
-  async scenario_7(t: TestContext, signal: NodeJS.Signals) {
+
+  /** Verifies the scenario stops campaign after interruption. */
+  async stopsCampaignAfterInterruption(t: TestContext, signal: NodeJS.Signals) {
     const f = fixture(t),
       marker = join(f.root, 'pid'),
       check = join(f.root, 'wait.mjs');
@@ -179,6 +199,8 @@ class ExperimentsTests {
     assert.equal(report.status, signal === 'SIGINT' ? 'cancelled' : 'running');
     assert.ok(existsSync(join(f.output, 'success/report.json')));
   }
+
+  /** Adds a long-running external check with a PID marker for cancellation assertions. */
   private waitingAcceptance(f: ExperimentFixture, check: string, marker: string): string {
     writeFileSync(
       check,
@@ -197,21 +219,34 @@ class ExperimentsTests {
     return manifest;
   }
 }
+
 const suite = new ExperimentsTests();
 
 const cli = resolve('dist/cli.js');
+
 function fixture(t: TestContext): ExperimentFixture {
   return new ExperimentFixture(t);
 }
+
+/** Exercises experiment fixture behavior through observable scenarios. */
 class ExperimentFixture {
   readonly root = mkdtempSync(join(tmpdir(), 'arcnexus-experiment-'));
+
   readonly repo = join(this.root, 'repo');
+
   readonly state = join(this.root, 'state');
+
   readonly output = join(this.root, 'campaign');
+
   readonly bindings = join(this.root, 'bindings.json');
+
   readonly manifest = resolve('experiments/simulation.yaml');
+
   readonly base: string;
+
   readonly value: any;
+
+  /** Materializes a pinned simulation repository and external campaign inputs with automatic test cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     materializeFixture('simulation', this.repo);
@@ -231,11 +266,15 @@ class ExperimentFixture {
     };
     writeFileSync(this.bindings, JSON.stringify(this.value));
   }
+
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(...args: string[]) {
     return spawnSync(process.execPath, [cli, 'experiment', ...args], {
       env: { ...process.env, ARCNEXUS_STATE_DIR: this.state },
@@ -243,6 +282,8 @@ class ExperimentFixture {
       timeout: 30 * 60 * 1000,
     });
   }
+
+  /** Builds explicit simulation arguments with a fresh external evidence destination. */
   campaignArgs(manifest = this.manifest): string[] {
     return [
       'run',
@@ -255,31 +296,40 @@ class ExperimentFixture {
       this.output,
     ];
   }
+
+  /** Runs the scripted campaign through the production experiment CLI. */
   runCampaign(manifest = this.manifest) {
     return this.run(...this.campaignArgs(manifest));
   }
 }
+
 test('built experiment inspect resolves pinned cases without workspaces or inference', (t: any) =>
-  suite.builtExperimentInspectResolvesPinnedCasesWithoutWorkspacesOrInference_1(t));
+  suite.builtExperimentInspectResolvesPinnedCasesWithoutWorkspacesOrInference(t));
+
 test('experiment run requires explicit mode and rejects incompatible fixture', (t: any) =>
-  suite.experimentRunRequiresExplicitModeAndRejectsIncompatibleFixture_2(t));
+  suite.experimentRunRequiresExplicitModeAndRejectsIncompatibleFixture(t));
+
 test('simulation uses production SDK workflow and labels success repair boundary and failure', (t: any) =>
-  suite.simulationUsesProductionSDKWorkflowAndLabelsSuccessRepairBoundaryAndFailure_3(t));
+  suite.simulationUsesProductionSDKWorkflowAndLabelsSuccessRepairBoundaryAndFailure(t));
+
 test('experiment rejects missing bindings and unpinned revisions before creating output', (t: any) =>
-  suite.experimentRejectsMissingBindingsAndUnpinnedRevisionsBeforeCreatingOutput_4(t));
+  suite.experimentRejectsMissingBindingsAndUnpinnedRevisionsBeforeCreatingOutput(t));
+
 test('all acceptance inputs are captured before the first case executes', (t: any) =>
-  suite.allAcceptanceInputsAreCapturedBeforeTheFirstCaseExecutes_5(t));
+  suite.allAcceptanceInputsAreCapturedBeforeTheFirstCaseExecutes(t));
+
 test('changed supervisor invalidates campaign before another case', (t: any) =>
-  suite.changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(t));
+  suite.changedSupervisorInvalidatesCampaignBeforeAnotherCase(t));
+
 for (const signal of ['SIGINT', 'SIGKILL'] as const)
   test(`experiment ${signal} stops managed acceptance and preserves evidence`, (t: any) =>
-    suite.scenario_7(t, signal));
+    suite.stopsCampaignAfterInterruption(t, signal));
 
 test('experiment without an attempt limit preserves the unset runtime limit', (t) =>
   suite.omittedAttempts(t));
 
 test('changed packaged schema invalidates the supervising build', (t) =>
-  suite.changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(
+  suite.changedSupervisorInvalidatesCampaignBeforeAnotherCase(
     t,
     'dist/library/architecture/schemas/component-v4.json',
   ));

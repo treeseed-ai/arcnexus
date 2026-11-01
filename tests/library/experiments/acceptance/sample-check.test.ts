@@ -6,8 +6,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+
+/** Exercises sample check behavior through observable scenarios. */
 class SampleCheckTests {
-  scenario_1(t: TestContext, implementation: any, expected: any) {
+  /** Verifies the scenario checks expiration boundary independently. */
+  checksExpirationBoundaryIndependently(t: TestContext, implementation: any, expected: any) {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-independent-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     mkdirSync(join(root, 'src'));
@@ -20,6 +23,7 @@ class SampleCheckTests {
     if (expected === 1) assert.match(r.stderr, /isSessionExpired|AssertionError/);
   }
 }
+
 const suite = new SampleCheckTests();
 
 for (const [name, implementation, expected] of [
@@ -27,6 +31,7 @@ for (const [name, implementation, expected] of [
   ['wrong boundary', 'export const isSessionExpired=(expiry,now)=>now>expiry;', 1],
   ['correct', 'export const isSessionExpired=(expiry,now)=>now>=expiry;', 0],
 ])
-  test(`independent checker: ${name}`, (t: any) => suite.scenario_1(t, implementation, expected));
+  test(`independent checker: ${name}`, (t: any) =>
+    suite.checksExpirationBoundaryIndependently(t, implementation, expected));
 
 registerSuite({ component: 'experiments', level: 'acceptance', tags: ['deterministic'] });

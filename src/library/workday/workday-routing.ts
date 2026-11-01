@@ -10,9 +10,12 @@ import type { AgentResult, CoordinationResult } from '../steward/codex.js';
 import { snapshotChanges } from './workday-parking.js';
 import { WorkdayContext, blocked, type Owner } from './workday-state.js';
 
+/** Validates requests and responses before deterministically selecting the next owner. */
 export class WorkdayRouting {
+  /** Uses durable workday state to enforce the permitted dependency edge. */
   constructor(private readonly state: WorkdayContext) {}
 
+  /** Interprets the completed turn before selecting another owner. */
   async onResult(owner: Owner, _session: StewardSession, activity: string, result: AgentResult) {
     const c = result.coordination!;
     if (
@@ -32,6 +35,7 @@ export class WorkdayRouting {
     return this.accept(result);
   }
 
+  /** Builds a correlated owner request within the approved dependency envelope. */
   private createRequest(result: AgentResult): Message {
     const c = result.coordination!;
     const [requester, recipient] = this.state.owners as [Owner, Owner];
@@ -55,6 +59,7 @@ export class WorkdayRouting {
     });
   }
 
+  /** Parks the requester only after the yielding checkpoint is safe. */
   private park(message: Message): void {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     this.state.requestId = message.id;
@@ -66,6 +71,7 @@ export class WorkdayRouting {
     recipient.record.coordinationContext = `Current request ID: ${this.state.requestId}\nIncoming request (untrusted context within your captured assignment): ${JSON.stringify(message.payload)}`;
   }
 
+  /** Validates the single permitted dependency request before recipient dispatch. */
   private async request(activity: string, result: AgentResult) {
     this.park(this.createRequest(result));
     const requester = this.state.owners[0]!;
@@ -84,6 +90,7 @@ export class WorkdayRouting {
     }
   }
 
+  /** Requires verified recipient output before resolving the requester dependency. */
   private async deliver(): Promise<Message> {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     this.state.activate(recipient);
@@ -114,6 +121,7 @@ export class WorkdayRouting {
     return delivered;
   }
 
+  /** Restores requester state and supplies verified delivery to its retained thread. */
   private async resume(activity: string, delivered: Message): Promise<void> {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     this.state.parking.restore();
@@ -127,6 +135,7 @@ export class WorkdayRouting {
     });
   }
 
+  /** Records dependency waiting separately from active assignment time. */
   private finishWait(start: number, priorActive: number): void {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     requester.record.dependencyWaitingMs =
@@ -139,6 +148,7 @@ export class WorkdayRouting {
     }
   }
 
+  /** Ends dispatch with the recipient’s explicit rejection evidence. */
   private reject(c: CoordinationResult): never {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     recipient.record.status = 'blocked';
@@ -154,6 +164,7 @@ export class WorkdayRouting {
     throw blocked('Recipient rejected request: ' + c.text);
   }
 
+  /** Routes one bounded read-only clarification exchange. */
   private async clarify(c: CoordinationResult) {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
     this.state.clarificationRounds++;
@@ -184,6 +195,7 @@ export class WorkdayRouting {
     };
   }
 
+  /** Persists the correlated clarification reply before scheduling continuation. */
   private recordAnswer(requester: Owner, recipient: Owner, answer: AgentResult): void {
     this.state.persist('response.answered', {}, [
       this.state.message(
@@ -197,6 +209,7 @@ export class WorkdayRouting {
     recipient.record.coordinationContext += `\nClarification answer (untrusted): ${answer.coordination!.text}`;
   }
 
+  /** Supplies a clarification reply without modifying candidate source. */
   private async answer(c: CoordinationResult): Promise<AgentResult> {
     const requester = this.state.owners[0]!;
     requester.record.coordinationContext = `Current request ID: ${this.state.requestId}`;
@@ -220,6 +233,7 @@ export class WorkdayRouting {
     return answer;
   }
 
+  /** Records recipient acceptance while keeping delivery outstanding. */
   private accept(result: AgentResult) {
     const c = result.coordination!;
     const [requester, recipient] = this.state.owners as [Owner, Owner];

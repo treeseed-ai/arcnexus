@@ -177,3 +177,8 @@ the host executes one at a time with distinct request identities and logs. A nor
 test failure remains feedback; cancellation, bridge loss, or a fatal authority/scope
 failure stops active work and prevents queued work from starting. Pending callers
 receive their own completed result through `execution.wait`.
+
+Long finite-command excerpts retain startup context, a potential failure diagnostic
+window, and trailing output within 16 KiB. The complete log remains a separate
+artifact. This is diagnostic selection, not a claim to infer the root cause; callers
+must retain and inspect full evidence when the excerpt is insufficient.

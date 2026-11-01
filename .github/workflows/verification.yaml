@@ -1,18 +1,13 @@
-name: CI
-
+name: Verification
 on:
-  pull_request:
-    branches: [staging, main]
-  push:
-    branches: [staging, main]
-
+  workflow_call:
+    inputs:
+      distribution:
+        type: boolean
+        default: false
+        required: false
 permissions:
   contents: read
-
-concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   repository:
     name: Repository checks
@@ -20,16 +15,16 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Check out source
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           fetch-depth: 0
           persist-credentials: false
       - name: Normalize declared HTTPS repository identity
         run: git remote set-url origin "https://github.com/${{ github.repository }}.git"
       - name: Set up Node
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
       - name: Install product dependencies
         run: npm ci
@@ -55,3 +50,9 @@ jobs:
             BASE_SHA=$(git hash-object -t tree /dev/null)
           fi
           git diff --check "$BASE_SHA" HEAD
+      - name: Verify assembled distribution
+        if: inputs.distribution
+        run: |-
+          node dist/cli.js --version
+          test -x dist/cli.js
+          node --input-type=module -e "import { readFileSync } from 'node:fs'; const registry = JSON.parse(readFileSync('dist/library/architecture/schema-registry.json', 'utf8')); if (!Object.keys(registry).length) process.exit(1);"

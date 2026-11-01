@@ -8,8 +8,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { materializeFixture } from '../../testing/support/fixture-payloads.js';
 import { handoffFixture } from '../../testing/support/handoff-fixture.js';
+
+/** Exercises workday experiments behavior through observable scenarios. */
 class WorkdayExperimentsTests {
-  builtExperimentInspectionCapturesBothWorkdayParticipantsWithoutInference_1(t: TestContext) {
+  /** Verifies that built experiment inspection captures both workday participants without inference. */
+  builtExperimentInspectionCapturesBothWorkdayParticipantsWithoutInference(t: TestContext) {
     const f = handoffFixture(t);
     const campaign = new HandoffCampaign(f, 'completed');
     const result = campaign.inspect();
@@ -21,7 +24,9 @@ class WorkdayExperimentsTests {
     assert.equal(existsSync(f.calls), false);
     assert.equal(existsSync(f.state), false);
   }
-  builtExperimentRunsSimulatedWorkdayThroughRetainedThreadsAndIndependentChecks_2(t: TestContext) {
+
+  /** Verifies that built experiment runs simulated workday through retained threads and independent checks. */
+  builtExperimentRunsSimulatedWorkdayThroughRetainedThreadsAndIndependentChecks(t: TestContext) {
     const fixture = new SimulationCampaign(t);
     const result = fixture.run('campaign');
     assert.equal(result.status, 0, result.stderr + '\n' + result.stdout);
@@ -39,7 +44,9 @@ class WorkdayExperimentsTests {
     assert.equal(bad.status, 2);
     assert.equal(existsSync(join(fixture.root, 'bad')), false);
   }
-  expectedBlockedWorkdayChecksOnlyModelsThatActuallyExecuted_3(t: TestContext) {
+
+  /** Verifies that expected blocked workday checks only models that actually executed. */
+  expectedBlockedWorkdayChecksOnlyModelsThatActuallyExecuted(t: TestContext) {
     const campaign = new HandoffCampaign(handoffFixture(t, 'unknown-owner'), 'blocked');
     const result = campaign.run();
     assert.equal(result.status, 0, result.stderr + '\n' + result.stdout);
@@ -47,7 +54,9 @@ class WorkdayExperimentsTests {
     assert.equal(report.cases[0].status, 'passed');
     assert.ok(report.cases[0].report.assignments.some((assignment: any) => !assignment.threadId));
   }
-  realValidatorOwnerReceivesDeclaredBuildAndRegressionOperations_4() {
+
+  /** Verifies that real validator owner receives declared build and regression operations. */
+  realValidatorOwnerReceivesDeclaredBuildAndRegressionOperations() {
     const r = spawnSync(
       process.execPath,
       [
@@ -69,7 +78,9 @@ class WorkdayExperimentsTests {
       ['guidance-build', 'guidance-tests', 'guidance-validation-lint'],
     );
   }
-  guidanceInspectionPreservesExplicitWritableSkillDirectoryGrant_5() {
+
+  /** Verifies that guidance inspection preserves explicit writable skill directory grant. */
+  guidanceInspectionPreservesExplicitWritableSkillDirectoryGrant() {
     const r = spawnSync(
       process.execPath,
       [
@@ -88,10 +99,16 @@ class WorkdayExperimentsTests {
     assert.ok(owner.access.writeDirectories.includes('.agents/skills'));
   }
 }
+
+/** Exercises handoff campaign behavior through observable scenarios. */
 class HandoffCampaign {
   private bindings: string;
+
   private manifest: string;
+
   private output: string;
+
+  /** Writes a controlled workday campaign with explicit bindings and outcome acceptance. */
   constructor(
     private fixture: any,
     outcome: string,
@@ -117,6 +134,8 @@ class HandoffCampaign {
       }),
     );
   }
+
+  /** Writes machine-local bindings for the pinned fixture and supervising executable. */
   private writeBindings(): void {
     const fixture = this.fixture;
     writeFileSync(
@@ -130,6 +149,8 @@ class HandoffCampaign {
       }),
     );
   }
+
+  /** Creates an external owner-request assertion for blocked cases and a success check otherwise. */
   private acceptance(outcome: string) {
     if (outcome !== 'blocked')
       return [{ command: 'node', args: ['-e', 'process.exit(0)'], artifacts: [] }];
@@ -140,15 +161,23 @@ class HandoffCampaign {
     );
     return [{ command: 'node', args: [check, '{report}'], artifacts: [check] }];
   }
+
+  /** Resolves the requested view without modifying candidate source. */
   inspect() {
     return this.invoke('inspect', '--json');
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run() {
     return this.invoke('run', '--mode', 'live', '--output', this.output);
   }
+
+  /** Reads the retained campaign projection for outcome assertions. */
   report(): any {
     return JSON.parse(readFileSync(join(this.output, 'campaign.json'), 'utf8'));
   }
+
+  /** Spawns the built experiment CLI with explicit fixture bindings and test cancellation bounds. */
   private invoke(command: string, ...args: string[]) {
     return spawnSync(
       process.execPath,
@@ -157,10 +186,16 @@ class HandoffCampaign {
     );
   }
 }
+
+/** Exercises simulation campaign behavior through observable scenarios. */
 class SimulationCampaign {
   readonly root = mkdtempSync(join(tmpdir(), 'arcnexus-workday-experiment-'));
+
   private repo = join(this.root, 'repo');
+
   private bindings = join(this.root, 'bindings.json');
+
+  /** Materializes and commits the workday simulation fixture, then writes pinned local bindings. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     materializeFixture('workday', this.repo);
@@ -171,11 +206,15 @@ class SimulationCampaign {
     this.git('commit', '-qm', 'fixture');
     this.writeBindings();
   }
+
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
+
+  /** Writes machine-local bindings for the pinned fixture and supervising executable. */
   private writeBindings(): void {
     writeFileSync(
       this.bindings,
@@ -187,12 +226,16 @@ class SimulationCampaign {
       }),
     );
   }
+
+  /** Commits an incompatible fixture contract and refreshes its pinned binding revision. */
   breakContract(): void {
     writeFileSync(join(this.repo, 'workday-contract.yaml'), '{}');
     this.git('add', '.');
     this.git('commit', '-qm', 'incompatible');
     this.writeBindings();
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(name: string) {
     return spawnSync(
       process.execPath,
@@ -215,22 +258,30 @@ class SimulationCampaign {
       },
     );
   }
+
+  /** Reads the retained campaign projection for outcome assertions. */
   report(name: string): any {
     return JSON.parse(readFileSync(join(this.root, name, 'campaign.json'), 'utf8'));
   }
 }
+
 const suite = new WorkdayExperimentsTests();
 
 const cli = resolve('dist/cli.js');
+
 test('built experiment inspection captures both workday participants without inference', (t: any) =>
-  suite.builtExperimentInspectionCapturesBothWorkdayParticipantsWithoutInference_1(t));
+  suite.builtExperimentInspectionCapturesBothWorkdayParticipantsWithoutInference(t));
+
 test('built experiment runs simulated workday through retained threads and independent checks', (t: any) =>
-  suite.builtExperimentRunsSimulatedWorkdayThroughRetainedThreadsAndIndependentChecks_2(t));
+  suite.builtExperimentRunsSimulatedWorkdayThroughRetainedThreadsAndIndependentChecks(t));
+
 test('expected blocked workday checks only models that actually executed', (t: any) =>
-  suite.expectedBlockedWorkdayChecksOnlyModelsThatActuallyExecuted_3(t));
+  suite.expectedBlockedWorkdayChecksOnlyModelsThatActuallyExecuted(t));
+
 test('real validator owner receives declared build and regression operations', () =>
-  suite.realValidatorOwnerReceivesDeclaredBuildAndRegressionOperations_4());
+  suite.realValidatorOwnerReceivesDeclaredBuildAndRegressionOperations());
+
 test('guidance inspection preserves explicit writable skill-directory grant', () =>
-  suite.guidanceInspectionPreservesExplicitWritableSkillDirectoryGrant_5());
+  suite.guidanceInspectionPreservesExplicitWritableSkillDirectoryGrant());
 
 registerSuite({ component: 'experiments', level: 'acceptance', tags: ['deterministic'] });

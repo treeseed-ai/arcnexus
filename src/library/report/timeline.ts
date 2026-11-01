@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { InputError } from '../architecture/config.js';
 import type { RecordData } from '../workspace/state.js';
+
 export interface TimelineEvent {
   schemaVersion: 1;
   sequence: number;
@@ -14,7 +15,9 @@ export interface TimelineEvent {
   type: string;
   payload: unknown;
 }
+
 const observers = new Map<string, (event: TimelineEvent) => void>();
+
 export function observeExecution(
   root: string,
   id: string,
@@ -26,6 +29,7 @@ export function observeExecution(
     observers.delete(key);
   };
 }
+
 export function observe(root: string, record: RecordData, type: string, payload: unknown): void {
   const sequence = Number(record.timelineSequence ?? 0) + 1;
   const event: TimelineEvent = {
@@ -44,6 +48,7 @@ export function observe(root: string, record: RecordData, type: string, payload:
   record.timelineSequence = sequence;
   observers.get(root + '/' + record.id)?.(event);
 }
+
 export function readTimeline(directory: string): {
   events: TimelineEvent[];
   complete: boolean;
@@ -79,6 +84,7 @@ function parseTimeline(text: string): ReturnType<typeof readTimeline> {
     ...(!text.endsWith('\n') ? { problem: 'Incomplete trailing timeline record' } : {}),
   };
 }
+
 export function readStatus(root: string, id: string) {
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid workspace ID');
   const directory = join(root, 'runs', id);
@@ -105,6 +111,7 @@ export function readStatus(root: string, id: string) {
     events: timeline.events,
   };
 }
+
 function loadRecord(directory: string): RecordData {
   try {
     return JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8')) as RecordData;
@@ -112,6 +119,7 @@ function loadRecord(directory: string): RecordData {
     throw new InputError('Workspace report unavailable');
   }
 }
+
 export async function viewExecution(
   root: string,
   id: string,
@@ -156,6 +164,7 @@ function printEvents(
   }
   return cursor;
 }
+
 function printStatus(
   id: string,
   status: Omit<ReturnType<typeof readStatus>, 'record' | 'events'>,

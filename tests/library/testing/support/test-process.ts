@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process';
 import type { TestContext } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
+
 /** Watchdogs here bound the test harness, never application execution defaults. */
 export async function waitFor(
   condition: () => boolean,
@@ -19,11 +20,18 @@ export async function waitFor(
     await delay(25);
   }
 }
+
+/** Exercises test process behavior through observable scenarios. */
 export class TestProcess {
   readonly child: ChildProcessWithoutNullStreams;
+
   readonly closed: Promise<number | null>;
+
   stdout = '';
+
   stderr = '';
+
+  /** Starts the Node child, captures both output streams and registers cleanup after the test. */
   constructor(t: TestContext, args: string[], env: NodeJS.ProcessEnv) {
     this.child = spawn(process.execPath, args, { env });
     this.child.stdout.on('data', (chunk) => {
@@ -40,10 +48,13 @@ export class TestProcess {
       this.child.kill('SIGKILL');
     });
   }
+
+  /** Signals the managed test child to exercise cancellation or parent-loss behavior. */
   kill(signal: NodeJS.Signals): void {
     this.child.kill(signal);
   }
 }
+
 export function killProcessGroup(pid?: number): void {
   if (!pid) return;
   try {

@@ -5,7 +5,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises initialization behavior through observable scenarios. */
 class InitializationTests {
+  /** Verifies that legacy run initializes exactly once with captured read-only Luna provenance. */
   legacyRun(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run();
@@ -19,6 +22,8 @@ class InitializationTests {
     assert.notEqual(record.initialization.threadId, record.threadId);
     assert.equal(record.implementationAttempts, 1);
   }
+
+  /** Verifies that refuses invalid initialization. */
   refusesInvalidInitialization(t: TestContext, mode: string): void {
     const fixture = workflowFixture(t);
     fixture.configure({ initializerMode: mode });
@@ -29,6 +34,8 @@ class InitializationTests {
     assert.ok(record.initialization);
     assert.match(result.stderr, /initializer|initialization/i);
   }
+
+  /** Verifies that initializer loop retains needs_attention without dispatching a worker. */
   loopNeedsAttention(t: TestContext): void {
     const fixture = workflowFixture(t);
     fixture.configure({ initializerMode: 'loop' });
@@ -46,6 +53,8 @@ class InitializationTests {
       /Tool unavailable/,
     );
   }
+
+  /** Verifies that initializer model override is independent of the worker. */
   modelOverride(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run('--initializer-model', 'gpt-6-astra');
@@ -54,6 +63,8 @@ class InitializationTests {
     assert.equal(record.initialization.model, 'gpt-6-astra');
     assert.equal(record.resolvedAssignment.executionProfile.model, 'gpt-6-luna');
   }
+
+  /** Verifies that declared read only container. */
   declaredReadOnlyContainer(t: TestContext): void {
     const fixture = workflowFixture(t);
     this.declarePlatform(fixture);
@@ -64,6 +75,8 @@ class InitializationTests {
     assert.equal(record.initialization.componentId, 'sample');
     assert.equal(record.initialization.turns, 1);
   }
+
+  /** Adds an explicit platform initializer and commits the captured fixture definition. */
   private declarePlatform(fixture: ReturnType<typeof workflowFixture>): void {
     writeFileSync(
       join(fixture.repo, 'architecture/components/platform.yaml'),
@@ -88,6 +101,8 @@ class InitializationTests {
     );
     fixture.commit();
   }
+
+  /** Verifies that version-three platform must declare its initializer component. */
   missingDeclaration(t: TestContext): void {
     const fixture = workflowFixture(t);
     writeFileSync(
@@ -111,9 +126,12 @@ class InitializationTests {
     assert.match(result.stderr, /initializer|initialization/i);
   }
 }
+
 const suite = new InitializationTests();
+
 test('legacy run initializes exactly once with captured read-only Luna provenance', (t) =>
   suite.legacyRun(t));
+
 test('version-three platform must declare its initializer component', (t) =>
   suite.missingDeclaration(t));
 
@@ -121,6 +139,7 @@ for (const mode of ['write', 'widen', 'question'])
   test('initializer stops downstream inference: ' + mode, (t) =>
     suite.refusesInvalidInitialization(t, mode),
   );
+
 test('initializer model override is independent of the worker', (t) => suite.modelOverride(t));
 
 test('declared initializer works beneath a version-three containment-only platform', (t) =>

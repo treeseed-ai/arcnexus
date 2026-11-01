@@ -13,7 +13,9 @@ export interface BridgeTool {
   description: string;
   inputSchema: { type: 'object'; [key: string]: unknown };
 }
+
 type ToolCall = (name: string, args: unknown) => Promise<unknown>;
+
 interface Request {
   id: number;
   method: string;
@@ -42,13 +44,19 @@ export async function openBridge(
   };
 }
 
+/** Owns the private per-run bridge and authorizes requests through the parent runtime. */
 class HostBridge {
   private readonly directory = mkdtempSync(join(tmpdir(), 'arcnexus-ipc-'));
+
   private readonly path = join(this.directory, 'host.sock');
+
   private readonly sockets = new Set<Socket>();
+
   private closing = false;
+
   private readonly server = createServer((socket) => this.connect(socket));
 
+  /** Restricts the private IPC directory and retains the authorized tool dispatcher. */
   constructor(
     private readonly tools: BridgeTool[],
     private readonly call: ToolCall,
@@ -57,6 +65,7 @@ class HostBridge {
     chmodSync(this.directory, 0o700);
   }
 
+  /** Registers socket events and retains connection lifecycle ownership. */
   async listen(): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       this.server.once('error', reject);
@@ -65,6 +74,7 @@ class HostBridge {
     chmodSync(this.path, 0o600);
   }
 
+  /** Accepts a private bridge connection for the active assignment. */
   private connect(socket: Socket): void {
     this.sockets.add(socket);
     socket.on('close', () => {
@@ -74,6 +84,7 @@ class HostBridge {
     new BridgeConnection(socket, this.tools, this.call).listen();
   }
 
+  /** Returns explicit MCP launch settings for this run’s bridge. */
   configuration(): Record<string, unknown> {
     return {
       mcp_optional_startup_grace_ms: 0,
@@ -90,6 +101,7 @@ class HostBridge {
     };
   }
 
+  /** Releases resources owned by this instance. */
   async close(): Promise<void> {
     this.closing = true;
     for (const socket of this.sockets) socket.destroy();
@@ -98,17 +110,22 @@ class HostBridge {
   }
 }
 
+/** Frames requests and responses for one authenticated local bridge connection. */
 class BridgeConnection {
   private input = '';
+
   private pending = Promise.resolve();
+
   private closed = false;
 
+  /** Binds a connected socket to the effective tool catalog and parent-owned dispatcher. */
   constructor(
     private readonly socket: Socket,
     private readonly tools: BridgeTool[],
     private readonly call: ToolCall,
   ) {}
 
+  /** Registers socket events and retains connection lifecycle ownership. */
   listen(): void {
     this.socket.on('error', () => {});
     this.socket.on('data', (data) => this.receive(data));
@@ -117,6 +134,7 @@ class BridgeConnection {
     });
   }
 
+  /** Decodes complete request frames from incoming socket data. */
   private receive(data: Buffer): void {
     this.input += data.toString();
     if (Buffer.byteLength(this.input) > 128 * 1024) {
@@ -133,6 +151,7 @@ class BridgeConnection {
     }
   }
 
+  /** Validates request framing before handing it to host authorization. */
   private async request(line: string): Promise<void> {
     let request: Request | undefined;
     try {
@@ -146,6 +165,7 @@ class BridgeConnection {
     }
   }
 
+  /** Routes only supported bridge capabilities to the parent runtime. */
   private dispatch(request: Request): Promise<unknown> | BridgeTool[] {
     if (request.method === 'list') return this.tools;
     if (request.method === 'call' && this.tools.some((tool) => tool.name === request.name))

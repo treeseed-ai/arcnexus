@@ -1,0 +1,13 @@
+name: Development
+on:
+  pull_request:
+    branches:
+      - staging
+permissions:
+  contents: read
+concurrency:
+  group: development-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    uses: ./.github/workflows/verification.yaml

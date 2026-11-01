@@ -1,13 +1,5 @@
-import {
-  closeSync,
-  cpSync,
-  existsSync,
-  mkdirSync,
-  openSync,
-  readSync,
-  unlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { readDiagnosticExcerpt } from '../operations/diagnostics.js';
+import { cpSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { RecordData } from '../workspace/state.js';
 
@@ -40,17 +32,9 @@ export function beginAttempt(root: string, record: RecordData): void {
   delete record.sandboxPreflight;
 }
 
+/** Supplies bounded failure context; evidence filenames do not define diagnostic identity. */
 export function logExcerpt(path: string): string {
-  const fd = openSync(path, 'r'),
-    buffer = Buffer.alloc(16384);
-  try {
-    return buffer
-      .subarray(0, readSync(fd, buffer, 0, buffer.length, 0))
-      .toString('utf8')
-      .slice(0, 4096);
-  } finally {
-    closeSync(fd);
-  }
+  return readDiagnosticExcerpt(path).output;
 }
 
 export function archiveAttempt(

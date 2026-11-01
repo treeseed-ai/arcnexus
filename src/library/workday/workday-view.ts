@@ -3,6 +3,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { InputError } from '../architecture/config.js';
 import { WorkdayStore } from '../coordination-store/workday-store.js';
 import { processStart } from '../operations/service-state.js';
+
 export async function viewWorkday(
   root: string,
   id: string,
@@ -14,7 +15,10 @@ export async function viewWorkday(
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid workday identity');
   return new WorkdayViewer(root, id, json, after, signal).view(follow);
 }
+
+/** Reads SQLite coordination state and follows ordered events without activating stewards. */
 class WorkdayViewer {
+  /** Retains viewer format, event cursor and independent viewer cancellation. */
   constructor(
     private root: string,
     private id: string,
@@ -22,6 +26,8 @@ class WorkdayViewer {
     private cursor: number,
     private signal: AbortSignal,
   ) {}
+
+  /** Loads the requested content through this component boundary. */
   private read() {
     const store = new WorkdayStore(join(this.root, 'workdays', this.id, 'workday.sqlite'));
     try {
@@ -37,6 +43,8 @@ class WorkdayViewer {
       store.close();
     }
   }
+
+  /** Reads retained state and optionally follows until terminal outcome or viewer cancellation. */
   async view(follow: boolean): Promise<void> {
     do {
       const { snapshot, events, terminal, interrupted } = this.read();
@@ -62,6 +70,8 @@ class WorkdayViewer {
       }
     } while (!this.signal.aborted);
   }
+
+  /** Formats one observed state or event without changing workday execution. */
   private emit(events: ReturnType<WorkdayStore['events']>): void {
     for (const event of events) {
       console.log(

@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+
+/** Independently checks summary against retained candidate evidence. */
 class SummaryAcceptance {
   private readonly record = {
     id: 'independent-summary',
@@ -30,6 +32,8 @@ class SummaryAcceptance {
     ],
     implementationAttempts: 1,
   };
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(workspace: string): Promise<void> {
     const { markdownReport } = await import(
       pathToFileURL(
@@ -53,6 +57,8 @@ class SummaryAcceptance {
     this.historical(markdownReport);
     console.log('Independent activity/outcome summary acceptance passed');
   }
+
+  /** Checks that records missing newer fields remain readable. */
   private historical(markdownReport: (record: any) => string): void {
     const historical = markdownReport({
       id: 'historical',
@@ -65,7 +71,9 @@ class SummaryAcceptance {
     assert.doesNotMatch(historical, /undefined|null/);
   }
 }
+
 export async function checkSummary(workspace = process.cwd()): Promise<void> {
   await new SummaryAcceptance().run(workspace);
 }
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) await checkSummary();

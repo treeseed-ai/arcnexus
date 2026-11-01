@@ -6,8 +6,11 @@ import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises qualification behavior through observable scenarios. */
 class QualificationTests {
-  qualificationProgramExercisesProductionCLIAndRetainsImmutableCampaignEvidence_1(t: TestContext) {
+  /** Verifies that qualification program exercises production cliand retains immutable campaign evidence. */
+  qualificationProgramExercisesProductionCLIAndRetainsImmutableCampaignEvidence(t: TestContext) {
     const f = campaign(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -19,7 +22,9 @@ class QualificationTests {
     assert.equal(report.runnerHash, report.finalRunnerHash);
     assert.equal(f.run().status, 2);
   }
-  qualificationFailureStaysVisibleAndDoesNotRetryCases_2(t: TestContext) {
+
+  /** Verifies that qualification failure stays visible and does not retry cases. */
+  qualificationFailureStaysVisibleAndDoesNotRetryCases(t: TestContext) {
     const f = campaign(t, 'malformed');
     f.value.cases.push({ ...f.value.cases[0], id: 'second' });
     const r = f.run();
@@ -29,12 +34,16 @@ class QualificationTests {
     assert.ok(report.cases.every((c: any) => c.status === 'failed'));
     assert.equal(readFileSync(f.calls, 'utf8').trim().split('\n').length, 2);
   }
-  qualificationRejectsNonImmutableRevisionsBeforeInference_3(t: TestContext) {
+
+  /** Verifies that qualification rejects non immutable revisions before inference. */
+  qualificationRejectsNonImmutableRevisionsBeforeInference(t: TestContext) {
     const f = campaign(t);
     f.value.cases[0].base = 'HEAD';
     assert.equal(f.run().status, 2);
   }
-  qualificationRecordsCorrectlyBlockedWorkOnlyAfterIndependentOwnerAcceptance_4(t: TestContext) {
+
+  /** Verifies that qualification records correctly blocked work only after independent owner acceptance. */
+  qualificationRecordsCorrectlyBlockedWorkOnlyAfterIndependentOwnerAcceptance(t: TestContext) {
     const f = campaign(t, 'blocked');
     f.value.cases[0].expectedOutcome = 'blocked';
     const check = join(f.root, 'boundary.mjs');
@@ -47,7 +56,9 @@ class QualificationTests {
     ];
     assert.equal(f.run().status, 0);
   }
-  async campaignCancellationStopsItsActiveCLIAndRetainsPartialEvidence_5(t: TestContext) {
+
+  /** Verifies that campaign cancellation stops its active cliand retains partial evidence. */
+  async campaignCancellationStopsItsActiveCLIAndRetainsPartialEvidence(t: TestContext) {
     const f = campaign(t, 'implementation-timeout'),
       manifest = join(f.root, 'manifest.json');
     writeFileSync(manifest, JSON.stringify(f.value));
@@ -71,7 +82,9 @@ class QualificationTests {
     assert.equal(report.cases.length, 1);
     assert.equal(report.cases[0].report.status, 'cancelled');
   }
-  independentReportCheckerStillExecutesWhenItsSnapshotPathContainsSpaces_6(t: TestContext) {
+
+  /** Verifies that independent report checker still executes when its snapshot path contains spaces. */
+  independentReportCheckerStillExecutesWhenItsSnapshotPathContainsSpaces(t: TestContext) {
     const f = workflowFixture(t),
       script = join(f.root, 'report check.mjs');
     writeFileSync(script, readFileSync('dist/library/experiments/checks/check-report-summary.js'));
@@ -84,7 +97,9 @@ class QualificationTests {
     assert.equal(result.status, 1);
     assert.match(result.stderr, /OUTCOME_SECTION_REQUIRED/);
   }
-  campaignExposesActualPreparationFailureBeforeAnyModelRuns_7(t: TestContext) {
+
+  /** Verifies that campaign exposes actual preparation failure before any model runs. */
+  campaignExposesActualPreparationFailureBeforeAnyModelRuns(t: TestContext) {
     const f = campaign(t),
       path = join(f.repo, 'architecture/environment.yaml'),
       environment = JSON.parse(String(readFileSync(path)));
@@ -98,9 +113,11 @@ class QualificationTests {
     assert.equal(existsSync(f.calls), false);
   }
 }
+
 const suite = new QualificationTests();
 
 const program = resolve('scripts/qualify.mjs');
+
 function campaign(t: any, mode: any = 'success'): any {
   const f = workflowFixture(t, mode),
     assignment = join(f.root, 'assignment.json'),
@@ -118,6 +135,7 @@ function campaign(t: any, mode: any = 'success'): any {
   };
   return { ...f, value, run, output };
 }
+
 function campaignDefinition(f: any, assignment: string, check: string): any {
   return {
     schemaVersion: 1,
@@ -136,6 +154,7 @@ function campaignDefinition(f: any, assignment: string, check: string): any {
     ],
   };
 }
+
 function prepareAcceptance(f: any, assignment: string): string {
   writeFileSync(
     assignment,
@@ -155,20 +174,26 @@ function prepareAcceptance(f: any, assignment: string): string {
   );
   return check;
 }
+
 test('qualification program exercises production CLI and retains immutable campaign evidence', (t: any) =>
-  suite.qualificationProgramExercisesProductionCLIAndRetainsImmutableCampaignEvidence_1(t));
+  suite.qualificationProgramExercisesProductionCLIAndRetainsImmutableCampaignEvidence(t));
+
 test('qualification failure stays visible and does not retry cases', (t: any) =>
-  suite.qualificationFailureStaysVisibleAndDoesNotRetryCases_2(t));
+  suite.qualificationFailureStaysVisibleAndDoesNotRetryCases(t));
+
 test('qualification rejects non-immutable revisions before inference', (t: any) =>
-  suite.qualificationRejectsNonImmutableRevisionsBeforeInference_3(t));
+  suite.qualificationRejectsNonImmutableRevisionsBeforeInference(t));
+
 test('qualification records correctly blocked work only after independent owner acceptance', (t: any) =>
-  suite.qualificationRecordsCorrectlyBlockedWorkOnlyAfterIndependentOwnerAcceptance_4(t));
+  suite.qualificationRecordsCorrectlyBlockedWorkOnlyAfterIndependentOwnerAcceptance(t));
 
 test('campaign cancellation stops its active CLI and retains partial evidence', (t: any) =>
-  suite.campaignCancellationStopsItsActiveCLIAndRetainsPartialEvidence_5(t));
+  suite.campaignCancellationStopsItsActiveCLIAndRetainsPartialEvidence(t));
+
 test('independent report checker still executes when its snapshot path contains spaces', (t: any) =>
-  suite.independentReportCheckerStillExecutesWhenItsSnapshotPathContainsSpaces_6(t));
+  suite.independentReportCheckerStillExecutesWhenItsSnapshotPathContainsSpaces(t));
+
 test('campaign exposes actual preparation failure before any model runs', (t: any) =>
-  suite.campaignExposesActualPreparationFailureBeforeAnyModelRuns_7(t));
+  suite.campaignExposesActualPreparationFailureBeforeAnyModelRuns(t));
 
 registerSuite({ component: 'experiments', level: 'acceptance', tags: ['deterministic'] });

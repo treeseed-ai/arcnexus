@@ -4,11 +4,14 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts guidance commands without duplicating runtime orchestration. */
 export class GuidanceCommand {
+  /** Retains checkout selection and output options for guidance validation. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly signal: AbortSignal,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     const { values, positionals } = this;
     if (

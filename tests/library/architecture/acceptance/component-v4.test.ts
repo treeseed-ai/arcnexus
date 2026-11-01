@@ -1,250 +1,15 @@
+import { ComponentV4Fixture } from '../support/component-v4-fixture.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, symlinkSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { cpSync, symlinkSync, writeFileSync } from 'node:fs';
+
 import { join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
-import { catalogFixture } from '../../testing/support/catalog-fixture.js';
 
-class ComponentV4Fixture {
-  readonly root = mkdtempSync(join(tmpdir(), 'component-v4-'));
-
-  constructor(t: TestContext) {
-    t.after(() => rmSync(this.root, { recursive: true, force: true }));
-    this.git('init', '-b', 'main');
-    this.git('config', 'user.name', 'Test');
-    this.git('config', 'user.email', 'test@example.invalid');
-    catalogFixture(this.root);
-    this.put('architecture/environment.json', {
-      schemaVersion: 1,
-      prerequisites: [],
-      setup: [],
-      generatedDirectories: [],
-    });
-    this.hierarchy();
-    this.put('package/src/value.ts', 'export const value = 1;');
-    this.commit();
-  }
-
-  private hierarchy(): void {
-    this.put(
-      'architecture/components/platform.json',
-      this.component('platform', 'platform', {
-        initialization: { schemaVersion: 3, componentId: 'sample' },
-        coverageExclusions: [
-          { path: 'architecture', reason: 'Fixture catalog outside implementation' },
-        ],
-      }),
-    );
-    this.put(
-      'architecture/components/package.json',
-      this.component('package', 'package', {
-        parentId: 'platform',
-        repository: 'sample',
-        repositoryRoot: 'package',
-      }),
-    );
-    this.put(
-      'architecture/components/sample.json',
-      this.component('sample', 'library', {
-        parentId: 'package',
-        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
-        access: { readPaths: ['.'], writeDirectories: ['src'] },
-        discovery: { source: ['src'], documentation: [], tests: [], exclude: [] },
-      }),
-    );
-  }
-
-  references(): any {
-    const component = this.component('sample', 'library', {
-      parentId: 'package',
-      ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
-      access: { readPaths: ['.'], writeDirectories: ['src'] },
-      patternIds: ['standard'],
-      provides: [
-        {
-          id: 'value',
-          version: '1',
-          kind: 'typescript',
-          path: 'src/value.ts',
-          compatibility: 'Preserve value export',
-        },
-      ],
-      consumes: [{ id: 'value', version: '1' }],
-    });
-    this.put('architecture/components/sample.json', component);
-    this.pattern();
-    this.put('package/src/standard.md', 'Export immutable values.');
-    return component;
-  }
-
-  private pattern(): void {
-    this.put('architecture/patterns/standard.yaml', {
-      schemaVersion: 1,
-      id: 'standard',
-      owner: 'sample',
-      purpose: 'Use standard exports',
-      applicability: 'Value modules',
-      document: 'src/standard.md',
-      examples: [],
-      operationIds: [],
-    });
-  }
-
-  primaryRepository(): void {
-    this.put('architecture/environment.json', {
-      schemaVersion: 1,
-      prerequisites: [],
-      setup: [],
-      generatedDirectories: [],
-      workspace: {
-        primary: { id: 'sample', repository: 'https://example.invalid/sample.git' },
-        dependencies: [],
-      },
-    });
-  }
-
-  dependencyCatalog(dependency: ComponentV4Fixture): void {
-    this.git('remote', 'add', 'origin', 'https://example.invalid/sample.git');
-    dependency.git('remote', 'add', 'origin', 'https://example.invalid/other.git');
-    this.put('architecture/environment.json', {
-      schemaVersion: 1,
-      prerequisites: [],
-      setup: [],
-      generatedDirectories: [],
-      workspace: {
-        primary: { id: 'sample', repository: 'https://example.invalid/sample.git' },
-        dependencies: [
-          {
-            id: 'other',
-            repository: 'https://example.invalid/other.git',
-            commit: dependency.git('rev-parse', 'HEAD'),
-            path: 'dependencies/other',
-            prerequisites: [],
-            setup: [],
-            generatedDirectories: [],
-          },
-        ],
-      },
-    });
-    this.put('architecture/bindings.json', {
-      schemaVersion: 1,
-      repositories: { other: dependency.root },
-      tools: {},
-    });
-    this.otherOwner();
-  }
-
-  private otherOwner(): void {
-    this.put(
-      'architecture/components/other-package.json',
-      this.component('other-package', 'package', {
-        parentId: 'platform',
-        repository: 'other',
-        repositoryRoot: 'package',
-      }),
-    );
-    this.put(
-      'architecture/components/other.json',
-      this.component('other', 'library', {
-        parentId: 'other-package',
-        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
-        access: { readPaths: ['.'], writeDirectories: ['src'] },
-        provides: [
-          {
-            id: 'remote-value',
-            version: '1',
-            kind: 'typescript',
-            path: 'src/value.ts',
-            compatibility: 'Preserve exported value',
-          },
-        ],
-      }),
-    );
-    this.consumer();
-  }
-
-  private consumer(): void {
-    this.put(
-      'architecture/components/sample.json',
-      this.component('sample', 'library', {
-        parentId: 'package',
-        ownership: { paths: ['src'], publicModules: [], directoryExceptions: [] },
-        access: { readPaths: ['.'], writeDirectories: ['src'] },
-        consumes: [{ id: 'remote-value', version: '1' }],
-      }),
-    );
-  }
-
-  importingOwner(specifier: string): void {
-    this.put(
-      'architecture/components/consumer.json',
-      this.component('consumer', 'library', {
-        parentId: 'package',
-        ownership: { paths: ['consumer'], publicModules: [], directoryExceptions: [] },
-        access: { readPaths: ['.'], writeDirectories: ['consumer'] },
-      }),
-    );
-    this.put('package/consumer/entry.ts', `import '../src/${specifier}';`);
-  }
-
-  publicModule(path: string): void {
-    this.put(
-      'architecture/components/sample.json',
-      this.component('sample', 'library', {
-        parentId: 'package',
-        ownership: { paths: ['src'], publicModules: [path], directoryExceptions: [] },
-        access: { readPaths: ['.'], writeDirectories: ['src'] },
-      }),
-    );
-  }
-
-  component(id: string, type: string, extra: object): any {
-    return {
-      schemaVersion: 4,
-      id,
-      type,
-      purpose: 'Own bounded behavior',
-      path: '.',
-      objectives: [],
-      constraints: [],
-      questions: [],
-      interfaces: [],
-      relatedIds: [],
-      role: 'engineer',
-      executionProfile: 'luna',
-      verification: [{ command: 'node', args: ['--version'] }],
-      patternIds: [],
-      access: { readPaths: ['.'], writeDirectories: [] },
-      ...extra,
-    };
-  }
-
-  put(path: string, value: unknown): void {
-    mkdirSync(join(this.root, path, '..'), { recursive: true });
-    writeFileSync(join(this.root, path), typeof value === 'string' ? value : JSON.stringify(value));
-  }
-
-  git(...args: string[]): string {
-    const result = spawnSync('git', ['-C', this.root, ...args], { encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr);
-    return result.stdout.trim();
-  }
-
-  commit(): void {
-    this.git('add', '.');
-    this.git('commit', '-m', 'fixture');
-  }
-
-  run(...args: string[]) {
-    return spawnSync(process.execPath, [resolve('dist/cli.js'), ...args, '--project', this.root], {
-      encoding: 'utf8',
-    });
-  }
-}
-
+/** Exercises component v4 behavior through observable scenarios. */
 class ComponentV4Tests {
+  /** Verifies that catalog validation exposes derived ownership and captured inventories. */
   reportsDerivedOwnership(t: TestContext): void {
     const fixture = new ComponentV4Fixture(t);
     const result = fixture.run('validate');
@@ -258,6 +23,7 @@ class ComponentV4Tests {
     assert.ok(report.coverageExclusions.some((entry: any) => entry.path === 'architecture'));
   }
 
+  /** Verifies that resolves package and discovers files. */
   resolvesPackageAndDiscoversFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const result = f.run('inspect', 'sample', 'Inspect responsibility', '--json');
@@ -270,6 +36,7 @@ class ComponentV4Tests {
     assert.match(component.inventory[0].sha256, /^[a-f0-9]{64}$/);
   }
 
+  /** Verifies that captures standards and rejects missing references. */
   capturesStandardsAndRejectsMissingReferences(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const component = f.references();
@@ -285,6 +52,7 @@ class ComponentV4Tests {
     assert.match(f.run('validate').stderr, /incompatible contract/);
   }
 
+  /** Verifies that rejects overlapping future roots. */
   rejectsOverlappingFutureRoots(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const other = f.component('other', 'library', {
@@ -297,6 +65,7 @@ class ComponentV4Tests {
     assert.match(f.run('validate').stderr, /ownership|owner/);
   }
 
+  /** Verifies that rejects container write authority. */
   rejectsContainerWriteAuthority(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put(
@@ -315,6 +84,7 @@ class ComponentV4Tests {
     assert.match(result.stderr, /containment|container/);
   }
 
+  /** Verifies that detects inventory changes at the selected revision. */
   detectsInventoryChangesAtTheSelectedRevision(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const first = JSON.parse(f.run('inspect', 'sample', 'Inspect', '--json').stdout);
@@ -330,6 +100,7 @@ class ComponentV4Tests {
     assert.notEqual(first.digest, second.digest);
   }
 
+  /** Verifies that separates repository ownership. */
   separatesRepositoryOwnership(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.primaryRepository();
@@ -354,6 +125,7 @@ class ComponentV4Tests {
     assert.equal(result.status, 0, result.stderr);
   }
 
+  /** Verifies that packaged cli uses its own schemas. */
   packagedCliUsesItsOwnSchemas(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const packageRoot = join(f.root, 'supervisor');
@@ -377,6 +149,7 @@ class ComponentV4Tests {
     assert.equal(JSON.parse(result.stdout).context.at(-1).schemaVersion, 4);
   }
 
+  /** Verifies that captures pinned dependency contract. */
   capturesPinnedDependencyContract(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const dependency = new ComponentV4Fixture(t);
@@ -401,6 +174,7 @@ class ComponentV4Tests {
     assert.equal(resolved.workspaceMembers[0].base, dependency.git('rev-parse', 'HEAD'));
   }
 
+  /** Verifies that checks imports below package roots. */
   checksImportsBelowPackageRoots(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.importingOwner('value.js');
@@ -413,6 +187,7 @@ class ComponentV4Tests {
     assert.equal(f.run('validate').status, 0);
   }
 
+  /** Verifies that v4 maps compiled mjs imports to declared mts public modules. */
   checksMtsPublicModules(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('package/src/module.mts', 'export const value = 1;');
@@ -425,6 +200,7 @@ class ComponentV4Tests {
     assert.equal(result.status, 0, result.stderr);
   }
 
+  /** Verifies that rejects unowned tracked files. */
   rejectsUnownedTrackedFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('orphan.txt', 'unowned');
@@ -436,10 +212,13 @@ class ComponentV4Tests {
 }
 
 const suite = new ComponentV4Tests();
+
 test('catalog validation exposes derived ownership and captured inventories', (t) =>
   suite.reportsDerivedOwnership(t));
+
 test('v4 derives repository and scope and discovers captured files', (t) =>
   suite.resolvesPackageAndDiscoversFiles(t));
+
 test('v4 detects files outside every ownership root', (t) => suite.rejectsUnownedTrackedFiles(t));
 
 test('v4 captures referenced standards and contract versions', (t) =>
@@ -447,8 +226,10 @@ test('v4 captures referenced standards and contract versions', (t) =>
 
 test('v4 rejects overlapping roots before files exist', (t) =>
   suite.rejectsOverlappingFutureRoots(t));
+
 test('v4 rejects write authority on containment nodes', (t) =>
   suite.rejectsContainerWriteAuthority(t));
+
 test('v4 discovers added files only at the captured revision', (t) =>
   suite.detectsInventoryChangesAtTheSelectedRevision(t));
 
@@ -463,6 +244,7 @@ test('v4 captures consumed contracts from pinned bound repositories', (t) =>
 
 test('v4 checks cross-owner imports under a package root', (t) =>
   suite.checksImportsBelowPackageRoots(t));
+
 test('v4 maps compiled mjs imports to declared mts public modules', (t) =>
   suite.checksMtsPublicModules(t));
 

@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fixtureFiles } from '../../../../dist/library/experiments/experiment-config.js';
+
 export function materializeFixture(
   kind: 'identity' | 'http' | 'simulation' | 'workday',
   target: string,

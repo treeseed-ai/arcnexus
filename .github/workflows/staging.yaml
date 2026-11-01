@@ -1,0 +1,13 @@
+name: Staging
+on:
+  push:
+    branches:
+      - staging
+permissions:
+  contents: read
+concurrency:
+  group: staging-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/verification.yaml

@@ -5,7 +5,10 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises initialization cleanup behavior through observable scenarios. */
 class InitializationCleanupTests {
+  /** Verifies that refuses unresolved initialization. */
   refusesUnresolvedInitialization(t: TestContext, resource: boolean): void {
     const f = workflowFixture(t);
     const result = f.run('--kind', 'research');
@@ -32,9 +35,12 @@ class InitializationCleanupTests {
     assert.ok(existsSync(record.workspace));
   }
 }
+
 const suite = new InitializationCleanupTests();
+
 test('cleanup refuses an incomplete initialization record', (t) =>
   suite.refusesUnresolvedInitialization(t, false));
+
 test('cleanup includes initializer-owned service resources', (t) =>
   suite.refusesUnresolvedInitialization(t, true));
 

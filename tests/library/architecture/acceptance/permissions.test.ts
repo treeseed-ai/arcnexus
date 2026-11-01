@@ -9,8 +9,11 @@ import {
   preparePermissions,
   validateAccess,
 } from '../../../../dist/library/architecture/permissions.js';
+
+/** Exercises permissions behavior through observable scenarios. */
 class PermissionsTests {
-  permissionProfileQuotesAbsoluteTOMLPathKeysAndGrantsMinimalReads_1(t: TestContext) {
+  /** Verifies that permission profile quotes absolute tomlpath keys and grants minimal reads. */
+  permissionProfileQuotesAbsoluteTOMLPathKeysAndGrantsMinimalReads(t: TestContext) {
     const { root, work } = workspace(t);
     const prepared = preparePermissions(
       work,
@@ -32,7 +35,9 @@ class PermissionsTests {
     assert.ok(prepared.configOverrides.some((value: any) => value.includes('":minimal"="read"')));
     assert.equal(prepared.tmpDirectory, join(root, 'runs/tmp'));
   }
-  permissionPreparationCreatesMissingEmptyWriteDirectoriesButNeverParentDirectories_2(
+
+  /** Verifies that permission preparation creates missing empty write directories but never parent directories. */
+  permissionPreparationCreatesMissingEmptyWriteDirectoriesButNeverParentDirectories(
     t: TestContext,
   ) {
     const { root, work } = workspace(t);
@@ -56,7 +61,9 @@ class PermissionsTests {
       /not covered/,
     );
   }
-  permissionPreparationRejectsMissingReadsFileWriteDirectoriesAndSymlinkSegments_3(t: TestContext) {
+
+  /** Verifies that permission preparation rejects missing reads file write directories and symlink segments. */
+  permissionPreparationRejectsMissingReadsFileWriteDirectoriesAndSymlinkSegments(t: TestContext) {
     const { root, work } = workspace(t);
     this.rejectPolicy(root, work, ['missing'], [], [], /does not exist/);
     this.rejectPolicy(root, work, ['file.txt'], ['file.txt'], ['file.txt'], /directory/);
@@ -64,7 +71,9 @@ class PermissionsTests {
     this.rejectPolicy(root, work, ['link'], [], [], /symlink/);
     this.rejectPolicy(root, work, ['file.txt'], ['link/child'], [], /symlink/);
   }
-  writeCoverageRequiresADeclaredDirectoryAndDotAloneGrantsTheWholeWorktree_4(t: TestContext) {
+
+  /** Verifies that write coverage requires adeclared directory and dot alone grants the whole worktree. */
+  writeCoverageRequiresADeclaredDirectoryAndDotAloneGrantsTheWholeWorktree(t: TestContext) {
     const { root, work } = workspace(t);
     this.rejectPolicy(root, work, [], ['generated'], ['generated2/file'], /not covered/);
     assert.doesNotThrow(() =>
@@ -77,6 +86,8 @@ class PermissionsTests {
     );
     this.rejectPolicy(root, work, ['.'], ['.'], ['../outside'], /Invalid relative path/);
   }
+
+  /** Requires unsafe directory and exact-scope combinations to fail permission preparation. */
   private rejectPolicy(
     root: string,
     work: string,
@@ -90,7 +101,9 @@ class PermissionsTests {
       diagnostic,
     );
   }
-  accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation_5() {
+
+  /** Verifies that access policies are required have both explicit path arrays and only dot bypasses normal path validation. */
+  accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation() {
     for (const value of [
       undefined,
       {},
@@ -105,6 +118,7 @@ class PermissionsTests {
     });
   }
 }
+
 const suite = new PermissionsTests();
 
 function workspace(t: any): any {
@@ -117,18 +131,18 @@ function workspace(t: any): any {
 }
 
 test('permission profile quotes absolute TOML path keys and grants minimal reads', (t: any) =>
-  suite.permissionProfileQuotesAbsoluteTOMLPathKeysAndGrantsMinimalReads_1(t));
+  suite.permissionProfileQuotesAbsoluteTOMLPathKeysAndGrantsMinimalReads(t));
 
 test('permission preparation creates missing empty write directories but never parent directories', (t: any) =>
-  suite.permissionPreparationCreatesMissingEmptyWriteDirectoriesButNeverParentDirectories_2(t));
+  suite.permissionPreparationCreatesMissingEmptyWriteDirectoriesButNeverParentDirectories(t));
 
 test('permission preparation rejects missing reads, file write directories and symlink segments', (t: any) =>
-  suite.permissionPreparationRejectsMissingReadsFileWriteDirectoriesAndSymlinkSegments_3(t));
+  suite.permissionPreparationRejectsMissingReadsFileWriteDirectoriesAndSymlinkSegments(t));
 
 test('write coverage requires a declared directory and dot alone grants the whole worktree', (t: any) =>
-  suite.writeCoverageRequiresADeclaredDirectoryAndDotAloneGrantsTheWholeWorktree_4(t));
+  suite.writeCoverageRequiresADeclaredDirectoryAndDotAloneGrantsTheWholeWorktree(t));
 
 test('access policies are required, have both explicit path arrays, and only dot bypasses normal path validation', () =>
-  suite.accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation_5());
+  suite.accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation());
 
 registerSuite({ component: 'architecture', level: 'acceptance', tags: ['deterministic'] });

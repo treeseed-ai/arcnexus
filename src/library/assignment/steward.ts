@@ -9,6 +9,7 @@ import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
 import { SessionWorkflow } from './session-workflow.js';
+
 export interface StewardCheckpoint {
   schemaVersion: 1;
   authorityHash: string;
@@ -26,6 +27,7 @@ export interface StewardCheckpoint {
   turns: unknown;
   usage: unknown;
 }
+
 export interface SessionControl {
   initialized?: boolean;
   prepared: boolean;
@@ -40,10 +42,16 @@ export interface SessionControl {
     result: AgentResult,
   ) => Promise<{ again: boolean; feedback: string }>;
 }
+
+/** Retains one Codex thread across planned, corrective and handoff continuations. */
 export class StewardSession {
   private state?: SessionState;
+
   private turns?: SessionTurn;
+
   private verification?: SessionVerification;
+
+  /** Retains captured execution inputs and optional handoff control without starting inference. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
@@ -56,6 +64,8 @@ export class StewardSession {
     private readonly control?: SessionControl,
     private readonly initialization?: InitializationEvidence,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { root, record, id, objective, model, executable, signal, maxAttempts, control } = this;
     this.state = new SessionState({
@@ -85,6 +95,8 @@ export class StewardSession {
     this.turns = new SessionTurn(this.state, this.verification);
     await new SessionWorkflow(this.state, this.turns, this.verification).run();
   }
+
+  /** Requires a valid ready result before allowing participant inference. */
   private acceptInitialization(): void {
     if (
       this.initialization!.authorityHash !== this.state!.resolved.digest ||
@@ -93,18 +105,26 @@ export class StewardSession {
       throw new Error('Accepted initialization does not match assignment authority');
     this.record.initialization = this.initialization;
   }
+
+  /** Runs a read-only coordination turn on the retained assignment thread. */
   async controlTurn(instructions: string): Promise<AgentResult> {
     if (!this.turns) throw new Error('Session not active');
     return this.turns.run('coordination', instructions, true, 'coordination');
   }
+
+  /** Checks the final candidate rather than relying on a steward’s completion claim. */
   async verifyFinal(): Promise<void> {
     if (!this.verification) throw new Error('Session not initialized');
     await this.verification.final();
   }
+
+  /** Persists continuation state before control can pass to another owner. */
   captureCheckpoint(): void {
     if (!this.state) throw new Error('Session not initialized');
     this.state.checkpoint();
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private async prepare(): Promise<void> {
     if (!this.control?.prepared) await prepareWorkspace(this.root, this.record, this.signal);
     if (existsSync(join(this.record.workspace, '.codex/config.toml')))
@@ -117,6 +137,7 @@ export class StewardSession {
     }
   }
 }
+
 export async function runSteward(
   root: string,
   record: RecordData,

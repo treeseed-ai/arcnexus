@@ -10,6 +10,7 @@
 
 ### Changed
 
+- Enforce readable class/method structure and separate delivery verification lifecycles (#73).
 - Align component directories and CLI adapters with ownership and shared test selection (#72).
 
 - Compile class-based TypeScript tests and enforce compact owner-scoped code quality (#64).

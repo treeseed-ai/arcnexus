@@ -5,13 +5,18 @@ import { InputError } from '../architecture/config.js';
 import type { InitializationResult, ProposedAssignment } from '../architecture/initialization.js';
 import type { WorkdayInput, WorkdayParticipant } from '../workday/workday-config.js';
 import type { TaskProposal } from './proposal-store.js';
+
+/** Validates model-selected owners against captured catalog authority and supported team shapes. */
 export class ProposalResolution {
+  /** Pins proposal resolution to the source revision, caller bindings and explicit model override. */
   constructor(
     private source: string,
     private base: string,
     private bindings: Bindings,
     private model?: string,
   ) {}
+
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(result: InitializationResult): TaskProposal['execution'] {
     if (result.status !== 'ready') return this.nonReady(result);
     if (!this.validSelection(result)) return undefined;
@@ -33,6 +38,8 @@ export class ProposalResolution {
       );
     return { kind: 'workday', input: this.workday(result, assignments) };
   }
+
+  /** Rejects a selection that cannot be executed by the supported test profile. */
   private validSelection(result: InitializationResult): boolean {
     const ids = result.selectedOwners.map((owner) => owner.id);
     if (!ids.length || new Set(ids).size !== ids.length)
@@ -50,6 +57,8 @@ export class ProposalResolution {
       throw new InputError('Proposed assignments must match selected owners exactly');
     return true;
   }
+
+  /** Retains clarification or architectural gaps instead of inventing executable authority. */
   private nonReady(result: InitializationResult): undefined {
     if (result.status === 'architecture_change_required' && !result.architectureProposal)
       throw new InputError('Architecture change requires a concrete proposal');
@@ -57,11 +66,15 @@ export class ProposalResolution {
       throw new InputError('Clarification requires a concrete question');
     return undefined;
   }
+
+  /** Builds the precise unresolved questions that prevent safe routing. */
   private clarify(result: InitializationResult, question: string): undefined {
     result.status = 'needs_clarification';
     result.questions.push(question);
     return undefined;
   }
+
+  /** Constructs a supported single-owner execution proposal. */
   private assignment(value: ProposedAssignment): ResolvedAssignment {
     if (!value.objective.trim() || !value.acceptanceCriteria.length)
       throw new InputError('Proposed assignment requires objective and acceptance');
@@ -80,6 +93,8 @@ export class ProposalResolution {
       },
     });
   }
+
+  /** Constructs the supported two-owner handoff proposal. */
   private workday(result: InitializationResult, assignments: ResolvedAssignment[]): WorkdayInput {
     const edge = result.dependency;
     const requester = assignments.find((a) => a.componentId === edge?.from);
@@ -103,6 +118,8 @@ export class ProposalResolution {
     };
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
+
+  /** Validates a selected component against the captured catalog. */
   private participant(resolved: ResolvedAssignment): WorkdayParticipant {
     return {
       resolved,
@@ -110,6 +127,8 @@ export class ProposalResolution {
       refresh: this.bindings.taskRefresh?.[resolved.componentId] ?? [],
     };
   }
+
+  /** Checks proposed routing against the caller’s original envelope. */
   private compatibility(a: ResolvedAssignment, b: ResolvedAssignment): void {
     const first = a.context.at(-1)!,
       second = b.context.at(-1)!;

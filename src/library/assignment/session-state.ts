@@ -26,6 +26,7 @@ import { save, type RecordData } from '../workspace/state.js';
 import { assertGeneratedOutputs, assertIdentity } from '../workspace/workspace.js';
 import { candidateDigest, type FrozenTest } from './checkpoints.js';
 import type { SessionControl, StewardCheckpoint, StewardSession } from './steward.js';
+
 export interface SessionOptions {
   root: string;
   record: RecordData;
@@ -38,21 +39,38 @@ export interface SessionOptions {
   control?: SessionControl;
   session: StewardSession;
 }
+
+/** Holds immutable assignment authority and mutable checkpoint state for one steward. */
 export class SessionState {
   readonly resolved: ResolvedAssignment;
+
   readonly component;
+
   readonly assignment;
+
   readonly documentationOnly;
+
   readonly scope: string[];
+
   readonly dir: string;
+
   readonly hostChecks;
+
   readonly turns: Array<Record<string, unknown>> = [];
+
   readonly planned: boolean;
+
   readonly activities: Array<Record<string, unknown>> = [];
+
   resumeId?: string;
+
   frozen: FrozenTest[] = [];
+
   regression: AgentResult['regression'] = null;
+
   specificationFinished = false;
+
+  /** Validates captured authority, materializes independent checks and initializes checkpoint state. */
   constructor(readonly options: SessionOptions) {
     const { root, record, maxAttempts } = options;
     const resolved = record.resolvedAssignment as ResolvedAssignment | undefined;
@@ -71,6 +89,8 @@ export class SessionState {
     this.initialize();
     this.captureLimits();
   }
+
+  /** Records only configured limits; absent values remain visibly unbounded. */
   private captureLimits(): void {
     const profile = this.resolved.executionProfile;
     const { root, record, maxAttempts } = this.options;
@@ -86,6 +106,8 @@ export class SessionState {
     observe(root, record, 'execution.limits', record.executionLimits);
     save(root, record);
   }
+
+  /** Intersects assignment authority with the activity-specific writable roots. */
   private assignmentScope(): string[] {
     const { assignment, documentationOnly, resolved, component } = this;
     return assignment.kind === 'change'
@@ -96,6 +118,8 @@ export class SessionState {
         : resolved.allowedWritePaths
       : [];
   }
+
+  /** Rejects inputs that violate the captured configuration contract. */
   private validate(): void {
     const { assignment, component, documentationOnly } = this;
     const { record } = this.options;
@@ -113,6 +137,8 @@ export class SessionState {
     )
       throw new InputError('Target Codex configuration is unsupported');
   }
+
+  /** Creates the retained activity journal and captures initial session evidence. */
   private initialize(): void {
     const { record, root, objective } = this.options;
     materializeEvidence(this.resolved, join(this.dir, 'prior-evidence'));
@@ -133,6 +159,8 @@ export class SessionState {
       activities: this.activities,
     });
   }
+
+  /** Appends an activity transition to the retained execution evidence. */
   journal(activity: string, status: string, detail: unknown) {
     const event = {
       at: new Date().toISOString(),
@@ -148,6 +176,8 @@ export class SessionState {
     });
     save(this.options.root, this.options.record);
   }
+
+  /** Checks candidate identity and exact scope before further execution. */
   safe() {
     assertIdentity(this.options.record);
     if (this.options.control) {
@@ -162,6 +192,8 @@ export class SessionState {
     } else checkScope(this.options.record.workspace, changes(this.options.record), this.scope);
     assertGeneratedOutputs(this.options.record.workspace, this.options.record.environment);
   }
+
+  /** Runs one captured host command and retains its result under the assignment. */
   async command(c: Command, stage: string): Promise<CommandResult> {
     this.options.record.stage = stage;
     this.journal(stage, 'started', c);
@@ -190,10 +222,13 @@ export class SessionState {
       throw error;
     }
   }
+
+  /** Persists thread, plan and verification state for continuation. */
   checkpoint(): void {
     persistCheckpoint(this.dir, this.options.record, this.checkpointData());
   }
 
+  /** Builds the serializable continuation state without resetting execution counters. */
   private checkpointData(): StewardCheckpoint {
     const { record, control } = this.options;
     return {
@@ -214,6 +249,8 @@ export class SessionState {
       usage: record.usage ?? null,
     };
   }
+
+  /** Selects the active owner’s candidate changes for attribution and scope checks. */
   ownChanges() {
     return changes(this.options.record).filter((c) => covered(c.path, this.scope));
   }

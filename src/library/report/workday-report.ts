@@ -1,4 +1,5 @@
 import type { RecordData } from '../workspace/state.js';
+
 const text = (value: unknown) =>
   String(value ?? 'unavailable')
     .replaceAll('&', '&amp;')
@@ -6,6 +7,7 @@ const text = (value: unknown) =>
     .replaceAll('>', '&gt;')
     .replaceAll('|', '\\|')
     .replaceAll('\n', ' ');
+
 export interface WorkdayReport {
   status: string;
   workspaceId: string;
@@ -28,17 +30,20 @@ export interface WorkdayReport {
   routingMs: number;
   [key: string]: unknown;
 }
+
 function recordedTurns(assignment: RecordData): Array<Record<string, unknown>> {
   return Array.isArray(assignment.turns)
     ? (assignment.turns as Array<Record<string, unknown>>)
     : [];
 }
+
 function sumDurations(items: Array<Record<string, unknown>>, key: string): number {
   return items.reduce(
     (total, value) => total + (typeof value[key] === 'number' ? (value[key] as number) : 0),
     0,
   );
 }
+
 export function workdayMetrics(report: WorkdayReport) {
   const turns = report.assignments.flatMap((assignment) => recordedTurns(assignment));
   const coordination = turns.filter(
@@ -68,6 +73,7 @@ export function workdayMetrics(report: WorkdayReport) {
       'Host-observed explicit coordination turns and routing time; continuation time shown separately. Each thread cumulative usage counted once.',
   };
 }
+
 function summedUsage(report: WorkdayReport): Record<string, number> | null {
   const usage: Record<string, number> = {};
   for (const a of report.assignments)
@@ -76,9 +82,11 @@ function summedUsage(report: WorkdayReport): Record<string, number> | null {
         if (typeof value === 'number') usage[key] = (usage[key] ?? 0) + value;
   return Object.keys(usage).length ? usage : null;
 }
+
 export function workdayMarkdown(report: WorkdayReport): string {
   return new WorkdayMarkdown(report).render();
 }
+
 function sameRequest(payload: unknown, request: Record<string, unknown>): boolean {
   const value = payload as Record<string, unknown>;
   return (
@@ -87,6 +95,7 @@ function sameRequest(payload: unknown, request: Record<string, unknown>): boolea
     value.request === request.request
   );
 }
+
 function outstandingNeeds(report: WorkdayReport): string {
   const requests = report.messages.filter((m) => m.kind === 'request'),
     unrouted = report.assignments
@@ -110,8 +119,13 @@ function outstandingNeeds(report: WorkdayReport): string {
       ].join('\n')
     : 'No undelivered request recorded.';
 }
+
+/** Projects authoritative coordination evidence into a readable caller handoff. */
 class WorkdayMarkdown {
+  /** Retains the coordination projection used to render the caller handoff. */
   constructor(private report: WorkdayReport) {}
+
+  /** Renders the captured workday projection without querying mutable candidate files. */
   render(): string {
     return (
       this.header() +
@@ -124,10 +138,14 @@ class WorkdayMarkdown {
       this.footer()
     );
   }
+
+  /** Shows candidate identity and the final coordination outcome. */
   private header(): string {
     const report = this.report;
     return `# Workday ${text(report.workspaceId)}\n\nEvidence mode: ${text(report.evidenceMode)}\nStatus: ${text(report.status)}\nWorkspace: ${text(report.workspace)}\nBase: ${text(report.base)}\nFailure: ${text(report.error ?? 'none recorded')}\n\n## Owners and execution\n\n`;
   }
+
+  /** Summarizes each owner’s assignment, checkpoint and outcome. */
   private owners(): string {
     const report = this.report;
     return (
@@ -140,10 +158,14 @@ class WorkdayMarkdown {
         .join('\n')
     );
   }
+
+  /** Separates active work, verification and dependency waiting. */
   private timing(): string {
     const report = this.report;
     return `\n\n## Timing and usage\n\nElapsed: ${report.elapsedMs} ms. Coordination allowance used: ${report.coordinationTurns}; configured limit: ${text((report.budgets as { coordinationTurns?: number } | undefined)?.coordinationTurns ?? 'not configured')}. Clarification rounds: ${report.clarificationRounds}; guarded by observed progress.\n\n${text(JSON.stringify(workdayMetrics(report)))}\n\nSupplied prompt sizes are not the complete effective Codex context. Agent findings and checklist completion remain claims; host checks below supply verification.\n\n## Inbox and delivery\n\n`;
   }
+
+  /** Shows correlated requests and responses in their recorded order. */
   private inbox(): string {
     const report = this.report;
     return report.messages
@@ -153,10 +175,14 @@ class WorkdayMarkdown {
       )
       .join('\n');
   }
+
+  /** Makes undelivered requests and unresolved architectural needs visible. */
   private needs(): string {
     const report = this.report;
     return `\n\n## Outstanding needs\n\n${outstandingNeeds(report)}\n\n## Host checks\n\n`;
   }
+
+  /** Summarizes the captured host verification results. */
   private checks(): string {
     const report = this.report;
     return report.assignments
@@ -168,6 +194,8 @@ class WorkdayMarkdown {
       )
       .join('\n');
   }
+
+  /** Shows shutdown and parking state so incomplete candidates remain explicit. */
   private resources(): string {
     const report = this.report;
     return (
@@ -180,6 +208,8 @@ class WorkdayMarkdown {
         .join('\n')
     );
   }
+
+  /** Links the readable handoff back to its detailed retained artifacts. */
   private footer(): string {
     const report = this.report;
     return `\n\nParking: ${text(report.parking.status)}; evidence ${text(report.parking.path)}.\n\nIntegration remains caller-owned. See report.json, SQLite events, and per-assignment reports for raw usage, prompts, checkpoints and frozen-test evidence.\n`;

@@ -2,19 +2,26 @@ import { registerSuite } from '../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
+
+/** Exercises lint behavior through observable scenarios. */
 class LintTests {
-  integratedLintPermitsExplicitAnyWithoutTypeAwareConfiguration_1() {
+  /** Verifies that integrated lint permits explicit any without type aware configuration. */
+  integratedLintPermitsExplicitAnyWithoutTypeAwareConfiguration() {
     const result = lint('export const value: any = 1;\n');
     assert.equal(result.status, 0, result.stdout + result.stderr);
   }
-  scenario_2(input: any, rule: any) {
+
+  /** Verifies the scenario rejects oversized code. */
+  rejectsOversizedCode(input: any, rule: any) {
     const result = lint(input);
     assert.equal(result.status, 1, result.stdout + result.stderr);
     assert.ok(
       JSON.parse(result.stdout)[0].messages.some((message: any) => message.ruleId === rule),
     );
   }
-  inlineSuppressionCannotDisableArchitecturalSizeRules_3() {
+
+  /** Verifies that inline suppression cannot disable architectural size rules. */
+  inlineSuppressionCannotDisableArchitecturalSizeRules() {
     const result = lint('/* eslint-disable max-lines */\n' + '// line\n'.repeat(501));
     assert.equal(result.status, 1, result.stdout + result.stderr);
     assert.ok(
@@ -22,6 +29,7 @@ class LintTests {
     );
   }
 }
+
 const suite = new LintTests();
 
 function lint(input: any): any {
@@ -40,7 +48,7 @@ function lint(input: any): any {
 }
 
 test('integrated lint permits explicit any without type-aware configuration', () =>
-  suite.integratedLintPermitsExplicitAnyWithoutTypeAwareConfiguration_1());
+  suite.integratedLintPermitsExplicitAnyWithoutTypeAwareConfiguration());
 
 for (const [name, input, rule] of [
   [
@@ -60,9 +68,9 @@ for (const [name, input, rule] of [
   ],
   ['file', '// line\n'.repeat(501), 'max-lines'],
 ])
-  test('integrated lint rejects oversized ' + name, () => suite.scenario_2(input, rule));
+  test('integrated lint rejects oversized ' + name, () => suite.rejectsOversizedCode(input, rule));
 
 test('inline suppression cannot disable architectural size rules', () =>
-  suite.inlineSuppressionCannotDisableArchitecturalSizeRules_3());
+  suite.inlineSuppressionCannotDisableArchitecturalSizeRules());
 
 registerSuite({ component: 'foundation', level: 'acceptance', tags: ['deterministic'] });

@@ -3,12 +3,14 @@ import { chmodSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { InputError } from '../architecture/config.js';
+
 export interface WorkdayEvent {
   sequence: number;
   observedAt: string;
   type: string;
   payload: unknown;
 }
+
 export interface Message {
   id: string;
   from: string;
@@ -17,14 +19,18 @@ export interface Message {
   replyTo?: string;
   payload: unknown;
 }
+
 interface Update {
   id: string;
   status: string;
   data: unknown;
 }
+
 /** Single writer; reports project transactional state rather than replacing it. */
 export class WorkdayStore {
   private db: DatabaseSync;
+
+  /** Creates a private transactional store or opens an existing one read-only; rejects unknown versions. */
   constructor(
     readonly path: string,
     create = false,
@@ -51,6 +57,8 @@ export class WorkdayStore {
       throw new InputError('Unsupported workday database version');
     }
   }
+
+  /** Creates initial workday and assignment rows in the private SQLite database. */
   initialize(id: string, data: unknown, owners: string[]): void {
     this.transaction(() => {
       this.db
@@ -61,6 +69,8 @@ export class WorkdayStore {
       this.event('workday.created', { id, owners });
     });
   }
+
+  /** Commits all coordination changes together or rolls them back on failure. */
   private transaction(action: () => void): void {
     this.db.exec('BEGIN IMMEDIATE');
     try {
@@ -71,11 +81,15 @@ export class WorkdayStore {
       throw error;
     }
   }
+
+  /** Appends an ordered coordination event within the current transaction. */
   private event(type: string, payload: unknown): void {
     this.db
       .prepare('INSERT INTO events(observed_at,type,data) VALUES(?,?,?)')
       .run(new Date().toISOString(), type, JSON.stringify(payload));
   }
+
+  /** Atomically persists delivery, readiness and the corresponding coordination event. */
   commit(
     type: string,
     payload: unknown,
@@ -100,6 +114,8 @@ export class WorkdayStore {
       this.event(type, payload);
     });
   }
+
+  /** Updates exactly one known workday or assignment row. */
   private update(table: 'workdays' | 'assignments', value: Update): void {
     const result = this.db
       .prepare(`UPDATE ${table} SET status=?,data=? WHERE id=?`)
@@ -107,6 +123,8 @@ export class WorkdayStore {
     if (result.changes !== 1)
       throw new Error(table === 'workdays' ? 'Unknown workday' : 'Unknown assignment');
   }
+
+  /** Reads the authoritative coordination projection for inspection and reports. */
   snapshot() {
     const rows = this.db.prepare('SELECT * FROM workdays').all();
     if (rows.length !== 1) throw new InputError('Incomplete workday database');
@@ -121,6 +139,8 @@ export class WorkdayStore {
       executions: this.db.prepare('SELECT * FROM executions ORDER BY rowid').all().map(decode),
     };
   }
+
+  /** Reads ordered coordination events after the caller’s cursor. */
   events(after = 0): WorkdayEvent[] {
     return this.db
       .prepare('SELECT * FROM events WHERE sequence>? ORDER BY sequence')
@@ -132,6 +152,8 @@ export class WorkdayStore {
         payload: JSON.parse(String(r.data)),
       }));
   }
+
+  /** Releases resources owned by this instance. */
   close(): void {
     this.db.close();
   }

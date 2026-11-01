@@ -1,3 +1,4 @@
+import { readDiagnosticExcerpt } from './diagnostics.js';
 import { materialCandidate } from '../change-inspection/changes.js';
 import { ProgressObserver } from '../report/progress.js';
 import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
@@ -11,7 +12,9 @@ import { save, type RecordData } from '../workspace/state.js';
 import { operationEnvironment } from './environment.js';
 import { execute, type CommandResult } from './process.js';
 import { ServiceManager, type HttpDefinition, type ServiceDefinition } from './services.js';
+
 export { operationEnvironment } from './environment.js';
+
 export type Operation = {
   schemaVersion: 2 | 3;
   id: string;
@@ -28,12 +31,14 @@ export type Operation = {
   | (Command & { kind: 'command' | 'service'; service?: ServiceDefinition })
   | { kind: 'http'; http: HttpDefinition }
 );
+
 export interface OperationBridge {
   tools: BridgeTool[];
   call: (name: string, args: unknown) => Promise<unknown>;
   disconnect: () => void;
   close: () => Promise<void>;
 }
+
 export function operationBridge(
   root: string,
   record: RecordData,
@@ -49,14 +54,21 @@ export function operationBridge(
   };
 }
 
+/** Authorizes declared commands and services, accounts for calls, and retains their evidence. */
 class OperationRuntime {
   private readonly resolved: ResolvedAssignment;
+
   private readonly services: ServiceManager;
+
   private active: AbortController | undefined;
+
   private pending?: Promise<unknown>;
+
   private generation = 0;
+
   private activeNumber = 0;
 
+  /** Restores operation counters and binds managed services to captured assignment authority. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
@@ -69,6 +81,7 @@ class OperationRuntime {
     record.operationCalls ??= 0;
   }
 
+  /** Releases resources owned by this instance. */
   async close(): Promise<void> {
     this.generation++;
     this.active?.abort(new Error('Operation turn completed'));
@@ -80,12 +93,14 @@ class OperationRuntime {
     }
   }
 
+  /** Stops managed work when its operation bridge loses its owner. */
   disconnect(): void {
     this.generation++;
     this.active?.abort(new Error('Operation bridge disconnected'));
     void this.services.stop().catch(() => {});
   }
 
+  /** Accounts for and authorizes a tool request before execution. */
   async call(name: string, args: unknown): Promise<unknown> {
     if (name === 'operations.list') return this.list(args);
     const op = this.authorize(name, args);
@@ -105,6 +120,7 @@ class OperationRuntime {
     return execution;
   }
 
+  /** Dispatches an authorized operation through the managed execution service. */
   private async perform(op: Operation, number: number, generation: number) {
     if (generation !== this.generation)
       throw new Error('Operation scope closed before queued execution');
@@ -122,6 +138,7 @@ class OperationRuntime {
     return result;
   }
 
+  /** Lists only operations captured for this assignment. */
   private list(args: unknown) {
     if (args && Object.keys(args).length) throw new Error('Operation listing accepts no arguments');
     return {
@@ -131,6 +148,7 @@ class OperationRuntime {
     };
   }
 
+  /** Rejects unavailable operation IDs or activity permissions. */
   private authorize(name: string, args: unknown): Operation {
     const { root, record, resolved } = this;
     this.request(args);
@@ -155,6 +173,7 @@ class OperationRuntime {
     return op;
   }
 
+  /** Requires the requested activity to be allowed by the captured role. */
   private assertActivity(op: Operation, stage: string): void {
     const activities =
       stage === 'specification'
@@ -168,6 +187,7 @@ class OperationRuntime {
       throw new Error('Operation activity denied: ' + stage);
   }
 
+  /** Validates tool request data before executing any operation. */
   private request(args: unknown): void {
     const { root, record, resolved } = this;
     record.operationCalls = Number(record.operationCalls) + 1;
@@ -180,6 +200,7 @@ class OperationRuntime {
       throw new Error('Operation request budget exhausted');
   }
 
+  /** Routes declared service lifecycle actions through the service manager. */
   private async service(name: string, op: Operation): Promise<unknown> {
     switch (name) {
       case 'services.start':
@@ -197,6 +218,7 @@ class OperationRuntime {
     }
   }
 
+  /** Records the authorized operation start and its execution context. */
   private begin(op: Operation): { cwd: string; combined: AbortSignal; start: number } {
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     const path = relative(this.record.workspace, cwd);
@@ -215,6 +237,7 @@ class OperationRuntime {
     return { cwd, combined, start };
   }
 
+  /** Executes a declared finite operation and retains its command evidence. */
   private async finite(op: Operation) {
     const { cwd, combined, start } = this.begin(op);
     const outcome: { result?: CommandResult } = {};
@@ -224,7 +247,7 @@ class OperationRuntime {
       const result = outcome.result;
       this.inspect();
       artifacts = op.artifacts.map((path) => this.artifact(path));
-      const output = readFileSync(result!.log).subarray(0, 16384).toString('utf8');
+      const output = readDiagnosticExcerpt(result!.log).output;
       return {
         id: op.id,
         status: result!.exitCode === 0 ? 'passed' : 'failed',
@@ -237,6 +260,7 @@ class OperationRuntime {
     }
   }
 
+  /** Runs the requested action through the configured execution boundary. */
   private async execute(
     op: Operation,
     cwd: string,
@@ -253,6 +277,7 @@ class OperationRuntime {
     }
   }
 
+  /** Executes the fixed command and retains its output and exit evidence. */
   private async command(op: Operation, cwd: string, signal: AbortSignal): Promise<CommandResult> {
     const { root, record, resolved } = this;
     const log = join(root, 'runs', record.id, `operation-${this.activeNumber}.log`);
@@ -279,6 +304,7 @@ class OperationRuntime {
     });
   }
 
+  /** Validates and records declared result artifacts produced by the operation. */
   private artifact(path: string) {
     const { root, record } = this;
     const source = join(record.workspace, path);
@@ -293,6 +319,7 @@ class OperationRuntime {
     return { path, sha256, artifact: relative(join(root, 'runs', record.id), join(dir, sha256)) };
   }
 
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   private finish(
     id: string,
     start: number,
@@ -314,6 +341,7 @@ class OperationRuntime {
     this.inspect();
   }
 }
+
 function operationTools(): BridgeTool[] {
   const tools: BridgeTool[] = [
     {

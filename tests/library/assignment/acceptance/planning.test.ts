@@ -9,8 +9,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { openBridge } from '../../../../dist/library/steward/bridge.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises planning behavior through observable scenarios. */
 class PlanningTests {
-  builtCLICapturesAReadOnlyPlanAndObservableChecklistBeforeExecution_1(t: TestContext) {
+  /** Verifies that built clicaptures aread only plan and observable checklist before execution. */
+  builtCLICapturesAReadOnlyPlanAndObservableChecklistBeforeExecution(t: TestContext) {
     const f = planned(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -34,6 +37,8 @@ class PlanningTests {
     assert.equal(events.at(-1).type, 'run.finalized');
     this.assertViewers(f.env, record.id);
   }
+
+  /** Requires built status and follow commands to expose the captured plan and terminal state. */
   private assertViewers(env: NodeJS.ProcessEnv, id: string): void {
     for (const command of ['status', 'follow']) {
       const viewed = spawnSync(process.execPath, [cli, command, id, '--json'], {
@@ -45,19 +50,25 @@ class PlanningTests {
       assert.ok(viewed.stdout.length);
     }
   }
-  scenario_2(t: TestContext, mode: any) {
+
+  /** Verifies the scenario rejects invalid plan before implementation. */
+  rejectsInvalidPlanBeforeImplementation(t: TestContext, mode: any) {
     const f = planned(t, mode),
       r = f.run();
     assert.equal(r.status, 1, r.stderr);
     assert.equal(JSON.parse(r.stdout).turns.length, 1);
   }
-  statusRejectsEscapingRunIDs_3() {
+
+  /** Verifies that status rejects escaping run ids. */
+  statusRejectsEscapingRunIDs() {
     const r = spawnSync(process.execPath, [cli, 'status', '../../outside', '--json'], {
       encoding: 'utf8',
     });
     assert.equal(r.status, 2);
   }
-  async realStdioMCPBridgeUpdatesHostChecklistDuringATurn_4(_t: TestContext) {
+
+  /** Verifies that real stdio mcpbridge updates host checklist during aturn. */
+  async realStdioMCPBridgeUpdatesHostChecklistDuringATurn(_t: TestContext) {
     let observed: any;
     const bridge = await openBridge(
       [{ name: 'plan.update', description: 'Update checklist', inputSchema: { type: 'object' } }],
@@ -83,6 +94,8 @@ class PlanningTests {
       await bridge.close();
     }
   }
+
+  /** Exercises checklist updates against the retained plan and host-owned entries. */
   private async updateChecklist(client: Client): Promise<void> {
     await client.callTool({
       name: 'plan.update',
@@ -93,7 +106,9 @@ class PlanningTests {
       },
     });
   }
-  scenario_5(t: TestContext, kind: any) {
+
+  /** Verifies the scenario uses two read only turns. */
+  usesTwoReadOnlyTurns(t: TestContext, kind: any) {
     const f = planned(t),
       r = f.run('--kind', kind);
     assert.equal(r.status, 0, r.stderr);
@@ -101,7 +116,9 @@ class PlanningTests {
     assert.equal(v.turns.length, 2);
     assert.equal(v.changes.length, 0);
   }
-  planningPreservesTheSingleCorrectiveAllowanceAndCumulativeUsage_6(t: TestContext) {
+
+  /** Verifies that planning preserves the single corrective allowance and cumulative usage. */
+  planningPreservesTheSingleCorrectiveAllowanceAndCumulativeUsage(t: TestContext) {
     const f = planned(t, 'repair'),
       r = f.run('--max-attempts', '2');
     assert.equal(r.status, 0, r.stderr);
@@ -113,21 +130,27 @@ class PlanningTests {
     assert.equal(v.implementationAttempts, 2);
     assert.equal(v.usage.input_tokens, 50);
   }
-  checklistCompletionWithoutEvidenceStopsTheAssignment_7(t: TestContext) {
+
+  /** Verifies that checklist completion without evidence stops the assignment. */
+  checklistCompletionWithoutEvidenceStopsTheAssignment(t: TestContext) {
     const f = planned(t);
     f.configure({ missingEvidence: true });
     const r = f.run();
     assert.equal(r.status, 1, r.stderr);
     assert.match(r.stderr, /completion requires evidence/);
   }
-  async timelineReaderReportsTruncationAndHistoricalAbsence_8(t: TestContext) {
+
+  /** Verifies that timeline reader reports truncation and historical absence. */
+  async timelineReaderReportsTruncationAndHistoricalAbsence(t: TestContext) {
     const { readTimeline } = await import('../../../../dist/library/report/timeline.js');
     const f = workflowFixture(t);
     assert.equal(readTimeline(f.root).complete, false);
     writeFileSync(join(f.root, 'timeline.jsonl'), '{"unfinished":');
     assert.match(readTimeline(f.root).problem ?? '', /Incomplete/);
   }
-  builtProductionSDKPassesExplicitMCPBridgeConfigurationToTheExecutable_9(t: TestContext) {
+
+  /** Verifies that built production sdkpasses explicit mcpbridge configuration to the executable. */
+  builtProductionSDKPassesExplicitMCPBridgeConfigurationToTheExecutable(t: TestContext) {
     const f = planned(t, 'bridge-update'),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -136,16 +159,18 @@ class PlanningTests {
     const events = readFileSync(join(f.state, 'runs', v.id, 'timeline.jsonl'), 'utf8');
     assert.match(events, /plan.updated/);
   }
-  researchExecutesThePlanNowInsteadOfDeferringWorkToAnImaginaryLaterTurn_10(t: TestContext) {
+
+  /** Verifies that research executes the plan now instead of deferring work to an imaginary later turn. */
+  researchExecutesThePlanNowInsteadOfDeferringWorkToAnImaginaryLaterTurn(t: TestContext) {
     const f = planned(t);
     f.configure({ researchPrompt: true });
     const r = f.run('--kind', 'research');
     assert.equal(r.status, 0, r.stderr);
     assert.equal(JSON.parse(r.stdout).turns.length, 2);
   }
-  builtSDKSchemaConstrainsFinalUpdatesToStewardItemsAndRejectsForgedHostCompletion_11(
-    t: TestContext,
-  ) {
+
+  /** Verifies that built sdkschema constrains final updates to steward items and rejects forged host completion. */
+  builtSDKSchemaConstrainsFinalUpdatesToStewardItemsAndRejectsForgedHostCompletion(t: TestContext) {
     const f = planned(t);
     f.configure({ checkItemSchema: true });
     const r = f.run();
@@ -155,7 +180,9 @@ class PlanningTests {
     assert.equal(bad.status, 1);
     assert.match(bad.stderr, /Unknown checklist item/);
   }
-  planningPromptStatesActivityMembershipAndHostDiagnosesOmittedSelection_12(t: TestContext) {
+
+  /** Verifies that planning prompt states activity membership and host diagnoses omitted selection. */
+  planningPromptStatesActivityMembershipAndHostDiagnosesOmittedSelection(t: TestContext) {
     const f = planned(t);
     f.configure({ omittedActivity: true });
     const r = f.run();
@@ -163,6 +190,7 @@ class PlanningTests {
     assert.match(r.stderr, /Checklist item work activity research is absent from plan.activities/);
   }
 }
+
 const suite = new PlanningTests();
 
 function planned(t: any, mode: any = 'success'): any {
@@ -176,32 +204,42 @@ function planned(t: any, mode: any = 'success'): any {
   f.configure({ planning: true });
   return f;
 }
+
 test('built CLI captures a read-only plan and observable checklist before execution', (t: any) =>
-  suite.builtCLICapturesAReadOnlyPlanAndObservableChecklistBeforeExecution_1(t));
+  suite.builtCLICapturesAReadOnlyPlanAndObservableChecklistBeforeExecution(t));
+
 for (const mode of ['invalid-plan', 'planning-write'])
-  test(`stops ${mode} before implementation`, (t: any) => suite.scenario_2(t, mode));
-test('status rejects escaping run IDs', () => suite.statusRejectsEscapingRunIDs_3());
+  test(`stops ${mode} before implementation`, (t: any) =>
+    suite.rejectsInvalidPlanBeforeImplementation(t, mode));
+
+test('status rejects escaping run IDs', () => suite.statusRejectsEscapingRunIDs());
+
 test('real stdio MCP bridge updates host checklist during a turn', (t: any) =>
-  suite.realStdioMCPBridgeUpdatesHostChecklistDuringATurn_4(t));
+  suite.realStdioMCPBridgeUpdatesHostChecklistDuringATurn(t));
+
 for (const kind of ['research', 'review'])
-  test(`planned ${kind} uses two source-read-only turns`, (t: any) => suite.scenario_5(t, kind));
+  test(`planned ${kind} uses two source-read-only turns`, (t: any) =>
+    suite.usesTwoReadOnlyTurns(t, kind));
+
 test('planning preserves the single corrective allowance and cumulative usage', (t: any) =>
-  suite.planningPreservesTheSingleCorrectiveAllowanceAndCumulativeUsage_6(t));
+  suite.planningPreservesTheSingleCorrectiveAllowanceAndCumulativeUsage(t));
+
 test('checklist completion without evidence stops the assignment', (t: any) =>
-  suite.checklistCompletionWithoutEvidenceStopsTheAssignment_7(t));
+  suite.checklistCompletionWithoutEvidenceStopsTheAssignment(t));
+
 test('timeline reader reports truncation and historical absence', (t: any) =>
-  suite.timelineReaderReportsTruncationAndHistoricalAbsence_8(t));
+  suite.timelineReaderReportsTruncationAndHistoricalAbsence(t));
 
 test('built production SDK passes explicit MCP bridge configuration to the executable', (t: any) =>
-  suite.builtProductionSDKPassesExplicitMCPBridgeConfigurationToTheExecutable_9(t));
+  suite.builtProductionSDKPassesExplicitMCPBridgeConfigurationToTheExecutable(t));
 
 test('research executes the plan now instead of deferring work to an imaginary later turn', (t: any) =>
-  suite.researchExecutesThePlanNowInsteadOfDeferringWorkToAnImaginaryLaterTurn_10(t));
+  suite.researchExecutesThePlanNowInsteadOfDeferringWorkToAnImaginaryLaterTurn(t));
 
 test('built SDK schema constrains final updates to steward items and rejects forged host completion', (t: any) =>
-  suite.builtSDKSchemaConstrainsFinalUpdatesToStewardItemsAndRejectsForgedHostCompletion_11(t));
+  suite.builtSDKSchemaConstrainsFinalUpdatesToStewardItemsAndRejectsForgedHostCompletion(t));
 
 test('planning prompt states activity membership and host diagnoses omitted selection', (t: any) =>
-  suite.planningPromptStatesActivityMembershipAndHostDiagnosesOmittedSelection_12(t));
+  suite.planningPromptStatesActivityMembershipAndHostDiagnosesOmittedSelection(t));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });

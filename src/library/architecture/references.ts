@@ -33,12 +33,14 @@ interface PatternDefinition {
 
 /** Captures referenced guidance and contracts without adding execution authority. */
 export class ArchitectureReferences {
+  /** Pins pattern and contract resolution to the catalog and its captured revision. */
   constructor(
     private readonly repository: string,
     private readonly base: string,
     private readonly catalog: Catalog,
   ) {}
 
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(): void {
     const contracts = this.contracts();
     for (const component of Object.values(this.catalog.components)) {
@@ -56,6 +58,7 @@ export class ArchitectureReferences {
     }
   }
 
+  /** Resolves provided and consumed contract identities and supported versions. */
   private contracts() {
     const result = new Map<
       string,
@@ -78,6 +81,7 @@ export class ArchitectureReferences {
     return result;
   }
 
+  /** Loads the referenced standard and optional supporting artifacts. */
   private pattern(id: string) {
     relativePath(id);
     if (id.includes('/')) throw new Error(`Invalid pattern identity: ${id}`);
@@ -103,6 +107,7 @@ export class ArchitectureReferences {
     return { ...pattern, artifacts: artifacts as ReferenceArtifact[] };
   }
 
+  /** Checks whether the path belongs to the current owner’s captured scope. */
   private ownedPath(owner: Component, path: string): string {
     relativePath(path);
     const resolved = posix.join(owner.repositoryRoot ?? '.', path);
@@ -115,6 +120,7 @@ export class ArchitectureReferences {
     return resolved;
   }
 
+  /** Captures referenced content and its digest without granting additional authority. */
   private artifact(path: string, repository: string): ReferenceArtifact | undefined {
     const revision = this.catalog.repositoryRevisions?.[repository];
     if (!revision) return undefined;

@@ -6,8 +6,11 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises context behavior through observable scenarios. */
 class ContextTests {
-  boundCommandExecutesFromSuppliedContextWithResetPATHAndReadOnlyToolVisibility_1(t: TestContext) {
+  /** Verifies that bound command executes from supplied context with reset pathand read only tool visibility. */
+  boundCommandExecutesFromSuppliedContextWithResetPATHAndReadOnlyToolVisibility(t: TestContext) {
     const f = workflowFixture(t),
       bin = join(f.root, 'tool directory');
     mkdirSync(bin);
@@ -34,7 +37,9 @@ class ContextTests {
     assert.ok(calls(f)[0].prompt.includes(tool));
     assert.ok(calls(f)[0].args.some((a: any) => a.includes(JSON.stringify(bin) + '="read"')));
   }
-  reviewReceivesFirstParentDiffWithHashNoUnrelatedHistory_2(t: TestContext) {
+
+  /** Verifies that review receives first parent diff with hash no unrelated history. */
+  reviewReceivesFirstParentDiffWithHashNoUnrelatedHistory(t: TestContext) {
     const f = workflowFixture(t);
     writeFileSync(join(f.repo, 'docs/behavior.md'), 'PINNED_REVIEW_CHANGE');
     f.commit();
@@ -47,7 +52,9 @@ class ContextTests {
     assert.equal(record.turns[0].reviewEvidence.basis, 'base-first-parent');
     assert.match(record.turns[0].reviewEvidence.sha256, /^[a-f0-9]{64}$/);
   }
-  rootRevisionReviewAndCandidateReviewBothReceiveReadableChanges_3(t: TestContext) {
+
+  /** Verifies that root revision review and candidate review both receive readable changes. */
+  rootRevisionReviewAndCandidateReviewBothReceiveReadableChanges(t: TestContext) {
     for (const kind of ['review', 'change']) {
       const f = workflowFixture(t),
         r = f.run('--kind', kind);
@@ -57,7 +64,9 @@ class ContextTests {
       assert.match(p, kind === 'review' ? /Own sample behavior/ : /BOUNDARY_EXPECTED/);
     }
   }
-  revisionReviewEvidenceExcludesPathsOutsideDeclaredReadAuthority_4(t: TestContext) {
+
+  /** Verifies that revision review evidence excludes paths outside declared read authority. */
+  revisionReviewEvidenceExcludesPathsOutsideDeclaredReadAuthority(t: TestContext) {
     const f = workflowFixture(t);
     f.component.access = { readPaths: ['docs'], writeDirectories: ['docs', 'tests'] };
     f.component.allowedWritePaths = ['docs', 'tests'];
@@ -72,7 +81,9 @@ class ContextTests {
     assert.match(prompt, /VISIBLE_CHANGE/);
     assert.doesNotMatch(prompt, /SECRET_OUTSIDE_READ_SCOPE/);
   }
-  specificationDelegatesUnavailableSandboxChecksToTheAuthoritativeHost_5(t: TestContext) {
+
+  /** Verifies that specification delegates unavailable sandbox checks to the authoritative host. */
+  specificationDelegatesUnavailableSandboxChecksToTheAuthoritativeHost(t: TestContext) {
     const f = workflowFixture(t);
     f.configure({ sandboxFeedback: true });
     const r = f.run();
@@ -82,7 +93,9 @@ class ContextTests {
     assert.ok(report.commands.some((c: any) => c.exitCode === 1));
     assert.ok(report.regressionCheckpoint.outputIncludes === 'BOUNDARY_EXPECTED');
   }
-  specificationExposesBothRequiredSourceChangesInTheActualTurnPrompt_6(t: TestContext) {
+
+  /** Verifies that specification exposes both required source changes in the actual turn prompt. */
+  specificationExposesBothRequiredSourceChangesInTheActualTurnPrompt(t: TestContext) {
     const f = workflowFixture(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -92,7 +105,9 @@ class ContextTests {
     assert.match(prompt, /Do not substitute a sandbox shell command/);
     assert.match(prompt, /regression must not be null/);
   }
-  documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI_7(t: TestContext) {
+
+  /** Verifies that documentation only specification requires real documentation edits through the built cli. */
+  documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI(t: TestContext) {
     const f = workflowFixture(t),
       assignment = join(f.root, 'documentation.json');
     this.documentationAssignment(assignment);
@@ -121,6 +136,8 @@ class ContextTests {
     assert.ok(!report.commands.some((c: any) => c.stage === 'red-test'));
     assert.equal(report.status, 'completed');
   }
+
+  /** Writes a documentation-only assignment so behavior checkpoints must be explicitly skipped. */
   private documentationAssignment(assignment: string): void {
     writeFileSync(
       assignment,
@@ -136,6 +153,7 @@ class ContextTests {
     );
   }
 }
+
 const suite = new ContextTests();
 
 const calls = (f: any) =>
@@ -143,20 +161,26 @@ const calls = (f: any) =>
     .trim()
     .split('\n')
     .map((line: string) => JSON.parse(line));
+
 test('bound command executes from supplied context with reset PATH and read-only tool visibility', (t: any) =>
-  suite.boundCommandExecutesFromSuppliedContextWithResetPATHAndReadOnlyToolVisibility_1(t));
+  suite.boundCommandExecutesFromSuppliedContextWithResetPATHAndReadOnlyToolVisibility(t));
+
 test('review receives first-parent diff with hash, no unrelated history', (t: any) =>
-  suite.reviewReceivesFirstParentDiffWithHashNoUnrelatedHistory_2(t));
+  suite.reviewReceivesFirstParentDiffWithHashNoUnrelatedHistory(t));
+
 test('root revision review and candidate review both receive readable changes', (t: any) =>
-  suite.rootRevisionReviewAndCandidateReviewBothReceiveReadableChanges_3(t));
+  suite.rootRevisionReviewAndCandidateReviewBothReceiveReadableChanges(t));
+
 test('revision review evidence excludes paths outside declared read authority', (t: any) =>
-  suite.revisionReviewEvidenceExcludesPathsOutsideDeclaredReadAuthority_4(t));
+  suite.revisionReviewEvidenceExcludesPathsOutsideDeclaredReadAuthority(t));
+
 test('specification delegates unavailable sandbox checks to the authoritative host', (t: any) =>
-  suite.specificationDelegatesUnavailableSandboxChecksToTheAuthoritativeHost_5(t));
+  suite.specificationDelegatesUnavailableSandboxChecksToTheAuthoritativeHost(t));
+
 test('specification exposes both required source changes in the actual turn prompt', (t: any) =>
-  suite.specificationExposesBothRequiredSourceChangesInTheActualTurnPrompt_6(t));
+  suite.specificationExposesBothRequiredSourceChangesInTheActualTurnPrompt(t));
 
 test('documentation-only specification requires real documentation edits through the built CLI', (t: any) =>
-  suite.documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI_7(t));
+  suite.documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI(t));
 
 registerSuite({ component: 'steward', level: 'acceptance', tags: ['deterministic'] });

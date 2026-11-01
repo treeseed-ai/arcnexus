@@ -9,6 +9,7 @@ import { ComponentTestFixture } from '../support/component-test-fixture.js';
 
 /** Exercises static selection and supervised test execution through the built gateway. */
 class SharedTestingTests {
+  /** Verifies that test inspection intersects tags without executing modules or preparation. */
   selectsWithoutExecution(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.put(
@@ -32,6 +33,7 @@ class SharedTestingTests {
     assert.equal(existsSync(join(f.repo, 'prepared')), false);
   }
 
+  /** Verifies that test selection combines regression category and explicit integration level. */
   selectsRegressionLevel(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     const result = f.run('inspect', '--category', 'regression', '--level', 'integration');
@@ -39,6 +41,7 @@ class SharedTestingTests {
     assert.equal(JSON.parse(result.stdout).suites[0].category, 'regression');
   }
 
+  /** Verifies that shared test runner prepares once and retains real Node results. */
   executesOnce(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     const result = f.run('run');
@@ -51,6 +54,7 @@ class SharedTestingTests {
     assert.equal(existsSync(join(evidence.evidence, 'result.json')), true);
   }
 
+  /** Verifies that prepares selected profiles only. */
   preparesSelectedProfilesOnly(t: TestContext): void {
     const fixture = new ComponentTestFixture(t);
     fixture.unusedProfile();
@@ -64,6 +68,7 @@ class SharedTestingTests {
     assert.equal(report.commands.length, 2);
   }
 
+  /** Verifies that npm compatibility runner prints retained test output for CI diagnosis. */
   printsNpmEvidence(t: TestContext): void {
     const fixture = new ComponentTestFixture(t);
     const result = spawnSync(
@@ -80,6 +85,32 @@ class SharedTestingTests {
     assert.equal(JSON.parse(result.stdout.trim().split('\n').at(-1)!).status, 'passed');
   }
 
+  /** Shared test results retain a late build diagnostic within the model-facing bound. */
+  retainsLateDiagnostic(t: TestContext): void {
+    const f = new ComponentTestFixture(t);
+    f.profile({
+      preparation: [
+        {
+          command: process.execPath,
+          purpose: 'tests',
+          args: [
+            '-e',
+            "require('fs').writeSync(1,'passing output\\n'.repeat(12000));console.error('Error: LATE_BUILD_FAILURE');process.exit(1)",
+          ],
+        },
+      ],
+    });
+    f.commit();
+    const result = f.run('run');
+    assert.equal(result.status, 1, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.match(report.output, /LATE_BUILD_FAILURE/);
+    assert.ok(Buffer.byteLength(report.output) <= 16384);
+    assert.equal(report.outputTruncated, true);
+    assert.ok(existsSync(report.commands[0].log));
+  }
+
+  /** Verifies that shared test runner retains compilation failure evidence. */
   retainsBuildFailure(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.put('tests/support/invalid.ts', 'const value: string = 42;');
@@ -107,6 +138,7 @@ class SharedTestingTests {
     assert.match(evidence.output, /TS2322/);
   }
 
+  /** Verifies that captures mandatory selection. */
   capturesMandatorySelection(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     const result = spawnSync(
@@ -125,6 +157,7 @@ class SharedTestingTests {
     );
   }
 
+  /** Verifies that test cancellation stops preparation and retains evidence. */
   async cancelsPreparation(t: TestContext): Promise<void> {
     const f = new ComponentTestFixture(t);
     f.put(
@@ -146,6 +179,7 @@ class SharedTestingTests {
     assert.equal(existsSync(join(report.evidence, 'result.json')), true);
   }
 
+  /** Verifies that an explicitly configured test timeout is failure rather than caller cancellation. */
   explicitTimeoutIsFailure(t: TestContext): void {
     const fixture = new ComponentTestFixture(t);
     fixture.put('build.cjs', 'setInterval(()=>{},1000)');
@@ -156,6 +190,7 @@ class SharedTestingTests {
     assert.match(report.error, /timed out/);
   }
 
+  /** Verifies that rejects unsupported profile. */
   rejectsUnsupportedProfile(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.profile({ adapter: 'python' });
@@ -165,6 +200,7 @@ class SharedTestingTests {
     assert.match(result.stderr, /test-profile/);
   }
 
+  /** Verifies that test discovery rejects symlink traversal. */
   rejectsSymlinkTraversal(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     symlinkSync('/tmp', join(f.repo, 'tests', 'escape'));
@@ -175,25 +211,39 @@ class SharedTestingTests {
 }
 
 const suite = new SharedTestingTests();
+
 test('an explicitly configured test timeout is failure rather than caller cancellation', (t) =>
   suite.explicitTimeoutIsFailure(t));
+
 test('npm compatibility runner prints retained test output for CI diagnosis', (t) =>
   suite.printsNpmEvidence(t));
+
 test('test runner prepares only profiles selected by intersecting filters', (t) =>
   suite.preparesSelectedProfilesOnly(t));
+
 test('assignment inspection captures mandatory suite identities and profile hashes', (t) =>
   suite.capturesMandatorySelection(t));
+
 test('test cancellation stops preparation and retains evidence', (t) =>
   suite.cancelsPreparation(t));
+
 test('test inspection intersects tags without executing modules or preparation', (t) =>
   suite.selectsWithoutExecution(t));
+
 test('test selection combines regression category and explicit integration level', (t) =>
   suite.selectsRegressionLevel(t));
+
 test('shared test runner prepares once and retains real Node results', (t) =>
   suite.executesOnce(t));
+
 test('shared test runner retains compilation failure evidence', (t) =>
   suite.retainsBuildFailure(t));
+
 test('test inspection rejects unsupported runner profiles', (t) =>
   suite.rejectsUnsupportedProfile(t));
+
 test('test discovery rejects symlink traversal', (t) => suite.rejectsSymlinkTraversal(t));
+
+test('shared test feedback preserves late diagnostics', (t) => suite.retainsLateDiagnostic(t));
+
 registerSuite({ component: 'testing', level: 'acceptance', tags: ['deterministic'] });

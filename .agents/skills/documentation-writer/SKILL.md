@@ -22,3 +22,8 @@ sources. Follow the project's research policy; do not forbid necessary research.
 Review links, terminology, commands, and consistency with the current implementation
 or explicitly proposed contract. A routine correction needs no outline approval.
 No document-generation framework or new documentation site is needed by default.
+
+Code documentation follows the same rule: class headers explain responsibility,
+method headers explain purpose and material effects or failure behavior. Avoid
+restating signatures. Keep examples aligned with the shared TypeScript standard
+and show blank lines between methods and top-level declarations.

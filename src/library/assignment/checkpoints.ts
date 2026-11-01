@@ -5,11 +5,13 @@ import { covered, type Component } from '../architecture/components.js';
 import { changes, checkScope } from '../change-inspection/changes.js';
 import type { AgentResult } from '../steward/codex.js';
 import type { RecordData } from '../workspace/state.js';
+
 export interface FrozenTest {
   path: string;
   content: string;
   sha256: string;
 }
+
 export function specificationFiles(
   record: RecordData,
   component: Component,
@@ -33,6 +35,7 @@ export function specificationFiles(
     return { path: c.path, content: content.toString('base64'), sha256: digest(content) };
   });
 }
+
 export async function withFrozenTests(
   record: RecordData,
   tests: FrozenTest[],
@@ -58,6 +61,7 @@ export async function withFrozenTests(
     }
   }
 }
+
 export { candidateDigest } from '../change-inspection/changes.js';
 
 export function validateRequests(

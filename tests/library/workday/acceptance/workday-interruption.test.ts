@@ -8,8 +8,11 @@ import { test } from 'node:test';
 import { handoffFixture } from '../../testing/support/handoff-fixture.js';
 import { TestProcess, waitFor } from '../../testing/support/test-process.js';
 import { cli } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises workday interruption behavior through observable scenarios. */
 class WorkdayInterruptionTests {
-  async scenario_1(t: TestContext, signal: any) {
+  /** Verifies the scenario retains evidence after interruption. */
+  async retainsEvidenceAfterInterruption(t: TestContext, signal: any) {
     const f = handoffFixture(t, 'hang'),
       marker = join(f.root, 'agent-pid'),
       child = new TestProcess(
@@ -31,6 +34,8 @@ class WorkdayInterruptionTests {
       await this.assertInterrupted(f);
     }
   }
+
+  /** Reads the built workday viewer and requires interruption to remain visible in durable state. */
   private async assertInterrupted(f: any): Promise<void> {
     const { readdirSync } = await import('node:fs'),
       id = readdirSync(join(f.state, 'workdays'))[0]!,
@@ -45,11 +50,12 @@ class WorkdayInterruptionTests {
     assert.ok(existsSync(join(f.state, 'workdays', id, 'parking.json')));
   }
 }
+
 const suite = new WorkdayInterruptionTests();
 
 for (const signal of ['SIGINT', 'SIGKILL'])
   test('workday ' + signal + ' stops managed inference and preserves parked evidence', (t: any) =>
-    suite.scenario_1(t, signal),
+    suite.retainsEvidenceAfterInterruption(t, signal),
   );
 
 registerSuite({ component: 'workday', level: 'acceptance', tags: ['deterministic'] });

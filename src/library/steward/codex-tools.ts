@@ -18,17 +18,23 @@ const planTool: BridgeTool = {
   },
 };
 
+/** Exposes only declared operation and checklist tools through the MCP adapter. */
 export class CodexTools {
   error: unknown;
+
   readonly controller = new AbortController();
+
   private bridge: Awaited<ReturnType<typeof openBridge>> | undefined;
 
+  /** Retains captured SDK configuration for probe and operation-bridge setup. */
   constructor(private readonly configuration: CodexConfiguration) {}
 
+  /** Returns the cancellation signal governing the current tool scope. */
   get signal(): AbortSignal {
     return AbortSignal.any([this.configuration.input.signal, this.controller.signal]);
   }
 
+  /** Creates the MCP transport exposing the parent-authorized capability set. */
   async open(): Promise<object> {
     if ((this.configuration.profile?.schemaVersion ?? 1) < 2) return {};
     const { operations, responseContract } = this.configuration.input;
@@ -40,6 +46,7 @@ export class CodexTools {
     return this.bridge.config as object;
   }
 
+  /** Routes tool calls through pending-call handling without resetting execution limits. */
   private async call(name: string, args: unknown): Promise<unknown> {
     const { operations, root, record } = this.configuration.input;
     try {
@@ -58,6 +65,7 @@ export class CodexTools {
     }
   }
 
+  /** Applies a bounded checklist update through the parent-owned plan contract. */
   private update(args: unknown) {
     const { root, record } = this.configuration.input;
     record.planUpdateCalls = Number(record.planUpdateCalls ?? 0) + 1;
@@ -80,6 +88,7 @@ export class CodexTools {
     return { status: 'recorded', plan: record.plan };
   }
 
+  /** Releases resources owned by this instance. */
   async close(): Promise<void> {
     const { operations } = this.configuration.input;
     try {

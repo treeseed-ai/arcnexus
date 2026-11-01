@@ -31,3 +31,9 @@ catalog ownership validation in the verification evidence. Use the owner's decla
 lint operation for intermediate feedback. Check without rewriting files; any fix
 must remain within captured scope. See [the quality contract](../../../docs/foundation/quality.md)
 for commands and size limits. These are target-repository checks, not generic runtime policy.
+
+For readability changes, check that headers explain responsibility and material
+effects, not merely that lint accepts them. Preserve named acceptance scenarios
+when splitting large suites; compare test counts and explain additions or removals.
+Use descriptive method names and logical paragraph spacing; never compress code to
+meet the physical-line limits.

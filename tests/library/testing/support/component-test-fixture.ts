@@ -9,9 +9,12 @@ import { catalogFixture, componentFields } from './catalog-fixture.js';
 /** Builds a real catalog and a tiny Node profile without invoking inference. */
 export class ComponentTestFixture {
   readonly root = mkdtempSync(join(tmpdir(), 'arcnexus-tests-'));
+
   readonly state = join(this.root, 'state');
+
   readonly repo = join(this.root, 'repo');
 
+  /** Creates a tracked catalog with unit and regression suites and registers temporary cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     mkdirSync(this.repo);
@@ -27,6 +30,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
+  /** Builds shared version-four fixture component fields with explicit owned test roots. */
   private fields() {
     const base = {
       ...componentFields,
@@ -48,6 +52,7 @@ export class ComponentTestFixture {
     return fields;
   }
 
+  /** Writes sample ownership, profile references and tracked fixture tests. */
   private catalog(): void {
     const fields = this.fields();
     this.containers(fields);
@@ -70,6 +75,7 @@ export class ComponentTestFixture {
     });
   }
 
+  /** Defines platform and package containment without granting blanket source ownership. */
   private containers(fields: ReturnType<ComponentTestFixture['fields']>): void {
     this.put('architecture/components/platform.yaml', {
       ...fields,
@@ -92,6 +98,7 @@ export class ComponentTestFixture {
     });
   }
 
+  /** Declares the shared Node preparation and compiled-test runner once. */
   profile(overrides: Record<string, unknown> = {}): void {
     this.put('architecture/test-profiles/node.yaml', {
       schemaVersion: 1,
@@ -107,6 +114,7 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Reads literal suite metadata and maps the source to its compiled test artifact. */
   suite(category: string, name: string, tags: string[], level = category): void {
     this.put(
       `tests/${category}/${name}.test.ts`,
@@ -114,22 +122,26 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Creates parent directories and writes the fixture configuration or source file. */
   put(path: string, value: unknown): void {
     mkdirSync(dirname(join(this.repo, path)), { recursive: true });
     writeFileSync(join(this.repo, path), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
+  /** Stages fixture files and commits the revision that the built CLI will capture. */
   commit(): void {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');
   }
 
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
+  /** Adds an unselected profile to verify irrelevant configuration does not alter execution. */
   unusedProfile(): void {
     const path = 'architecture/components/sample.yaml';
     const sample = JSON.parse(readFileSync(join(this.repo, path), 'utf8'));
@@ -149,6 +161,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
+  /** Adds another owner profile to exercise preparation and runner compatibility. */
   private otherProfile(): void {
     this.put('architecture/test-profiles/other.yaml', {
       schemaVersion: 1,
@@ -165,6 +178,7 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Resolves a captured assignment for test-selection immutability assertions. */
   assignment(): any {
     const result = spawnSync(
       process.execPath,
@@ -183,6 +197,7 @@ export class ComponentTestFixture {
     return JSON.parse(result.stdout);
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(...args: string[]) {
     return spawnSync(
       process.execPath,

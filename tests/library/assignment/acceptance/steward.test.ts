@@ -7,8 +7,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { TestProcess, waitFor } from '../../testing/support/test-process.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises steward behavior through observable scenarios. */
 class StewardTests {
-  scenario_1(t: TestContext, args: any, expected: any) {
+  /** Verifies the scenario uses explicit sdk settings. */
+  usesExplicitSdkSettings(t: TestContext, args: any, expected: any) {
     const f = workflowFixture(t),
       r = f.run(...args);
     assert.equal(r.status, 0, r.stderr);
@@ -29,13 +32,17 @@ class StewardTests {
     }
     assert.deepEqual(v.settings.access.writeDirectories, []);
   }
-  invalidAttemptLimitsAndInputFailBeforeInference_2(t: TestContext) {
+
+  /** Verifies that invalid attempt limits and input fail before inference. */
+  invalidAttemptLimitsAndInputFailBeforeInference(t: TestContext) {
     const f = workflowFixture(t);
     for (const value of ['0', '-1', '1.5', 'two'])
       assert.equal(f.run('--max-attempts', value).status, 2);
     assert.equal(existsSync(f.calls), false);
   }
-  baselineFailurePreventsActivation_3(t: TestContext) {
+
+  /** Verifies that baseline failure prevents activation. */
+  baselineFailurePreventsActivation(t: TestContext) {
     const f = workflowFixture(t);
     writeFileSync(join(f.repo, 'source.txt'), 'broken');
     f.commit();
@@ -44,13 +51,17 @@ class StewardTests {
     assert.equal(existsSync(f.calls), false);
     assert.equal(JSON.parse(r.stdout).stage, 'baseline');
   }
-  scenario_4(t: TestContext, mode: any) {
+
+  /** Verifies the scenario stops invalid activation. */
+  stopsInvalidActivation(t: TestContext, mode: any) {
     const f = workflowFixture(t, mode),
       r = f.run('--max-attempts', '2');
     assert.equal(r.status, 1);
     assert.notEqual(JSON.parse(r.stdout).status, 'completed');
   }
-  targetCodexConfigurationIsRejectedBeforeActivation_5(t: TestContext) {
+
+  /** Verifies that target codex configuration is rejected before activation. */
+  targetCodexConfigurationIsRejectedBeforeActivation(t: TestContext) {
     const f = workflowFixture(t);
     mkdirSync(join(f.repo, '.codex'));
     writeFileSync(join(f.repo, '.codex/config.toml'), 'model="unwanted"');
@@ -59,7 +70,9 @@ class StewardTests {
     assert.equal(r.status, 2);
     assert.equal(existsSync(f.calls), false);
   }
-  async scenario_6(t: TestContext, activity: any, cancel: any) {
+
+  /** Verifies the scenario retains interrupted turn evidence. */
+  async retainsInterruptedTurnEvidence(t: TestContext, activity: any, cancel: any) {
     const f = workflowFixture(t, activity + '-timeout');
     const child = this.start(t, f, cancel);
     if (cancel) {
@@ -77,6 +90,8 @@ class StewardTests {
     );
     assert.equal(existsSync(join(f.state, 'active.lock')), false);
   }
+
+  /** Starts managed work and records the state needed for its later shutdown. */
   private start(t: TestContext, f: any, cancel: boolean, seconds?: string): TestProcess {
     return new TestProcess(
       t,
@@ -95,6 +110,8 @@ class StewardTests {
       f.env,
     );
   }
+
+  /** Declares a verified host operation route alongside an optional direct-shell limitation. */
   private hostReady(f: any): boolean {
     return readdirSync(join(f.state, 'runs')).some((id) => {
       const run = join(f.state, 'runs', id);
@@ -103,7 +120,9 @@ class StewardTests {
         .some((path) => readFileSync(join(run, path), 'utf8').includes('HOST_READY'));
     });
   }
-  runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck_7(t: TestContext) {
+
+  /** Verifies that run consumes the same inspected assignment and snapshotted independent check. */
+  runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck(t: TestContext) {
     const f = workflowFixture(t),
       file = join(f.root, 'assignment.json'),
       check = join(f.root, 'acceptance.cjs');
@@ -124,6 +143,8 @@ class StewardTests {
     const prompt = readFileSync(join(f.state, 'runs', v.id, 'turns/1/prompt.txt'), 'utf8');
     assert.ok(!prompt.includes(Buffer.from(readFileSync(check)).toString('base64')));
   }
+
+  /** Writes a caller-owned assignment with an external acceptance check. */
   private assignmentWithAcceptance(file: string, check: string): void {
     writeFileSync(
       check,
@@ -143,7 +164,9 @@ class StewardTests {
       }),
     );
   }
-  finalHostVerificationCannotHideAStagedScopeViolation_8(t: TestContext) {
+
+  /** Verifies that final host verification cannot hide astaged scope violation. */
+  finalHostVerificationCannotHideAStagedScopeViolation(t: TestContext) {
     const f = workflowFixture(t);
     writeFileSync(
       join(f.repo, 'verify.cjs'),
@@ -157,7 +180,9 @@ class StewardTests {
     assert.equal(v.implementationAttempts, 1);
     assert.ok(v.stagedChanges.some((c: any) => c.path === 'outside.txt'));
   }
-  async scenario_9(t: TestContext, cancel: any) {
+
+  /** Verifies the scenario retains interrupted verification evidence. */
+  async retainsInterruptedVerificationEvidence(t: TestContext, cancel: any) {
     const f = workflowFixture(t, 'verify-timeout');
     writeFileSync(
       join(f.repo, 'verify.cjs'),
@@ -182,6 +207,7 @@ class StewardTests {
     assert.equal(v.turns.length, 2);
   }
 }
+
 const suite = new StewardTests();
 
 for (const [name, args, expected] of [
@@ -189,25 +215,33 @@ for (const [name, args, expected] of [
   ['override', ['--model', 'synthetic-model'], 'synthetic-model'],
 ])
   test(`SDK uses ${name} model and explicit settings`, (t: any) =>
-    suite.scenario_1(t, args, expected));
+    suite.usesExplicitSdkSettings(t, args, expected));
+
 test('invalid attempt limits and input fail before inference', (t: any) =>
-  suite.invalidAttemptLimitsAndInputFailBeforeInference_2(t));
+  suite.invalidAttemptLimitsAndInputFailBeforeInference(t));
+
 test('baseline failure prevents activation', (t: any) =>
-  suite.baselineFailurePreventsActivation_3(t));
+  suite.baselineFailurePreventsActivation(t));
+
 for (const mode of ['preflight-fail', 'wrong-thread'])
-  test(`${mode} cannot continue`, (t: any) => suite.scenario_4(t, mode));
+  test(`${mode} cannot continue`, (t: any) => suite.stopsInvalidActivation(t, mode));
+
 test('target Codex configuration is rejected before activation', (t: any) =>
-  suite.targetCodexConfigurationIsRejectedBeforeActivation_5(t));
+  suite.targetCodexConfigurationIsRejectedBeforeActivation(t));
+
 for (const activity of ['specification', 'implementation', 'review'])
   for (const cancel of [true, false])
     test(`${activity}: ${cancel ? 'cancellation' : 'timeout'} retains partial turn evidence`, (t: any) =>
-      suite.scenario_6(t, activity, cancel));
+      suite.retainsInterruptedTurnEvidence(t, activity, cancel));
+
 test('run consumes the same inspected assignment and snapshotted independent check', (t: any) =>
-  suite.runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck_7(t));
+  suite.runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck(t));
+
 test('final host verification cannot hide a staged scope violation', (t: any) =>
-  suite.finalHostVerificationCannotHideAStagedScopeViolation_8(t));
+  suite.finalHostVerificationCannotHideAStagedScopeViolation(t));
+
 for (const cancel of [false, true])
   test(`verification ${cancel ? 'cancellation' : 'timeout'} preserves completed agent turn`, (t: any) =>
-    suite.scenario_9(t, cancel));
+    suite.retainsInterruptedVerificationEvidence(t, cancel));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });

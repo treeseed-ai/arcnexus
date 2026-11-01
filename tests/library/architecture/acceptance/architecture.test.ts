@@ -1,22 +1,18 @@
+import { fixture } from '../support/architecture-fixture.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { stringify } from 'yaml';
+
+/** Exercises architecture behavior through observable scenarios. */
 class ArchitectureTests {
-  builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes_1(t: TestContext) {
+  /** Verifies that built clireads yamlat acaptured revision and snapshots source hashes. */
+  builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes(t: TestContext) {
     const f = fixture(t);
     for (const path of ['components/sample', 'environment']) {
       const source = join(f.repo, 'architecture', path + '.json');
@@ -34,7 +30,9 @@ class ArchitectureTests {
     assert.match(source.text, /id: sample/);
     assert.equal(f.run('validate').status, 0);
   }
-  builtCLIRejectsAmbiguousJSONAndYAMLIdentities_2(t: TestContext) {
+
+  /** Verifies that built clirejects ambiguous jsonand yamlidentities. */
+  builtCLIRejectsAmbiguousJSONAndYAMLIdentities(t: TestContext) {
     const f = fixture(t);
     writeFileSync(join(f.repo, 'architecture/components/sample.yaml'), stringify(f.component));
     f.commit();
@@ -42,7 +40,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /Duplicate|Ambiguous/);
   }
-  builtValidateEnforcesDeclaredMaintainedFileOwnership_3(t: TestContext) {
+
+  /** Verifies that built validate enforces declared maintained file ownership. */
+  builtValidateEnforcesDeclaredMaintainedFileOwnership(t: TestContext) {
     const f = fixture(t);
     f.put('architecture/ownership.json', {
       schemaVersion: 1,
@@ -61,7 +61,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /source.txt.*owner|owner.*source.txt/);
   }
-  builtValidateRejectsOverlappingOwnershipEvenWithoutChangedFiles_4(t: TestContext) {
+
+  /** Verifies that built validate rejects overlapping ownership even without changed files. */
+  builtValidateRejectsOverlappingOwnershipEvenWithoutChangedFiles(t: TestContext) {
     const f = fixture(t);
     f.put('architecture/components/other.json', {
       ...f.component,
@@ -83,7 +85,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /owner/);
   }
-  builtValidateRejectsASandboxDirectoryOutsideDeclaredOwnership_5(t: TestContext) {
+
+  /** Verifies that built validate rejects asandbox directory outside declared ownership. */
+  builtValidateRejectsASandboxDirectoryOutsideDeclaredOwnership(t: TestContext) {
     const f = fixture(t);
     f.put('architecture/ownership.json', {
       schemaVersion: 1,
@@ -97,7 +101,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /Write directory outside ownership/);
   }
-  builtInspectPreservesNormalizedEquivalenceAndOriginalSourceBytes_6(t: TestContext) {
+
+  /** Verifies that built inspect preserves normalized equivalence and original source bytes. */
+  builtInspectPreservesNormalizedEquivalenceAndOriginalSourceBytes(t: TestContext) {
     const f = fixture(t),
       file = join(f.repo, 'architecture/components/sample.json');
     const before = JSON.parse(f.run('inspect', 'sample', 'Check hashes', '--json').stdout);
@@ -114,7 +120,9 @@ class ArchitectureTests {
     assert.notEqual(first.sourceHash, second.sourceHash);
     assert.match(second.text, /^# readable definition/);
   }
-  builtInspectCapturesYAMLBindingsBeforeNormalizingExecutableLocations_7(t: TestContext) {
+
+  /** Verifies that built inspect captures yamlbindings before normalizing executable locations. */
+  builtInspectCapturesYAMLBindingsBeforeNormalizingExecutableLocations(t: TestContext) {
     const f = fixture(t),
       file = join(f.root, 'bindings.yaml');
     const text = stringify({
@@ -130,7 +138,9 @@ class ArchitectureTests {
     assert.equal(source.value.tools.node, process.execPath);
     assert.match(source.sourceHash, /^[a-f0-9]{64}$/);
   }
-  scenario_8(t: TestContext, dynamic: any) {
+
+  /** Verifies the scenario rejects private cross owner imports. */
+  rejectsPrivateCrossOwnerImports(t: TestContext, dynamic: any) {
     const f = fixture(t);
     f.component.allowedWritePaths = ['src/sample'];
     f.put('architecture/components/sample.json', f.component);
@@ -159,7 +169,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /Private cross-owner import/);
   }
-  builtValidateRejectsARuntimeModuleCycle_9(t: TestContext) {
+
+  /** Verifies that built validate rejects aruntime module cycle. */
+  builtValidateRejectsARuntimeModuleCycle(t: TestContext) {
     const f = fixture(t);
     f.component.allowedWritePaths = ['src'];
     f.put('architecture/components/sample.json', f.component);
@@ -178,7 +190,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /Runtime import cycle/);
   }
-  scenario_10(t: TestContext, text: any) {
+
+  /** Verifies the scenario rejects restricted yaml. */
+  rejectsRestrictedYaml(t: TestContext, text: any) {
     const f = fixture(t);
     rmSync(join(f.repo, 'architecture/components/sample.json'));
     writeFileSync(join(f.repo, 'architecture/components/sample.yaml'), text);
@@ -187,7 +201,9 @@ class ArchitectureTests {
     assert.equal(r.status, 2, r.stderr);
     assert.match(r.stderr, /sample.yaml/);
   }
-  builtInspectResolvesImmutableHierarchyWithoutStateOrInference_11(t: TestContext) {
+
+  /** Verifies that built inspect resolves immutable hierarchy without state or inference. */
+  builtInspectResolvesImmutableHierarchyWithoutStateOrInference(t: TestContext) {
     const f = fixture(t),
       r = f.run('inspect', 'sample', 'Improve behavior', '--json');
     assert.equal(r.status, 0, r.stderr);
@@ -201,7 +217,9 @@ class ArchitectureTests {
     assert.equal(existsSync(join(f.root, 'state')), false);
     assert.equal(f.run('validate').status, 0);
   }
-  scenario_12(t: TestContext, mutate: any) {
+
+  /** Verifies the scenario rejects invalid catalog references. */
+  rejectsInvalidCatalogReferences(t: TestContext, mutate: any) {
     const f = fixture(t);
     mutate(f.component);
     f.put('architecture/components/sample.json', f.component);
@@ -209,7 +227,9 @@ class ArchitectureTests {
     const r = f.run('validate');
     assert.equal(r.status, 2, r.stderr);
   }
-  assignmentNarrowsButCannotWidenScopeAndHasAStableDigest_13(t: TestContext) {
+
+  /** Verifies that assignment narrows but cannot widen scope and has astable digest. */
+  assignmentNarrowsButCannotWidenScopeAndHasAStableDigest(t: TestContext) {
     const f = fixture(t),
       file = join(f.root, 'assignment.json');
     const assignment = {
@@ -232,7 +252,9 @@ class ArchitectureTests {
     writeFileSync(file, JSON.stringify(assignment));
     assert.equal(f.run('inspect', 'sample', '--assignment', file).status, 2);
   }
-  unusedInvalidDefinitionIsRejectedAndDirtyWorkingDefinitionsCannotChangeInspection_14(
+
+  /** Verifies that unused invalid definition is rejected and dirty working definitions cannot change inspection. */
+  unusedInvalidDefinitionIsRejectedAndDirtyWorkingDefinitionsCannotChangeInspection(
     t: TestContext,
   ) {
     const f = fixture(t);
@@ -249,7 +271,9 @@ class ArchitectureTests {
     f.commit();
     assert.equal(f.run('validate').status, 2);
   }
-  relatedContextDoesNotWidenAuthorityAndAncestorNarrowingFails_15(t: TestContext) {
+
+  /** Verifies that related context does not widen authority and ancestor narrowing fails. */
+  relatedContextDoesNotWidenAuthorityAndAncestorNarrowingFails(t: TestContext) {
     const f = fixture(t);
     f.put('architecture/components/related.json', {
       ...f.component,
@@ -275,6 +299,8 @@ class ArchitectureTests {
     f.commit();
     assert.equal(f.run('validate').status, 2);
   }
+
+  /** Verifies that captures acceptance modules. */
   async capturesAcceptanceModules(t: TestContext) {
     const f = fixture(t),
       check = join(f.root, 'check.mjs'),
@@ -306,146 +332,39 @@ class ArchitectureTests {
     assert.equal(result.status, 0, result.stderr);
   }
 }
+
 const suite = new ArchitectureTests();
 
-const cli = resolve('dist/cli.js');
-function fixture(t: TestContext): ArchitectureFixture {
-  return new ArchitectureFixture(t);
-}
-class ArchitectureFixture {
-  readonly root = mkdtempSync(join(tmpdir(), 'architecture-'));
-  readonly repo = join(this.root, 'repo');
-  readonly common = {
-    schemaVersion: 1,
-    repository: 'sample',
-    purpose: 'Own sample behavior',
-    path: '.',
-    objectives: [],
-    constraints: [],
-    questions: [],
-    patterns: [],
-    interfaces: [],
-    documentation: ['README.md'],
-    tests: ['test.mjs'],
-    relatedIds: [],
-    role: 'engineer',
-    executionProfile: 'luna',
-    access: { readPaths: ['.'], writeDirectories: ['.'] },
-    allowedWritePaths: ['source.txt'],
-    verification: [{ command: 'node', args: ['--version'] }],
-  };
-  component: any;
-  constructor(t: TestContext) {
-    t.after(() => rmSync(this.root, { recursive: true, force: true }));
-    mkdirSync(this.repo);
-    this.git('init', '-b', 'main');
-    this.git('config', 'user.name', 'Test');
-    this.git('config', 'user.email', 'test@example.invalid');
-    this.hierarchy();
-    this.execution();
-    this.environment();
-    writeFileSync(join(this.repo, 'source.txt'), 'before');
-    writeFileSync(join(this.repo, 'README.md'), 'Sample');
-    writeFileSync(join(this.repo, 'test.mjs'), '');
-    this.commit();
-  }
-  private git(...args: string[]): string {
-    const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
-    assert.equal(result.status, 0, result.stderr);
-    return result.stdout.trim();
-  }
-  put(path: string, value: unknown): void {
-    mkdirSync(join(this.repo, path, '..'), { recursive: true });
-    writeFileSync(join(this.repo, path), JSON.stringify(value));
-  }
-  source(path: string, content: string): void {
-    mkdirSync(join(this.repo, path, '..'), { recursive: true });
-    writeFileSync(join(this.repo, path), content);
-  }
-  commit(): void {
-    this.git('add', '.');
-    this.git('commit', '-m', 'fixture');
-  }
-  run(...args: string[]) {
-    return spawnSync(process.execPath, [cli, ...args, '--project', this.repo], {
-      encoding: 'utf8',
-      env: { ...process.env, ARCNEXUS_STATE_DIR: join(this.root, 'state') },
-    });
-  }
-  private hierarchy(): void {
-    this.put('architecture/components/platform.json', {
-      ...this.common,
-      id: 'platform',
-      type: 'platform',
-      allowedWritePaths: ['.'],
-    });
-    this.put('architecture/components/package.json', {
-      ...this.common,
-      id: 'package',
-      type: 'package',
-      parentId: 'platform',
-      allowedWritePaths: ['.'],
-      members: {
-        foundations: [],
-        dependencies: [],
-        gateways: [],
-        libraries: ['sample'],
-        releases: [],
-      },
-    });
-    this.component = { ...this.common, id: 'sample', type: 'library', parentId: 'package' };
-    this.put('architecture/components/sample.json', this.component);
-  }
-  private execution(): void {
-    this.put('architecture/roles/engineer.json', {
-      schemaVersion: 1,
-      id: 'engineer',
-      purpose: 'Engineering',
-      responsibilities: ['Verify bounded work'],
-      activities: ['research', 'documentation', 'testing', 'implementation', 'review', 'release'],
-    });
-    this.put('architecture/execution-profiles/luna.yaml', {
-      schemaVersion: 1,
-      id: 'luna',
-      model: 'gpt-6-luna',
-      reasoning: 'medium',
-      webSearch: 'live',
-      timeoutSeconds: 900,
-      commandTimeoutSeconds: 120,
-      maxTurns: 3,
-      maxCorrectiveTurns: 2,
-    });
-  }
-  private environment(): void {
-    this.put('architecture/environment.json', {
-      schemaVersion: 1,
-      prerequisites: [],
-      setup: [],
-      generatedDirectories: [],
-    });
-  }
-}
 test('built CLI reads YAML at a captured revision and snapshots source hashes', (t: any) =>
-  suite.builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes_1(t));
+  suite.builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes(t));
+
 test('built CLI rejects ambiguous JSON and YAML identities', (t: any) =>
-  suite.builtCLIRejectsAmbiguousJSONAndYAMLIdentities_2(t));
+  suite.builtCLIRejectsAmbiguousJSONAndYAMLIdentities(t));
+
 test('built validate enforces declared maintained-file ownership', (t: any) =>
-  suite.builtValidateEnforcesDeclaredMaintainedFileOwnership_3(t));
+  suite.builtValidateEnforcesDeclaredMaintainedFileOwnership(t));
+
 test('built validate rejects overlapping ownership even without changed files', (t: any) =>
-  suite.builtValidateRejectsOverlappingOwnershipEvenWithoutChangedFiles_4(t));
+  suite.builtValidateRejectsOverlappingOwnershipEvenWithoutChangedFiles(t));
+
 test('built validate rejects a sandbox directory outside declared ownership', (t: any) =>
-  suite.builtValidateRejectsASandboxDirectoryOutsideDeclaredOwnership_5(t));
+  suite.builtValidateRejectsASandboxDirectoryOutsideDeclaredOwnership(t));
+
 test('built inspect preserves normalized equivalence and original source bytes', (t: any) =>
-  suite.builtInspectPreservesNormalizedEquivalenceAndOriginalSourceBytes_6(t));
+  suite.builtInspectPreservesNormalizedEquivalenceAndOriginalSourceBytes(t));
+
 test('built inspect captures YAML bindings before normalizing executable locations', (t: any) =>
-  suite.builtInspectCapturesYAMLBindingsBeforeNormalizingExecutableLocations_7(t));
+  suite.builtInspectCapturesYAMLBindingsBeforeNormalizingExecutableLocations(t));
+
 for (const dynamic of [false, true])
   test(
     'built validate rejects private cross-owner ' + (dynamic ? 'dynamic' : 'static') + ' imports',
-    (t: any) => suite.scenario_8(t, dynamic),
+    (t: any) => suite.rejectsPrivateCrossOwnerImports(t, dynamic),
   );
+
 test('built validate rejects a runtime module cycle', (t: any) =>
-  suite.builtValidateRejectsARuntimeModuleCycle_9(t));
+  suite.builtValidateRejectsARuntimeModuleCycle(t));
+
 for (const text of [
   'id: sample\nid: other\n',
   'id: &identity sample\npurpose: *identity\n',
@@ -454,9 +373,13 @@ for (const text of [
   '? [a, b]\n: value\n',
   '<<: {id: sample}\n',
 ])
-  test('built CLI rejects restricted YAML: ' + text, (t: any) => suite.scenario_10(t, text));
+  test('built CLI rejects restricted YAML: ' + text, (t: any) =>
+    suite.rejectsRestrictedYaml(t, text),
+  );
+
 test('built inspect resolves immutable hierarchy without state or inference', (t: any) =>
-  suite.builtInspectResolvesImmutableHierarchyWithoutStateOrInference_11(t));
+  suite.builtInspectResolvesImmutableHierarchyWithoutStateOrInference(t));
+
 for (const [name, mutate] of [
   ['version', (c: any) => (c.schemaVersion = 99)],
   ['unknown field', (c: any) => (c.surprise = true)],
@@ -466,13 +389,17 @@ for (const [name, mutate] of [
   ['uncovered write', (c: any) => (c.access.writeDirectories = ['docs'])],
   ['ownership', (c: any) => (c.repository = 'other')],
 ])
-  test(`catalog rejects ${name}`, (t: any) => suite.scenario_12(t, mutate));
+  test(`catalog rejects ${name}`, (t: any) => suite.rejectsInvalidCatalogReferences(t, mutate));
+
 test('assignment narrows but cannot widen scope and has a stable digest', (t: any) =>
-  suite.assignmentNarrowsButCannotWidenScopeAndHasAStableDigest_13(t));
+  suite.assignmentNarrowsButCannotWidenScopeAndHasAStableDigest(t));
+
 test('unused invalid definition is rejected and dirty working definitions cannot change inspection', (t: any) =>
-  suite.unusedInvalidDefinitionIsRejectedAndDirtyWorkingDefinitionsCannotChangeInspection_14(t));
+  suite.unusedInvalidDefinitionIsRejectedAndDirtyWorkingDefinitionsCannotChangeInspection(t));
+
 test('related context does not widen authority and ancestor narrowing fails', (t: any) =>
-  suite.relatedContextDoesNotWidenAuthorityAndAncestorNarrowingFails_15(t));
+  suite.relatedContextDoesNotWidenAuthorityAndAncestorNarrowingFails(t));
+
 test('host acceptance snapshots preserve module extensions and declared relative imports', (t: any) =>
   suite.capturesAcceptanceModules(t));
 

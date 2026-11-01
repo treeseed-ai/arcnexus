@@ -1,3 +1,4 @@
+import { diagnosticExcerpt } from '../operations/diagnostics.js';
 import {
   loadBindings,
   bindingEnvironment,
@@ -22,6 +23,7 @@ export interface TestSelection {
   suites: DiscoveredSuite[];
   profiles: TestProfile[];
 }
+
 export interface TestExecution {
   schemaVersion: 1;
   output: string | null;
@@ -37,6 +39,7 @@ export interface TestExecution {
 
 /** Selects owner-declared suites and executes their fixed Node profile with retained evidence. */
 export class ComponentTesting {
+  /** Resolves the requested view without modifying candidate source. */
   inspect(
     project: string,
     filters: TestFilters = {},
@@ -49,6 +52,7 @@ export class ComponentTesting {
     }
   }
 
+  /** Combines captured catalog/profile authority with current discovered test metadata. */
   private selection(project: string, filters: TestFilters, bindings: Bindings): TestSelection {
     this.filters(filters);
     project = resolve(project);
@@ -80,6 +84,7 @@ export class ComponentTesting {
     };
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(
     selection: TestSelection,
     signal: AbortSignal,
@@ -108,6 +113,7 @@ export class ComponentTesting {
     return result;
   }
 
+  /** Creates the evidence record before subsequent lifecycle work begins. */
   private record(selection: TestSelection, productionBuilt: boolean): TestExecution {
     const evidence = join(stateRoot(), 'test-runs', randomUUID());
     mkdirSync(evidence, { recursive: true, mode: 0o700 });
@@ -126,6 +132,7 @@ export class ComponentTesting {
     return result;
   }
 
+  /** Rejects unsupported selection filters before discovering or running tests. */
   private filters(filters: TestFilters): void {
     if (filters.level && !['unit', 'integration', 'acceptance'].includes(filters.level))
       throw new InputError(`Invalid test level: ${filters.level}`);
@@ -133,6 +140,7 @@ export class ComponentTesting {
       throw new InputError(`Invalid test category: ${filters.category}`);
   }
 
+  /** Establishes the prerequisites required by the subsequent execution. */
   private async prepare(
     result: TestExecution,
     signal: AbortSignal,
@@ -149,6 +157,7 @@ export class ComponentTesting {
     }
   }
 
+  /** Runs fixed preparation or test commands and persists output even on failure. */
   private async command(
     result: TestExecution,
     command: { command: string; args: string[] },
@@ -177,13 +186,16 @@ export class ComponentTesting {
     }
   }
 
+  /** Retains a bounded excerpt while keeping the complete command log separately. */
   private captureOutput(result: TestExecution, log: string): void {
     if (!existsSync(log)) return;
     const output = readFileSync(log);
-    result.output = output.subarray(0, 16384).toString('utf8');
-    result.outputTruncated = output.length > 16384;
+    const excerpt = diagnosticExcerpt(output);
+    result.output = excerpt.output;
+    result.outputTruncated = excerpt.truncated;
   }
 
+  /** Persists the current evidence so later inspection can reconstruct this state. */
   private save(result: TestExecution): void {
     writeFileSync(
       join(result.evidence, 'result.json.tmp'),

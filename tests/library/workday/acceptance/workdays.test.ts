@@ -6,8 +6,11 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises workdays behavior through observable scenarios. */
 class WorkdaysTests {
-  builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference_1(t: TestContext) {
+  /** Verifies that built workday inspect captures two disjoint owners without state or inference. */
+  builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference(t: TestContext) {
     const f = fixture(t),
       r = f.workday('inspect', f.path, '--project', f.repo, '--json');
     assert.equal(r.status, 0, r.stderr);
@@ -19,7 +22,9 @@ class WorkdaysTests {
     assert.equal(existsSync(f.state), false);
     assert.equal(existsSync(f.calls), false);
   }
-  workdayInspectionRejectsOverlapInvalidEdgesAndUnsupportedVersions_2(t: TestContext) {
+
+  /** Verifies that workday inspection rejects overlap invalid edges and unsupported versions. */
+  workdayInspectionRejectsOverlapInvalidEdgesAndUnsupportedVersions(t: TestContext) {
     const f = fixture(t);
     for (const change of [
       () => {
@@ -40,7 +45,9 @@ class WorkdaysTests {
     }
     assert.equal(existsSync(f.state), false);
   }
-  standaloneExecutionRetainsHostCheckedCheckpointEvidence_3(t: TestContext) {
+
+  /** Verifies that standalone execution retains host checked checkpoint evidence. */
+  standaloneExecutionRetainsHostCheckedCheckpointEvidence(t: TestContext) {
     const f = workflowFixture(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -55,6 +62,7 @@ class WorkdaysTests {
     assert.equal(c.authorityHash, report.resolvedAssignment.digest);
   }
 }
+
 const suite = new WorkdaysTests();
 
 function fixture(t: any): any {
@@ -83,6 +91,7 @@ function fixture(t: any): any {
     });
   return { ...f, manifest, path, save, workday: run };
 }
+
 function defineParticipants(f: any): void {
   const dependency = {
     ...f.component,
@@ -108,11 +117,14 @@ function defineParticipants(f: any): void {
   for (const name of ['requester', 'recipient'])
     writeFileSync(join(f.root, name + '.json'), JSON.stringify(assignment));
 }
+
 test('built workday inspect captures two disjoint owners without state or inference', (t: any) =>
-  suite.builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference_1(t));
+  suite.builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference(t));
+
 test('workday inspection rejects overlap invalid edges and unsupported versions', (t: any) =>
-  suite.workdayInspectionRejectsOverlapInvalidEdgesAndUnsupportedVersions_2(t));
+  suite.workdayInspectionRejectsOverlapInvalidEdgesAndUnsupportedVersions(t));
+
 test('standalone execution retains host-checked checkpoint evidence', (t: any) =>
-  suite.standaloneExecutionRetainsHostCheckedCheckpointEvidence_3(t));
+  suite.standaloneExecutionRetainsHostCheckedCheckpointEvidence(t));
 
 registerSuite({ component: 'workday', level: 'acceptance', tags: ['deterministic'] });

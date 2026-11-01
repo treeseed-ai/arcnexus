@@ -21,21 +21,25 @@ import {
 import { commands, environment, InputError, type Command, type Environment } from './config.js';
 import { ConfigurationReader } from './configuration.js';
 import { validateSchema } from './schema.js';
+
 export interface HostCheck extends Command {
   id: string;
   artifacts: string[];
 }
+
 export interface PriorEvidence {
   path: string;
   sourceId: string;
   revision: string;
   reason: string;
 }
+
 export interface EvidenceSnapshot extends PriorEvidence {
   sha256: string;
   bytes: number;
   content: string;
 }
+
 export interface Assignment {
   priorEvidence?: PriorEvidence[];
   schemaVersion: 1 | 2 | 3;
@@ -48,6 +52,7 @@ export interface Assignment {
   allowedWritePaths?: string[];
   hostChecks: HostCheck[];
 }
+
 export interface ResolvedAssignment {
   initialization: InitializationSnapshot;
   configurationSources?: import('./configuration.js').ConfigurationSource[];
@@ -72,7 +77,9 @@ export interface ResolvedAssignment {
   pendingChecks: string[];
   digest: string;
 }
+
 export const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
+
 export function resolveBase(repository: string, ref = 'HEAD'): { source: string; base: string } {
   try {
     const source = realpathSync(
@@ -86,6 +93,7 @@ export function resolveBase(repository: string, ref = 'HEAD'): { source: string;
     throw new InputError(String(error));
   }
 }
+
 export interface AssignmentOptions {
   initializerModel?: string;
   value?: unknown;
@@ -98,6 +106,7 @@ export interface AssignmentOptions {
   compositionProfile?: string;
   executionProfile?: string;
 }
+
 export function resolveAssignment(
   repository: string,
   base: string,
@@ -117,14 +126,21 @@ const pendingChecks = [
   'Installed Codex sandbox compatibility',
 ];
 
+/** Captures one assignment’s catalog, permissions, checks and context before preparation. */
 class AssignmentResolver {
   private readonly catalog;
+
   private readonly context;
+
   private readonly component;
+
   private readonly env;
+
   private readonly assignmentSource;
+
   private readonly assignment;
 
+  /** Resolves the captured catalog and assignment; rejects incompatible input forms before preparation. */
   constructor(
     private readonly repository: string,
     private readonly base: string,
@@ -144,6 +160,7 @@ class AssignmentResolver {
     this.assignment = this.resolveInput();
   }
 
+  /** Requires an executable owner in the primary writable repository. */
   private validateTarget(): void {
     const { env, component } = this;
     if (env.workspace && component.repository !== env.workspace.primary.id)
@@ -155,6 +172,7 @@ class AssignmentResolver {
       throw new InputError('Executable component requires verification');
   }
 
+  /** Validates structured input or constructs the positional-objective assignment. */
   private resolveInput(): Assignment {
     const { options, assignmentSource } = this;
     const assignment = validateSchema<Assignment>(
@@ -175,6 +193,7 @@ class AssignmentResolver {
     return assignment;
   }
 
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(): ResolvedAssignment {
     this.assertReferences();
     const { catalog, assignment, context, component, base, id, env } = this;
@@ -205,6 +224,7 @@ class AssignmentResolver {
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
 
+  /** Rejects unresolved references before they can enter assignment context. */
   private assertReferences(): void {
     for (const component of this.context)
       for (const contract of component.contractSnapshots ?? [])
@@ -212,6 +232,7 @@ class AssignmentResolver {
           throw new InputError(`Missing repository binding for captured contract: ${contract.id}`);
   }
 
+  /** Collects source snapshots used to reconstruct assignment authority. */
   private sources() {
     const { catalog, options, assignmentSource } = this;
     return [
@@ -221,6 +242,7 @@ class AssignmentResolver {
     ];
   }
 
+  /** Builds the effective execution settings from captured profile and caller overrides. */
   private execution() {
     const { repository, base, env, options } = this;
     const { compositionProfile, executionProfile } = this.profiles();
@@ -239,6 +261,7 @@ class AssignmentResolver {
     };
   }
 
+  /** Resolves execution and composition selections without confusing their responsibilities. */
   private profiles() {
     const { catalog, component, context, options } = this;
     const profileId = options.executionProfile ?? component.executionProfile;
@@ -260,6 +283,7 @@ class AssignmentResolver {
     return { compositionProfile, executionProfile };
   }
 
+  /** Selects only operations authorized by both component and assignment. */
   private operations(executionProfile: ExecutionProfile): Operation[] {
     const { assignment, component, catalog, env } = this;
     const requestedOperations = assignment.operationIds ?? component.operationIds ?? [];
@@ -328,6 +352,7 @@ function captureCheckArtifacts(assignment: Assignment): ResolvedAssignment['arti
   }
   return artifacts;
 }
+
 export function materializeChecks(resolved: ResolvedAssignment, directory: string): HostCheck[] {
   mkdirSync(directory, { recursive: true, mode: 0o700 });
   const replacements = new Map<string, string>();

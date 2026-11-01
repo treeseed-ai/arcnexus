@@ -4,7 +4,9 @@ import type { ResolvedAssignment } from '../architecture/assignment.js';
 import { validateSchema } from '../architecture/schema.js';
 import { observe } from '../report/timeline.js';
 import { save, type RecordData } from '../workspace/state.js';
+
 export type ChecklistStatus = 'pending' | 'in_progress' | 'completed' | 'skipped' | 'blocked';
+
 export interface PlanItem {
   id: string;
   activity: string;
@@ -17,6 +19,7 @@ export interface PlanItem {
   explanation: string;
   basis?: string;
 }
+
 export interface Plan {
   approach: string;
   assumptions: string[];
@@ -26,14 +29,17 @@ export interface Plan {
   version?: number;
   hostChecks?: Array<{ id: string; status: string; evidence: string[] }>;
 }
+
 export interface PlanUpdate {
   id: string;
   status: ChecklistStatus;
   explanation: string;
   evidence: string[];
 }
+
 const escape = (s: string) =>
   s.replace(/[\r\n]/g, ' ').replace(/[<>]/g, (c) => (c === '<' ? '&lt;' : '&gt;'));
+
 export function planMarkdown(plan: Plan): string {
   return (
     `# Assignment plan — version ${plan.version}\n\n${escape(plan.approach)}\n\n` +
@@ -53,6 +59,7 @@ export function planMarkdown(plan: Plan): string {
     '\n'
   );
 }
+
 function persist(root: string, record: RecordData, plan: Plan, reason: string): void {
   plan.version = Number((record.plan as Plan | undefined)?.version ?? 0) + 1;
   record.plan = plan;
@@ -71,6 +78,7 @@ function persist(root: string, record: RecordData, plan: Plan, reason: string): 
   });
   save(root, record);
 }
+
 export function acceptPlan(
   root: string,
   record: RecordData,
@@ -92,6 +100,7 @@ export function acceptPlan(
   plan.hostChecks = [{ id: 'final-verification', status: 'pending', evidence: [] }];
   persist(root, record, plan, reason);
 }
+
 export function updatePlan(root: string, record: RecordData, updates: unknown): void {
   const values = validateSchema<PlanUpdate[]>('plan-updates', updates),
     plan = structuredClone(record.plan) as Plan | undefined;
@@ -111,6 +120,7 @@ export function updatePlan(root: string, record: RecordData, updates: unknown): 
   }
   persist(root, record, plan, 'Steward progress update');
 }
+
 export function completePlan(root: string, record: RecordData): void {
   const plan = structuredClone(record.plan) as Plan | undefined;
   if (!plan) return;

@@ -4,6 +4,7 @@ import type { RecordData } from '../workspace/state.js';
 import { InputError, type Command } from './config.js';
 import { ConfigurationReader } from './configuration.js';
 import { validateSchema } from './schema.js';
+
 export interface Bindings {
   taskAcceptance?: Record<string, import('./assignment.js').HostCheck[]>;
   taskRefresh?: Record<string, Command[]>;
@@ -12,6 +13,7 @@ export interface Bindings {
   tools: Record<string, string>;
   configurationSource?: import('./configuration.js').ConfigurationSource;
 }
+
 export function loadBindings(path?: string): Bindings {
   try {
     const source = path ? new ConfigurationReader().file(path) : undefined;
@@ -34,6 +36,7 @@ export function loadBindings(path?: string): Bindings {
     throw new InputError(String(error));
   }
 }
+
 export function bindingEnvironment(bindings?: Bindings): NodeJS.ProcessEnv {
   const directories = bindings ? [...new Set(Object.values(bindings.tools).map(dirname))] : [];
   return { ...process.env, PATH: [...directories, process.env.PATH ?? ''].join(delimiter) };

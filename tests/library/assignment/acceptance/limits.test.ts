@@ -6,7 +6,10 @@ import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises execution limit behavior through observable scenarios. */
 class ExecutionLimitTests {
+  /** Checks omitted execution limits remain unconfigured in the captured assignment. */
   absent(t: TestContext, schemaVersion: number): void {
     const fixture = workflowFixture(t);
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -32,6 +35,8 @@ class ExecutionLimitTests {
     for (const key of ['timeoutSeconds', 'commandTimeoutSeconds', 'maxTurns', 'maxOperationCalls'])
       assert.equal(resolved.executionProfile[key], undefined);
   }
+
+  /** Verifies that unconfigured turn and attempt quotas permit a verified fourth implementation attempt. */
   continuingWork(t: TestContext, operations: boolean): void {
     const fixture = operationFixture(t);
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -52,6 +57,8 @@ class ExecutionLimitTests {
       assert.equal(record.turns.length, 7);
     }
   }
+
+  /** Verifies that caller may explicitly select more than the former two-attempt ceiling. */
   explicitAttempts(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run('--max-attempts', '3');
@@ -59,15 +66,19 @@ class ExecutionLimitTests {
     assert.equal(JSON.parse(result.stdout).implementationAttempts, 1);
   }
 }
+
 const suite = new ExecutionLimitTests();
+
 for (const version of [1, 2, 3])
   test(`schema ${version} missing execution limits remain unconfigured`, (t) =>
     suite.absent(t, version));
+
 test('caller may explicitly select more than the former two-attempt ceiling', (t) =>
   suite.explicitAttempts(t));
 
 test('unconfigured operation quota permits more than twenty-four successful calls', (t) =>
   suite.continuingWork(t, true));
+
 test('unconfigured turn and attempt quotas permit a verified fourth implementation attempt', (t) =>
   suite.continuingWork(t, false));
 

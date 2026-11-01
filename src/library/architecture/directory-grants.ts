@@ -6,6 +6,7 @@ import { InputError } from './config.js';
 export class DirectoryGrants {
   private readonly entries = new Map<string, { mode: string; type: string }>();
 
+  /** Captures Git entry types so directory grants can reject files and unsafe traversal. */
   constructor(repository: string, base: string) {
     const listing = git(repository, 'ls-tree', '-r', '-t', '-z', base);
     for (const entry of listing.split('\0').filter(Boolean)) {
@@ -15,6 +16,7 @@ export class DirectoryGrants {
     }
   }
 
+  /** Rejects inputs that violate the captured configuration contract. */
   validate(component: Component): void {
     for (const path of component.access.writeDirectories) {
       if (path === '.') continue;

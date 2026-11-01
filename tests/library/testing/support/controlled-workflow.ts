@@ -2,9 +2,11 @@ import { ControlledInitializer } from './controlled-initializer.js';
 import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import { ControlledPlanning } from './controlled-planning.js';
+
 export interface WorkflowOptions {
   mode: string;
   repairAfter?: number;
+  requiredFeedback?: string;
   observedShellFailures?: number;
   initializerMode?: string;
   calls: string;
@@ -26,6 +28,7 @@ export interface WorkflowOptions {
   guidanceExpansion?: boolean;
   dependencyMutation?: boolean;
 }
+
 export interface WorkflowTurn {
   args: string[];
   prompt: string;
@@ -34,9 +37,15 @@ export interface WorkflowTurn {
   result: any;
   schema: any;
 }
+
+/** Exercises controlled workflow behavior through observable scenarios. */
 export class ControlledWorkflow {
   private args = process.argv.slice(2);
+
+  /** Retains the selected scripted workflow and its invocation evidence destination. */
   constructor(private options: WorkflowOptions) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     if (this.args[0] === '--version') {
       console.log('controlled Codex');
@@ -60,6 +69,8 @@ export class ControlledWorkflow {
     if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
     this.emit(turn);
   }
+
+  /** Routes initialization prompts to the scripted intake responder before engineering. */
   private initialize(prompt: string): boolean {
     return new ControlledInitializer().respond(
       prompt,
@@ -68,6 +79,8 @@ export class ControlledWorkflow {
       this.options.initializerMode,
     );
   }
+
+  /** Rejects invocations missing the explicit launcher and permission configuration. */
   private validateInvocation(): void {
     if (
       this.args[0] !== 'exec' ||
@@ -77,6 +90,8 @@ export class ControlledWorkflow {
     )
       process.exit(7);
   }
+
+  /** Snapshots the inputs used by later verification. */
   private capture(prompt: string): WorkflowTurn {
     const stage = prompt.match(/Activity turn: ([a-z-]+)/)?.[1] ?? 'legacy';
     fs.appendFileSync(
@@ -102,7 +117,15 @@ export class ControlledWorkflow {
       : null;
     return { args: this.args, prompt, stage, count, result, schema };
   }
+
+  /** Runs the requested action through the configured execution boundary. */
   private execute(turn: WorkflowTurn): void {
+    if (
+      turn.stage === 'correction' &&
+      this.options.requiredFeedback &&
+      !turn.prompt.includes(this.options.requiredFeedback)
+    )
+      throw new Error('Corrective prompt omitted the actual late failure');
     if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
     if (this.options.documentationOnly) this.documentation(turn);
     else {
@@ -115,6 +138,8 @@ export class ControlledWorkflow {
     if (this.options.mode === 'research-write' && turn.stage === 'research')
       fs.writeFileSync('source.txt', 'unauthorized');
   }
+
+  /** Writes documentation and a failing regression, with optional checkpoint violations. */
   private specification(turn: WorkflowTurn): void {
     fs.writeFileSync('docs/behavior.md', 'Source must become after');
     fs.writeFileSync(
@@ -132,6 +157,8 @@ export class ControlledWorkflow {
       turn.result.regression.outputIncludes = 'NOT_THE_ASSERTION';
     if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
   }
+
+  /** Records documentation and test claims plus the reason research was skipped. */
   private specificationActivities(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -154,6 +181,8 @@ export class ControlledWorkflow {
       },
     ];
   }
+
+  /** Writes the scripted implementation or repair and records its activity claim. */
   private implement(turn: WorkflowTurn): void {
     if (this.options.dependencyMutation && turn.stage === 'implementation')
       fs.writeFileSync('packages/dependency/source.txt', 'mutated');
@@ -176,6 +205,8 @@ export class ControlledWorkflow {
       fs.writeFileSync('tests/marker', 'hang');
     this.candidateMutations(mode);
   }
+
+  /** Introduces selected Git, path or instruction violations for host inspection. */
   private candidateMutations(mode: string): void {
     if (mode === 'scope') fs.writeFileSync('outside.txt', 'unauthorized');
     if (mode === 'ignored') fs.writeFileSync('.env', 'unknown');
@@ -204,15 +235,21 @@ export class ControlledWorkflow {
       fs.writeFileSync('outside.txt', 'unauthorized');
     }
   }
+
+  /** Runs Git against the fixture repository and propagates command failures. */
   private git(...args: string[]): void {
     cp.execFileSync('git', args);
   }
+
+  /** Stages a symlink then replaces its working copy to test index-aware path inspection. */
   private maskedSymlink(): void {
     fs.symlinkSync('source.txt', 'new.txt');
     this.git('add', 'new.txt');
     fs.unlinkSync('new.txt');
     fs.writeFileSync('new.txt', 'regular');
   }
+
+  /** Returns review/handoff claims or deliberately attempts a prohibited review edit. */
   private review(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -232,6 +269,8 @@ export class ControlledWorkflow {
     if (this.options.mode === 'review-repair' && turn.count === 3)
       turn.result.reviewFindings = ['Needs a corrective pass'];
   }
+
+  /** Returns an owner request, optionally naming an unknown owner for escalation coverage. */
   private block(turn: WorkflowTurn): void {
     turn.result.status = 'blocked';
     turn.result.blockers = ['Another owner must change its contract'];
@@ -246,6 +285,8 @@ export class ControlledWorkflow {
       },
     ];
   }
+
+  /** Writes result and usage events through the controlled SDK executable boundary. */
   private emit(turn: WorkflowTurn): void {
     this.shellEvents();
     const text = this.options.mode === 'malformed' ? 'invalid' : JSON.stringify(turn.result);
@@ -266,6 +307,8 @@ export class ControlledWorkflow {
       }),
     );
   }
+
+  /** Emits observable command failures for SDK-level loop-guard assertions. */
   private shellEvents(): void {
     for (let index = 0; index < (this.options.observedShellFailures ?? 0); index++)
       console.log(
@@ -282,6 +325,8 @@ export class ControlledWorkflow {
         }),
       );
   }
+
+  /** Checks that the captured tool binding reaches the controlled execution environment. */
   private probeSuppliedTool(prompt: string): void {
     const commands = JSON.parse(
       prompt.split('Captured verification commands (zero-based index): ')[1]!.split('\n')[0]!,
@@ -292,6 +337,8 @@ export class ControlledWorkflow {
     });
     if (probe.status !== 0) throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
   }
+
+  /** Records direct sandbox limitations while exercising the declared host route. */
   private sandboxFeedback(turn: WorkflowTurn): void {
     if (!turn.prompt.includes('If sandbox restrictions prevent running the regression'))
       throw new Error('HOST_CHECK_HANDOFF_MISSING');
@@ -301,6 +348,8 @@ export class ControlledWorkflow {
       uncertainty: 'Proposed assertion must be checked by host',
     });
   }
+
+  /** Produces documentation-only work without pretending to satisfy a behavioral red test. */
   private documentation(turn: WorkflowTurn): void {
     if (turn.stage !== 'specification') return;
     if (!turn.prompt.includes('Make actual file edits now'))

@@ -5,10 +5,16 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { stateRoot } from '../workspace/state.js';
 import { fixtureFiles } from './experiment-config.js';
+
+/** Runs explicit live sample assignments and retains each independent acceptance result. */
 class LiveSampleCampaign {
   private supervisor = fileURLToPath(new URL('../../..', import.meta.url));
+
   private root!: string;
+
   private source!: string;
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     this.prepare();
     const results = [this.sample(1), this.sample(2)];
@@ -17,6 +23,8 @@ class LiveSampleCampaign {
     writeFileSync(join(this.root, 'acceptance.json'), JSON.stringify(results, null, 2));
     console.log(JSON.stringify({ root: this.root, results }, null, 2));
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(): void {
     const samples = join(stateRoot(), 'samples');
     mkdirSync(samples, { recursive: true, mode: 0o700 });
@@ -36,6 +44,8 @@ class LiveSampleCampaign {
     ])
       this.command('git', args, this.source);
   }
+
+  /** Executes the explicit sample command and retains its result. */
   private command(executable: string, args: string[], cwd = this.supervisor): string {
     const result = spawnSync(executable, args, {
       cwd,
@@ -47,8 +57,11 @@ class LiveSampleCampaign {
       throw new Error(`${executable} failed: ${result.error ?? result.stderr}\n${result.stdout}`);
     return result.stdout;
   }
+
   private readonly objective =
     'Add and export isSessionExpired(expiresAtMs, nowMs) in src/identity.mjs. Return nowMs >= expiresAtMs. Document the behavior in README.md, add tests for before, exactly at, and after expiry, and preserve normalizeIdentity. Document first, observe the new tests fail before implementing, then verify.';
+
+  /** Runs one fresh live sample and checks the expiration boundary independently. */
   private sample(attempt: number) {
     console.error(`Live sample ${attempt}/2; evidence root: ${this.root}`);
     const output = this.command(process.execPath, [
@@ -79,4 +92,5 @@ class LiveSampleCampaign {
     };
   }
 }
+
 new LiveSampleCampaign().run();

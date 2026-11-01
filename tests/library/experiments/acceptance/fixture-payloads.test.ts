@@ -6,7 +6,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { materializeFixture } from '../../testing/support/fixture-payloads.js';
+
+/** Exercises fixture payload behavior through observable scenarios. */
 class FixturePayloadTests {
+  /** Verifies that identity runs compiled tests. */
   identityRunsCompiledTests(t: TestContext): void {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-compiled-fixture-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -24,7 +27,9 @@ class FixturePayloadTests {
     assert.match(result.stdout, /# pass 1/);
   }
 }
+
 const suite = new FixturePayloadTests();
+
 test('materialized identity fixture runs its compiled class-based acceptance test', (t) =>
   suite.identityRunsCompiledTests(t));
 

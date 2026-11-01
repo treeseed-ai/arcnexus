@@ -7,6 +7,7 @@ interface ScenarioOptions {
   root: string;
   calls: string;
 }
+
 interface Call {
   owner: string;
   stage: string;
@@ -34,16 +35,26 @@ export async function run(options: ScenarioOptions): Promise<void> {
   new ControlledWorkday(options, args, prompt).execute();
 }
 
+/** Exercises controlled workday behavior through observable scenarios. */
 class ControlledWorkday {
   private readonly owner: string;
+
   private readonly stage: string;
+
   private readonly seen: number;
+
   private readonly number: number;
+
   private readonly dependency: boolean;
+
   private readonly file: string;
+
   private readonly docs: string;
+
   private readonly tests: string;
+
   private readonly after: string;
+
   private readonly result: any = {
     status: 'completed',
     summary: 'Bounded workday result',
@@ -58,6 +69,7 @@ class ControlledWorkday {
     coordination: null,
   };
 
+  /** Derives the active owner and stage from the captured prompt and prior invocation ledger. */
   constructor(
     private readonly options: ScenarioOptions,
     args: string[],
@@ -81,6 +93,7 @@ class ControlledWorkday {
     this.recordCall(args);
   }
 
+  /** Retains each model invocation so owner, thread and checkpoint resumption can be asserted. */
   private recordCall(args: string[]): void {
     const schema = JSON.parse(readFileSync(args[args.indexOf('--output-schema') + 1]!, 'utf8'));
     appendFileSync(
@@ -94,6 +107,7 @@ class ControlledWorkday {
     );
   }
 
+  /** Runs the requested action through the configured execution boundary. */
   execute(): void {
     this.engineering();
     this.faults();
@@ -107,6 +121,7 @@ class ControlledWorkday {
     this.emit();
   }
 
+  /** Performs scripted owner edits for the current engineering stage. */
   private engineering(): void {
     if (this.stage === 'planning') this.plan();
     if (this.stage === 'specification') this.specification();
@@ -128,6 +143,7 @@ class ControlledWorkday {
       ];
   }
 
+  /** Builds a participant plan using acceptance indexes from its captured assignment. */
   private plan(): void {
     this.result.plan = {
       approach: 'Bounded owner change',
@@ -150,6 +166,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Creates owner-local documentation and a failing contract regression. */
   private specification(): void {
     writeFileSync(this.docs + '/behavior.md', 'Contract must be ' + this.after);
     writeFileSync(
@@ -167,6 +184,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Applies deliberate scenario violations for host authority and checkpoint assertions. */
   private faults(): void {
     const { mode } = this.options;
     if (mode === 'unsolicited-answer' && this.dependency && this.stage === 'specification')
@@ -185,6 +203,7 @@ class ControlledWorkday {
     }
   }
 
+  /** Builds the recipient acceptance, rejection or clarification response. */
   private response(): void {
     const { mode } = this.options;
     if (this.dependency && this.stage === 'planning') {
@@ -207,6 +226,7 @@ class ControlledWorkday {
       this.result.coordination = this.coordination('answer', true);
   }
 
+  /** Builds the captured contract request with evidence and delivery conditions. */
   private request(): void {
     const { mode } = this.options;
     if (!this.requestTriggered()) return;
@@ -230,6 +250,7 @@ class ControlledWorkday {
     ];
   }
 
+  /** Selects the checkpoint where the scripted requester yields its unfinished work. */
   private requestTriggered(): boolean {
     const { mode } = this.options;
     const trigger =
@@ -245,6 +266,7 @@ class ControlledWorkday {
     );
   }
 
+  /** Emits the scenario-specific request or clarification result at a turn boundary. */
   private coordination(action: string, complete = false) {
     return {
       action,
@@ -258,6 +280,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Writes SDK-shaped result events and simulated usage for the completed fixture turn. */
   private emit(): void {
     console.log(JSON.stringify({ type: 'thread.started', thread_id: this.owner + '-thread' }));
     console.log(

@@ -18,6 +18,7 @@ import { initializeExecution, type InitializationEvidence } from './initializer.
 import { ProposalResolution } from './proposal-resolution.js';
 import { ProposalStore, type TaskProposal } from './proposal-store.js';
 import { OwnerRetrieval } from './retrieval.js';
+
 export interface TaskPlanInput {
   input: string;
   project: string;
@@ -26,13 +27,20 @@ export interface TaskPlanInput {
   initializerModel?: string;
   executable: string;
 }
+
+/** Combines lexical owner retrieval with read-only model assessment and deterministic validation. */
 export class TaskPlanner {
   private sourceHead = '';
+
   private authority!: TaskAuthoritySnapshot;
+
+  /** Carries state storage and caller cancellation into proposal creation. */
   constructor(
     private root: string,
     private signal: AbortSignal,
   ) {}
+
+  /** Runs read-only intake and retains a validated caller-reviewable proposal. */
   async plan(input: TaskPlanInput): Promise<TaskProposal> {
     const { text, bindings, shortlist, owner, captured, record } = this.prepare(input);
     try {
@@ -60,6 +68,8 @@ export class TaskPlanner {
       this.finish(record);
     }
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(input: TaskPlanInput) {
     const selection = resolveBase(input.project, input.base);
     this.authority = new TaskAuthority().capture(input.executable);
@@ -85,6 +95,8 @@ export class TaskPlanner {
     this.captureInput(record, input, text, shortlist);
     return { text, bindings, shortlist, owner, captured, record };
   }
+
+  /** Retains the supplied input and its provenance for subsequent execution. */
   private captureInput(
     record: RecordData,
     input: TaskPlanInput,
@@ -99,6 +111,8 @@ export class TaskPlanner {
     };
     save(this.root, record);
   }
+
+  /** Snapshots the inputs used by later verification. */
   private capture(
     selection: { source: string; base: string },
     owner: string,
@@ -122,6 +136,8 @@ export class TaskPlanner {
       },
     });
   }
+
+  /** Rejects unexpected source changes after a read-only or preparation activity. */
   private unchanged(
     captured: ResolvedAssignment,
     input: TaskPlanInput,
@@ -142,6 +158,8 @@ export class TaskPlanner {
     )
       throw new InputError('Task inputs changed during initialization; create a new plan');
   }
+
+  /** Builds a retained routing proposal for explicit caller acceptance. */
   private proposal(
     record: RecordData,
     input: TaskPlanInput,
@@ -168,6 +186,8 @@ export class TaskPlanner {
       execution,
     });
   }
+
+  /** Captures repository identity and the immutable planning revision. */
   private identity(record: RecordData, input: TaskPlanInput, text: string) {
     return {
       schemaVersion: 1 as const,
@@ -180,6 +200,8 @@ export class TaskPlanner {
       ...this.authority,
     };
   }
+
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   private finish(record: RecordData): void {
     record.finishedAt = new Date().toISOString();
     record.elapsedMs = Date.now() - Date.parse(record.startedAt);

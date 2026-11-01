@@ -50,7 +50,9 @@ interfaces:
   - Delivery verification and caller-authorized release boundaries
 relatedIds: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - release-lint
+  - release-tests
 patternIds:
   - readable-typescript
 ownership:

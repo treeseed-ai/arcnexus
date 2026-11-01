@@ -6,7 +6,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test, type TestContext } from 'node:test';
+
+/** Exercises check layout behavior through observable scenarios. */
 class CheckLayoutTests {
+  /** Builds a candidate layout fixture and runs the independent checker against its report module. */
   report(t: TestContext, layout: string, check: string): void {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-check-layout-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -30,7 +33,9 @@ class CheckLayoutTests {
     assert.match(result.stdout, /acceptance passed|INDEPENDENT_REPORT_OPERATIONS_PASSED/);
   }
 }
+
 const suite = new CheckLayoutTests();
+
 for (const layout of ['dist', 'dist/report', 'dist/library/report'])
   for (const check of ['check-report.js', 'check-report-summary.js', 'report-operations.js'])
     test(`independent ${check} supports ${layout} target layout`, (t) =>

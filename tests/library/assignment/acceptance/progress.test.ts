@@ -5,7 +5,10 @@ import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { workflowFixture } from '../../testing/support/workflow-fixture.js';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
+
+/** Exercises progress behavior through observable scenarios. */
 class ProgressTests {
+  /** Verifies that repeated exposed SDK command failures stop the stream with retained raw events. */
   observedShell(t: TestContext): void {
     const fixture = workflowFixture(t);
     fixture.configure({ observedShellFailures: 4 });
@@ -16,6 +19,8 @@ class ProgressTests {
     const events = readFileSync(join(fixture.state, 'runs', record.id, 'events.jsonl'), 'utf8');
     assert.match(events, /repeat-failing-check/);
   }
+
+  /** Verifies that repeated unverified implementation cycles stop with retained corrective work. */
   repeatedCheckpoints(t: TestContext): void {
     const fixture = workflowFixture(t, 'exhaust');
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -29,6 +34,8 @@ class ProgressTests {
     assert.equal(record.outcome, 'needs_attention');
     assert.equal(record.implementationAttempts, 4);
   }
+
+  /** Verifies that observable repeated failures diagnose a loop then stop unchanged dispatch. */
   repeatedFailures(t: TestContext): void {
     const fixture = operationFixture(t);
     fixture.configure({ operationRepeats: 4 });
@@ -42,7 +49,9 @@ class ProgressTests {
     assert.match(events, /progress.needs_attention/);
   }
 }
+
 const suite = new ProgressTests();
+
 test('observable repeated failures diagnose a loop then stop unchanged dispatch', (t) =>
   suite.repeatedFailures(t));
 

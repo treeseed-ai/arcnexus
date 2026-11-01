@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
+
+/** Independently checks outcome against retained candidate evidence. */
 class OutcomeAcceptance {
   private record: any;
+
+  /** Loads retained evidence for the selected independent outcome assertion. */
   constructor(
     path: string,
     private kind: string,
   ) {
     this.record = JSON.parse(readFileSync(path, 'utf8'));
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     assert.equal(this.record.settings.model, 'gpt-6-luna');
     assert.equal(this.record.settings.reasoning, 'medium');
@@ -22,6 +28,8 @@ class OutcomeAcceptance {
         ' outcome acceptance passed; findings still require caller review',
     );
   }
+
+  /** Independently verifies the required owner request and absence of unauthorized edits. */
   private boundary(): void {
     const record = this.record;
     assert.equal(record.outcome, 'blocked');
@@ -34,6 +42,8 @@ class OutcomeAcceptance {
     );
     assert.match(JSON.stringify(request), /schema|contract|interface/i);
   }
+
+  /** Checks that research or review completed without candidate source changes. */
   private readOnly(): void {
     const record = this.record;
     assert.equal(record.outcome, this.kind + '_completed');
@@ -44,6 +54,8 @@ class OutcomeAcceptance {
     if (this.kind === 'research')
       assert.match(JSON.stringify(record.agent.findings), /architecture/);
   }
+
+  /** Checks a real candidate change against the declared qualification outcome. */
   private change(): void {
     const record = this.record;
     assert.equal(record.outcome, 'ready_for_integration');
@@ -54,6 +66,8 @@ class OutcomeAcceptance {
     );
     if (this.kind === 'repair') this.repair();
   }
+
+  /** Requires recorded fault failure, corrective editing and subsequent passing acceptance. */
   private repair(): void {
     const record = this.record;
     assert.equal(record.implementationAttempts, 2);
@@ -83,4 +97,5 @@ class OutcomeAcceptance {
     );
   }
 }
+
 new OutcomeAcceptance(process.argv[2]!, process.argv[3]!).run();

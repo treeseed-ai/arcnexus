@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { closeSync, openSync, renameSync, writeFileSync, writeSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
 import { endpointClosed, groupMembers, processStart, type ServiceRecord } from './service-state.js';
+
 interface Start {
   record: ServiceRecord;
   command: string;
@@ -11,15 +12,23 @@ interface Start {
   port: number;
 }
 
+/** Owns the foreground service process and stops its group after parent loss. */
 class ServiceSupervisor {
   private child?: ChildProcess;
+
   private record?: ServiceRecord;
+
   private fd?: number;
+
   private stopping?: Promise<void>;
+
   private bytes = 0;
+
   private line = '';
+
   private requestedPort = 0;
 
+  /** Registers parent-liveness and service-process event handlers. */
   listen(): void {
     process.on('disconnect', () => {
       void this.stop('parent disconnected');
@@ -33,6 +42,7 @@ class ServiceSupervisor {
     });
   }
 
+  /** Writes current service ownership and lifecycle evidence for inspection. */
   private persist(): void {
     if (!this.record) return;
     writeFileSync(this.record.recordPath + '.tmp', JSON.stringify(this.record, null, 2), {
@@ -41,10 +51,12 @@ class ServiceSupervisor {
     renameSync(this.record.recordPath + '.tmp', this.record.recordPath);
   }
 
+  /** Stops managed work and retains its final lifecycle evidence. */
   private stop(reason: string): Promise<void> {
     return (this.stopping ??= this.shutdown(reason));
   }
 
+  /** Terminates the service process group after cancellation or parent loss. */
   private async shutdown(reason: string): Promise<void> {
     if (!this.record) {
       process.disconnect?.();
@@ -71,6 +83,7 @@ class ServiceSupervisor {
     }
   }
 
+  /** Stops the process group while preserving shutdown evidence. */
   private async stopGroup(pid: number): Promise<void> {
     try {
       process.kill(-pid, 'SIGTERM');
@@ -86,6 +99,7 @@ class ServiceSupervisor {
     for (let i = 0; i < 20 && groupMembers(pid).length; i++) await delay(50);
   }
 
+  /** Starts managed work and records the state needed for its later shutdown. */
   private start(message: Start): void {
     this.record = { ...message.record, supervisorPid: process.pid, status: 'starting' };
     this.requestedPort = message.port;
@@ -110,6 +124,7 @@ class ServiceSupervisor {
     });
   }
 
+  /** Snapshots the inputs used by later verification. */
   private capture(chunk: Buffer, stdout: boolean): void {
     if (this.fd === undefined) return;
     const room = 64 * 1024 * 1024 - this.bytes;
@@ -122,6 +137,7 @@ class ServiceSupervisor {
     if (stdout) this.announcements(chunk);
   }
 
+  /** Parses complete stdout lines for the declared endpoint announcement. */
   private announcements(chunk: Buffer): void {
     this.line += chunk.toString();
     if (this.line.length > 65536) {
@@ -136,6 +152,7 @@ class ServiceSupervisor {
     }
   }
 
+  /** Validates an announced loopback endpoint before reporting readiness. */
   private announcement(text: string): void {
     try {
       const endpoint = JSON.parse(text).arcnexusEndpoint;
@@ -157,4 +174,5 @@ class ServiceSupervisor {
     }
   }
 }
+
 new ServiceSupervisor().listen();

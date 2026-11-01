@@ -7,8 +7,13 @@ import { type CommandResult } from '../operations/process.js';
 import { type AgentResult } from '../steward/codex.js';
 import { specificationFiles, withFrozenTests } from './checkpoints.js';
 import { SessionState } from './session-state.js';
+
+/** Enforces expected-red, frozen-test and final independent verification checkpoints. */
 export class SessionVerification {
+  /** Uses captured session checks and scope for authoritative verification. */
   constructor(private readonly state: SessionState) {}
+
+  /** Freezes regression files and requires the declared expected-red checkpoint. */
   async specification(spec: AgentResult) {
     if (!this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
@@ -27,6 +32,8 @@ export class SessionVerification {
     this.state.checkpoint();
     new SessionProgress(this.state).verified('specification');
   }
+
+  /** Freezes the specification files outside the candidate before implementation. */
   private captureRegression(): void {
     this.state.frozen = specificationFiles(
       this.state.options.record,
@@ -43,6 +50,8 @@ export class SessionVerification {
       },
     );
   }
+
+  /** Matches the observed failure to the steward’s declared diagnostic. */
   private async regression(spec: AgentResult): Promise<void> {
     this.state.regression = spec.regression;
     if (
@@ -65,6 +74,7 @@ export class SessionVerification {
     });
   }
 
+  /** Runs the declared regression and retains its diagnostic for the red checkpoint. */
   private async expectedFailure(): Promise<CommandResult | undefined> {
     let failed: CommandResult | undefined;
     try {
@@ -84,6 +94,8 @@ export class SessionVerification {
     }
     return failed;
   }
+
+  /** Rechecks scope, captured suites, frozen tests and independent acceptance. */
   async final() {
     this.state.safe();
     if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {

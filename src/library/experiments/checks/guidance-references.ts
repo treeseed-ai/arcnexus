@@ -11,9 +11,14 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
+
+/** Independently checks guidance reference against retained candidate evidence. */
 class GuidanceReferenceAcceptance {
   private cli = resolve('dist/cli.js');
+
   private root = mkdtempSync(join(tmpdir(), 'arcnexus-reference-acceptance-'));
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     try {
       this.prepare();
@@ -28,10 +33,14 @@ class GuidanceReferenceAcceptance {
       rmSync(this.root, { recursive: true, force: true });
     }
   }
+
+  /** Executes the fixture Git command and fails if its expected setup cannot be established. */
   private git(...args: string[]): void {
     const result = spawnSync('git', ['-C', this.root, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(): void {
     this.git('init', '-q');
     mkdirSync(join(this.root, '.agents/skills/example'), { recursive: true });
@@ -48,6 +57,8 @@ class GuidanceReferenceAcceptance {
     writeFileSync(join(this.root, 'docs/diagram.bin'), Buffer.from([0xff, 0x00, 0xfe]));
     this.git('add', 'docs/diagram.bin');
   }
+
+  /** Checks the required invariant before allowing the next transition. */
   private check(references: unknown, expected: number, label: string): void {
     const field =
       references === undefined ? '' : 'references: ' + JSON.stringify(references) + '\n';
@@ -70,6 +81,8 @@ class GuidanceReferenceAcceptance {
         ),
       );
   }
+
+  /** Reports malformed guidance references without claiming semantic prose review. */
   private invalidReferences(): Record<string, unknown> {
     return {
       empty: [],
@@ -90,6 +103,8 @@ class GuidanceReferenceAcceptance {
       wrongType: [42],
     };
   }
+
+  /** Checks the assembled guidance and validator change through independent fixtures. */
   private combined(): void {
     const skill = readFileSync('.agents/skills/documentation-writer/SKILL.md', 'utf8');
     assert.match(skill, /references:/);
@@ -108,4 +123,5 @@ class GuidanceReferenceAcceptance {
     assert.equal(result.status, 0, result.stderr);
   }
 }
+
 new GuidanceReferenceAcceptance().run();

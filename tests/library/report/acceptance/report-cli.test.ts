@@ -6,7 +6,9 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { markdownReport as typedMarkdownReport } from '../../../../dist/library/report/report.js';
 import { workflowFixture } from '../../testing/support/workflow-fixture.js';
+
 const markdownReport: (record: any) => string = typedMarkdownReport;
+
 const record = {
   id: 'execution',
   status: 'failed',
@@ -16,10 +18,13 @@ const record = {
   error: 'failure evidence',
   commands: [{}],
 };
+
 const section = (report: string) => report.split('## Changed files\n\n')[1]?.split('\n\n')[0];
 
+/** Exercises report cli behavior through observable scenarios. */
 class ReportCliTests {
-  builtCLIRunRendersObservedChangesFromTheProductionWorkflow_8(t: TestContext) {
+  /** Verifies that built clirun renders observed changes from the production workflow. */
+  builtCLIRunRendersObservedChangesFromTheProductionWorkflow(t: TestContext) {
     const f = workflowFixture(t),
       result = f.run();
     assert.equal(result.status, 0, result.stderr);
@@ -43,7 +48,9 @@ class ReportCliTests {
     assert.ok(markdown.includes('## Operations\n\nNo managed operations recorded.'));
     assert.ok(markdown.includes('## Managed services\n\nNo managed services recorded.'));
   }
-  builtCLIReportIncludesCoordinationEvidenceAndExplicitHistoricalAbsence_9(t: TestContext) {
+
+  /** Verifies that built clireport includes coordination evidence and explicit historical absence. */
+  builtCLIReportIncludesCoordinationEvidenceAndExplicitHistoricalAbsence(t: TestContext) {
     const f = workflowFixture(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -66,9 +73,13 @@ class ReportCliTests {
     assert.match(markdownReport(record), /Usage completeness: unavailable/);
   }
 }
+
 const suite = new ReportCliTests();
+
 test('built CLI run renders observed changes from the production workflow', (t: any) =>
-  suite.builtCLIRunRendersObservedChangesFromTheProductionWorkflow_8(t));
+  suite.builtCLIRunRendersObservedChangesFromTheProductionWorkflow(t));
+
 test('built CLI report includes coordination evidence and explicit historical absence', (t: any) =>
-  suite.builtCLIReportIncludesCoordinationEvidenceAndExplicitHistoricalAbsence_9(t));
+  suite.builtCLIReportIncludesCoordinationEvidenceAndExplicitHistoricalAbsence(t));
+
 registerSuite({ component: 'report', level: 'acceptance', tags: ['deterministic'] });

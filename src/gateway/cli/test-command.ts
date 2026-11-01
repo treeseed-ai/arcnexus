@@ -4,6 +4,7 @@ import { ComponentTesting } from '../../library/testing/testing.js';
 
 /** Adapts component test requests to the shared selection and execution service. */
 export class TestCommand {
+  /** Retains literal test filters and cancellation for the shared test service. */
   constructor(
     private readonly positionals: string[],
     private readonly values: Record<string, string | boolean | undefined>,
@@ -11,6 +12,7 @@ export class TestCommand {
     private readonly signal: AbortSignal,
   ) {}
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const action = this.positionals[1];
     if (

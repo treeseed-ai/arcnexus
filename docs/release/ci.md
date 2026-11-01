@@ -5,10 +5,13 @@ uses temporary real Git repositories and subprocesses; live inference stays sepa
 
 ## Contract
 
-The GitHub Actions workflow exposes one stable job, `Repository checks`, on every
-pull request targeting `staging` or `main` and every push to those branches. There
-are no path filters that could leave a required check pending. A run has a ten-minute test-infrastructure
-watchdog; newer runs cancel obsolete runs for the same PR or branch.
+Development PRs targeting staging use `development.yaml`. Staging pushes use
+`staging.yaml`. Main PRs/pushes and published releases use `production.yaml`.
+All call `verification.yaml` and its `Repository checks` job. There are no path
+filters that could leave a required check pending. Jobs retain the six-hour
+infrastructure ceiling. Only development PR runs cancel superseded runs; staging
+and production preserve verification already in progress. See
+[delivery verification](verification.md) for the complete lifecycle contract.
 
 The job checks Prettier formatting, syntax-based lint, declared ownership, TypeScript,
 built-program acceptance, and tracked guidance metadata, and uses `git diff --check` to reject whitespace errors
@@ -46,7 +49,7 @@ and diagnostics without depending on this repository's guidance wording.
 ## Extend with the product
 
 The job also installs Node 22, runs `npm ci`, `npm run check`, and `npm test`
-(which builds and exercises the CLI), then checks its help output. Keep the stable
+(which builds and exercises the CLI), then checks its help output. Keep the shared
 `Repository checks` gate; if checks become separate jobs, make it a final aggregator
 that fails when any required job fails or is unexpectedly skipped. Add a platform
 matrix only when supported platforms need distinct evidence.
@@ -63,7 +66,8 @@ The pinned actions install Node and check out source. The locked
 [yaml parser](https://eemeli.org/yaml/) supplies metadata parsing.
 
 A workflow creates check results; branch protection is a separate repository setting.
-Require `Repository checks` for staging/main if server-enforced merge gating is desired.
+Select the actual reusable `Repository checks` check name for each lifecycle if
+server-enforced merge gating is desired.
 The project release workflow still governs whether agents may merge. Main and
 production remain maintainer-controlled.
 

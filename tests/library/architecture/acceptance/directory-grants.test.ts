@@ -6,7 +6,9 @@ import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
+/** Exercises directory grant behavior through observable scenarios. */
 class DirectoryGrantTests {
+  /** Rejects inputs that violate the captured configuration contract. */
   validate(t: TestContext, directory: string, expected: number): void {
     const fixture = workflowFixture(t);
     if (directory === 'redirect') symlinkSync('source.txt', join(fixture.repo, directory));
@@ -24,11 +26,15 @@ class DirectoryGrantTests {
     if (expected !== 0) assert.match(result.stderr, /write directory.*(file|symlink)/i);
   }
 }
+
 const suite = new DirectoryGrantTests();
+
 test('catalog rejects a tracked file as a write directory', (t) =>
   suite.validate(t, 'source.txt', 2));
+
 test('catalog rejects a tracked symlink as a write directory', (t) =>
   suite.validate(t, 'redirect', 2));
+
 test('catalog permits a declared directory that preparation will create', (t) =>
   suite.validate(t, 'future', 0));
 

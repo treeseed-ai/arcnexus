@@ -6,13 +6,16 @@ import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
 
+/** Advances engineering stages and corrective attempts through mandatory host checkpoints. */
 export class SessionWorkflow {
+  /** Wires the shared turn and verification services to retained workflow state. */
   constructor(
     private readonly state: SessionState,
     private readonly turns: SessionTurn,
     private readonly verification: SessionVerification,
   ) {}
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { root, record } = this.state.options;
     try {
@@ -32,6 +35,7 @@ export class SessionWorkflow {
     }
   }
 
+  /** Requires a valid read-only assignment plan before engineering stages. */
   private async planning(): Promise<void> {
     if (this.state.planned)
       await this.turns.perform(
@@ -41,6 +45,7 @@ export class SessionWorkflow {
       );
   }
 
+  /** Completes read-only research or review without forcing source edits. */
   private async research(): Promise<void> {
     await this.turns.perform(
       this.state.assignment.kind,
@@ -51,6 +56,7 @@ export class SessionWorkflow {
     this.state.options.record.outcome = `${this.state.assignment.kind}_completed`;
   }
 
+  /** Requires documentation and regression evidence before implementation. */
   private async specification(): Promise<void> {
     const spec = await this.turns.perform(
       'specification',
@@ -61,6 +67,7 @@ export class SessionWorkflow {
     if (!this.state.specificationFinished) await this.verification.specification(spec);
   }
 
+  /** Coordinates the behavior-change stages and their host checkpoints. */
   private async change(): Promise<void> {
     await this.specification();
     let feedback = '';
@@ -88,6 +95,7 @@ export class SessionWorkflow {
     throw new Error('Implementation attempts exhausted');
   }
 
+  /** Runs implementation and any justified correction within retained attempt state. */
   private async implement(attempt: number, feedback: string): Promise<void> {
     const { record } = this.state.options;
     record.implementationAttempts = attempt;
@@ -102,6 +110,7 @@ export class SessionWorkflow {
     );
   }
 
+  /** Checks candidate implementation against independent acceptance evidence. */
   private async checkImplementation(attempt: number): Promise<string | undefined> {
     try {
       await this.verification.final();
@@ -121,10 +130,15 @@ export class SessionWorkflow {
       const feedback = `Command ${JSON.stringify({ command: failed.command, args: failed.args })}; exit code ${failed.exitCode}; ${logExcerpt(failed.log)}`;
       this.markAttempt({ status: 'failed', feedback });
       this.state.journal('implementation', 'failed', { attempt, feedback });
-      return new SessionProgress(this.state).failure('implementation-checkpoint', feedback);
+      return new SessionProgress(this.state).failure(
+        'implementation-checkpoint',
+        feedback,
+        failed.log,
+      );
     }
   }
 
+  /** Runs source-read-only review and requires final host verification. */
   private async review(attempt: number): Promise<string | undefined> {
     const review = await this.turns.perform(
       'review',
@@ -139,6 +153,7 @@ export class SessionWorkflow {
     return new SessionProgress(this.state).failure('review-checkpoint', feedback);
   }
 
+  /** Records an implementation attempt before work can consume its allowance. */
   private markAttempt(detail: Record<string, unknown>): void {
     Object.assign((this.state.options.record.attempts as Array<object>).at(-1)!, {
       ...detail,
@@ -146,6 +161,7 @@ export class SessionWorkflow {
     });
   }
 
+  /** Records failed checkpoint evidence for bounded correction or terminal reporting. */
   private failure(error: unknown): void {
     const { record, signal, control } = this.state.options;
     if (control && error instanceof Error && error.name === 'WorkdayBlocked')

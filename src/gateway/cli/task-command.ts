@@ -1,12 +1,17 @@
 import { InputError } from '../../library/architecture/config.js';
 import { ProposalStore, TaskPlanner, TaskRunner } from '../../library/task-intake/tasks.js';
 import { lock, stateRoot } from '../../library/workspace/state.js';
+
+/** Adapts task planning, inspection and accepted execution to the public CLI. */
 export class TaskCommand {
+  /** Retains task proposal arguments and cancellation for planning or execution. */
   constructor(
     private positionals: string[],
     private values: Record<string, string | boolean | undefined>,
     private signal: AbortSignal,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const action = this.positionals[1];
     this.validate(action);
@@ -33,6 +38,8 @@ export class TaskCommand {
       unlock();
     }
   }
+
+  /** Reads the caller’s request text and invokes retained task planning. */
   private plan(root: string) {
     return new TaskPlanner(root, this.signal).plan({
       input: this.values.input as string,
@@ -43,6 +50,8 @@ export class TaskCommand {
       executable: (this.values['codex-path'] as string | undefined) ?? 'codex',
     });
   }
+
+  /** Rejects inputs that violate the captured configuration contract. */
   private validate(action?: string): void {
     const allowed =
       action === 'plan'

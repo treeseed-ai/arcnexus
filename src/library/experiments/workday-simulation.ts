@@ -3,12 +3,19 @@ import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { ConfigurationReader } from '../architecture/configuration.js';
 import type { AgentResult } from '../steward/codex.js';
+
+/** Scripts two-owner responses through the production SDK protocol for simulation. */
 class WorkdaySimulation {
   private readonly args = process.argv.slice(3);
+
   private owner = 'identity';
+
   private stage?: string;
+
   private delivered = false;
+
   private requestId: string | null = null;
+
   private readonly result: AgentResult = {
     status: 'completed',
     summary: 'SIMULATED two-owner work',
@@ -22,6 +29,8 @@ class WorkdaySimulation {
     planUpdates: [],
     coordination: null,
   };
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     this.prepare();
     let prompt = '';
@@ -37,6 +46,8 @@ class WorkdaySimulation {
     if (this.stage === 'review') this.review();
     this.output();
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(): void {
     if (process.argv[2] !== 'handoff') throw new Error('Unsupported workday simulation');
     if (this.args[0] === '--version') {
@@ -53,6 +64,8 @@ class WorkdaySimulation {
     )
       throw new Error('Incompatible workday fixture');
   }
+
+  /** Produces a scripted checklist through the real SDK response boundary. */
   private plan(): void {
     this.result.plan = {
       approach: 'SIMULATED bounded contract change',
@@ -81,6 +94,8 @@ class WorkdaySimulation {
 
     this.coordinate();
   }
+
+  /** Produces the scripted request or response for the captured handoff stage. */
   private coordinate(): void {
     if (this.owner === 'gateway' && !this.delivered) this.request();
     if (this.owner === 'identity')
@@ -92,6 +107,8 @@ class WorkdaySimulation {
         activityComplete: true,
       };
   }
+
+  /** Produces the fixture’s authorized dependency request. */
   private request(): void {
     this.result.status = 'blocked';
     this.result.blockers = ['Requires identity owner'];
@@ -113,6 +130,8 @@ class WorkdaySimulation {
       },
     ];
   }
+
+  /** Writes the fixture’s scripted regression evidence before implementation. */
   private specification(): void {
     writeFileSync(
       this.owner + '/README.md',
@@ -132,6 +151,8 @@ class WorkdaySimulation {
       outputIncludes: 'LABEL_EXPECTED',
     };
   }
+
+  /** Edits the fixture implementation through the captured owner scope. */
   private implementation(): void {
     writeFileSync(
       this.owner + '/index.mjs',
@@ -140,6 +161,8 @@ class WorkdaySimulation {
         : "import {formatIdentity} from '../identity/index.mjs';\nexport function displayIdentity(id) { return formatIdentity(id).label; }\n",
     );
   }
+
+  /** Returns the scripted read-only handoff after implementation. */
   private review(): void {
     this.result.planUpdates = [
       {
@@ -150,6 +173,8 @@ class WorkdaySimulation {
       },
     ];
   }
+
+  /** Builds the structured scripted turn result. */
   private output(): void {
     const n =
       ['planning', 'specification', 'implementation', 'review'].indexOf(this.stage ?? '') +
@@ -173,8 +198,11 @@ class WorkdaySimulation {
       usage: { input_tokens: n * 10, cached_input_tokens: 0, output_tokens: n * 2 },
     });
   }
+
+  /** Writes one labeled protocol event to stdout. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }
 }
+
 await new WorkdaySimulation().run();

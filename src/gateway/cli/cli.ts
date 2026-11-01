@@ -32,24 +32,38 @@ function finalize(root: string, record: RecordData): void {
   saveMarkdown(root, record);
   console.log(JSON.stringify(record));
 }
+
+/** Wires command adapters, cancellation, execution locking and public exit codes. */
 class CliApplication {
   private values: CliValues = {};
+
   private positionals: string[] = [];
+
   private command = '';
+
   private seconds?: number;
+
   private record?: RecordData;
+
   private root?: string;
+
   private unlock?: () => void;
+
   private timer?: NodeJS.Timeout;
+
   private readonly controller = new AbortController();
+
   private cancelled = false;
+
   private tags: string[] = [];
+
   private readonly cancel = () => {
     this.cancelled = true;
     if (this.record) this.record.cancellation = 'requested';
     this.controller.abort(new Error('Cancelled'));
   };
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     process.on('SIGINT', this.cancel);
     process.on('SIGTERM', this.cancel);
@@ -76,6 +90,7 @@ class CliApplication {
     }
   }
 
+  /** Routes a validated command to its adapter and preserves shared cancellation. */
   private async dispatch(): Promise<void> {
     switch (this.command) {
       case 'test':
@@ -101,6 +116,7 @@ class CliApplication {
     return this.assignmentCommand();
   }
 
+  /** Resolves an assignment and dispatches it through the shared steward workflow. */
   private async assignmentCommand(): Promise<void> {
     this.validateCommand();
     const assignment = new AssignmentCommand(this.positionals, this.values, this.command);
@@ -128,6 +144,7 @@ class CliApplication {
     else await this.execute(input, root);
   }
 
+  /** Installs a cancellation deadline only when the caller explicitly configured one. */
   private startTimer(seconds?: number): void {
     const timeout = seconds ?? this.seconds;
     if (timeout !== undefined)
@@ -140,12 +157,14 @@ class CliApplication {
       );
   }
 
+  /** Takes the execution lock before a command can mutate managed workspace state. */
   private acquire(): string {
     this.root = stateRoot();
     this.unlock = lock(this.root);
     return this.root;
   }
 
+  /** Rejects unsupported command and flag combinations before dispatch. */
   private validateCommand(): void {
     const { values, positionals, command } = this;
     if (
@@ -175,6 +194,7 @@ class CliApplication {
     this.validateExecution();
   }
 
+  /** Checks execution arguments before workspace preparation or inference. */
   private validateExecution(): void {
     const { values } = this;
     if (values.issue && !/^[1-9]\d*$/.test(values.issue))
@@ -186,6 +206,7 @@ class CliApplication {
       throw new InputError('Invalid timeout');
   }
 
+  /** Runs the requested action through the configured execution boundary. */
   private async execute(
     input: ReturnType<AssignmentCommand['resolve']>,
     root: string,
@@ -213,6 +234,7 @@ class CliApplication {
     else await workspace.prepare(root, record, this.controller.signal);
   }
 
+  /** Translates a thrown error into public output and the appropriate process exit code. */
   private failure(error: unknown): void {
     if (this.record) {
       this.record.status = this.cancelled
@@ -226,6 +248,7 @@ class CliApplication {
     console.error(String(error));
   }
 
+  /** Releases resources owned by this instance. */
   private close(): void {
     if (this.timer) clearTimeout(this.timer);
     try {
@@ -237,4 +260,5 @@ class CliApplication {
     }
   }
 }
+
 await new CliApplication().run();

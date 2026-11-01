@@ -7,8 +7,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
 import { cli } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises prior evidence behavior through observable scenarios. */
 class PriorEvidenceTests {
-  builtCLISnapshotsSelectedHistoricalTextBeforeSetupAndSuppliesIdenticalInspectedContext_1(
+  /** Verifies that built clisnapshots selected historical text before setup and supplies identical inspected context. */
+  builtCLISnapshotsSelectedHistoricalTextBeforeSetupAndSuppliesIdenticalInspectedContext(
     t: TestContext,
   ) {
     const f = operationFixture(t),
@@ -33,6 +36,8 @@ class PriorEvidenceTests {
     assert.equal(record.changes.length, 0);
     assert.match(readFileSync(join(dir, 'timeline.jsonl'), 'utf8'), /workspace.prepared/);
   }
+
+  /** Verifies that replace history during setup. */
   private replaceHistoryDuringSetup(f: any, history: string): void {
     const envPath = join(f.repo, 'architecture/environment.yaml'),
       env = JSON.parse(String(readFileSync(envPath)));
@@ -45,7 +50,9 @@ class PriorEvidenceTests {
     writeFileSync(envPath, JSON.stringify(env));
     f.commit();
   }
-  scenario_2(t: TestContext, mode: any) {
+
+  /** Verifies the scenario rejects invalid historical input. */
+  rejectsInvalidHistoricalInput(t: TestContext, mode: any) {
     const f = operationFixture(t),
       a = assignment(f);
     if (mode === 'missing') a.value.priorEvidence[0].path += '.missing';
@@ -58,7 +65,9 @@ class PriorEvidenceTests {
     assert.equal(r.status, 2, r.stderr);
     assert.equal(r.stdout, '');
   }
-  builtInspectExposesFocusedReportRegressionAlongsideFullRepositoryVerification_3() {
+
+  /** Verifies that built inspect exposes focused report regression alongside full repository verification. */
+  builtInspectExposesFocusedReportRegressionAlongsideFullRepositoryVerification() {
     const r = spawnSync(
       process.execPath,
       [cli, 'inspect', 'report', 'Improve evidence', '--project', process.cwd(), '--json'],
@@ -73,6 +82,7 @@ class PriorEvidenceTests {
     );
   }
 }
+
 const suite = new PriorEvidenceTests();
 
 function assignment(f: any): any {
@@ -98,6 +108,7 @@ function assignment(f: any): any {
   writeFileSync(path, JSON.stringify(value));
   return { history, path, value };
 }
+
 function invoke(f: any, a: any, command: any = 'run'): any {
   return spawnSync(
     process.execPath,
@@ -114,15 +125,15 @@ function invoke(f: any, a: any, command: any = 'run'): any {
     { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
   );
 }
+
 test('built CLI snapshots selected historical text before setup and supplies identical inspected context', (t: any) =>
-  suite.builtCLISnapshotsSelectedHistoricalTextBeforeSetupAndSuppliesIdenticalInspectedContext_1(
-    t,
-  ));
+  suite.builtCLISnapshotsSelectedHistoricalTextBeforeSetupAndSuppliesIdenticalInspectedContext(t));
+
 for (const mode of ['missing', 'oversized', 'non-text', 'duplicate', 'version-one'])
   test(`historical evidence rejects ${mode} before inference`, (t: any) =>
-    suite.scenario_2(t, mode));
+    suite.rejectsInvalidHistoricalInput(t, mode));
 
 test('built inspect exposes focused report regression alongside full repository verification', () =>
-  suite.builtInspectExposesFocusedReportRegressionAlongsideFullRepositoryVerification_3());
+  suite.builtInspectExposesFocusedReportRegressionAlongsideFullRepositoryVerification());
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });

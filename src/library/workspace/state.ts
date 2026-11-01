@@ -11,6 +11,7 @@ import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { Environment } from '../architecture/config.js';
 import type { CommandResult } from '../operations/process.js';
+
 export interface RecordData {
   id: string;
   source: string;
@@ -26,6 +27,7 @@ export interface RecordData {
   commands: CommandResult[];
   [key: string]: unknown;
 }
+
 export function stateRoot(): string {
   const path = resolve(
     process.env.ARCNEXUS_STATE_DIR ??
@@ -36,6 +38,7 @@ export function stateRoot(): string {
     mkdirSync(join(path, name), { recursive: true, mode: 0o700 });
   return realpathSync(path);
 }
+
 export function lock(root: string): () => void {
   const path = join(root, 'active.lock');
   let fd: number;
@@ -48,6 +51,7 @@ export function lock(root: string): () => void {
   closeSync(fd);
   return () => unlinkSync(path);
 }
+
 export function save(root: string, record: RecordData): void {
   const path = join(root, 'runs', record.id, 'report.json');
   writeFileSync(`${path}.tmp`, JSON.stringify(record, null, 2) + '\n', { mode: 0o600 });
