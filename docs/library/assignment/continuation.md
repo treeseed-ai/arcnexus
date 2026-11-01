@@ -74,3 +74,16 @@ material change stops the affected work with retained attention evidence. Passin
 other checks or changing checklist prose cannot clear this review history. A conflict
 between a worker-authored regression and original acceptance remains explicit; the
 runtime must not silently recapture weaker tests to bypass that conflict.
+
+A verified dependency supplies its readable independent assessment, reviewed
+candidate identity, criterion coverage and observed check evidence to its consumers.
+A private report path alone is not usable delivery evidence. Validate every referenced
+assessment against the current run, recipient assignment, worker parent record and
+verifier role before exposing it. Reject arbitrary or foreign report references.
+
+Execution evidence includes the original accepted routing decision and the captured
+owner context supplied to each activation. Persisted requests to owners absent from
+the starting selection establish dynamic activation. They do not expose private
+reasoning or prove an explicitly required API inspection; use actual tool observations
+for the latter. Do not add a separate retrieval ceremony when the relevant owner
+catalog was already present in captured activation context.
