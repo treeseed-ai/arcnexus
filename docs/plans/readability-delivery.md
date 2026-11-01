@@ -55,3 +55,17 @@ is introduced. Review and integrate changes through staging.
 
 Implementation references: [ESLint custom rules](https://eslint.org/docs/latest/extend/custom-rules)
 and [GitHub reusable workflows](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows).
+
+## Live qualification discoveries
+
+The first live run reached implementation but full verification found protective
+sandbox directories beneath a writable catalog directory. Catalog acceptance must
+select regular JSON/YAML definition files rather than reading every directory entry.
+The cancelled run remains retained; the report steward cannot repair another
+owner's checker under its current scope.
+
+Long command feedback must preserve useful failure diagnostics, not only the first
+passing lines. Keep the 16-KiB model-facing bound, include a diagnostic window and
+trailing output when truncated, and retain the complete log reference. Shared test
+results, finite operation feedback and corrective prompts use the same excerpt
+service. Add deterministic late-failure coverage before repeating live qualification.
