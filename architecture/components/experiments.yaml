@@ -110,7 +110,14 @@ provides:
     kind: json-schema
     path: src/library/experiments/schemas/experiment.json
     compatibility: Preserve supported historical versions and captured execution readers
+  - id: experiment-v3
+    version: "1"
+    kind: json-schema
+    path: src/library/experiments/schemas/experiment-v3.json
+    compatibility: Prompt-driven cases preserve shared task authority and evidence
 consumes:
+  - id: experiment-v3
+    version: "1"
   - id: experiment
     version: "1"
   - id: experiment-v2

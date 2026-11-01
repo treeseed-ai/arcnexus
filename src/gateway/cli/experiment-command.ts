@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { resolveExperiment } from '../../library/experiments/experiment-config.js';
-import { ExperimentRunner } from '../../library/experiments/experiments.js';
+import { ConfigurationReader } from '../../library/architecture/configuration.js';
+import {
+  PromptExperimentResolver,
+  resolveExperiment,
+} from '../../library/experiments/experiment-config.js';
+import { PromptExperimentRunner, ExperimentRunner } from '../../library/experiments/experiments.js';
 import { stateRoot } from '../../library/workspace/state.js';
 import { InputError } from '../../library/architecture/config.js';
 import type { CliValues } from './arguments.js';
@@ -18,6 +22,31 @@ export class ExperimentCommand {
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { values, positionals } = this;
+    const action = this.action();
+    const definition = new ConfigurationReader().file(positionals[2]!).value as {
+      schemaVersion?: number;
+    };
+    if (definition.schemaVersion === 3) return this.prompt(action);
+    const input = resolveExperiment(
+      positionals[2]!,
+      values.bindings!,
+      values.mode as 'simulation' | 'live' | undefined,
+    );
+    if (action === 'inspect') {
+      console.log(JSON.stringify(input, null, values.json ? undefined : 2));
+      return;
+    }
+    const output = values.output ?? join(stateRoot(), 'experiment-' + randomUUID());
+    const campaign = await new ExperimentRunner(this.signal).run(input, output);
+    process.exitCode = campaign.status === 'passed' ? 0 : campaign.status === 'cancelled' ? 130 : 1;
+    console.log(
+      JSON.stringify({ status: campaign.status, evidenceMode: campaign.evidenceMode, output }),
+    );
+  }
+
+  /** Validates the shared experiment CLI contract before selecting a versioned runner. */
+  private action(): string {
+    const { values, positionals } = this;
     const action = positionals[1];
     if (
       positionals.length !== 3 ||
@@ -30,20 +59,30 @@ export class ExperimentCommand {
       throw new InputError('Experiment requires explicit --mode simulation|live');
     if (action === 'inspect' && (values.mode || values.output))
       throw new InputError('inspect accepts only --bindings and --json');
-    const input = resolveExperiment(
-      positionals[2]!,
-      values.bindings,
-      values.mode as 'simulation' | 'live' | undefined,
-    );
+    return action!;
+  }
+
+  /** Routes prompt campaigns through the shared task host while preserving legacy inspection. */
+  private async prompt(action: string): Promise<void> {
+    let input;
+    try {
+      input = new PromptExperimentResolver().resolve(
+        this.positionals[2]!,
+        this.values.bindings as string,
+        this.values.mode as 'simulation' | 'live' | undefined,
+      );
+    } catch (error) {
+      throw new InputError(String(error));
+    }
     if (action === 'inspect') {
-      console.log(JSON.stringify(input, null, values.json ? undefined : 2));
+      console.log(JSON.stringify(input, null, this.values.json ? undefined : 2));
       return;
     }
-    const output = values.output ?? join(stateRoot(), 'experiment-' + randomUUID());
-    const campaign = await new ExperimentRunner(this.signal).run(input, output);
-    process.exitCode = campaign.status === 'passed' ? 0 : campaign.status === 'cancelled' ? 130 : 1;
+    const output = this.values.output ?? join(stateRoot(), 'experiment-' + randomUUID());
+    const result = await new PromptExperimentRunner(this.signal).run(input, output);
+    process.exitCode = result.status === 'passed' ? 0 : result.status === 'cancelled' ? 130 : 1;
     console.log(
-      JSON.stringify({ status: campaign.status, evidenceMode: campaign.evidenceMode, output }),
+      JSON.stringify({ status: result.status, evidenceMode: result.evidenceMode, output }),
     );
   }
 }

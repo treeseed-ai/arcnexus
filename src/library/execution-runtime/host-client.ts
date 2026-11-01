@@ -25,14 +25,15 @@ export class HostClient {
 
   private readonly key: string;
 
-  readonly root = stateRoot();
-
   readonly directory: string;
 
   readonly socket: string;
 
   /** Resolves project identity without changing source or starting model execution. */
-  constructor(private readonly cwd: string) {
+  constructor(
+    private readonly cwd: string,
+    readonly root = stateRoot(),
+  ) {
     const { source } = resolveBase(cwd);
     const common = realpathSync(
       git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
