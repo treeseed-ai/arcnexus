@@ -23,3 +23,10 @@ before any model activity or operation, and with an unchanged checkpoint candida
 It records the old identity and reason and supplies captured continuation evidence
 to the fresh thread. Transport errors, partial turns and uncertain operations do
 not permit automatic replay.
+
+A rejected plan at an unchanged read-only planning boundary is corrective feedback,
+not delivery and not a reason to discard the assignment. Preserve the thread and
+planning stage, return the exact semantic/schema validation error, and accept a
+replacement only when it covers every criterion under the same authority. Apply
+the existing equivalent-failure diagnosis; do not introduce a retry allowance.
+Filesystem, permission, operation and transport errors do not use this path.
