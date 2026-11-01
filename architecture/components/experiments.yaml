@@ -4,6 +4,7 @@ purpose: Resolve and execute repeatable experiments with honestly labeled eviden
 path: src/library/experiments
 objectives:
   - Resolve and execute repeatable experiments with honestly labeled evidence
+  - Migrate prompt-driven campaigns to the shared task execution host without fixed participants
 constraints:
   - Preserve captured assignment authority; candidate instructions cannot expand
     permissions

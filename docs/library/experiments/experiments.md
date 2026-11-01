@@ -141,3 +141,31 @@ before each workday, alongside the unchanged references policy.
 An omitted experiment-case attempt limit leaves the runtime limit unset. Only an
 explicit `maxAttempts` is forwarded to the worker; experiment wrappers must not
 introduce an implicit single-attempt quota.
+
+## Prompt-driven campaign migration
+
+Version-3 campaigns exercise the shared task execution system. Each ordered case
+has an ID, project binding, prompt and expected task outcome. Models, eligible
+owners, checks and independent review come from the captured package configuration;
+cases do not select a fixed requester/recipient pair, model or execution budget.
+Explicit `simulation` or `live` evidence labels remain mandatory. A simulation
+binding supplies a controlled executable and cannot establish live qualification.
+
+Each project binding pins the clean source checkout's current commit. The campaign
+captures local bindings before execution and creates a separate application-owned
+clone for each case, preserving the original checkout and prior case evidence.
+It invokes the ordinary `task run <prompt>` interface in that clone. The application
+host owns supervision and durable candidate evidence. Campaign cancellation sends
+normal task cancellation; an already detached project host remains authoritative
+if the campaign process itself is lost. Inspect or stop retained project execution
+before retrying an interrupted campaign; do not silently replay it.
+
+A completed case requires the expected task status and its corresponding exit code;
+verified completion still requires the task runtime's captured host checks,
+independent owner verification and director goal assessment. Retain the complete
+stream, terminal projection, state directory, candidate reference and captured
+source/bindings identity. Snapshot all case inputs before running the first case.
+No experiment commits or integrates a candidate into the original checkout.
+
+Legacy manifests and reports remain readable during migration. Legacy scenarios
+must be ported to the shared engine before their execution adapters are removed.
