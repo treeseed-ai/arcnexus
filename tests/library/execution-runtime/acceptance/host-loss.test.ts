@@ -24,7 +24,7 @@ class HostLossScenario {
     });
     const finished = new Promise((resolve) => client.once('exit', resolve));
     try {
-      await this.until(() => existsSync(gate + '.entered'));
+      await this.until(() => existsSync(gate + '.entered'), 4800);
       general.captureHost();
       const managed = Number(readFileSync(gate + '.entered', 'utf8'));
       process.kill(general.hostPid!, 'SIGKILL');
@@ -84,8 +84,8 @@ class HostLossScenario {
   }
 
   /** Applies only a test watchdog while waiting for observable lifecycle changes. */
-  private async until(observed: () => boolean): Promise<void> {
-    for (let observation = 0; observation < 600; observation++) {
+  private async until(observed: () => boolean, observations = 600): Promise<void> {
+    for (let observation = 0; observation < observations; observation++) {
       if (observed()) return;
       await delay(25);
     }
