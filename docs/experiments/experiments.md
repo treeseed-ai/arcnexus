@@ -137,3 +137,7 @@ fixed build and guidance-test operations. The steward obtains regression feedbac
 through the verified host route; direct sandbox output is not substituted for the
 host's expected-red evidence. Tool bindings and operation definitions are captured
 before each workday, alongside the unchanged references policy.
+
+An omitted experiment-case attempt limit leaves the runtime limit unset. Only an
+explicit `maxAttempts` is forwarded to the worker; experiment wrappers must not
+introduce an implicit single-attempt quota.
