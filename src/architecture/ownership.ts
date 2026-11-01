@@ -23,6 +23,7 @@ const covers = (path: string, root: string) =>
 
 /** Checks project-declared ownership against the captured Git tree. */
 export class OwnershipValidator {
+  private readonly files = new Set<string>();
   private readonly graph = new Map<string, string[]>();
   constructor(
     private readonly repository: string,
@@ -33,6 +34,7 @@ export class OwnershipValidator {
     const files = git(this.repository, 'ls-tree', '-r', '--name-only', this.base)
       .trim()
       .split('\n');
+    files.forEach((file) => this.files.add(file));
     if (Object.values(catalog.components).some((c) => c.schemaVersion === 4)) {
       this.versionFour(catalog, files);
       return;
@@ -146,9 +148,24 @@ export class OwnershipValidator {
 
   private target(file: string, specifier: string): string | undefined {
     if (!specifier.startsWith('.')) return;
-    const target = posix.normalize(posix.join(posix.dirname(file), specifier));
-    if (!target.startsWith('src/')) return;
-    return target.replace(/\.js$/, '.ts');
+    let target = posix.normalize(posix.join(posix.dirname(file), specifier));
+    relativePath(target);
+    if (target.startsWith('dist/')) target = 'src/' + target.slice(5);
+    const candidates = this.moduleCandidates(target);
+    return candidates.find((candidate) => this.files.has(candidate));
+  }
+
+  private moduleCandidates(target: string): string[] {
+    const extension = posix.extname(target);
+    const variants: Record<string, string[]> = {
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+    if (variants[extension])
+      return variants[extension]!.map((suffix) => target.slice(0, -extension.length) + suffix);
+    if (!extension) return [target + '.ts', target + '.tsx', target + '/index.ts'];
+    return /\.[cm]?[jt]sx?$/.test(target) ? [target] : [];
   }
 
   private checkImport(

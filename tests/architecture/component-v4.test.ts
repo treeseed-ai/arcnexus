@@ -176,6 +176,29 @@ class ComponentV4Fixture {
     );
   }
 
+  importingOwner(specifier: string): void {
+    this.put(
+      'architecture/components/consumer.json',
+      this.component('consumer', 'library', {
+        parentId: 'package',
+        ownership: { paths: ['consumer'], publicModules: [], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['consumer'] },
+      }),
+    );
+    this.put('package/consumer/entry.ts', `import '../src/${specifier}';`);
+  }
+
+  publicModule(path: string): void {
+    this.put(
+      'architecture/components/sample.json',
+      this.component('sample', 'library', {
+        parentId: 'package',
+        ownership: { paths: ['src'], publicModules: [path], directoryExceptions: [] },
+        access: { readPaths: ['.'], writeDirectories: ['src'] },
+      }),
+    );
+  }
+
   component(id: string, type: string, extra: object): any {
     return {
       schemaVersion: 4,
@@ -363,6 +386,30 @@ class ComponentV4Tests {
     assert.equal(resolved.workspaceMembers[0].base, dependency.git('rev-parse', 'HEAD'));
   }
 
+  checksImportsBelowPackageRoots(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    f.importingOwner('value.js');
+    f.commit();
+    const denied = f.run('validate');
+    assert.equal(denied.status, 2);
+    assert.match(denied.stderr, /Private cross-owner import/);
+    f.publicModule('src/value.ts');
+    f.commit();
+    assert.equal(f.run('validate').status, 0);
+  }
+
+  checksMtsPublicModules(t: TestContext): void {
+    const f = new ComponentV4Fixture(t);
+    f.put('package/src/module.mts', 'export const value = 1;');
+    f.importingOwner('module.mjs');
+    f.commit();
+    assert.equal(f.run('validate').status, 2);
+    f.publicModule('src/module.mts');
+    f.commit();
+    const result = f.run('validate');
+    assert.equal(result.status, 0, result.stderr);
+  }
+
   rejectsUnownedTrackedFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('orphan.txt', 'unowned');
@@ -396,3 +443,8 @@ test('packaged CLI resolves trusted schemas without the source schema tree', (t)
 
 test('v4 captures consumed contracts from pinned bound repositories', (t) =>
   suite.capturesPinnedDependencyContract(t));
+
+test('v4 checks cross-owner imports under a package root', (t) =>
+  suite.checksImportsBelowPackageRoots(t));
+test('v4 maps compiled mjs imports to declared mts public modules', (t) =>
+  suite.checksMtsPublicModules(t));

@@ -70,7 +70,17 @@ ownership:
     - tsconfig.tests.json
     - tsconfig.fixtures.json
     - tsconfig.tooling.json
-  publicModules: []
+  publicModules:
+    - tests/development-tooling/catalog-fixture.ts
+    - tests/development-tooling/controlled-initializer.ts
+    - tests/development-tooling/controlled-planning.ts
+    - tests/development-tooling/controlled-workday.ts
+    - tests/development-tooling/controlled-workflow.ts
+    - tests/development-tooling/fixture-payloads.ts
+    - tests/development-tooling/handoff-fixture.ts
+    - tests/development-tooling/operations-fixture.ts
+    - tests/development-tooling/test-process.ts
+    - tests/development-tooling/workflow-fixture.ts
   directoryExceptions:
     - path: .
       reason: Root-file directory granularity; exact ownership checks remain mandatory
