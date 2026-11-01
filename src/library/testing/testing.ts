@@ -1,3 +1,4 @@
+import { diagnosticExcerpt } from '../operations/diagnostics.js';
 import {
   loadBindings,
   bindingEnvironment,
@@ -189,8 +190,9 @@ export class ComponentTesting {
   private captureOutput(result: TestExecution, log: string): void {
     if (!existsSync(log)) return;
     const output = readFileSync(log);
-    result.output = output.subarray(0, 16384).toString('utf8');
-    result.outputTruncated = output.length > 16384;
+    const excerpt = diagnosticExcerpt(output);
+    result.output = excerpt.output;
+    result.outputTruncated = excerpt.truncated;
   }
 
   /** Persists the current evidence so later inspection can reconstruct this state. */

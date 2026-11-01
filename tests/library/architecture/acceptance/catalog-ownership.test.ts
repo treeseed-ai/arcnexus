@@ -11,8 +11,9 @@ class CatalogOwnershipTests {
   /** Verifies that built inspect assigns every real source module to one executable owner. */
   builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner(t: TestContext) {
     this.protectedDirectories(t);
-    const components = readdirSync('architecture/components')
-      .map((f: any) => parse(readFileSync('architecture/components/' + f, 'utf8')))
+    const components = readdirSync('architecture/components', { withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.(?:json|yaml|yml)$/.test(entry.name))
+      .map((entry) => parse(readFileSync('architecture/components/' + entry.name, 'utf8')))
       .filter((c: any) => !['platform', 'package'].includes(c.type));
     const owners = components.map((component: any) => this.inspectOwner(component.id));
     const files = readdirSync('src', { recursive: true }).filter((p: any) => p.endsWith('.ts'));

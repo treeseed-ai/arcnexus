@@ -40,3 +40,9 @@ and provenance references describe host-supplied context, not complete effective
 Codex context. Host command results and independent acceptance remain distinct from
 agent findings, uncertainty, boundary requests and caller interventions. Missing
 historical fields say unavailable; they are not interpreted as zero or none.
+
+For report assignments, obtain `report-format` feedback before interpreting
+`report-lint` size results. Neither operation changes files. Captured verification
+checks formatting and lint before expensive repository tests; the focused report
+regression remains verification command 2. A formatting failure must be repaired
+within report scope, not hidden by compressing expressions onto fewer lines.

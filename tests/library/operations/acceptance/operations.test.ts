@@ -28,7 +28,10 @@ class OperationsTests {
   lateOperationDiagnostic(t: TestContext): void {
     const f = fixture(t);
     const path = join(f.repo, 'verify.cjs');
-    writeFileSync(path, "require('fs').writeSync(1,'passing output\\n'.repeat(12000));" + readFileSync(path, 'utf8'));
+    writeFileSync(
+      path,
+      "require('fs').writeSync(1,'passing output\\n'.repeat(12000));" + readFileSync(path, 'utf8'),
+    );
     f.commit();
     const result = f.run();
     assert.equal(result.status, 0, result.stderr);
@@ -197,6 +200,7 @@ for (const defect of ['category', 'output', 'service'])
   test(`built validate rejects operation ${defect} inconsistency`, (t: any) =>
     suite.rejectsIncompatibleOperationCatalog(t, defect));
 
-test('late operation diagnostics reach the production bridge', (t) => suite.lateOperationDiagnostic(t));
+test('late operation diagnostics reach the production bridge', (t) =>
+  suite.lateOperationDiagnostic(t));
 
 registerSuite({ component: 'operations', level: 'acceptance', tags: ['deterministic'] });

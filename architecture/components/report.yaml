@@ -12,14 +12,19 @@ verification:
   - command: npm
     args:
       - run
-      - check
+      - format:check
   - command: npm
     args:
-      - test
+      - run
+      - lint
   - command: npm
     args:
       - run
       - test:report
+  - command: npm
+    args:
+      - run
+      - check
   - command: node
     args:
       - dist/cli.js
@@ -29,12 +34,7 @@ verification:
       - .
   - command: npm
     args:
-      - run
-      - format:check
-  - command: npm
-    args:
-      - run
-      - lint
+      - test
 questions: []
 access:
   readPaths:
@@ -54,6 +54,7 @@ parentId: cli-package
 operationIds:
   - report-tests
   - report-lint
+  - report-format
 patternIds:
   - readable-typescript
 ownership:

@@ -88,8 +88,19 @@ class SharedTestingTests {
   /** Shared test results retain a late build diagnostic within the model-facing bound. */
   retainsLateDiagnostic(t: TestContext): void {
     const f = new ComponentTestFixture(t);
-    f.profile({ preparation: [{ command: process.execPath, args: ['-e',
-      "require('fs').writeSync(1,'passing output\\n'.repeat(12000));console.error('Error: LATE_BUILD_FAILURE');process.exit(1)"] }] });
+    f.profile({
+      preparation: [
+        {
+          command: process.execPath,
+          purpose: 'tests',
+          args: [
+            '-e',
+            "require('fs').writeSync(1,'passing output\\n'.repeat(12000));console.error('Error: LATE_BUILD_FAILURE');process.exit(1)",
+          ],
+        },
+      ],
+    });
+    f.commit();
     const result = f.run('run');
     assert.equal(result.status, 1, result.stderr);
     const report = JSON.parse(result.stdout);

@@ -62,6 +62,7 @@ ownership:
     - docs/library/operations
     - architecture/components/operations.yaml
   publicModules:
+    - src/library/operations/diagnostics.ts
     - src/library/operations/operations.ts
     - src/library/operations/probes.ts
     - src/library/operations/process.ts
@@ -84,6 +85,12 @@ provides:
     kind: json-schema
     path: src/library/operations/schemas/operation.json
     compatibility: Preserve supported historical versions and captured execution readers
+  - id: command-diagnostics
+    version: "1"
+    kind: typescript
+    path: src/library/operations/diagnostics.ts
+    compatibility: Keep model-facing excerpts within 16 KiB and preserve complete
+      raw logs separately
 consumes:
   - id: test-profile
     version: "1"

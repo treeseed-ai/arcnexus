@@ -55,14 +55,21 @@ class WorkflowTests {
     const f = workflowFixture(t, 'repair');
     const verify = join(f.repo, 'verify.cjs');
     const original = readFileSync(verify, 'utf8');
-    writeFileSync(verify, "require('fs').writeSync(1,'passing output\\n'.repeat(12000));" +
-      "if(require('fs').readFileSync('source.txt','utf8')==='broken')throw new Error('LATE_ACTUAL_FAILURE');" + original);
+    writeFileSync(
+      verify,
+      "require('fs').writeSync(1,'passing output\\n'.repeat(12000));" +
+        "if(require('fs').readFileSync('source.txt','utf8')==='broken')throw new Error('LATE_ACTUAL_FAILURE');" +
+        original,
+    );
     f.configure({ requiredFeedback: 'LATE_ACTUAL_FAILURE' });
     f.commit();
     const result = f.run('--max-attempts', '2');
     assert.equal(result.status, 0, result.stderr);
-    const calls = readFileSync(f.calls, 'utf8').trim().split('\n').map(line => JSON.parse(line));
-    const correction = calls.find(call => call.stage === 'correction');
+    const calls = readFileSync(f.calls, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line));
+    const correction = calls.find((call) => call.stage === 'correction');
     assert.match(correction.prompt, /LATE_ACTUAL_FAILURE/);
     assert.match(correction.prompt, /Full retained log:/);
   }
@@ -236,6 +243,7 @@ test('frozen-test restoration refuses a redirected file without overwriting its 
 test('candidate guidance cannot authorize edits outside captured scope', (t: any) =>
   suite.candidateGuidanceCannotAuthorizeEditsOutsideCapturedScope(t));
 
-test('late host diagnostics reach the corrective steward', (t) => suite.lateFailureReachesCorrection(t));
+test('late host diagnostics reach the corrective steward', (t) =>
+  suite.lateFailureReachesCorrection(t));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });

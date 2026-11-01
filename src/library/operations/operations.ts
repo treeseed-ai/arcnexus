@@ -1,3 +1,4 @@
+import { readDiagnosticExcerpt } from './diagnostics.js';
 import { materialCandidate } from '../change-inspection/changes.js';
 import { ProgressObserver } from '../report/progress.js';
 import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
@@ -246,7 +247,7 @@ class OperationRuntime {
       const result = outcome.result;
       this.inspect();
       artifacts = op.artifacts.map((path) => this.artifact(path));
-      const output = readFileSync(result!.log).subarray(0, 16384).toString('utf8');
+      const output = readDiagnosticExcerpt(result!.log).output;
       return {
         id: op.id,
         status: result!.exitCode === 0 ? 'passed' : 'failed',

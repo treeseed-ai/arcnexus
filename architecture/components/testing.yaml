@@ -98,4 +98,6 @@ provides:
 consumes:
   - id: test-profile
     version: "1"
+  - id: command-diagnostics
+    version: "1"
 testProfile: node
