@@ -24,7 +24,7 @@ export interface DiscoveredSuite extends SuiteMetadata {
 
 /** Discovers current checkout suites within captured, owner-declared test roots. */
 export class TestDiscovery {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Selects the checkout to inventory without executing its test modules. */
   constructor(private readonly project: string) {}
 
   /** Enumerates owner-declared suite files without executing their modules. */

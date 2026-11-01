@@ -68,7 +68,7 @@ class OperationRuntime {
 
   private activeNumber = 0;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Restores operation counters and binds managed services to captured assignment authority. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,

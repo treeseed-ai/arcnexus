@@ -5,7 +5,7 @@ import type { RecordData } from '../workspace/state.js';
 
 /** Only exposed completed shell events are visible; internal model retries remain opaque. */
 export class ObservedProgress {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Connects observable SDK failures to the retained assignment progress ledger. */
   constructor(
     private root: string,
     private record: RecordData,

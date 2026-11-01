@@ -122,7 +122,7 @@ function outstandingNeeds(report: WorkdayReport): string {
 
 /** Projects authoritative coordination evidence into a readable caller handoff. */
 class WorkdayMarkdown {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the coordination projection used to render the caller handoff. */
   constructor(private report: WorkdayReport) {}
 
   /** Renders the captured workday projection without querying mutable candidate files. */

@@ -71,7 +71,7 @@ class Initializer {
 
   private readonly unsubscribe: () => void;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates intake evidence and forwards child events into the parent execution timeline. */
   constructor(private readonly input: InitializeInput) {
     this.snapshot = input.resolved.initialization;
     this.child = this.createRecord();
@@ -229,7 +229,7 @@ class Initializer {
     ].join('\n');
   }
 
-  /** Projects captured ownership, contracts and inventories for static validation output. */
+  /** Supplies the captured catalog, restricted to the lexical shortlist for unstructured intake. */
   private catalog() {
     return this.input.proposal
       ? this.snapshot.catalog.filter((c) => this.input.proposal!.shortlist.includes(c.id))

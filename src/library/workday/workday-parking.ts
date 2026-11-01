@@ -102,7 +102,7 @@ export class WorktreeParking {
 
   private hash = '';
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains workspace identity and the external artifact path for owned-change transitions. */
   constructor(
     private record: RecordData,
     readonly path: string,

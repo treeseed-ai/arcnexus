@@ -84,7 +84,7 @@ class WorkdayResolver {
 
   private bindings: ReturnType<typeof loadBindings>;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Validates the manifest and captures the immutable base and local repository bindings. */
   constructor(
     private path: string,
     project: string,

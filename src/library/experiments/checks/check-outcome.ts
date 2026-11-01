@@ -5,7 +5,7 @@ import { readFileSync, existsSync } from 'node:fs';
 class OutcomeAcceptance {
   private record: any;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Loads retained evidence for the selected independent outcome assertion. */
   constructor(
     path: string,
     private kind: string,

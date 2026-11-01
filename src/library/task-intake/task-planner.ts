@@ -34,7 +34,7 @@ export class TaskPlanner {
 
   private authority!: TaskAuthoritySnapshot;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Carries state storage and caller cancellation into proposal creation. */
   constructor(
     private root: string,
     private signal: AbortSignal,

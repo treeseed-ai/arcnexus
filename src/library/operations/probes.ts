@@ -27,7 +27,7 @@ export async function prepareCapabilities(
 class CapabilityProbes {
   private readonly probes: unknown[] = [];
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Records the capability-probe stage before testing captured execution routes. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
@@ -107,7 +107,7 @@ class BridgeProbe {
 
   private readonly start = Date.now();
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the shared probe ledger and cancellation for the bridge connectivity check. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,

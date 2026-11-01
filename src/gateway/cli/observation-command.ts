@@ -5,7 +5,7 @@ import { stateRoot } from '../../library/workspace/state.js';
 
 /** Views retained execution evidence without controlling the active assignment. */
 export class ObservationCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Selects the requested viewer and carries cancellation without cancelling its assignment. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,

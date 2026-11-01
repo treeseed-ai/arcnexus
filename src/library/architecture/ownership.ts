@@ -29,7 +29,7 @@ export class OwnershipValidator {
 
   private readonly graph = new Map<string, string[]>();
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Pins ownership coverage and import checks to the selected repository revision. */
   constructor(
     private readonly repository: string,
     private readonly base: string,

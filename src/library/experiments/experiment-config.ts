@@ -164,7 +164,7 @@ class ExperimentResolver {
 
   private tools: Record<string, string>;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Validates manifest, bindings and mode, then resolves declared tool executables. */
   constructor(
     private manifestPath: string,
     bindingPath: string,

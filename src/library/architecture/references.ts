@@ -33,7 +33,7 @@ interface PatternDefinition {
 
 /** Captures referenced guidance and contracts without adding execution authority. */
 export class ArchitectureReferences {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Pins pattern and contract resolution to the catalog and its captured revision. */
   constructor(
     private readonly repository: string,
     private readonly base: string,

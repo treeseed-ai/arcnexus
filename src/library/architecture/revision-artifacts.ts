@@ -6,7 +6,7 @@ import { git } from '../operations/process.js';
 export class RevisionArtifacts {
   private readonly modes = new Map<string, string>();
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Inventories captured Git modes for safe, revision-bound artifact reads. */
   constructor(
     private readonly repository: string,
     private readonly base: string,

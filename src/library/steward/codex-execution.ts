@@ -26,7 +26,7 @@ export class CodexExecution<T extends object = AgentResult> {
     this.termination = delay(300).then(() => this.killGroup());
   };
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Builds explicit Codex configuration and its tool bridge before starting a model turn. */
   constructor(private readonly input: CodexInput) {
     this.configuration = new CodexConfiguration(input);
     this.tools = new CodexTools(this.configuration);

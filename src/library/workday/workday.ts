@@ -30,7 +30,7 @@ export class WorkdayRunner {
 
   private readonly unsubscribe: Array<() => void> = [];
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates shared coordination state and deterministic routing for sequential stewards. */
   constructor(root: string, parentSignal: AbortSignal, executable: string) {
     this.state = new WorkdayContext(root, parentSignal, executable);
     this.routing = new WorkdayRouting(this.state);

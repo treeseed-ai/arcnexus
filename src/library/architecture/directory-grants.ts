@@ -6,7 +6,7 @@ import { InputError } from './config.js';
 export class DirectoryGrants {
   private readonly entries = new Map<string, { mode: string; type: string }>();
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Captures Git entry types so directory grants can reject files and unsafe traversal. */
   constructor(repository: string, base: string) {
     const listing = git(repository, 'ls-tree', '-r', '-t', '-z', base);
     for (const entry of listing.split('\0').filter(Boolean)) {

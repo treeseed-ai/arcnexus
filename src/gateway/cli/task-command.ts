@@ -4,7 +4,7 @@ import { lock, stateRoot } from '../../library/workspace/state.js';
 
 /** Adapts task planning, inspection and accepted execution to the public CLI. */
 export class TaskCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains task proposal arguments and cancellation for planning or execution. */
   constructor(
     private positionals: string[],
     private values: Record<string, string | boolean | undefined>,

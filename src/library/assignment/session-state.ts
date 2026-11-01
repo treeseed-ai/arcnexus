@@ -70,7 +70,7 @@ export class SessionState {
 
   specificationFinished = false;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Validates captured authority, materializes independent checks and initializes checkpoint state. */
   constructor(readonly options: SessionOptions) {
     const { root, record, maxAttempts } = options;
     const resolved = record.resolvedAssignment as ResolvedAssignment | undefined;

@@ -77,7 +77,7 @@ export class ServiceManager {
 
   private stopped?: Promise<void>;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Reuses the assignment service ledger so resource evidence survives each lease. */
   constructor(
     private root: string,
     private record: RecordData,

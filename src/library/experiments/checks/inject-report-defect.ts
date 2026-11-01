@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 class ReportFaultInjection {
   private marker: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Requires external acceptance and a per-workspace marker before permitting fault injection. */
   constructor(
     markerPrefix: string | undefined,
     private acceptance: string | undefined,

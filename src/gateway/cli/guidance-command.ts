@@ -4,7 +4,7 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts guidance commands without duplicating runtime orchestration. */
 export class GuidanceCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains checkout selection and output options for guidance validation. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,

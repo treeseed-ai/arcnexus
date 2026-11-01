@@ -14,7 +14,7 @@ import { ProposalStore, type TaskProposal } from './proposal-store.js';
 
 /** Executes explicitly accepted proposals only while captured authority hashes still match. */
 export class TaskRunner {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Carries state storage and caller cancellation into accepted-proposal execution. */
   constructor(
     private root: string,
     private signal: AbortSignal,

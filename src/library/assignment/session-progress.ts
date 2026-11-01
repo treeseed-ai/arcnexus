@@ -6,7 +6,7 @@ import type { SessionState } from './session-state.js';
 export class SessionProgress {
   private readonly observer: ProgressObserver;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Reuses the assignment record for progress accounting across resumed activations. */
   constructor(private readonly state: SessionState) {
     this.observer = new ProgressObserver(state.options.root, state.options.record);
   }

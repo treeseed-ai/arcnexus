@@ -10,7 +10,7 @@ import { SessionState } from './session-state.js';
 
 /** Enforces expected-red, frozen-test and final independent verification checkpoints. */
 export class SessionVerification {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Uses captured session checks and scope for authoritative verification. */
   constructor(private readonly state: SessionState) {}
 
   /** Freezes regression files and requires the declared expected-red checkpoint. */

@@ -10,7 +10,7 @@ const words = (text: string) => [...new Set(text.toLowerCase().match(/[a-z0-9]+/
 
 /** Lexical retrieval proposes context, never execution authority. */
 export class OwnerRetrieval {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the component catalog for lexical selection and relationship expansion. */
   constructor(private readonly catalog: Component[]) {}
 
   /** Returns a lexical shortlist with related and ancestor context for model assessment. */

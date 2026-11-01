@@ -83,7 +83,7 @@ export class ExperimentRunner {
 
   private output!: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Carries caller cancellation through sequential campaign execution. */
   constructor(private signal: AbortSignal) {}
 
   /** Persists the current evidence so later inspection can reconstruct this state. */

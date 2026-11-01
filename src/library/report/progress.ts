@@ -28,7 +28,7 @@ function diagnosticText(value: string): string {
 export class ProgressObserver {
   private readonly state: ProgressState;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Restores recorded failure fingerprints and verified progress across session activations. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,

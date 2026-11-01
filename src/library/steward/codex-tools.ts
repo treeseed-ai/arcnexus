@@ -26,7 +26,7 @@ export class CodexTools {
 
   private bridge: Awaited<ReturnType<typeof openBridge>> | undefined;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains captured SDK configuration for probe and operation-bridge setup. */
   constructor(private readonly configuration: CodexConfiguration) {}
 
   /** Returns the cancellation signal governing the current tool scope. */

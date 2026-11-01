@@ -8,7 +8,7 @@ import type { TaskProposal } from './proposal-store.js';
 
 /** Validates model-selected owners against captured catalog authority and supported team shapes. */
 export class ProposalResolution {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Pins proposal resolution to the source revision, caller bindings and explicit model override. */
   constructor(
     private source: string,
     private base: string,

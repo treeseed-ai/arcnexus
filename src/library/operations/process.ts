@@ -66,7 +66,7 @@ class DirectCommand {
 
   private readonly abort = () => this.terminate(new Error(String(this.signal.reason)));
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Exclusively creates private output logs and initializes the command lifecycle record. */
   constructor(
     private readonly command: Command,
     private readonly cwd: string,
@@ -192,7 +192,7 @@ class SupervisedCommand {
     if (this.supervisor.connected) this.supervisor.send({ cancel: String(this.signal.reason) });
   };
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains cancellation for process-group supervision without starting a subprocess. */
   constructor(private readonly signal: AbortSignal) {}
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */

@@ -8,7 +8,7 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts experiment commands without duplicating runtime orchestration. */
 export class ExperimentCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains experiment arguments and the caller cancellation signal. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,

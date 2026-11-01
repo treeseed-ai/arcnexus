@@ -29,7 +29,7 @@ export interface TaskProposal {
 
 /** Persists captured intake proposals outside the candidate for explicit caller acceptance. */
 export class ProposalStore {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Selects the private state root used to retain immutable task proposals. */
   constructor(private readonly root: string) {}
 
   /** Persists the current evidence so later inspection can reconstruct this state. */

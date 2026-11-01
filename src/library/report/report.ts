@@ -36,7 +36,7 @@ class CoordinationEvidence {
 
   private readonly agent;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Reads available captured fields and derives planned turns without inventing missing historical data. */
   constructor(private readonly record: RecordData) {
     this.turns = Array.isArray(record.turns)
       ? (record.turns as Array<Record<string, unknown>>)

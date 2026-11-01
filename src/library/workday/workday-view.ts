@@ -18,7 +18,7 @@ export async function viewWorkday(
 
 /** Reads SQLite coordination state and follows ordered events without activating stewards. */
 class WorkdayViewer {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains viewer format, event cursor and independent viewer cancellation. */
   constructor(
     private root: string,
     private id: string,

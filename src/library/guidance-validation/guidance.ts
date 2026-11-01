@@ -82,7 +82,7 @@ class GuidanceInventory {
 
   readonly report: GuidanceReport;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Inventories tracked guidance in the real Git root; reports unavailable projects as input errors. */
   constructor(project: string) {
     let root: string;
     try {
@@ -127,7 +127,7 @@ class GuidanceInventory {
 
 /** Checks skill reference paths against tracked regular files and traversal restrictions. */
 class GuidanceReferences {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the tracked-file boundary used to validate optional skill references. */
   constructor(
     private readonly root: string,
     private readonly tracked: Set<string>,

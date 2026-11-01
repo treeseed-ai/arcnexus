@@ -8,7 +8,7 @@ import { SessionVerification } from './session-verification.js';
 
 /** Advances engineering stages and corrective attempts through mandatory host checkpoints. */
 export class SessionWorkflow {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Wires the shared turn and verification services to retained workflow state. */
   constructor(
     private readonly state: SessionState,
     private readonly turns: SessionTurn,

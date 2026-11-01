@@ -46,7 +46,7 @@ export class CodexConfiguration {
 
   readonly settings;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Derives explicit SDK settings, result schema and sandbox authority from captured inputs. */
   constructor(readonly input: CodexInput) {
     this.dir = join(input.root, 'runs', input.record.id);
     this.launcher = join(this.dir, 'codex-launcher');

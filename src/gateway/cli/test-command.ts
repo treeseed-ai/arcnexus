@@ -4,7 +4,7 @@ import { ComponentTesting } from '../../library/testing/testing.js';
 
 /** Adapts component test requests to the shared selection and execution service. */
 export class TestCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains literal test filters and cancellation for the shared test service. */
   constructor(
     private readonly positionals: string[],
     private readonly values: Record<string, string | boolean | undefined>,

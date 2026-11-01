@@ -45,7 +45,7 @@ export class WorkspaceCleanup {
 
   private intent?: CleanupIntent;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Loads ownership evidence and rejects mismatched workspace identities before any removal. */
   constructor(
     private readonly root: string,
     private readonly id: string,

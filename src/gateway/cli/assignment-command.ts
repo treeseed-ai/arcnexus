@@ -7,7 +7,7 @@ import { loadCatalog } from '../../library/architecture/components.js';
 
 /** Resolves immutable assignments and presents their captured authority. */
 export class AssignmentCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains parsed assignment arguments for catalog inspection or run dispatch. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,

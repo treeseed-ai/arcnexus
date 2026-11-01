@@ -5,7 +5,7 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts workday commands without duplicating runtime orchestration. */
 export class WorkdayCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains workday arguments and the lock acquisition callback used only by execution. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,

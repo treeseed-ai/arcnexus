@@ -51,7 +51,7 @@ export class StewardSession {
 
   private verification?: SessionVerification;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains captured execution inputs and optional handoff control without starting inference. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,

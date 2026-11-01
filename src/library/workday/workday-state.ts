@@ -26,7 +26,7 @@ export class Owner {
 
   lastCheckpoint?: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Binds a participant to its retained execution record and cumulative active-time accounting. */
   constructor(
     public participant: WorkdayParticipant,
     public record: RecordData,
@@ -74,7 +74,7 @@ export class WorkdayContext {
 
   directory!: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains shared workday dependencies without dispatching either steward. */
   constructor(
     public root: string,
     public parentSignal: AbortSignal,

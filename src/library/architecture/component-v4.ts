@@ -34,7 +34,7 @@ export class ComponentV4Resolver {
 
   private artifacts?: RevisionArtifacts;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Uses the loaded catalog to resolve package inheritance and leaf authority. */
   constructor(private readonly catalog: Catalog) {}
 
   /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */

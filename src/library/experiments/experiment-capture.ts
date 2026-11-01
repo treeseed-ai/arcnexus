@@ -17,7 +17,7 @@ export interface PreparedCase extends ExperimentCase {
 
 /** Snapshots campaign inputs and supervising artifacts before the first case executes. */
 export class ExperimentCapture {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains resolved campaign inputs and their external evidence destination. */
   constructor(
     private campaign: Campaign,
     private output: string,

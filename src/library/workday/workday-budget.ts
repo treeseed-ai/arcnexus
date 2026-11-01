@@ -10,7 +10,7 @@ export class ActiveBudget {
 
   readonly signal: AbortSignal;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Combines explicit cancellation with an optional active-time limit; no default timer is created. */
   constructor(
     parent: AbortSignal,
     readonly limitMs?: number,

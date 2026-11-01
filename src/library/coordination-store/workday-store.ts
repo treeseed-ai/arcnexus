@@ -30,7 +30,7 @@ interface Update {
 export class WorkdayStore {
   private db: DatabaseSync;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates a private transactional store or opens an existing one read-only; rejects unknown versions. */
   constructor(
     readonly path: string,
     create = false,

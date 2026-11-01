@@ -12,7 +12,7 @@ import { assertIdentity, assertOutputs } from '../workspace/workspace.js';
 
 /** Verifies intake prerequisites and enforces its source-read-only boundary. */
 export class InitializerChecks {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains captured initialization authority for post-turn scope and identity checks. */
   constructor(
     private root: string,
     private record: RecordData,

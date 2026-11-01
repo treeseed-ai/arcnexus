@@ -24,7 +24,7 @@ export class PendingCalls {
     },
   };
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the authorized dispatcher used to settle outstanding bridge calls. */
   constructor(private readonly execute: (name: string, args: unknown) => Promise<unknown>) {}
 
   /** Starts a tool request or resumes observation of an existing pending request. */

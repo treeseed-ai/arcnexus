@@ -5,7 +5,7 @@ import type { CliValues } from './arguments.js';
 
 /** Creates or removes owned workspaces through the existing lifecycle service. */
 export class WorkspaceCommand {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains workspace options without performing preparation or cleanup. */
   constructor(private readonly values: CliValues) {}
 
   /** Prepares a fresh application-owned worktree and its declared environment. */

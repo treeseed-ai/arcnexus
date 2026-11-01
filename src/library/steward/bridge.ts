@@ -56,7 +56,7 @@ class HostBridge {
 
   private readonly server = createServer((socket) => this.connect(socket));
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Restricts the private IPC directory and retains the authorized tool dispatcher. */
   constructor(
     private readonly tools: BridgeTool[],
     private readonly call: ToolCall,
@@ -118,7 +118,7 @@ class BridgeConnection {
 
   private closed = false;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Binds a connected socket to the effective tool catalog and parent-owned dispatcher. */
   constructor(
     private readonly socket: Socket,
     private readonly tools: BridgeTool[],

@@ -173,7 +173,7 @@ class CatalogLoader {
 
   private readonly paths: string[];
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Inventories architecture files at the fixed Git revision without reading candidate edits. */
   constructor(
     private readonly repository: string,
     private readonly base: string,
@@ -303,7 +303,7 @@ class CatalogLoader {
 
 /** Checks catalog relationships, scopes and operation compatibility before inference. */
 class CatalogComponentValidator {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the resolved catalog and environment for cross-definition compatibility checks. */
   constructor(
     private readonly catalog: Catalog,
     private readonly env: Environment,

@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 class OperationCampaignAcceptance {
   private record: any;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Loads the run record for independent checks of the requested qualification case. */
   constructor(
     path: string,
     private kind: string,

@@ -19,7 +19,7 @@ export interface TurnFrame {
 
 /** Retains prompts, SDK events, usage and structured outcomes for each model turn. */
 export class TurnEvidence {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains session state for per-turn evidence capture and cumulative usage accounting. */
   constructor(private readonly state: SessionState) {}
 
   /** Marks test and instruction changes for caller inspection. */

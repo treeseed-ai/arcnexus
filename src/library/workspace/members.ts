@@ -61,7 +61,7 @@ export function resolveMembers(
 
 /** Pins declared repository members and validates their bindings before preparation. */
 class MemberResolver {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Pins dependency preparation to captured source revisions and explicit caller bindings. */
   constructor(
     private source: string,
     private base: string,

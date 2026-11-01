@@ -140,7 +140,7 @@ class AssignmentResolver {
 
   private readonly assignment;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Resolves the captured catalog and assignment; rejects incompatible input forms before preparation. */
   constructor(
     private readonly repository: string,
     private readonly base: string,

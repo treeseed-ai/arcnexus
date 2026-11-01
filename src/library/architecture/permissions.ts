@@ -91,7 +91,7 @@ class PermissionPreparation {
 
   private readonly createdDirectories: string[] = [];
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Normalizes the workspace root and rejects malformed access declarations. */
   constructor(workspacePath: string, rawAccess: unknown) {
     this.workspace = resolve(workspacePath);
     this.access = validateAccess(rawAccess);

@@ -20,7 +20,7 @@ export class SessionTurn {
 
   private readonly evidence: TurnEvidence;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Captures the initial prompt and wires operations to the active stage permission check. */
   constructor(
     private readonly state: SessionState,
     private readonly verification: SessionVerification,

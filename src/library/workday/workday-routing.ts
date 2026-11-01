@@ -12,7 +12,7 @@ import { WorkdayContext, blocked, type Owner } from './workday-state.js';
 
 /** Validates requests and responses before deterministically selecting the next owner. */
 export class WorkdayRouting {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Uses durable workday state to enforce the permitted dependency edge. */
   constructor(private readonly state: WorkdayContext) {}
 
   /** Interprets the completed turn before selecting another owner. */
