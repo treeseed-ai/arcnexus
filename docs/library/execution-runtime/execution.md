@@ -186,3 +186,16 @@ exist grants no additional read access and is not created for policy inference.
 Explicit read declarations must still resolve, and symlink/path violations remain
 invalid. This permits every eligible owner to participate in stewardship before
 its first test or documentation directory has been created.
+
+Cancellation is idempotent at terminal task outcomes (#107). A late cancellation
+cannot rewrite completed verification, failure, interruption or attention evidence.
+Queued/running tasks and tasks awaiting input remain cancellable; managed execution
+still receives prompt cancellation.
+
+Every new run captures an execution identity covering committed authority, package
+selection and resolved local bindings (#108). Recovery, continuation and dispatch
+must compare that identity with the host's captured context before any new work.
+Missing or mismatched identity requires attention and a new run; retain the old
+candidate and evidence without importing the new source revision. Historical terminal
+outcomes remain readable. A still-running original host may observe source drift,
+but its captured authority and candidate never change silently.
