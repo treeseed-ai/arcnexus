@@ -3,8 +3,9 @@ type: release
 purpose: Verify delivery candidates and own future container packaging
 path: .github
 objectives:
-  - Keep builds and deterministic tests reproducible
-  - Maintain formatting, linting, CI and shared test infrastructure
+  - Verify development, integrated staging, and production candidates
+  - Maintain delivery workflows and future container packaging without automatic
+    publication
 constraints:
   - Do not weaken independent acceptance to make candidate work pass
   - Keep generated output separate from maintained source
@@ -36,6 +37,7 @@ access:
   readPaths:
     - .
   writeDirectories:
+    - .github
     - docker
     - tests/release
     - docs/release
@@ -45,8 +47,7 @@ schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - npm run build, npm run check and npm test
-  - Stable dist/cli.js executable entry point
+  - Delivery verification and caller-authorized release boundaries
 relatedIds: []
 parentId: cli-package
 operationIds: []
