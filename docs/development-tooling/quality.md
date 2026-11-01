@@ -62,3 +62,8 @@ Existing acceptance-script paths remain compatibility launchers. Current experim
 definitions capture the standalone compiled checks from `dist/experiments/checks`,
 including any declared dependencies, so execution does not depend on mutable source
 launchers. The directory-permission acceptance probe uses the installed Node runtime.
+
+Pinned qualification revisions retain their original file layouts. Standalone acceptance
+checks support both the historical flat report paths and the current owner directories,
+without changing the required report behavior or rewriting pinned inputs. Guidance
+acceptance resolves the maintenance reference for the target layout.
