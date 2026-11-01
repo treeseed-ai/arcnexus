@@ -15,6 +15,8 @@ A workday rotates fairly through eligible stewards. Each considers its purpose,
 objectives, questions and inbox, proposes bounded useful work or records no action.
 An unchanged full pass becomes idle. Relevant deliveries, verified changes and an
 explicit resume wake work; there is no repeated inference against unchanged input.
+A no-work stewardship result may name the reviewed owner without proposing an
+assignment. This records consideration, not task decomposition or verified delivery.
 
 A task director selects starting owners and retains goal acceptance. Owners can
 request additional existing package owners. A task pauses a running workday at a
