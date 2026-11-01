@@ -1,9 +1,11 @@
 # General execution qualification — issue 78
 
-This is an implementation record, not a phase-three readiness declaration. Phase
-three remains blocked until the charter's real execution gates pass. The branch is
-`codex/78-general-agent-execution`; source authority and the supervising build are
-held stable for each live attempt.
+This records implementation and qualification of the phase-two execution extension.
+All six live gates have demonstrations; final implementation checks are recorded
+below. Integration is gated on the current head's CI and repository review rules in
+[PR #82](https://github.com/treeseed-ai/arcnexus/pull/82). Source authority and the
+supervising build were held stable for each live attempt. Earlier entries are
+historical observations, including failures, rather than current status.
 
 ## Observed deterministic evidence
 
@@ -328,13 +330,66 @@ The pre-migration integrated suite passed **429/429** in 548 seconds, retained a
 It used the pre-migration assembled build; source migration overlapped its run, so
 it is not final revision qualification. Rerun after the migration tree is frozen.
 
-## Remaining qualification and implementation work
+## Final implementation verification
 
-Phase three remains blocked pending final integrated checks and review of the
-CLI/campaign migration. Legacy execution adapters have been removed in the working
-implementation; replacement and historical-inspection checks must pass before
-calling that slice complete.
-Historical report readers and useful validation/test/evidence commands remain.
+The frozen migration revision `5cc57b8` passed **393/393** tests, retained run
+`d7f94f44-232c-42f4-b069-064748e625fc`, and all requested static/build/ownership/guidance
+checks in `/tmp/arcnexus-78-*-v21.log`. GitHub Development run `41349219475` passed.
+The smaller count than the pre-migration suite reflects removal of retired execution
+contracts, not missing shared-engine behavior; the replacement mapping is in
+[execution migration](../gateway/cli/execution-migration.md).
+
+Review then reproduced two lifecycle defects: late cancellation rewrote terminal
+task outcomes (#107), and a replacement host could reinterpret paused work under
+new source authority (#108). Their initial focused run failed 11 of 13 cases.
+The fixes preserve terminal outcomes and bind unfinished runs to captured
+source/package/bindings identity, exposing incompatibility in status. Source,
+bindings, package, missing historical identity and unchanged recovery are covered.
+
+Final implementation **`26945f89f6ca0d9427ec22f46f19b0c0b3bdb1bf` passed 406/406**
+built-program tests, zero failures, cancellations or skips, in 313 seconds. The run
+is `04ac1ccf-29b8-43d5-8eca-a99bbc669dea`; output is
+`/tmp/arcnexus-78-full-suite-v23.log`, with full TAP in the retained test-run's `2.log`.
+The tree and build were held fixed throughout. `npm run format:check`, `npm run lint`,
+`npm run check`, `npm run build`, `node dist/cli.js validate --project .` and
+`node dist/cli.js guidance validate --project .` all passed; separate logs use the
+`/tmp/arcnexus-78-*-v23.log` prefix. Subsequent ledger edits are documentation only.
+CI is separately recorded by the current-head Development check on PR #82; a local
+pass does not substitute for that integration gate.
+
+Fresh real stewardship recovery under this final implementation is retained in
+`workday-live-v3`, workday `b7a6547a-6772-4a59-8bbe-be2633b0033c`. After real Luna
+stewardship turns, pause reached a safe checkpoint. Killing the host and invoking
+ordinary `workday resume` restored the same workday, authority identity and candidate.
+After another safe pause and host loss, the qualification caller committed a source
+change from `7bf0eeb` to `18622d4`. Resume returned exit **2**, retained the original
+run authority and candidate, exposed `needs_attention` with its authority diagnostic,
+and dispatched nothing. `recovery-verification.json`, the before/after status files
+and exact CLI output retain this evidence. Normal stop then completed and the idle
+host retired. This exercises real stewardship recovery; unfinished engineering
+recovery remains demonstrated separately in `workday-live-v1`.
+
+Manual implementation review included cancellation, restart authority, candidate
+isolation, removed legacy entry points and replacement test contracts. GitHub staging
+rules returned an empty effective rule list; the branch-protection endpoint reported
+unprotected, and no submitted PR reviews were present. No approval is fabricated.
+The release workflow still requires green current-head CI before staging integration.
+
+## Completion scope and retained limitations
+
+All six requested live cases are demonstrated above. The general scheduler, durable
+continuation, prompt tasks, persistent workdays, mode coordination and CLI migration
+are implemented and pass their integrated deterministic coverage. Historical report
+readers and useful validation/test/evidence commands remain. Phase-three work has
+not begun; this extension supplies its execution prerequisite.
+
+Qualification demonstrates observed behavior rather than guaranteed success for
+every model request: failed and blocked assignments are retained honestly. Old
+fixed-owner stores are inspectable, not resumable by the new scheduler. Unfinished
+runs without the new authority identity require a new run. Changed source authority
+requires stop/start, uncertain operations are not replayed, and candidate conflicts
+or missing independent acceptance evidence require attention. Publishing and source
+integration remain caller responsibilities.
 
 Runtime/store/CLI changes remain bootstrap work by the caller. The independently
 verified report-guide improvement is the first delivered self-development result.
