@@ -28,6 +28,10 @@ One background host owns each canonical repository and executes one activation a
 a time. No participant count is hardcoded. Assignments, stewards, activations,
 messages, dependencies and candidate revisions have distinct identities. A steward
 may own several assignments. Durable delivery and readiness commit atomically.
+Ready assignments use a persistent FIFO queue: a yielded continuation rejoins the
+tail, and an already-ready assignment retains its place when unrelated state changes.
+Dependency wakeups and clarification answers enter the same queue. Reopening the
+store preserves that order; creation order alone must not starve later work.
 
 Requests carry originating assignment, recipient owner, purpose, expected outcome,
 acceptance and required milestone. Acceptance is intent, not verified delivery.
