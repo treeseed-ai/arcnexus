@@ -3,7 +3,7 @@ import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
 import { completePlan, CompletedPlanValidationError } from './plan.js';
 import { SessionState } from './session-state.js';
-import { SessionTurn } from './session-turn.js';
+import { AssignmentBlocked, SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
 
 /** Advances engineering stages and corrective attempts through mandatory host checkpoints. */
@@ -48,6 +48,7 @@ export class SessionWorkflow {
     } catch (error) {
       if (
         !(error instanceof Error && error.name === 'AssignmentYield') &&
+        !(error instanceof AssignmentBlocked) &&
         !this.retainPlanCorrection(stage, error)
       ) {
         this.failure(error);
@@ -251,7 +252,7 @@ export class SessionWorkflow {
   private async review(attempt: number): Promise<string | undefined> {
     const review = await this.turns.perform(
       'review',
-      `Review the candidate diff without editing source. Host check results (captured evidence): ${JSON.stringify(this.state.options.record.commands.map(({ command, args, exitCode, durationMs }) => ({ command, args, exitCode, durationMs })))}. The earlier expected red-test failure was a specification checkpoint. Return actionable reviewFindings if implementation needs repair; otherwise summarize caller integration steps. Release means handoff, never publish.`,
+      `Review the candidate diff without editing source. Host check results (captured evidence): ${JSON.stringify(this.state.options.record.commands.map(({ command, args, exitCode, durationMs }) => ({ command, args, exitCode, durationMs })))}. The earlier expected red-test failure was a specification checkpoint. Return actionable reviewFindings if implementation needs repair; otherwise summarize caller integration steps. Record caller handoff as review within captured role activities; do not claim release authority or publish.`,
       true,
     );
     if (!review.reviewFindings.length) return undefined;

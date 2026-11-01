@@ -134,6 +134,14 @@ export class ControlledGeneral {
     const owner = prompt.match(/active component identity ([a-z]+) as fromComponent/)?.[1];
     const stage = prompt.match(/Activity turn: ([a-z]+)/)?.[1];
     if (stage === 'planning') return this.planning(result, prompt, owner!);
+    if (
+      prompt.includes('REPORT_BLOCK_ONCE') &&
+      !prompt.includes('Use the clarified retained scope')
+    ) {
+      result.status = 'blocked';
+      result.blockers = ['Required contract decision'];
+      return result;
+    }
     result.planUpdates = [
       {
         id: 'research',

@@ -17,6 +17,9 @@ import type { SessionVerification } from './session-verification.js';
 
 type TurnKind = 'engineering' | 'coordination';
 
+/** Identifies a completed, scope-checked blocker whose retained stage is safe to diagnose. */
+export class AssignmentBlocked extends Error {}
+
 /** Constructs activity-specific context and executes one turn within captured permissions. */
 export class SessionTurn {
   private readonly originalPrompt: string;
@@ -185,7 +188,12 @@ export class SessionTurn {
     else if (result.status !== 'completed') {
       record.status = result.status;
       record.outcome = result.status;
-      throw new Error(`Agent reported ${result.status}: ${result.blockers.join('; ')}`);
+      const reason = `Agent reported ${result.status}: ${result.blockers.join('; ')}`;
+      if (record.generalExecution && result.status === 'blocked') {
+        record.error = reason;
+        throw new AssignmentBlocked(reason);
+      }
+      throw new Error(reason);
     }
     if (
       activity !== 'planning' &&

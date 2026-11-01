@@ -29,6 +29,24 @@ class BlockedContinuationScenarios {
     assert.equal(host.store.assignments(run.id).length, 2);
   }
 
+  /** A completed blocked model response is routed durably and later resumed from its same safe plan. */
+  async completedBlock(t: TestContext): Promise<void> {
+    const { host, run, root, supplier } = await this.fixture(t, 'REPORT_BLOCK_ONCE');
+    const before = this.record(host, supplier.id);
+    await host.tick();
+    assert.equal(host.store.assignment(supplier.id).status, 'blocked');
+    assert.equal(this.record(host, supplier.id).safeCheckpoint, true);
+    assert.equal(host.store.assignment(root.id).status, 'blocked');
+    await host.tick();
+    assert.equal(host.store.assignment(supplier.id).status, 'ready');
+    assert.deepEqual(this.record(host, supplier.id).plan, before.plan);
+    await host.tick();
+    assert.equal(host.store.assignment(supplier.id).status, 'completed');
+    assert.equal(host.store.assignment(root.id).status, 'ready');
+    assert.equal(this.record(host, supplier.id).threadId, before.threadId);
+    assert.equal(host.store.assignments(run.id).length, 2);
+  }
+
   /** A director recommendation cannot authorize replay from an interrupted unsafe checkpoint. */
   async unsafe(t: TestContext): Promise<void> {
     const { host, run, supplier } = await this.fixture(t);
@@ -86,8 +104,35 @@ class BlockedContinuationScenarios {
     );
   }
 
+  /** Acceptance can wake a requester without describing its unfinished supplier as verified delivery. */
+  async acceptedContext(t: TestContext): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    const run = host.submit('Inspect accepted dependency context');
+    host.store.updateRun(run.id, 'running', { initialized: true });
+    const root = host.store.enqueue(run.id, 'a', 'Research accepted intent', ['Observed']);
+    host.store.updateAssignment(root.id, 'ready', { proposal: { kind: 'research' } });
+    const supplier = host.store.request(root.id, {
+      key: 'accepted',
+      owner: 'c',
+      objective: 'Supply evidence',
+      acceptance: ['Observed'],
+      milestone: 'accepted',
+      kind: 'research',
+    });
+    await host.tick();
+    assert.equal(host.store.assignment(root.id).status, 'ready');
+    assert.notEqual(host.store.assignment(supplier.id).status, 'completed');
+    await host.tick();
+    const prompt = JSON.parse(readFileSync(f.calls, 'utf8').trim().split('\n').at(-1)!).prompt;
+    assert.match(prompt, /accepted intent is not verified delivery/);
+    assert.doesNotMatch(prompt, /Verified dependency deliveries:/);
+    assert.match(prompt, /explicitly request milestone=delivered/);
+  }
+
   /** Captures one real planned supplier activation before introducing a retained blocker. */
-  private async fixture(t: TestContext) {
+  private async fixture(t: TestContext, objective = 'Supplier evidence') {
     const f = new GeneralFixture(t).fixture;
     const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
     t.after(() => host.store.close());
@@ -98,7 +143,7 @@ class BlockedContinuationScenarios {
     const supplier = host.store.request(root.id, {
       key: 'supplier',
       owner: 'c',
-      objective: 'Supplier evidence',
+      objective,
       acceptance: ['Evidence-backed result'],
     });
     await host.tick();
@@ -127,5 +172,11 @@ test('equivalent blocked continuations require diagnosis and material progress',
 
 test('worker dependency cycles can be diagnosed and continued through verified delivery', (t) =>
   scenarios.cycle(t));
+
+test('completed worker blockers preserve safe checkpoints through director continuation', (t) =>
+  scenarios.completedBlock(t));
+
+test('accepted dependency context cannot masquerade as verified delivery', (t) =>
+  scenarios.acceptedContext(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

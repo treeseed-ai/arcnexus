@@ -83,6 +83,7 @@ export class AssignmentExecution {
       return routed;
     }
     if (actions?.length) return { kind: 'responses', actions };
+    if (record.status === 'blocked') return { kind: 'blocked', reason: String(record.error) };
     if (record.status !== 'completed') return { kind: 'continue' };
     try {
       return await this.deliver(assignment, record, session);
@@ -152,6 +153,7 @@ export class AssignmentExecution {
     record.resolvedAssignment = resolved;
     record.directionAccepted = true;
     record.trustedVerificationPaths = this.context.verificationInputs;
+    this.dependencyContext(assignment, record);
     this.store.updateAssignment(assignment.id, 'running', {
       recordId: record.id,
       candidateBase: base,
@@ -177,15 +179,26 @@ export class AssignmentExecution {
     };
   }
 
+  /** Distinguishes accepted intent from verified delivery and preserves explicit milestone semantics. */
+  private dependencyContext(assignment: ExecutionAssignment, record: RecordData): void {
+    const dependencies = assignment.dependencies.map((id) => this.store.assignment(id));
+    if (!dependencies.length) return;
+    const delivered = dependencies.filter((dependency) => dependency.status === 'completed');
+    record.coordinationContext =
+      'Dependency assignment states (accepted intent is not verified delivery): ' +
+      JSON.stringify(dependencies) +
+      '\nRequired dependency milestones: ' +
+      JSON.stringify(assignment.data.milestones ?? {}) +
+      (delivered.length ? '\nVerified dependency deliveries: ' + JSON.stringify(delivered) : '') +
+      '\nIf accepted intent is insufficient, explicitly request milestone=delivered with the existing assignmentId and matching owner, objective, acceptance criteria and scope. The host does not silently strengthen an accepted milestone.';
+  }
+
   /** Incorporates verified deliveries without losing incomplete owner changes or frozen evidence. */
   private async refresh(assignment: ExecutionAssignment, record: RecordData): Promise<RecordData> {
     const current = String(
       this.store.run(assignment.runId).data.candidateRevision ?? this.context.base,
     );
-    if (assignment.dependencies.length)
-      record.coordinationContext =
-        'Verified dependency deliveries: ' +
-        JSON.stringify(assignment.dependencies.map((id) => this.store.assignment(id)));
+    this.dependencyContext(assignment, record);
     if (record.base === current) return record;
     const incoming = this.snapshots.capture(record.workspace, record.base);
     const merged = this.snapshots.reconcile(record.base, current, incoming);

@@ -75,6 +75,7 @@ export class CodexConfiguration {
       delete schema.properties.planUpdates;
     }
     if (this.input.record.generalExecution) schema.required = Object.keys(schema.properties);
+    this.restrictActivities(schema);
     const plan = this.input.record.plan as Plan | undefined;
     if ((this.profile?.schemaVersion ?? 1) >= 2 && plan)
       schema.properties.planUpdates.items.properties.id.enum = plan.items.map((item) => item.id);
@@ -83,6 +84,18 @@ export class CodexConfiguration {
       schema.required.push('coordination');
     }
     return schema;
+  }
+
+  /** Advertises only activities authorized by the captured role, including checklist declarations. */
+  private restrictActivities(schema: any): void {
+    const resolved = this.input.record.resolvedAssignment as ResolvedAssignment | undefined;
+    if (!resolved) return;
+    const activities = [...resolved.role.activities];
+    schema.properties.activities.items.properties.activity.enum = activities;
+    const plan = schema.properties.plan?.anyOf.find((entry: any) => entry.properties);
+    if (!plan) return;
+    plan.properties.activities.items.properties.activity.enum = activities;
+    plan.properties.items.items.properties.activity.enum = activities;
   }
 
   /** Builds the structured response contract for the current coordination turn. */

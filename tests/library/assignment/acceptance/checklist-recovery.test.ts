@@ -59,6 +59,38 @@ class ChecklistRecoveryScenarios {
     assert.notEqual(readFileSync(join(record.workspace, 'docs/behavior.md'), 'utf8'), 'Before');
   }
 
+  /** A captured role without release authority can still finish verified engineering and handoff. */
+  async restrictedRole(t: TestContext): Promise<void> {
+    const { record, step } = this.fixture(t, 'restricted-role');
+    for (let stage = 0; stage < 4; stage++) await step();
+    assert.equal(record.status, 'completed');
+    assert.equal(record.outcome, 'ready_for_integration');
+    assert.ok(record.commands.some((command) => command.stage === 'red-test'));
+  }
+
+  /** A worker that ignores its output schema cannot obtain forbidden authority through recovery. */
+  async forbiddenActivity(t: TestContext): Promise<void> {
+    const { record, step } = this.fixture(t, 'restricted-violation');
+    for (let stage = 0; stage < 3; stage++) await step();
+    await assert.rejects(step, /Role cannot perform release/);
+    assert.equal(record.safeCheckpoint, false);
+    assert.equal(record.status, 'failed');
+  }
+
+  /** A completed blocked response preserves the stage and edits without accepting false completion. */
+  async blocked(t: TestContext): Promise<void> {
+    const { record, step } = this.fixture(t, 'safe-blocked');
+    await step();
+    const plan = structuredClone(record.plan);
+    await step();
+    assert.equal(record.status, 'blocked');
+    assert.equal(record.safeCheckpoint, true);
+    assert.equal(record.nextStage, 'specification');
+    assert.deepEqual(record.plan, plan);
+    assert.match(String(record.error), /Required contract decision/);
+    assert.notEqual(readFileSync(join(record.workspace, 'docs/behavior.md'), 'utf8'), 'Before');
+  }
+
   /** Captures an unlimited engineering profile and uses the production resumable session after every turn. */
   private fixture(t: TestContext, mode: string) {
     const f = workflowFixture(t, mode);
@@ -102,6 +134,12 @@ class ChecklistRecoveryScenarios {
         operationCategories: [],
       }),
     );
+    if (mode.startsWith('restricted-')) {
+      const path = join(f.repo, 'architecture/roles/engineer.yaml');
+      const role = JSON.parse(readFileSync(path, 'utf8'));
+      role.activities = role.activities.filter((activity: string) => activity !== 'release');
+      writeFileSync(path, JSON.stringify(role));
+    }
     f.commit();
   }
 }
@@ -116,5 +154,14 @@ test('equivalent completed-turn checklist errors require diagnosis without retry
 
 test('unfinished model transport cannot become a safe checklist correction', (t) =>
   scenarios.uncertain(t));
+
+test('captured role restricts output activities while allowing verified caller handoff', (t) =>
+  scenarios.restrictedRole(t));
+
+test('completed blocked response retains a safe unfinished specification checkpoint', (t) =>
+  scenarios.blocked(t));
+
+test('forbidden activity claims remain unsafe despite completed transport', (t) =>
+  scenarios.forbiddenActivity(t));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });
