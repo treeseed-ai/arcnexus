@@ -5,7 +5,11 @@ import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
 import { milliseconds } from '../architecture/config.js';
 import { targetEnvironment, toolDirectories } from '../architecture/bindings.js';
-import { preparePermissions, type AccessPolicy } from '../architecture/permissions.js';
+import {
+  preparePermissions,
+  readOnlyAccess,
+  type AccessPolicy,
+} from '../architecture/permissions.js';
 import type { Plan } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
 import { execute, git } from '../operations/process.js';
@@ -132,12 +136,7 @@ export class CodexConfiguration {
       allowedWritePaths: readOnly
         ? []
         : (resolved?.allowedWritePaths ?? component?.allowedWritePaths),
-      access: readOnly
-        ? {
-            readPaths: [...new Set([...declared.readPaths, ...declared.writeDirectories])],
-            writeDirectories: [],
-          }
-        : declared,
+      access: readOnly ? readOnlyAccess(record.workspace, declared) : declared,
       inherited:
         context?.slice(0, -1).map((item) => ({
           access: item.access,

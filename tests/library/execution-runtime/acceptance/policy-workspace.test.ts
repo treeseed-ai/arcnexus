@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { ExecutionContext } from '../../../../dist/library/architecture/execution-context.js';
@@ -53,6 +53,27 @@ class PolicyWorkspaceScenarios {
     );
   }
 
+  /** An owner can consider its purpose before its declared future test directory exists. */
+  async futureDirectory(t: TestContext): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const path = join(f.repo, 'architecture/components/b.json');
+    const component = JSON.parse(readFileSync(path, 'utf8'));
+    component.access.writeDirectories.push('future/tests');
+    writeFileSync(path, JSON.stringify(component));
+    f.commit();
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    host.control('start');
+    const run = host.store.runs()[0]!;
+    for (let owner = 0; owner < 4; owner++) await host.tick();
+    const retained = host.store.run(run.id);
+    assert.equal(retained.status, 'idle', String(retained.data.error));
+    assert.deepEqual(Object.keys(retained.data.stewardshipReviews as object), ['a', 'b', 'c']);
+    assert.equal(existsSync(join(f.repo, 'future')), false);
+    const record = retained.data.workspace as any;
+    assert.equal(existsSync(join(record.workspace, 'future')), false);
+  }
+
   /** Prepares a real disposable policy workspace through the normal host lifecycle. */
   private async fixture(t: TestContext) {
     const f = new GeneralFixture(t).fixture;
@@ -72,5 +93,8 @@ test('altered retained policy source blocks dispatch and automatic resumption', 
 
 test('policy materialization reads the pinned candidate independently of delivery workspaces', (t) =>
   scenarios.pinned(t));
+
+test('read-only stewardship permits absent future owner directories without creating them', (t) =>
+  scenarios.futureDirectory(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

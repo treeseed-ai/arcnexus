@@ -7,6 +7,7 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import {
   preparePermissions,
+  readOnlyAccess,
   validateAccess,
 } from '../../../../dist/library/architecture/permissions.js';
 
@@ -87,6 +88,31 @@ class PermissionsTests {
     this.rejectPolicy(root, work, ['.'], ['.'], ['../outside'], /Invalid relative path/);
   }
 
+  /** Future writes disappear from read-only grants while explicit reads and path violations stay strict. */
+  readOnlyFutureDirectories(t: TestContext): void {
+    const { work } = workspace(t);
+    assert.deepEqual(
+      readOnlyAccess(work, { readPaths: ['file.txt'], writeDirectories: ['future/tests'] }),
+      {
+        readPaths: ['file.txt'],
+        writeDirectories: [],
+      },
+    );
+    assert.throws(
+      () => readOnlyAccess(work, { readPaths: ['missing'], writeDirectories: [] }),
+      /does not exist/,
+    );
+    assert.throws(
+      () => readOnlyAccess(work, { readPaths: [], writeDirectories: ['file.txt'] }),
+      /directory/,
+    );
+    symlinkSync('missing-target', join(work, 'link'));
+    assert.throws(
+      () => readOnlyAccess(work, { readPaths: [], writeDirectories: ['link/future'] }),
+      /symlink/,
+    );
+  }
+
   /** Requires unsafe directory and exact-scope combinations to fail permission preparation. */
   private rejectPolicy(
     root: string,
@@ -144,5 +170,8 @@ test('write coverage requires a declared directory and dot alone grants the whol
 
 test('access policies are required, have both explicit path arrays, and only dot bypasses normal path validation', () =>
   suite.accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation());
+
+test('read-only conversion rejects invalid authority while omitting absent future writes', (t) =>
+  suite.readOnlyFutureDirectories(t));
 
 registerSuite({ component: 'architecture', level: 'acceptance', tags: ['deterministic'] });
