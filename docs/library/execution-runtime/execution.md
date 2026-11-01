@@ -94,7 +94,8 @@ independent review; owners retain their declared engineering profiles. Local mac
 bindings are discovered at `<git-common-dir>/arcnexus/bindings.yaml`; `tools.codex`
 selects a local executable. Captured bindings and profiles are immutable per run.
 The normal interface does not accept work budgets; obsolete configured budget fields
-produce an actionable migration error.
+produce an actionable migration error. Unknown execution-default keys are rejected
+rather than ignored; malformed package selectors and verification paths fail preflight.
 
 ## Inbox decisions
 
