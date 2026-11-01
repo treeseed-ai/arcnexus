@@ -34,6 +34,7 @@ export class AssignmentExecution {
   async activate(assignment: ExecutionAssignment): Promise<ActivationResult> {
     const record = await this.record(assignment);
     this.acknowledge(assignment, record);
+    this.dependencyContext(assignment, record);
     record.inboxContext = this.store.inbox(assignment.id);
     record.continuationFeedback = [
       assignment.data.continuationReason,
@@ -153,7 +154,6 @@ export class AssignmentExecution {
     record.resolvedAssignment = resolved;
     record.directionAccepted = true;
     record.trustedVerificationPaths = this.context.verificationInputs;
-    this.dependencyContext(assignment, record);
     this.store.updateAssignment(assignment.id, 'running', {
       recordId: record.id,
       candidateBase: base,
@@ -198,7 +198,6 @@ export class AssignmentExecution {
     const current = String(
       this.store.run(assignment.runId).data.candidateRevision ?? this.context.base,
     );
-    this.dependencyContext(assignment, record);
     if (record.base === current) return record;
     const incoming = this.snapshots.capture(record.workspace, record.base);
     const merged = this.snapshots.reconcile(record.base, current, incoming);
