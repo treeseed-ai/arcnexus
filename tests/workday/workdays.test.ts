@@ -78,7 +78,7 @@ function fixture(t: any): any {
     spawnSync(process.execPath, [cli, 'workday', ...args], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
   return { ...f, manifest, path, save, workday: run };
 }

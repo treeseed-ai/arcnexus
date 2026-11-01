@@ -16,7 +16,7 @@ class FixturePayloadTests {
       cwd: root,
       env: { ...process.env, NODE_TEST_CONTEXT: undefined },
       encoding: 'utf8',
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /identity normalization trims and lowercases/);

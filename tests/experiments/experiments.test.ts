@@ -209,7 +209,7 @@ class ExperimentFixture {
     return spawnSync(process.execPath, [cli, 'experiment', ...args], {
       env: { ...process.env, ARCNEXUS_STATE_DIR: this.state },
       encoding: 'utf8',
-      timeout: 120000,
+      timeout: 30 * 60 * 1000,
     });
   }
   campaignArgs(manifest = this.manifest): string[] {

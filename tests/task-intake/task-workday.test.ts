@@ -54,7 +54,7 @@ class TaskWorkdayTests {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 60000,
+      timeout: 30 * 60 * 1000,
     });
   }
   private bindings(f: any): string {

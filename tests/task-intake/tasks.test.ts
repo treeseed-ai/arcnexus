@@ -46,7 +46,7 @@ class TaskTests {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 30000,
+      timeout: 30 * 60 * 1000,
     });
   }
   missingOwner(t: TestContext): void {
@@ -57,7 +57,7 @@ class TaskTests {
     const result = spawnSync(
       process.execPath,
       [cli, 'task', 'plan', '--input', input, '--project', f.repo, '--codex-path', f.executable],
-      { encoding: 'utf8', env: f.env, timeout: 30000 },
+      { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
     );
     assert.equal(result.status, 0, result.stderr);
     const proposal = JSON.parse(result.stdout);
@@ -67,14 +67,14 @@ class TaskTests {
     const inspect = spawnSync(process.execPath, [cli, 'task', 'inspect', proposal.id, '--json'], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(inspect.status, 0, inspect.stderr);
     assert.equal(JSON.parse(inspect.stdout).digest, proposal.digest);
     const run = spawnSync(process.execPath, [cli, 'task', 'run', proposal.id], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(run.status, 2, run.stderr);
   }

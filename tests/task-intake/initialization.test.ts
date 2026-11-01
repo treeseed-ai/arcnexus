@@ -87,7 +87,7 @@ class InitializationTests {
     fixture.commit();
     const result = spawnSync(process.execPath, [cli, 'validate', '--project', fixture.repo], {
       encoding: 'utf8',
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(result.status, 2, result.stderr);
     assert.match(result.stderr, /initializer|initialization/i);

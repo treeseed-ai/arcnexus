@@ -83,9 +83,9 @@ class Initializer {
     const before = candidateDigest(this.input.record);
     this.publish('started');
     try {
-      this.evidence.turns = 1;
       const checks = new InitializerChecks(this.input.root, this.child, this.snapshot);
       await checks.verify(this.input.signal);
+      this.evidence.turns = 1;
       const result = await this.infer();
       checks.unchanged(before);
       this.evidence.result = result;

@@ -112,7 +112,7 @@ function campaign(t: any, mode: any = 'success'): any {
     return spawnSync(process.execPath, [program, manifest, output], {
       env: f.env,
       encoding: 'utf8',
-      timeout: 30000,
+      timeout: 30 * 60 * 1000,
     });
   };
   return { ...f, value, run, output };

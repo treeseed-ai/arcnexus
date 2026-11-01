@@ -5,6 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** Required protocol ceiling; optional managed execution limits remain unset. */
+export const protocolTimeoutSeconds = 24 * 60 * 60;
+
 export interface BridgeTool {
   name: string;
   description: string;
@@ -78,8 +81,8 @@ class HostBridge {
           default_tools_approval_mode: 'approve',
           command: process.execPath,
           args: [fileURLToPath(new URL('./bridge-client.js', import.meta.url)), this.path],
-          startup_timeout_sec: 10,
-          tool_timeout_sec: 10,
+          startup_timeout_sec: protocolTimeoutSeconds,
+          tool_timeout_sec: protocolTimeoutSeconds,
         },
       },
     };

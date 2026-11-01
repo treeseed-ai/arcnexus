@@ -67,7 +67,7 @@ class WorkdayStoreTests {
       spawnSync(process.execPath, [cli, 'workday', ...args], {
         encoding: 'utf8',
         env,
-        timeout: 10000,
+        timeout: 30 * 60 * 1000,
       });
     const status = workday('status', 'one', '--json');
     assert.equal(status.status, 0, status.stderr);

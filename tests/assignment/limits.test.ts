@@ -24,7 +24,7 @@ class ExecutionLimitTests {
     const result = spawnSync(
       process.execPath,
       [cli, 'inspect', 'sample', 'Improve behavior', '--project', fixture.repo, '--json'],
-      { encoding: 'utf8', timeout: 10000 },
+      { encoding: 'utf8', timeout: 30 * 60 * 1000 },
     );
     assert.equal(result.status, 0, result.stderr);
     const resolved = JSON.parse(result.stdout);

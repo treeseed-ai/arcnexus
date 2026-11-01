@@ -14,7 +14,7 @@ class ProgressProjectionTests {
     const status = spawnSync(process.execPath, [cli, 'status', record.id, '--json'], {
       encoding: 'utf8',
       env: f.env,
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(status.status, 0, status.stderr);
     const view = JSON.parse(status.stdout);

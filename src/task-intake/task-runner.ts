@@ -8,7 +8,6 @@ import { runSteward } from '../assignment/steward.js';
 import { captureChanges } from '../change-inspection/changes.js';
 import { git } from '../operations/process.js';
 import { saveMarkdown } from '../report/report.js';
-import { WorkdayRunner } from '../workday/workday.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { createWorkspace } from '../workspace/workspace.js';
 import { ProposalStore, type TaskProposal } from './proposal-store.js';
@@ -27,6 +26,7 @@ export class TaskRunner {
     );
     const execution = proposal.execution!;
     if (execution.kind === 'workday') {
+      const { WorkdayRunner } = await import('../workday/workday.js');
       const report = await new WorkdayRunner(this.root, this.signal, proposal.executable).run(
         execution.input,
         undefined,

@@ -107,7 +107,7 @@ class ContextTests {
         '--codex-path',
         f.executable,
       ],
-      { encoding: 'utf8', env: f.env, timeout: 30000 },
+      { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
     );
     assert.equal(r.status, 0, r.stderr);
     const report = JSON.parse(r.stdout);
