@@ -1,7 +1,7 @@
 id: steward
 type: library
 purpose: Adapt the Codex harness with explicit execution permissions and evidence
-path: src/steward
+path: src/library/steward
 objectives:
   - Research and implement bounded objectives with independently verified
     evidence
@@ -36,9 +36,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/steward
-    - tests/steward
-    - docs/steward
+    - src/library/steward
+    - tests/library/steward
+    - docs/library/steward
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -54,20 +55,24 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/steward
-    - tests/steward
-    - docs/steward
+    - src/library/steward
+    - tests/library/steward
+    - docs/library/steward
+    - architecture/components/steward.yaml
   publicModules:
-    - src/steward/bridge.ts
-    - src/steward/codex.ts
-  directoryExceptions: []
+    - src/library/steward/bridge.ts
+    - src/library/steward/codex.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/steward
+    - src/library/steward
   documentation:
-    - docs/steward
+    - docs/library/steward
   tests:
-    - tests/steward
+    - tests/library/steward
   exclude: []
 provides: []
 consumes:
@@ -75,3 +80,4 @@ consumes:
     version: "1"
   - id: initializer-result
     version: "1"
+testProfile: node

@@ -12,11 +12,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
           - "{report}"
           - success
         artifacts:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
   - id: repair
     project: fixture
     component: sample
@@ -27,11 +27,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
           - "{report}"
           - repair
         artifacts:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
   - id: boundary
     project: fixture
     component: sample
@@ -42,11 +42,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
           - "{report}"
           - boundary
         artifacts:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
   - id: failure
     project: fixture
     component: sample
@@ -57,8 +57,8 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js
           - "{report}"
           - failure
         artifacts:
-          - ../dist/experiments/checks/simulation.js
+          - ../dist/library/experiments/checks/simulation.js

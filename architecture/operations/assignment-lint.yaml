@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/assignment
-  - tests/assignment
+  - src/library/assignment
+  - tests/library/assignment
 generatedDirectories: []
 artifacts: []
 probes: []

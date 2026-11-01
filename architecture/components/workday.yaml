@@ -1,7 +1,7 @@
 id: workday
 type: library
 purpose: Resolve and execute bounded two-owner workdays
-path: src/workday
+path: src/library/workday
 objectives:
   - Resolve and execute bounded two-owner workdays
 constraints:
@@ -34,9 +34,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/workday
-    - tests/workday
-    - docs/workday
+    - src/library/workday
+    - tests/library/workday
+    - docs/library/workday
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -53,35 +54,40 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/workday
-    - tests/workday
-    - docs/workday
+    - src/library/workday
+    - tests/library/workday
+    - docs/library/workday
+    - architecture/components/workday.yaml
   publicModules:
-    - src/workday/workday-config.ts
-    - src/workday/workday-view.ts
-    - src/workday/workday.ts
-  directoryExceptions: []
+    - src/library/workday/workday-config.ts
+    - src/library/workday/workday-view.ts
+    - src/library/workday/workday.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/workday
+    - src/library/workday
   documentation:
-    - docs/workday
+    - docs/library/workday
   tests:
-    - tests/workday
+    - tests/library/workday
   exclude: []
 provides:
   - id: workday-agent-result
     version: "1"
     kind: json-schema
-    path: src/workday/schemas/workday-agent-result.json
+    path: src/library/workday/schemas/workday-agent-result.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: workday
     version: "1"
     kind: json-schema
-    path: src/workday/schemas/workday.json
+    path: src/library/workday/schemas/workday.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: workday
     version: "1"
   - id: workday-agent-result
     version: "1"
+testProfile: node

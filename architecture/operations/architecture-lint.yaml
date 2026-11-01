@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/architecture
-  - tests/architecture
+  - src/library/architecture
+  - tests/library/architecture
 generatedDirectories: []
 artifacts: []
 probes: []

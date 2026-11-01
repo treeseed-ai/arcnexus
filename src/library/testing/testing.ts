@@ -1,0 +1,145 @@
+import { randomUUID } from 'node:crypto';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { loadCatalog } from '../architecture/components.js';
+import { InputError } from '../architecture/config.js';
+import { execute, git, type CommandResult } from '../operations/process.js';
+import { stateRoot } from '../workspace/state.js';
+import { TestDiscovery, matches, type DiscoveredSuite, type TestFilters } from './discovery.js';
+import { loadTestProfile, type TestProfile } from './profile.js';
+
+export interface TestSelection {
+  project: string;
+  revision: string;
+  inference: false;
+  suites: DiscoveredSuite[];
+  profiles: TestProfile[];
+}
+export interface TestExecution {
+  selection: TestSelection;
+  status: 'running' | 'passed' | 'failed' | 'cancelled';
+  exitCode: number;
+  evidence: string;
+  commands: CommandResult[];
+  productionBuild: 'caller-prepared' | 'service-prepared';
+  error?: string;
+}
+
+/** Selects owner-declared suites and executes their fixed Node profile with retained evidence. */
+export class ComponentTesting {
+  inspect(project: string, filters: TestFilters = {}): TestSelection {
+    this.filters(filters);
+    project = resolve(project);
+    const revision = git(project, 'rev-parse', 'HEAD').trim();
+    const catalog = loadCatalog(project, revision);
+    const owners = Object.values(catalog.components).filter((owner) =>
+      filters.component ? owner.id === filters.component : Boolean(owner.testProfile),
+    );
+    if (!owners.length) throw new InputError(`Unknown component: ${filters.component}`);
+    const profiles = new Map<string, TestProfile>();
+    const suites: DiscoveredSuite[] = [];
+    for (const owner of owners) {
+      if (!owner.testProfile) throw new InputError(`No test profile for ${owner.id}`);
+      const profile = loadTestProfile(project, revision, owner.testProfile);
+      profiles.set(profile.id, profile);
+      suites.push(...new TestDiscovery(project).discover(owner, profile.outputRoot));
+    }
+    const selected = suites.filter((suite) => matches(suite, filters));
+    if (!selected.length) throw new InputError('No tests match the required selection');
+    return {
+      project,
+      revision,
+      inference: false,
+      suites: selected,
+      profiles: [...profiles.values()],
+    };
+  }
+
+  async run(
+    selection: TestSelection,
+    signal: AbortSignal,
+    productionBuilt = false,
+  ): Promise<TestExecution> {
+    const result = this.record(selection, productionBuilt);
+    try {
+      await this.prepare(result, signal, productionBuilt);
+      await this.command(
+        result,
+        {
+          command: process.execPath,
+          args: ['--test', ...selection.suites.map((suite) => suite.compiled)],
+        },
+        signal,
+      );
+      result.status = 'passed';
+      result.exitCode = 0;
+    } catch (error) {
+      result.status = signal.aborted ? 'cancelled' : 'failed';
+      result.exitCode = signal.aborted ? 130 : 1;
+      result.error = String(error);
+    }
+    this.save(result);
+    return result;
+  }
+
+  private record(selection: TestSelection, productionBuilt: boolean): TestExecution {
+    const evidence = join(stateRoot(), 'test-runs', randomUUID());
+    mkdirSync(evidence, { recursive: true, mode: 0o700 });
+    const result: TestExecution = {
+      selection,
+      status: 'running',
+      exitCode: 1,
+      evidence,
+      commands: [],
+      productionBuild: productionBuilt ? 'caller-prepared' : 'service-prepared',
+    };
+    this.save(result);
+    return result;
+  }
+
+  private filters(filters: TestFilters): void {
+    if (filters.level && !['unit', 'integration', 'acceptance'].includes(filters.level))
+      throw new InputError(`Invalid test level: ${filters.level}`);
+    if (filters.category && filters.category !== 'regression')
+      throw new InputError(`Invalid test category: ${filters.category}`);
+  }
+
+  private async prepare(
+    result: TestExecution,
+    signal: AbortSignal,
+    productionBuilt: boolean,
+  ): Promise<void> {
+    const seen = new Set<string>();
+    for (const profile of result.selection.profiles) {
+      for (const step of profile.preparation) {
+        const identity = JSON.stringify(step);
+        if (seen.has(identity) || (productionBuilt && step.purpose === 'production')) continue;
+        seen.add(identity);
+        await this.command(result, step, signal);
+      }
+    }
+  }
+
+  private async command(
+    result: TestExecution,
+    command: { command: string; args: string[] },
+    signal: AbortSignal,
+  ): Promise<void> {
+    const log = join(result.evidence, `${result.commands.length}.log`);
+    try {
+      result.commands.push(await execute(command, result.selection.project, log, signal));
+    } catch (error) {
+      const commandResult = (error as { commandResult?: CommandResult }).commandResult;
+      if (commandResult) result.commands.push(commandResult);
+      throw error;
+    } finally {
+      this.save(result);
+    }
+  }
+
+  private save(result: TestExecution): void {
+    writeFileSync(join(result.evidence, 'result.json'), JSON.stringify(result, null, 2) + '\n', {
+      mode: 0o600,
+    });
+  }
+}

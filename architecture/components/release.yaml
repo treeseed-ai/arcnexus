@@ -1,0 +1,77 @@
+id: release
+type: release
+purpose: Verify delivery candidates and own future container packaging
+path: .github
+objectives:
+  - Keep builds and deterministic tests reproducible
+  - Maintain formatting, linting, CI and shared test infrastructure
+constraints:
+  - Do not weaken independent acceptance to make candidate work pass
+  - Keep generated output separate from maintained source
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
+questions: []
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - docker
+    - tests/release
+    - docs/release
+    - scripts/release
+    - architecture/components
+schemaVersion: 4
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - npm run build, npm run check and npm test
+  - Stable dist/cli.js executable entry point
+relatedIds: []
+parentId: cli-package
+operationIds: []
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - .github
+    - docker
+    - tests/release
+    - docs/release
+    - scripts/release
+    - architecture/components/release.yaml
+  publicModules: []
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
+discovery:
+  source: []
+  documentation:
+    - docs/release
+  tests:
+    - tests/release
+  exclude: []
+provides: []
+consumes: []
+testProfile: node

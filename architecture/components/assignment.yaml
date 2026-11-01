@@ -1,7 +1,7 @@
 id: assignment
 type: library
 purpose: Coordinate bounded assignments and host verification
-path: src/assignment
+path: src/library/assignment
 objectives:
   - Make actual execution outcomes easy to inspect
 constraints:
@@ -34,9 +34,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/assignment
-    - tests/assignment
-    - docs/assignment
+    - src/library/assignment
+    - tests/library/assignment
+    - docs/library/assignment
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -54,42 +55,46 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/assignment
-    - tests/assignment
-    - docs/assignment
+    - src/library/assignment
+    - tests/library/assignment
+    - docs/library/assignment
+    - architecture/components/assignment.yaml
   publicModules:
-    - src/assignment/checkpoints.ts
-    - src/assignment/plan.ts
-    - src/assignment/steward.ts
-  directoryExceptions: []
+    - src/library/assignment/checkpoints.ts
+    - src/library/assignment/plan.ts
+    - src/library/assignment/steward.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/assignment
+    - src/library/assignment
   documentation:
-    - docs/assignment
+    - docs/library/assignment
   tests:
-    - tests/assignment
+    - tests/library/assignment
   exclude: []
 provides:
   - id: agent-result
     version: "1"
     kind: json-schema
-    path: src/assignment/schemas/agent-result.json
+    path: src/library/assignment/schemas/agent-result.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: assignment
     version: "1"
     kind: json-schema
-    path: src/assignment/schemas/assignment.json
+    path: src/library/assignment/schemas/assignment.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: plan-updates
     version: "1"
     kind: json-schema
-    path: src/assignment/schemas/plan-updates.json
+    path: src/library/assignment/schemas/plan-updates.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: plan
     version: "1"
     kind: json-schema
-    path: src/assignment/schemas/plan.json
+    path: src/library/assignment/schemas/plan.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: assignment
@@ -98,3 +103,4 @@ consumes:
     version: "1"
   - id: plan-updates
     version: "1"
+testProfile: node

@@ -1,16 +1,19 @@
 schemaVersion: 2
 kind: research
-objective: "Investigate this architectural question: what does the report-tests operation prove
-  about reporting, and what requires independent host acceptance? Use the explicitly supplied prior
-  finding as evidence to evaluate, inspect current report tests, invoke operations.run report-tests
-  once, and explain remaining uncertainty. Do not edit files. Complete checklist items with
-  evidence."
-expectedOutcome: "Investigate this architectural question: what does the report-tests operation
-  prove about reporting, and what requires independent host acceptance? Use the explicitly supplied
-  prior finding as evidence to evaluate, inspect current report tests, invoke operations.run
-  report-tests once, and explain remaining uncertainty. Do not edit files. Complete checklist items
+objective: "Investigate this architectural question: what does the report-tests
+  operation prove about reporting, and what requires independent host
+  acceptance? Use the explicitly supplied prior finding as evidence to evaluate,
+  inspect current report tests, invoke operations.run report-tests once, and
+  explain remaining uncertainty. Do not edit files. Complete checklist items
   with evidence."
+expectedOutcome: "Investigate this architectural question: what does the
+  report-tests operation prove about reporting, and what requires independent
+  host acceptance? Use the explicitly supplied prior finding as evidence to
+  evaluate, inspect current report tests, invoke operations.run report-tests
+  once, and explain remaining uncertainty. Do not edit files. Complete checklist
+  items with evidence."
 acceptanceCriteria:
   - Identify the supplied prior finding and compare it with current source/tests.
-  - Run declared report-tests and explain limits of that evidence and independent acceptance.
+  - Run declared report-tests and explain limits of that evidence and
+    independent acceptance.
 hostChecks: []

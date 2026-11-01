@@ -1,7 +1,7 @@
 id: task-intake
 type: library
 purpose: Initialize assignments and propose accountable owners before execution
-path: src/task-intake
+path: src/library/task-intake
 objectives:
   - Interpret requests and identify accountable existing owners
   - Report missing responsibilities and architectural questions precisely
@@ -19,16 +19,17 @@ verification:
       - run
       - lint
       - --
-      - src/task-intake
-      - tests/task-intake
+      - src/library/task-intake
+      - tests/library/task-intake
 questions: []
 access:
   readPaths:
     - .
   writeDirectories:
-    - src/task-intake
-    - tests/task-intake
-    - docs/task-intake
+    - src/library/task-intake
+    - tests/library/task-intake
+    - docs/library/task-intake
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -45,27 +46,32 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/task-intake
-    - tests/task-intake
-    - docs/task-intake
+    - src/library/task-intake
+    - tests/library/task-intake
+    - docs/library/task-intake
+    - architecture/components/task-intake.yaml
   publicModules:
-    - src/task-intake/initializer.ts
-    - src/task-intake/tasks.ts
-  directoryExceptions: []
+    - src/library/task-intake/initializer.ts
+    - src/library/task-intake/tasks.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/task-intake
+    - src/library/task-intake
   documentation:
-    - docs/task-intake
+    - docs/library/task-intake
   tests:
-    - tests/task-intake
+    - tests/library/task-intake
   exclude: []
 provides:
   - id: initializer-result
     version: "1"
     kind: json-schema
-    path: src/task-intake/schemas/initializer-result.json
+    path: src/library/task-intake/schemas/initializer-result.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: initializer-result
     version: "1"
+testProfile: node

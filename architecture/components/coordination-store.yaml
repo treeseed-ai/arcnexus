@@ -1,7 +1,7 @@
 id: coordination-store
 type: library
 purpose: Persist atomic workday coordination and ordered evidence
-path: src/coordination-store
+path: src/library/coordination-store
 objectives:
   - Persist atomic workday coordination and ordered evidence
 constraints:
@@ -34,9 +34,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/coordination-store
-    - tests/coordination-store
-    - docs/coordination-store
+    - src/library/coordination-store
+    - tests/library/coordination-store
+    - docs/library/coordination-store
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -53,19 +54,24 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/coordination-store
-    - tests/coordination-store
-    - docs/coordination-store
+    - src/library/coordination-store
+    - tests/library/coordination-store
+    - docs/library/coordination-store
+    - architecture/components/coordination-store.yaml
   publicModules:
-    - src/coordination-store/workday-store.ts
-  directoryExceptions: []
+    - src/library/coordination-store/workday-store.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/coordination-store
+    - src/library/coordination-store
   documentation:
-    - docs/coordination-store
+    - docs/library/coordination-store
   tests:
-    - tests/coordination-store
+    - tests/library/coordination-store
   exclude: []
 provides: []
 consumes: []
+testProfile: node

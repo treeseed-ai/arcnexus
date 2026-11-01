@@ -1,7 +1,7 @@
 id: report
 type: library
 purpose: Expose honest, readable evidence from a steward execution
-path: src/report
+path: src/library/report
 objectives:
   - Make actual execution outcomes easy to inspect
 constraints:
@@ -40,9 +40,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/report
-    - tests/report
-    - docs/report
+    - src/library/report
+    - tests/library/report
+    - docs/library/report
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -57,22 +58,27 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/report
-    - tests/report
-    - docs/report
+    - src/library/report
+    - tests/library/report
+    - docs/library/report
+    - architecture/components/report.yaml
   publicModules:
-    - src/report/report.ts
-    - src/report/timeline.ts
-    - src/report/progress.ts
-    - src/report/workday-report.ts
-  directoryExceptions: []
+    - src/library/report/report.ts
+    - src/library/report/timeline.ts
+    - src/library/report/progress.ts
+    - src/library/report/workday-report.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/report
+    - src/library/report
   documentation:
-    - docs/report
+    - docs/library/report
   tests:
-    - tests/report
+    - tests/library/report
   exclude: []
 provides: []
 consumes: []
+testProfile: node

@@ -2,7 +2,7 @@ id: architecture
 type: library
 purpose: Resolve architectural definitions and immutable assignment inputs;
   execution is owned by the assignment component
-path: src/architecture
+path: src/library/architecture
 objectives:
   - Make actual execution outcomes easy to inspect
 constraints:
@@ -35,9 +35,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/architecture
-    - tests/architecture
-    - docs/architecture
+    - src/library/architecture
+    - tests/library/architecture
+    - docs/library/architecture
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -53,61 +54,66 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/architecture
-    - tests/architecture
-    - docs/architecture
+    - src/library/architecture
+    - tests/library/architecture
+    - docs/library/architecture
+    - architecture/components/architecture.yaml
   publicModules:
-    - src/architecture/assignment.ts
-    - src/architecture/bindings.ts
-    - src/architecture/components.ts
-    - src/architecture/config.ts
-    - src/architecture/configuration.ts
-    - src/architecture/initialization.ts
-    - src/architecture/permissions.ts
-    - src/architecture/schema.ts
-  directoryExceptions: []
+    - src/library/architecture/assignment.ts
+    - src/library/architecture/bindings.ts
+    - src/library/architecture/components.ts
+    - src/library/architecture/config.ts
+    - src/library/architecture/configuration.ts
+    - src/library/architecture/initialization.ts
+    - src/library/architecture/permissions.ts
+    - src/library/architecture/schema.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/architecture
+    - src/library/architecture
   documentation:
-    - docs/architecture
+    - docs/library/architecture
   tests:
-    - tests/architecture
+    - tests/library/architecture
   exclude: []
 provides:
   - id: component-v4
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/component-v4.json
+    path: src/library/architecture/schemas/component-v4.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: component
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/component.json
+    path: src/library/architecture/schemas/component.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: composition-profile
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/composition-profile.json
+    path: src/library/architecture/schemas/composition-profile.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: execution-profile
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/execution-profile.json
+    path: src/library/architecture/schemas/execution-profile.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: ownership
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/ownership.json
+    path: src/library/architecture/schemas/ownership.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: pattern
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/pattern.json
+    path: src/library/architecture/schemas/pattern.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: role
     version: "1"
     kind: json-schema
-    path: src/architecture/schemas/role.json
+    path: src/library/architecture/schemas/role.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes: []
+testProfile: node

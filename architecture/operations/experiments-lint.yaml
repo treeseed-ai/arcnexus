@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/experiments
-  - tests/experiments
+  - src/library/experiments
+  - tests/library/experiments
   - fixtures
   - scripts
   - experiments/checks

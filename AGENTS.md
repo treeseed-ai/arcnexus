@@ -64,7 +64,7 @@ lint fixes must stay within captured writable scope. Repository-wide
 affected files; use explicit owned paths for a bounded assignment. Final verification
 includes `npm run format:check`, `npm run lint`, type checking, ownership and guidance
 validation, and the relevant built-program tests. Host checks never reformat source.
-See [code quality](docs/development-tooling/quality.md) for the executable contract.
+See [code quality](docs/foundation/quality.md) for the executable contract.
 
 ## Development and release
 

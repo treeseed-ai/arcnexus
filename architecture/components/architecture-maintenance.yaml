@@ -36,9 +36,9 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - architecture
     - docs/plans
     - .
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -55,7 +55,6 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - architecture
     - README.md
     - CHANGELOG.md
     - docs/charter.md
@@ -64,10 +63,21 @@ ownership:
     - docs/guidance-audit.md
     - docs/plans
     - LICENSE
+    - architecture/composition-profiles
+    - architecture/execution-profiles
+    - architecture/operations
+    - architecture/roles
+    - architecture/environment.yaml
+    - architecture/components/arcnexus.yaml
+    - architecture/components/cli-package.yaml
+    - architecture/components/architecture-maintenance.yaml
   publicModules: []
   directoryExceptions:
     - path: .
       reason: Root-file directory granularity; exact ownership checks remain mandatory
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source: []
   documentation:

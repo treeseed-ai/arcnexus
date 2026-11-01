@@ -1,7 +1,7 @@
 id: guidance-validation
 type: library
 purpose: Validate guidance metadata and inventory instructions without semantic approval
-path: src/guidance-validation
+path: src/library/guidance-validation
 objectives:
   - Validate guidance metadata and inventory instructions without semantic
     approval
@@ -38,9 +38,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/guidance-validation
-    - tests/guidance-validation
-    - docs/guidance-validation
+    - src/library/guidance-validation
+    - tests/library/guidance-validation
+    - docs/library/guidance-validation
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -55,19 +56,24 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/guidance-validation
-    - tests/guidance-validation
-    - docs/guidance-validation
+    - src/library/guidance-validation
+    - tests/library/guidance-validation
+    - docs/library/guidance-validation
+    - architecture/components/guidance-validation.yaml
   publicModules:
-    - src/guidance-validation/guidance.ts
-  directoryExceptions: []
+    - src/library/guidance-validation/guidance.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/guidance-validation
+    - src/library/guidance-validation
   documentation:
-    - docs/guidance-validation
+    - docs/library/guidance-validation
   tests:
-    - tests/guidance-validation
+    - tests/library/guidance-validation
   exclude: []
 provides: []
 consumes: []
+testProfile: node

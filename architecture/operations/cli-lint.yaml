@@ -14,7 +14,7 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/cli
+  - src/gateway/cli
 generatedDirectories: []
 artifacts: []
 probes: []

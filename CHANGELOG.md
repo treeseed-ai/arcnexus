@@ -10,6 +10,8 @@
 
 ### Changed
 
+- Align component directories and CLI adapters with ownership and shared test selection (#72).
+
 - Compile class-based TypeScript tests and enforce compact owner-scoped code quality (#64).
 
 - Read YAML configuration and group implementation by accountable owner (#63).

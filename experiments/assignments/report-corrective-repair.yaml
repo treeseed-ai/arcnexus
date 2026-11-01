@@ -1,43 +1,50 @@
 schemaVersion: 2
 kind: change
-objective: Add Operations and Managed services summaries to the Markdown report using only captured
-  JSON fields. Modify only src/report/report.ts, tests/report/report.test.mjs and
-  docs/report/report.md. Inspect src/operations/operations.ts and src/operations/services.ts
-  read-only for record shape. Preserve existing report fields. During specification edit docs/tests
-  only, invoke operations.run report-tests to observe the regression, and select captured npm test
-  (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red
-  check. Implementation may build dist with npm run build before exploratory report-tests. Complete
-  every checklist item or validly skip it with reason, respecting dependency order. No commits;
-  caller owns issue/branch/release steps.
-expectedOutcome: Add Operations and Managed services summaries to the Markdown report using only
-  captured JSON fields. Modify only src/report/report.ts, tests/report/report.test.mjs and
-  docs/report/report.md. Inspect src/operations/operations.ts and src/operations/services.ts
-  read-only for record shape. Preserve existing report fields. During specification edit docs/tests
-  only, invoke operations.run report-tests to observe the regression, and select captured npm test
-  (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red
-  check. Implementation may build dist with npm run build before exploratory report-tests. Complete
-  every checklist item or validly skip it with reason, respecting dependency order. No commits;
-  caller owns issue/branch/release steps.
+objective: Add Operations and Managed services summaries to the Markdown report
+  using only captured JSON fields. Modify only src/library/report/report.ts,
+  tests/library/report/report.test.mjs and docs/library/report/report.md.
+  Inspect src/library/operations/operations.ts and
+  src/library/operations/services.ts read-only for record shape. Preserve
+  existing report fields. During specification edit docs/tests only, invoke
+  operations.run report-tests to observe the regression, and select captured npm
+  test (verificationIndex 1) with a distinctive literal assertion diagnostic for
+  the host expected-red check. Implementation may build dist with npm run build
+  before exploratory report-tests. Complete every checklist item or validly skip
+  it with reason, respecting dependency order. No commits; caller owns
+  issue/branch/release steps.
+expectedOutcome: Add Operations and Managed services summaries to the Markdown
+  report using only captured JSON fields. Modify only
+  src/library/report/report.ts, tests/library/report/report.test.mjs and
+  docs/library/report/report.md. Inspect src/library/operations/operations.ts
+  and src/library/operations/services.ts read-only for record shape. Preserve
+  existing report fields. During specification edit docs/tests only, invoke
+  operations.run report-tests to observe the regression, and select captured npm
+  test (verificationIndex 1) with a distinctive literal assertion diagnostic for
+  the host expected-red check. Implementation may build dist with npm run build
+  before exploratory report-tests. Complete every checklist item or validly skip
+  it with reason, respecting dependency order. No commits; caller owns
+  issue/branch/release steps.
 acceptanceCriteria:
-  - "Markdown has ## Operations with each captured operation id, passed when exitCode=0 otherwise
-    failed, durationMs and log path; ## Managed services with id, status and endpointClosed
-    boolean."
-  - Historical absent/empty arrays show exactly No managed operations recorded. and No managed
-    services recorded.; never undefined/null. Preserve existing sections and do not mutate records.
-  - Document behavior and add regression tests including a built CLI report assertion. Run
-    report-tests through operations.run for actual feedback; update plan checklist with evidence and
-    provide caller handoff.
+  - "Markdown has ## Operations with each captured operation id, passed when
+    exitCode=0 otherwise failed, durationMs and log path; ## Managed services
+    with id, status and endpointClosed boolean."
+  - Historical absent/empty arrays show exactly No managed operations recorded.
+    and No managed services recorded.; never undefined/null. Preserve existing
+    sections and do not mutate records.
+  - Document behavior and add regression tests including a built CLI report
+    assertion. Run report-tests through operations.run for actual feedback;
+    update plan checklist with evidence and provide caller handoff.
 hostChecks:
   - id: injected-report-repair
     command: node
     args:
-      - ../../dist/experiments/checks/inject-report-defect.js
+      - ../../dist/library/experiments/checks/inject-report-defect.js
       - "{faultMarker}"
-      - ../../dist/experiments/checks/report-operations.js
+      - ../../dist/library/experiments/checks/report-operations.js
     artifacts:
-      - ../../dist/experiments/checks/inject-report-defect.js
-      - ../../dist/experiments/checks/report-operations.js
+      - ../../dist/library/experiments/checks/inject-report-defect.js
+      - ../../dist/library/experiments/checks/report-operations.js
 allowedWritePaths:
-  - src/report/report.ts
-  - tests/report/report.test.mjs
-  - docs/report/report.md
+  - src/library/report/report.ts
+  - tests/library/report/report.test.mjs
+  - docs/library/report/report.md

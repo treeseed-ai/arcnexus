@@ -1,2 +1,2 @@
 // Compatibility entry point; implementation is compiled from TypeScript.
-await import('../../dist/experiments/checks/simulation.js');
+await import('../../dist/library/experiments/checks/simulation.js');

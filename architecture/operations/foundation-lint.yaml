@@ -1,0 +1,21 @@
+schemaVersion: 3
+id: foundation-lint
+purpose: Read-only lint feedback for foundation
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - tests/foundation
+  - eslint.config.ts
+generatedDirectories: []
+artifacts: []
+probes: []

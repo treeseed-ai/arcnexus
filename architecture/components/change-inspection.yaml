@@ -1,7 +1,7 @@
 id: change-inspection
 type: library
 purpose: Inspect candidate edits and retain complete review evidence
-path: src/change-inspection
+path: src/library/change-inspection
 objectives:
   - Detect all staged, unstaged and untracked changes without losing candidate
     state
@@ -36,7 +36,8 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/change-inspection
+    - src/library/change-inspection
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -51,13 +52,17 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/change-inspection
+    - src/library/change-inspection
+    - architecture/components/change-inspection.yaml
   publicModules:
-    - src/change-inspection/changes.ts
-  directoryExceptions: []
+    - src/library/change-inspection/changes.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/change-inspection
+    - src/library/change-inspection
   documentation: []
   tests: []
   exclude: []

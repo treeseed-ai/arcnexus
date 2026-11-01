@@ -31,9 +31,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - docs/agent-guidance
+    - docs/library/agent-guidance
     - .agents/skills
     - .
+    - architecture/components
 schemaVersion: 4
 role: agent-guidance
 executionProfile: luna
@@ -47,17 +48,21 @@ patternIds:
   - readable-typescript
 ownership:
   paths:
-    - docs/agent-guidance
+    - docs/library/agent-guidance
     - AGENTS.md
     - .agents/skills
+    - architecture/components/agent-guidance.yaml
   publicModules: []
   directoryExceptions:
     - path: .
       reason: Root-file directory granularity; exact ownership checks remain mandatory
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source: []
   documentation:
-    - docs/agent-guidance
+    - docs/library/agent-guidance
   tests: []
   exclude: []
 provides: []
