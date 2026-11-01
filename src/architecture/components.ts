@@ -1,4 +1,3 @@
-import { DirectoryGrants } from './directory-grants.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
 import {
@@ -10,6 +9,7 @@ import {
   type Environment,
 } from './config.js';
 import { ConfigurationReader, isConfiguration, type ConfigurationSource } from './configuration.js';
+import { DirectoryGrants } from './directory-grants.js';
 import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';

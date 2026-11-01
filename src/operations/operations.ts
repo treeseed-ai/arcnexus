@@ -108,6 +108,17 @@ class OperationRuntime {
       op = resolved.operations.find((op) => op.id === id);
     if (!op) throw new Error('Unknown or denied operation: ' + id);
     const stage = String(record.stage);
+    this.assertActivity(op, stage);
+    observe(root, record, 'operation.authorized', {
+      id,
+      tool: name,
+      stage,
+      number: record.operationCalls,
+    });
+    return op;
+  }
+
+  private assertActivity(op: Operation, stage: string): void {
     const activities =
       stage === 'specification'
         ? ['research', 'documentation', 'testing']
@@ -118,13 +129,6 @@ class OperationRuntime {
             : [stage];
     if (!op.activities.some((a) => activities.includes(a)))
       throw new Error('Operation activity denied: ' + stage);
-    observe(root, record, 'operation.authorized', {
-      id,
-      tool: name,
-      stage,
-      number: record.operationCalls,
-    });
-    return op;
   }
 
   private request(args: unknown): void {

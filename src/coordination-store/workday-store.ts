@@ -87,22 +87,8 @@ export class WorkdayStore {
     } = {},
   ): void {
     this.transaction(() => {
-      if (options.workday) {
-        const u = options.workday;
-        if (
-          this.db
-            .prepare('UPDATE workdays SET status=?,data=? WHERE id=?')
-            .run(u.status, JSON.stringify(u.data), u.id).changes !== 1
-        )
-          throw new Error('Unknown workday');
-      }
-      for (const u of options.assignments ?? [])
-        if (
-          this.db
-            .prepare('UPDATE assignments SET status=?,data=? WHERE id=?')
-            .run(u.status, JSON.stringify(u.data), u.id).changes !== 1
-        )
-          throw new Error('Unknown assignment');
+      if (options.workday) this.update('workdays', options.workday);
+      for (const assignment of options.assignments ?? []) this.update('assignments', assignment);
       for (const m of options.messages ?? [])
         this.db
           .prepare('INSERT INTO messages VALUES(?,?,?,?,?,?)')
@@ -113,6 +99,13 @@ export class WorkdayStore {
           .run(randomUUID(), options.execution.assignment, JSON.stringify(options.execution.data));
       this.event(type, payload);
     });
+  }
+  private update(table: 'workdays' | 'assignments', value: Update): void {
+    const result = this.db
+      .prepare(`UPDATE ${table} SET status=?,data=? WHERE id=?`)
+      .run(value.status, JSON.stringify(value.data), value.id);
+    if (result.changes !== 1)
+      throw new Error(table === 'workdays' ? 'Unknown workday' : 'Unknown assignment');
   }
   snapshot() {
     const rows = this.db.prepare('SELECT * FROM workdays').all();

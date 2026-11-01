@@ -205,7 +205,7 @@ class WorkdayExperimentsTests {
       JSON.parse(r.stdout)
         .operations.map((o: any) => o.id)
         .sort(),
-      ['guidance-build', 'guidance-tests'],
+      ['guidance-build', 'guidance-tests', 'guidance-validation-lint'],
     );
   }
   guidanceInspectionPreservesExplicitWritableSkillDirectoryGrant_5() {

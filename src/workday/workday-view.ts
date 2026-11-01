@@ -12,48 +12,64 @@ export async function viewWorkday(
   signal: AbortSignal,
 ): Promise<void> {
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid workday identity');
-  let cursor = after;
-  do {
-    const store = new WorkdayStore(join(root, 'workdays', id, 'workday.sqlite'));
-    let snapshot, events;
+  return new WorkdayViewer(root, id, json, after, signal).view(follow);
+}
+class WorkdayViewer {
+  constructor(
+    private root: string,
+    private id: string,
+    private json: boolean,
+    private cursor: number,
+    private signal: AbortSignal,
+  ) {}
+  private read() {
+    const store = new WorkdayStore(join(this.root, 'workdays', this.id, 'workday.sqlite'));
     try {
-      snapshot = store.snapshot();
-      events = store.events(cursor);
+      const snapshot = store.snapshot(),
+        events = store.events(this.cursor);
+      const host = (snapshot.workday.data as { host?: { pid: number; start: string } })?.host;
+      const terminal = ['completed', 'failed', 'blocked', 'cancelled', 'budget_exhausted'].includes(
+        String(snapshot.workday.status),
+      );
+      const interrupted = !terminal && !!host && processStart(host.pid) !== host.start;
+      return { snapshot: Object.assign(snapshot, { interrupted }), events, terminal, interrupted };
     } finally {
       store.close();
     }
-    const host = (snapshot.workday.data as { host?: { pid: number; start: string } })?.host;
-    const terminal = ['completed', 'failed', 'blocked', 'cancelled', 'budget_exhausted'].includes(
-      String(snapshot.workday.status),
-    );
-    const interrupted = !terminal && !!host && processStart(host.pid) !== host.start;
-    Object.assign(snapshot, { interrupted });
-    if (!follow) {
-      console.log(
-        json
-          ? JSON.stringify(snapshot)
-          : `${id}: ${snapshot.workday.status}\n${JSON.stringify(snapshot, null, 2)}`,
-      );
-      return;
-    }
+  }
+  async view(follow: boolean): Promise<void> {
+    do {
+      const { snapshot, events, terminal, interrupted } = this.read();
+      if (!follow) {
+        console.log(
+          this.json
+            ? JSON.stringify(snapshot)
+            : `${this.id}: ${snapshot.workday.status}\n${JSON.stringify(snapshot, null, 2)}`,
+        );
+        return;
+      }
+      this.emit(events);
+      if (terminal || interrupted) {
+        if (interrupted)
+          console.error('Workday interrupted; retained state is incomplete and cannot be resumed');
+        return;
+      }
+      try {
+        await delay(100, undefined, { signal: this.signal });
+      } catch (error) {
+        if (this.signal.aborted) return;
+        throw error;
+      }
+    } while (!this.signal.aborted);
+  }
+  private emit(events: ReturnType<WorkdayStore['events']>): void {
     for (const event of events) {
       console.log(
-        json
+        this.json
           ? JSON.stringify(event)
           : `${event.sequence} ${event.observedAt} ${event.type} ${JSON.stringify(event.payload)}`,
       );
-      cursor = event.sequence;
+      this.cursor = event.sequence;
     }
-    if (terminal || interrupted) {
-      if (interrupted)
-        console.error('Workday interrupted; retained state is incomplete and cannot be resumed');
-      return;
-    }
-    try {
-      await delay(100, undefined, { signal });
-    } catch (error) {
-      if (signal.aborted) return;
-      throw error;
-    }
-  } while (!signal.aborted);
+  }
 }

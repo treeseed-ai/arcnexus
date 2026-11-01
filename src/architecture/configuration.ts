@@ -51,7 +51,7 @@ export class ConfigurationReader {
       const normalized = JSON.stringify(normalize(value));
       return { path, text, value, sourceHash: hash(text), normalizedHash: hash(normalized) };
     } catch (error) {
-      throw new Error(`${path}: ${String(error)}`);
+      throw new Error(`${path}: ${String(error)}`, { cause: error });
     }
   }
 

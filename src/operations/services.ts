@@ -1,7 +1,7 @@
 import { fork, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-import { request } from 'node:http';
+import { request, type ClientRequest, type IncomingMessage } from 'node:http';
 import { join, relative } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
@@ -32,29 +32,37 @@ export function localRequest(
     throw new Error('HTTP path must be local');
   return new Promise((resolve, reject) => {
     const req = request({ hostname: '127.0.0.1', port, path, method: 'GET', signal }, (res) => {
-      let bytes = 0;
-      const chunks: Buffer[] = [];
-      res.on('data', (chunk: Buffer) => {
-        bytes += chunk.length;
-        if (bytes > 16384) {
-          req.destroy(new Error('HTTP output limit exceeded'));
-          return;
-        }
-        chunks.push(chunk);
-      });
-      res.on('error', reject);
-      res.on('end', () => {
-        const status = res.statusCode ?? 0;
-        if (status >= 300 && status < 400) {
-          reject(new Error('HTTP redirects are not allowed'));
-          return;
-        }
-        resolve({ status, body: Buffer.concat(chunks).toString('utf8') });
-      });
+      collectResponse(req, res, resolve, reject);
     });
     req.setTimeout(1000, () => req.destroy(new Error('HTTP request timed out')));
     req.on('error', reject);
     req.end();
+  });
+}
+function collectResponse(
+  req: ClientRequest,
+  res: IncomingMessage,
+  resolve: (value: { status: number; body: string }) => void,
+  reject: (error: Error) => void,
+): void {
+  let bytes = 0;
+  const chunks: Buffer[] = [];
+  res.on('data', (chunk: Buffer) => {
+    bytes += chunk.length;
+    if (bytes > 16384) {
+      req.destroy(new Error('HTTP output limit exceeded'));
+      return;
+    }
+    chunks.push(chunk);
+  });
+  res.on('error', reject);
+  res.on('end', () => {
+    const status = res.statusCode ?? 0;
+    if (status >= 300 && status < 400) {
+      reject(new Error('HTTP redirects are not allowed'));
+      return;
+    }
+    resolve({ status, body: Buffer.concat(chunks).toString('utf8') });
   });
 }
 export class ServiceManager {
@@ -80,11 +88,21 @@ export class ServiceManager {
   async start(op: Operation): Promise<ServiceRecord> {
     if (op.kind !== 'service' || !op.service) throw new Error('Not a service operation');
     if (this.child) throw new Error('Only one active service lease is permitted');
+    const record = this.createRecord(op.id);
+    const child = this.launch(op, record);
+    try {
+      return await this.awaitReadiness(op, child);
+    } catch (error) {
+      await this.stop();
+      throw error;
+    }
+  }
+  private createRecord(id: string): ServiceRecord {
     const directory = join(this.root, 'runs', this.record.id, 'services');
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     const lease = randomUUID();
     const record: ServiceRecord = {
-      id: op.id,
+      id,
       runId: this.record.id,
       status: 'starting',
       supervisorPid: 0,
@@ -92,6 +110,9 @@ export class ServiceManager {
       recordPath: join(directory, lease + '.json'),
       startedAt: new Date().toISOString(),
     };
+    return record;
+  }
+  private launch(op: Extract<Operation, { command: string }>, record: ServiceRecord): ChildProcess {
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     if (relative(this.record.workspace, cwd).startsWith('..'))
       throw new Error('Service working directory escapes workspace');
@@ -107,11 +128,7 @@ export class ServiceManager {
     child.on('message', (message: { record?: ServiceRecord }) => {
       if (message.record) this.update(message.record);
     });
-    const abort = () => {
-      void this.stop().catch(() => {});
-    };
-    this.signal.addEventListener('abort', abort, { once: true });
-    child.once('close', () => this.signal.removeEventListener('abort', abort));
+    this.watchCancellation(child);
     const command = targetCommand(this.record, {
       command: op.command,
       args: op.args.map((a) => (a === '{workspace}' ? this.record.workspace : a)),
@@ -121,33 +138,46 @@ export class ServiceManager {
       ...command,
       cwd,
       env: operationEnvironment(this.record),
-      port: op.service.port,
+      port: op.service!.port,
     });
+    return child;
+  }
+  private watchCancellation(child: ChildProcess): void {
+    const abort = () => {
+      void this.stop().catch(() => {});
+    };
+    this.signal.addEventListener('abort', abort, { once: true });
+    child.once('close', () => this.signal.removeEventListener('abort', abort));
+  }
+  private async awaitReadiness(
+    op: Extract<Operation, { command: string }>,
+    child: ChildProcess,
+  ): Promise<ServiceRecord> {
+    const service = op.service!;
     const start = Date.now();
-    try {
-      while (Date.now() - start < op.service.startupTimeoutSeconds * 1000) {
-        this.signal.throwIfAborted();
-        const r = this.current!;
-        if (child.exitCode !== null || r.status === 'stopped' || r.status === 'unresolved')
-          throw new Error(r.error ?? 'Service supervisor exited');
-        if (r.pid && r.port && ownedLoopbackListener(r.pid, r.port)) {
-          try {
-            const response = await localRequest(r.port, op.service.readinessPath, this.signal);
-            if (response.status === op.service.expectedStatus) {
-              this.update({ ...r, status: 'ready' });
-              return this.current!;
-            }
-          } catch (error) {
-            this.signal.throwIfAborted();
-            if (String(error).includes('redirect')) throw error;
-          }
-        }
-        await delay(50, undefined, { signal: this.signal });
+    while (Date.now() - start < service.startupTimeoutSeconds * 1000) {
+      this.signal.throwIfAborted();
+      const record = this.current!;
+      if (child.exitCode !== null || record.status === 'stopped' || record.status === 'unresolved')
+        throw new Error(record.error ?? 'Service supervisor exited');
+      if (await this.isReady(record, service)) {
+        this.update({ ...record, status: 'ready' });
+        return this.current!;
       }
-      throw new Error('Service readiness timed out');
+      await delay(50, undefined, { signal: this.signal });
+    }
+    throw new Error('Service readiness timed out');
+  }
+  private async isReady(record: ServiceRecord, service: ServiceDefinition): Promise<boolean> {
+    if (!record.pid || !record.port || !ownedLoopbackListener(record.pid, record.port))
+      return false;
+    try {
+      const response = await localRequest(record.port, service.readinessPath, this.signal);
+      return response.status === service.expectedStatus;
     } catch (error) {
-      await this.stop();
-      throw error;
+      this.signal.throwIfAborted();
+      if (String(error).includes('redirect')) throw error;
+      return false;
     }
   }
   status(id: string): ServiceRecord {

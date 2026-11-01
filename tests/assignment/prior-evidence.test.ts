@@ -64,10 +64,7 @@ class PriorEvidenceTests {
     const commands = JSON.parse(r.stdout).verification;
     assert.ok(commands.some((c: any) => c.command === 'npm' && c.args.join(' ') === 'test'));
     assert.ok(
-      commands.some(
-        (c: any) =>
-          c.command === 'node' && c.args.join(' ') === '--test tests/report/report.test.mjs',
-      ),
+      commands.some((c: any) => c.command === 'npm' && c.args.join(' ') === 'run test:report'),
       'focused report regression is captured',
     );
   }

@@ -10,7 +10,12 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { targetCommand, targetEnvironment, type Bindings } from '../architecture/bindings.js';
-import { InputError, type Dependency, type Environment } from '../architecture/config.js';
+import {
+  InputError,
+  type Command,
+  type Dependency,
+  type Environment,
+} from '../architecture/config.js';
 import { execute, git } from '../operations/process.js';
 import { assertOutputs } from './outputs.js';
 import { save, type RecordData } from './state.js';
@@ -43,46 +48,70 @@ export function resolveMembers(
     if (!env.workspace) return [];
     if (git(source, 'remote', 'get-url', 'origin').trim() !== env.workspace.primary.repository)
       throw new InputError('Primary repository origin identity mismatch');
-    return env.workspace.dependencies.map((definition) => {
-      const binding = Object.hasOwn(bindings.repositories, definition.id)
-        ? bindings.repositories[definition.id]
-        : undefined;
-      if (!binding) throw new InputError(`Missing repository binding: ${definition.id}`);
-      const path = realpathSync(git(binding, 'rev-parse', '--show-toplevel').trim());
-      if (git(path, 'remote', 'get-url', 'origin').trim() !== definition.repository)
-        throw new InputError(`Dependency origin identity mismatch: ${definition.id}`);
-      if (git(path, 'status', '--porcelain', '--untracked-files=all').trim())
-        throw new InputError(`Dependency source must be clean: ${definition.id}`);
-      const pinned = git(
-        path,
-        'rev-parse',
-        '--verify',
-        '--end-of-options',
-        `${definition.commit}^{commit}`,
-      ).trim();
-      if (pinned !== definition.commit) throw new InputError('Dependency commit must be immutable');
-      if (git(source, 'ls-tree', '-r', base, '--', definition.path).trim())
-        throw new InputError(`Dependency mount contains tracked source: ${definition.path}`);
-      const commonDir = realpathSync(
-        git(path, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
-      );
-      if (
-        commonDir ===
-        realpathSync(git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim())
-      )
-        throw new InputError('Dependency must be an independent repository');
-      return {
-        id: definition.id,
-        source: path,
-        base: pinned,
-        commonDir,
-        workspace: join(workspace, definition.path),
-        definition,
-        status: 'pending' as const,
-      };
-    });
+    const resolver = new MemberResolver(source, base, workspace, bindings);
+    return env.workspace.dependencies.map((definition) => resolver.resolve(definition));
   } catch (error) {
     throw new InputError(String(error));
+  }
+}
+class MemberResolver {
+  constructor(
+    private source: string,
+    private base: string,
+    private workspace: string,
+    private bindings: Bindings,
+  ) {}
+  resolve(definition: Dependency): Member {
+    const path = this.sourcePath(definition);
+    const pinned = this.revision(path, definition);
+    const commonDir = this.commonDirectory(path);
+    return {
+      id: definition.id,
+      source: path,
+      base: pinned,
+      commonDir,
+      workspace: join(this.workspace, definition.path),
+      definition,
+      status: 'pending' as const,
+    };
+  }
+  private sourcePath(definition: Dependency): string {
+    const binding = Object.hasOwn(this.bindings.repositories, definition.id)
+      ? this.bindings.repositories[definition.id]
+      : undefined;
+    if (!binding) throw new InputError(`Missing repository binding: ${definition.id}`);
+    const path = realpathSync(git(binding, 'rev-parse', '--show-toplevel').trim());
+    if (git(path, 'remote', 'get-url', 'origin').trim() !== definition.repository)
+      throw new InputError(`Dependency origin identity mismatch: ${definition.id}`);
+    if (git(path, 'status', '--porcelain', '--untracked-files=all').trim())
+      throw new InputError(`Dependency source must be clean: ${definition.id}`);
+    return path;
+  }
+  private revision(path: string, definition: Dependency): string {
+    const pinned = git(
+      path,
+      'rev-parse',
+      '--verify',
+      '--end-of-options',
+      `${definition.commit}^{commit}`,
+    ).trim();
+    if (pinned !== definition.commit) throw new InputError('Dependency commit must be immutable');
+    if (git(this.source, 'ls-tree', '-r', this.base, '--', definition.path).trim())
+      throw new InputError(`Dependency mount contains tracked source: ${definition.path}`);
+    return pinned;
+  }
+  private commonDirectory(path: string): string {
+    const commonDir = realpathSync(
+      git(path, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
+    );
+    if (
+      commonDir ===
+      realpathSync(
+        git(this.source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
+      )
+    )
+      throw new InputError('Dependency must be an independent repository');
+    return commonDir;
   }
 }
 function checkPath(primary: string, path: string): void {
@@ -163,27 +192,36 @@ export async function prepareMembers(
     member.status = 'created';
     save(root, record);
     for (const command of [...member.definition.prerequisites, ...member.definition.setup]) {
-      try {
-        record.commands.push(
-          await execute(
-            targetCommand(record, command),
-            member.workspace,
-            join(root, 'runs', record.id, `command-${record.commands.length}.log`),
-            signal,
-            { env: targetEnvironment(record) },
-          ),
-        );
-      } catch (error) {
-        if (error && typeof error === 'object' && 'commandResult' in error)
-          record.commands.push(error.commandResult as RecordData['commands'][number]);
-        throw error;
-      } finally {
-        save(root, record);
-      }
+      await prepareMemberCommand(root, record, member, command, signal);
     }
     registered(member);
     assertOutputs(member.workspace, memberEnvironment(member));
     member.status = 'prepared';
+    save(root, record);
+  }
+}
+async function prepareMemberCommand(
+  root: string,
+  record: RecordData,
+  member: Member,
+  command: Command,
+  signal: AbortSignal,
+): Promise<void> {
+  try {
+    record.commands.push(
+      await execute(
+        targetCommand(record, command),
+        member.workspace,
+        join(root, 'runs', record.id, `command-${record.commands.length}.log`),
+        signal,
+        { env: targetEnvironment(record) },
+      ),
+    );
+  } catch (error) {
+    if (error && typeof error === 'object' && 'commandResult' in error)
+      record.commands.push(error.commandResult as RecordData['commands'][number]);
+    throw error;
+  } finally {
     save(root, record);
   }
 }
@@ -197,26 +235,7 @@ export function cleanupMembers(root: string, record: RecordData, validateOnly = 
   const removed: string[] = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).removed : [];
   const members = (record.members ?? []) as Member[];
   // Validate all registrations and inventories before removing any member.
-  for (const m of members) {
-    if (removed.includes(m.id)) {
-      if (lstatSync(m.workspace, { throwIfNoEntry: false }))
-        throw new Error('Removed dependency path is occupied');
-      continue;
-    }
-    if (!lstatSync(m.workspace, { throwIfNoEntry: false })) {
-      if (
-        m.status !== 'pending' &&
-        git(m.source, 'worktree', 'list', '--porcelain', '-z')
-          .split('\0')
-          .includes(`worktree ${m.workspace}`)
-      )
-        throw new Error('Dependency worktree disappeared');
-      continue;
-    }
-    checkPath(record.workspace, m.definition.path);
-    registered(m);
-    assertOutputs(m.workspace, memberEnvironment(m));
-  }
+  for (const member of members) validateMemberRemoval(record, member, removed);
   if (validateOnly) return;
   for (const m of [...members].reverse()) {
     if (removed.includes(m.id)) continue;
@@ -225,4 +244,24 @@ export function cleanupMembers(root: string, record: RecordData, validateOnly = 
     writeFileSync(path + '.tmp', JSON.stringify({ removed }), { mode: 0o600 });
     renameSync(path + '.tmp', path);
   }
+}
+function validateMemberRemoval(record: RecordData, m: Member, removed: string[]): void {
+  if (removed.includes(m.id)) {
+    if (lstatSync(m.workspace, { throwIfNoEntry: false }))
+      throw new Error('Removed dependency path is occupied');
+    return;
+  }
+  if (!lstatSync(m.workspace, { throwIfNoEntry: false })) {
+    if (
+      m.status !== 'pending' &&
+      git(m.source, 'worktree', 'list', '--porcelain', '-z')
+        .split('\0')
+        .includes(`worktree ${m.workspace}`)
+    )
+      throw new Error('Dependency worktree disappeared');
+    return;
+  }
+  checkPath(record.workspace, m.definition.path);
+  registered(m);
+  assertOutputs(m.workspace, memberEnvironment(m));
 }

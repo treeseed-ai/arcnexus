@@ -118,19 +118,12 @@ export async function viewExecution(
 ): Promise<void> {
   let cursor = after;
   do {
-    const { record, events, ...status } = readStatus(root, id);
+    const { record: _record, events, ...status } = readStatus(root, id);
     if (!follow) {
       printStatus(id, status, json);
       return;
     }
-    for (const event of events.filter((e) => e.sequence > cursor)) {
-      console.log(
-        json
-          ? JSON.stringify(event)
-          : `${event.sequence} ${event.observedAt} ${event.type} ${JSON.stringify(event.payload)}`,
-      );
-      cursor = event.sequence;
-    }
+    cursor = printEvents(events, cursor, json);
     if (status.finalized) {
       if (status.timeline.problem) console.error(status.timeline.problem);
       return;
@@ -144,6 +137,21 @@ export async function viewExecution(
   } while (!signal.aborted);
 }
 
+function printEvents(
+  events: ReturnType<typeof readStatus>['events'],
+  cursor: number,
+  json: boolean,
+): number {
+  for (const event of events.filter((e) => e.sequence > cursor)) {
+    console.log(
+      json
+        ? JSON.stringify(event)
+        : `${event.sequence} ${event.observedAt} ${event.type} ${JSON.stringify(event.payload)}`,
+    );
+    cursor = event.sequence;
+  }
+  return cursor;
+}
 function printStatus(
   id: string,
   status: Omit<ReturnType<typeof readStatus>, 'record' | 'events'>,

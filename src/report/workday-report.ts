@@ -28,27 +28,29 @@ export interface WorkdayReport {
   routingMs: number;
   [key: string]: unknown;
 }
+function recordedTurns(assignment: RecordData): Array<Record<string, unknown>> {
+  return Array.isArray(assignment.turns)
+    ? (assignment.turns as Array<Record<string, unknown>>)
+    : [];
+}
+function sumDurations(items: Array<Record<string, unknown>>, key: string): number {
+  return items.reduce(
+    (total, value) => total + (typeof value[key] === 'number' ? (value[key] as number) : 0),
+    0,
+  );
+}
 export function workdayMetrics(report: WorkdayReport) {
-  const turns = report.assignments.flatMap((a) =>
-      Array.isArray(a.turns) ? (a.turns as Array<Record<string, unknown>>) : [],
-    ),
-    sum = (items: Array<Record<string, unknown>>, key: string) =>
-      items.reduce((n, v) => n + (typeof v[key] === 'number' ? (v[key] as number) : 0), 0);
+  const turns = report.assignments.flatMap((assignment) => recordedTurns(assignment));
   const coordination = turns.filter(
       (t) =>
         t.activity === 'coordination' ||
         ['clarify', 'reject'].includes(String(t.coordinationAction)),
     ),
     continuations = turns.filter((t) => t.category === 'continuation' && !coordination.includes(t));
-  const coordinationMs = sum(coordination, 'durationMs') + report.routingMs,
-    continuationMs = sum(continuations, 'durationMs');
-  const usage: Record<string, number> = {};
-  for (const a of report.assignments)
-    if (a.usage && typeof a.usage === 'object')
-      for (const [key, value] of Object.entries(a.usage))
-        if (typeof value === 'number') usage[key] = (usage[key] ?? 0) + value;
+  const coordinationMs = sumDurations(coordination, 'durationMs') + report.routingMs,
+    continuationMs = sumDurations(continuations, 'durationMs');
   return {
-    engineeringMs: sum(
+    engineeringMs: sumDurations(
       turns.filter((t) => !coordination.includes(t) && !continuations.includes(t)),
       'durationMs',
     ),
@@ -58,32 +60,40 @@ export function workdayMetrics(report: WorkdayReport) {
       (n, a) => n + a.commands.reduce((m, c) => m + c.durationMs, 0),
       0,
     ),
-    dependencyWaitingMs: sum(report.assignments, 'dependencyWaitingMs'),
+    dependencyWaitingMs: sumDurations(report.assignments, 'dependencyWaitingMs'),
     coordinationOverhead: report.elapsedMs ? coordinationMs / report.elapsedMs : 0,
-    usage: Object.keys(usage).length ? usage : null,
+    usage: summedUsage(report),
     usageComplete: report.assignments.every((a) => a.usageComplete === true),
     basis:
       'Host-observed explicit coordination turns and routing time; continuation time shown separately. Each thread cumulative usage counted once.',
   };
 }
+function summedUsage(report: WorkdayReport): Record<string, number> | null {
+  const usage: Record<string, number> = {};
+  for (const a of report.assignments)
+    if (a.usage && typeof a.usage === 'object')
+      for (const [key, value] of Object.entries(a.usage))
+        if (typeof value === 'number') usage[key] = (usage[key] ?? 0) + value;
+  return Object.keys(usage).length ? usage : null;
+}
 export function workdayMarkdown(report: WorkdayReport): string {
-  const metrics = workdayMetrics(report),
-    requests = report.messages.filter((m) => m.kind === 'request'),
+  return new WorkdayMarkdown(report).render();
+}
+function sameRequest(payload: unknown, request: Record<string, unknown>): boolean {
+  const value = payload as Record<string, unknown>;
+  return (
+    value.fromComponent === request.fromComponent &&
+    value.ownerId === request.ownerId &&
+    value.request === request.request
+  );
+}
+function outstandingNeeds(report: WorkdayReport): string {
+  const requests = report.messages.filter((m) => m.kind === 'request'),
     unrouted = report.assignments
       .flatMap((a) =>
         Array.isArray(a.requests) ? (a.requests as Array<Record<string, unknown>>) : [],
       )
-      .filter(
-        (r) =>
-          !requests.some((m) => {
-            const p = m.payload as Record<string, unknown>;
-            return (
-              p.fromComponent === r.fromComponent &&
-              p.ownerId === r.ownerId &&
-              p.request === r.request
-            );
-          }),
-      ),
+      .filter((r) => !requests.some((message) => sameRequest(message.payload, r))),
     outstanding = requests.filter(
       (r) =>
         !report.messages.some(
@@ -91,38 +101,87 @@ export function workdayMarkdown(report: WorkdayReport): string {
             m.replyTo === r.id && (m.payload as { decision?: string })?.decision === 'delivered',
         ),
     );
-  return (
-    `# Workday ${text(report.workspaceId)}\n\nEvidence mode: ${text(report.evidenceMode)}\nStatus: ${text(report.status)}\nWorkspace: ${text(report.workspace)}\nBase: ${text(report.base)}\nFailure: ${text(report.error ?? 'none recorded')}\n\n## Owners and execution\n\n` +
-    '| Owner | Outcome | Thread | Turns | Attempts | Active ms |\n| --- | --- | --- | ---: | ---: | ---: |\n' +
-    report.assignments
-      .map(
-        (a) =>
-          `| ${text((a.resolvedAssignment as { componentId: string }).componentId)} | ${text(a.outcome ?? a.status)} | ${text(a.threadId)} | ${Array.isArray(a.turns) ? a.turns.length : 'unavailable'} | ${text(a.implementationAttempts)} | ${text(a.activeMs)} |`,
-      )
-      .join('\n') +
-    `\n\n## Timing and usage\n\nElapsed: ${report.elapsedMs} ms. Coordination allowance used: ${report.coordinationTurns}/6. Clarification rounds: ${report.clarificationRounds}/2.\n\n${text(JSON.stringify(metrics))}\n\nSupplied prompt sizes are not the complete effective Codex context. Agent findings and checklist completion remain claims; host checks below supply verification.\n\n## Inbox and delivery\n\n` +
-    report.messages
+  return outstanding.length || unrouted.length
+    ? [
+        ...outstanding.map((m) => '- ' + text(JSON.stringify(m.payload))),
+        ...unrouted.map(
+          (r) => '- Unrouted agent claim (not host-authorized): ' + text(JSON.stringify(r)),
+        ),
+      ].join('\n')
+    : 'No undelivered request recorded.';
+}
+class WorkdayMarkdown {
+  constructor(private report: WorkdayReport) {}
+  render(): string {
+    return (
+      this.header() +
+      this.owners() +
+      this.timing() +
+      this.inbox() +
+      this.needs() +
+      this.checks() +
+      this.resources() +
+      this.footer()
+    );
+  }
+  private header(): string {
+    const report = this.report;
+    return `# Workday ${text(report.workspaceId)}\n\nEvidence mode: ${text(report.evidenceMode)}\nStatus: ${text(report.status)}\nWorkspace: ${text(report.workspace)}\nBase: ${text(report.base)}\nFailure: ${text(report.error ?? 'none recorded')}\n\n## Owners and execution\n\n`;
+  }
+  private owners(): string {
+    const report = this.report;
+    return (
+      '| Owner | Outcome | Thread | Turns | Attempts | Active ms |\n| --- | --- | --- | ---: | ---: | ---: |\n' +
+      report.assignments
+        .map(
+          (a) =>
+            `| ${text((a.resolvedAssignment as { componentId: string }).componentId)} | ${text(a.outcome ?? a.status)} | ${text(a.threadId)} | ${Array.isArray(a.turns) ? a.turns.length : 'unavailable'} | ${text(a.implementationAttempts)} | ${text(a.activeMs)} |`,
+        )
+        .join('\n')
+    );
+  }
+  private timing(): string {
+    const report = this.report;
+    return `\n\n## Timing and usage\n\nElapsed: ${report.elapsedMs} ms. Coordination allowance used: ${report.coordinationTurns}/6. Clarification rounds: ${report.clarificationRounds}/2.\n\n${text(JSON.stringify(workdayMetrics(report)))}\n\nSupplied prompt sizes are not the complete effective Codex context. Agent findings and checklist completion remain claims; host checks below supply verification.\n\n## Inbox and delivery\n\n`;
+  }
+  private inbox(): string {
+    const report = this.report;
+    return report.messages
       .map(
         (m) =>
           `- ${text(m.id)}: ${text(m.from)} → ${text(m.to)}; ${text(m.kind)}; reply to ${text(m.replyTo)}; ${text(JSON.stringify(m.payload))}`,
       )
-      .join('\n') +
-    `\n\n## Outstanding needs\n\n${outstanding.length || unrouted.length ? [...outstanding.map((m) => '- ' + text(JSON.stringify(m.payload))), ...unrouted.map((r) => '- Unrouted agent claim (not host-authorized): ' + text(JSON.stringify(r)))].join('\n') : 'No undelivered request recorded.'}\n\n## Host checks\n\n` +
-    report.assignments
+      .join('\n');
+  }
+  private needs(): string {
+    const report = this.report;
+    return `\n\n## Outstanding needs\n\n${outstandingNeeds(report)}\n\n## Host checks\n\n`;
+  }
+  private checks(): string {
+    const report = this.report;
+    return report.assignments
       .flatMap((a) =>
         a.commands.map(
           (c) =>
             `- ${text((a.resolvedAssignment as { componentId: string }).componentId)} / ${text(c.stage)}: ${text(c.command + ' ' + c.args.join(' '))}; exit ${text(c.exitCode)}; ${c.durationMs} ms; ${text(c.log)}`,
         ),
       )
-      .join('\n') +
-    '\n\n## Owned changes and resources\n\n' +
-    report.assignments
-      .map(
-        (a) =>
-          `- ${text((a.resolvedAssignment as { componentId: string }).componentId)}: changes ${text(JSON.stringify(a.ownedChanges ?? 'unavailable'))}; services ${text(JSON.stringify(a.services ?? []))}; caller interventions ${text(JSON.stringify(a.callerInterventions ?? []))}; context and plan: ${text(a.id)} assignment report.`,
-      )
-      .join('\n') +
-    `\n\nParking: ${text(report.parking.status)}; evidence ${text(report.parking.path)}.\n\nIntegration remains caller-owned. See report.json, SQLite events, and per-assignment reports for raw usage, prompts, checkpoints and frozen-test evidence.\n`
-  );
+      .join('\n');
+  }
+  private resources(): string {
+    const report = this.report;
+    return (
+      '\n\n## Owned changes and resources\n\n' +
+      report.assignments
+        .map(
+          (a) =>
+            `- ${text((a.resolvedAssignment as { componentId: string }).componentId)}: changes ${text(JSON.stringify(a.ownedChanges ?? 'unavailable'))}; services ${text(JSON.stringify(a.services ?? []))}; caller interventions ${text(JSON.stringify(a.callerInterventions ?? []))}; context and plan: ${text(a.id)} assignment report.`,
+        )
+        .join('\n')
+    );
+  }
+  private footer(): string {
+    const report = this.report;
+    return `\n\nParking: ${text(report.parking.status)}; evidence ${text(report.parking.path)}.\n\nIntegration remains caller-owned. See report.json, SQLite events, and per-assignment reports for raw usage, prompts, checkpoints and frozen-test evidence.\n`;
+  }
 }
