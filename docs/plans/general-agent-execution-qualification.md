@@ -30,6 +30,24 @@ GitHub Development CI passed for `55ebc20a7eefceb14fafbb0f9501b2f65fdcc474`,
 run `41328257426`. This supersedes the earlier CI failure caused by nonportable
 catalog-test instrumentation. Changes after that revision still need CI validation.
 
+At `869bf63`, the full declared suite passed all 380 tests with no failures:
+`/tmp/arcnexus-78-full-suite-v13.log`, retained test-run
+`5895a1a4-a7c6-4028-8619-0cd775bec2f3`. The execution-runtime subset passed
+39 tests in `/tmp/arcnexus-78-runtime-v12-final.log`, retained test-run
+`396d62c1-b4b5-41df-80a9-d140e6021fef`. These include indexed independent
+criterion coverage, inbox conversation retention, and active-wait cycle semantics.
+Formatting, lint and strict typing passed in `/tmp/arcnexus-78-*-v13.log`;
+ownership and guidance passed in the v12 validation logs. The first v12 preflight
+correctly rejected a missing schema `$id`; the committed correction was validated
+before the successful runtime and full-suite runs.
+
+The preceding full run at `518711f` passed 371 of 372 tests. Its only failure was
+the new host-loss test's startup watchdog, before the deliberate kill. Startup now
+has a separate test watchdog; the post-kill shutdown observation is unchanged.
+Evidence: `/tmp/arcnexus-78-full-suite-v11.log`. GitHub Development CI independently
+passed at `518711fb3790dde6eb2afeea8c415314bdfa7dc7`, run `41330960402`.
+Changes after that revision still need CI validation.
+
 Ownership and guidance validation passed at `510b877`. Build, strict type checking,
 formatting and lint have local evidence in `/tmp/arcnexus-78-*-v5.log` and
 `/tmp/arcnexus-78-request-*.log`. These local checks do not establish CI or live
@@ -59,14 +77,13 @@ and report owners discovered during execution. No simulated output counts here.
 | v4 | `90cf16d` | Real task-intake steward edited its own documentation and dynamically requested workday/report owners. Its additional exact-scope/read-only request could not be expressed by the captured protocol. Cancelled during recipient baseline; partial edits and evidence retained, no verified delivery claimed. |
 | v5 | `510b877` | Baseline passed. Real steward returned correctly scoped workday/report requests requiring delivery, but legacy validation rejected its completed turn status before scheduling the yield. Issue 83 records the defect. No delivery claimed. |
 | v6 | `20438d0` | Real workday no-work reasoning was rejected by an overstrict selected-owner check (issue 84). A separate task's incomplete initial plan was rejected without a correction activation (issue 85). Both defects now have failing-then-passing regressions; these attempts delivered no verified changes. |
-| v7 | `e733913` | Running. A real workday reached a no-work result, then safely paused for task `6252baab-b1d9-46b4-a634-8b9514f73c7e`. Task-intake dynamically requested workday and report deliveries. The workday assignment is undergoing captured verification; no completed delivery or live gate is claimed yet. |
+| v7 | `e733913` | Running. A real workday reached a no-work result, then safely paused for task `6252baab-b1d9-46b4-a634-8b9514f73c7e`. Task-intake dynamically requested workday and report deliveries. Both dynamically requested owners reached verification. The workday owner entered correction after two interruption tests missed startup markers during captured acceptance; issue 90 retains that failure. No completed delivery or live gate is claimed yet. |
 
 The v7 workday is `68ad1913-a73e-4b00-810a-d8cdc4401112`. Its task-pause
 projection is retained in `live-workday-v7-during-task.json`; task progress is in
 `live-task-v7.log`. The stable supervisor and clean source are `supervisor-v7` and
 `source-v7`. An earlier v7 start from the development checkout was stopped before
 engineering and retained separately; it is excluded from this demonstration.
-
 
 v4 task: `70d5d427-2dcc-4e6d-8659-3b176c297a2f`.
 Its task-intake record is `59692f1c-e30d-4b9c-9eaf-5b29939fea0c`.
@@ -80,6 +97,10 @@ All six live gates remain unqualified: three-owner verified task delivery;
 self-directed workday improvement with inbox work; retained partial work across
 pause/resume; task interruption and return; cancellation/host-loss recovery; and
 an independently verified ArcNexus improvement with its actual diff retained.
+
+The current indexed-verifier and captured-check fixes are newer than the v7 live
+supervisor and still require real harness qualification. Its acceptance baseline
+remains unchanged; failed checks have not been waived.
 
 Implementation still needs integrated qualification of assembled-candidate checks,
 director reconsideration after blocked/decomposition changes, lifecycle and crash
