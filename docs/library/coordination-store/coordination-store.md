@@ -21,3 +21,9 @@ Clarification preserves the existing plan and undelivered dependency milestone.
 New decisions cannot reopen terminal assignments; exact repeated replies remain
 idempotent. A second outstanding question on the same request must be answered
 before another question replaces it.
+
+Cycle detection uses the active wait graph: only unsatisfied required milestones
+form blocking edges. Retained links to accepted intent or completed delivery remain
+provenance and may form historical cycles without preventing runnable work. A new
+unsatisfied cycle still rolls back the entire request exchange and retains an
+explicit blocked outcome; an acknowledgment never substitutes for delivery.
