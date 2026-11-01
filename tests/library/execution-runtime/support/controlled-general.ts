@@ -61,7 +61,12 @@ export class ControlledGeneral {
     return {
       status: 'ready',
       summary: 'Controlled direction',
-      selectedOwners: idle ? [] : [{ id: 'a', reason: 'Starting owner' }],
+      selectedOwners: [
+        {
+          id: idle ? prompt.match(/Self-directed stewardship for ([a-z]+)/)![1]! : 'a',
+          reason: idle ? 'Reviewed owner; no action' : 'Starting owner',
+        },
+      ],
       rejectedOwners: [],
       questions: [],
       assignments: idle

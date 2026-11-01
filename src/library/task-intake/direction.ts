@@ -141,6 +141,15 @@ export class Direction {
     if (result.status !== 'ready') return;
     if (result.questions.length || result.architectureProposal)
       throw new Error('Ready direction has unresolved decisions');
+    if (owner && !result.assignments.length) {
+      if (
+        !result.summary.trim() ||
+        result.selectedOwners.length > 1 ||
+        result.selectedOwners.some((selected) => selected.id !== owner)
+      )
+        throw new Error('No-work stewardship must justify consideration of its captured owner');
+      return;
+    }
     for (const assignment of result.assignments)
       if (
         !this.context.owners.includes(assignment.ownerId) ||
