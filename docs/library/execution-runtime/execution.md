@@ -99,3 +99,11 @@ verified delivery itself. Requests may deliberately link an existing assignment 
 specify accepted intent or verified delivery as their required milestone. An inbox
 reply must match its captured sender/recipient identities. A clarification does not
 restart engineering or mark the original assignment complete.
+
+Captured verification inputs remain stable even when an assignment edits tests or
+check configuration. `verificationInputs` in `architecture/execution.yaml` declares
+additional trusted source paths used by project checks; the host also captures the
+owner's existing test sources and tracked command-argument files automatically.
+When these inputs change in a candidate, the host reruns checks with their captured
+source contents restored temporarily, retaining both candidate and baseline results.
+Worker regressions and independent review remain additional, distinguishable evidence.
