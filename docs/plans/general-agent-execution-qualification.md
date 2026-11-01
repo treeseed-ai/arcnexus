@@ -194,9 +194,8 @@ The real workday `d57830f1-e9e7-4290-84d4-75dc914ae131` considered four owners, 
 required attention because a read-only activation treated the valid future write
 directory `tests/library/change-inspection` as a required existing read path. Issue
 100 fixes that conversion while retaining path validation. Its permission and
-production policy tests pass **9/9** in `/tmp/arcnexus-100-green.log`. Strict typing,
-formatting, full lint, ownership and guidance validation have passed after the
-follow-up method-length correction. The next integrated run is
+production policy tests pass **9/9** in `/tmp/arcnexus-100-green.log`. Strict typing and formatting passed; full lint, ownership and guidance validation
+passed after the follow-up method-length correction. The next integrated run is
 `/tmp/arcnexus-78-full-suite-v17.log`, built at `47047ed`; its result is pending.
 
 Real greeting attempt three is task `d163a69d-1fcf-4747-a394-1cbf9a73d868`, started
@@ -204,6 +203,41 @@ with supervisor `1be0ff6` and retained in `general-live-v1/task-v3.log`,
 `prompt-v3.txt` and `invocation-v3.json`. It again discovered all three owners and
 is still executing. Earlier unfinished changes were not imported. No verified
 qualification gate is claimed from this attempt yet.
+
+The next integrated run completed **408/409** at `47047ed`, retained in
+`/tmp/arcnexus-78-full-suite-v17.log` and test run
+`46b3f507-bca1-4fe1-99da-7cbf21c65de5`. Its sole failure was another inspection
+capture exceeding Node's default buffer: `ENOBUFS`, status null, 1,049,861 stdout
+bytes. The identical CLI exited zero with a 16 MiB capture. The corrected test
+passed in `/tmp/arcnexus-96-final-inspection.log`; no full integrated pass is
+claimed yet.
+
+Version-3 prompt campaigns now exercise ordinary task execution, automatic package
+checks and independent verification. Completion, dirty-source rejection and
+cancellation pass **3/3** built-CLI scenarios in
+`/tmp/arcnexus-78-campaign-cycle-green.log`. The general multi-owner fixtures moved
+to the testing library; their CLI/artifact behavior passed **4/4** in
+`/tmp/arcnexus-78-shared-fixtures-green.log`. Legacy scenarios and adapters still
+need migration; this new path does not by itself complete slice five.
+
+Real greeting attempt three delivered the names owner's actual implementation,
+documentation and regression, with independent verification retained. Service's
+actual behavior and scope also passed its independent checks, but verification
+honestly retained a gap for request-before-consumption chronology. The task ended
+`needs_input`; its verified names delivery and unfinished service/CLI work remain
+retained. Issue 101 now supplies pinned current-run host chronology, provenance and
+source observations through the verifier artifact capability. Its **6/6** focused
+checks, including foreign-record rejection, passed in
+`/tmp/arcnexus-101-green-final.log`.
+
+New live task `8047b349-3034-4bac-95bb-cc59dc675ef6` runs in `general-live-v4`, a
+fresh canonical repository at the original greeting source revision. New live
+workday `c9b356cb-981f-4d19-bd3b-85f1c3eb57ce` runs in `workday-live-v1`, with a
+committed CLI objective that whitespace-only input use the existing default
+through owned normalization. Both use supervisor `52354e4`, captured by the
+application before subsequent builds. Their invocation files retain exact ordinary
+commands, source revisions and machine bindings. Both are running; their live gates
+remain pending.
 
 ## Remaining qualification and implementation work
 
