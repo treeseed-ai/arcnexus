@@ -1,0 +1,27 @@
+{
+  'schemaVersion': 3,
+  'repository': 'greetings',
+  'role': 'engineer',
+  'executionProfile': 'luna',
+  'constraints':
+    [
+      'Never commit, publish or change architecture.',
+      'Request changes to another owner through the persisted inbox; do not edit another owner.',
+    ],
+  'questions': [],
+  'patterns': [],
+  'interfaces': [],
+  'relatedIds': ['names'],
+  'operationIds': ['service-tests'],
+  'access': { 'readPaths': ['.'], 'writeDirectories': ['service'] },
+  'id': 'service',
+  'parentId': 'greetings',
+  'type': 'library',
+  'purpose': 'Own greeting construction and public greeting APIs. Delegate all name transformation to names.',
+  'path': 'service',
+  'objectives': ['Maintain accurate documentation and observed coverage for the owned API'],
+  'documentation': ['service/README.md'],
+  'tests': ['service/test.mjs'],
+  'verification': [{ 'command': 'node', 'args': ['--test', 'service/test.mjs'] }],
+  'allowedWritePaths': ['service'],
+}

@@ -25,6 +25,8 @@ export interface WorkflowOptions {
   suppliedTool?: boolean;
   sandboxFeedback?: boolean;
   documentationOnly?: boolean;
+  refactor?: boolean;
+  missingThread?: boolean;
   guidanceExpansion?: boolean;
   dependencyMutation?: boolean;
 }
@@ -59,7 +61,7 @@ export class ControlledWorkflow {
     process.chdir(this.args[this.args.indexOf('--cd') + 1]!);
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
-    if (this.initialize(prompt)) return;
+    if (this.initialize(prompt) || this.missingThread()) return;
     const turn = this.capture(prompt);
     if (this.options.mode === turn.stage + '-timeout') {
       setInterval(() => {}, 1000);
@@ -68,6 +70,19 @@ export class ControlledWorkflow {
     this.execute(turn);
     if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
     this.emit(turn);
+  }
+
+  /** Simulates an explicit missing retained thread before any turn activity or side effect. */
+  private missingThread(): boolean {
+    if (
+      !this.options.missingThread ||
+      !this.args.includes('resume') ||
+      fs.existsSync(this.options.calls + '.lost')
+    )
+      return false;
+    fs.writeFileSync(this.options.calls + '.lost', 'missing retained thread');
+    console.log(JSON.stringify({ type: 'error', message: 'thread not found: workflow-thread' }));
+    return true;
   }
 
   /** Routes initialization prompts to the scripted intake responder before engineering. */
@@ -100,7 +115,11 @@ export class ControlledWorkflow {
     );
     const count = fs.readFileSync(this.options.calls, 'utf8').trim().split('\n').length;
     const thread_id =
-      this.options.mode === 'wrong-thread' && count > 1 ? 'wrong' : 'workflow-thread';
+      this.options.mode === 'wrong-thread' && count > 1
+        ? 'wrong'
+        : this.options.missingThread && fs.existsSync(this.options.calls + '.lost')
+          ? 'replacement-thread'
+          : 'workflow-thread';
     console.log(JSON.stringify({ type: 'thread.started', thread_id }));
     const result = {
       status: 'completed',
@@ -127,7 +146,10 @@ export class ControlledWorkflow {
     )
       throw new Error('Corrective prompt omitted the actual late failure');
     if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
-    if (this.options.documentationOnly) this.documentation(turn);
+    if (this.options.refactor) {
+      if (['implementation', 'correction'].includes(turn.stage))
+        fs.writeFileSync('source.txt', 'before\n');
+    } else if (this.options.documentationOnly) this.documentation(turn);
     else {
       if (turn.stage === 'specification' && this.options.mode !== 'no-changes')
         this.specification(turn);
@@ -153,7 +175,10 @@ export class ControlledWorkflow {
     };
     this.specificationActivities(turn);
     if (this.options.mode === 'early-implementation') fs.writeFileSync('source.txt', 'after');
-    if (this.options.mode === 'wrong-red')
+    if (
+      ['wrong-red', 'regression-loop'].includes(this.options.mode) ||
+      (this.options.mode === 'regression-recovery' && turn.count === 2)
+    )
       turn.result.regression.outputIncludes = 'NOT_THE_ASSERTION';
     if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
   }

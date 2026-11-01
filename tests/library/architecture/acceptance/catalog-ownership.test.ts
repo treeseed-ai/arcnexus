@@ -52,9 +52,9 @@ class CatalogOwnershipTests {
         process.cwd(),
         '--json',
       ],
-      { encoding: 'utf8' },
+      { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
     );
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, String(r.error ?? r.stderr));
     return JSON.parse(r.stdout).context.at(-1);
   }
 }

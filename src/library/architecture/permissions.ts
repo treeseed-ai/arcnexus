@@ -59,6 +59,19 @@ function inspectSegments(
   return { exists: path === '.' || exists, directory: path === '.' };
 }
 
+/** Converts captured write grants into existing read inputs without creating future directories. */
+export function readOnlyAccess(workspace: string, value: unknown): AccessPolicy {
+  const access = validateAccess(value);
+  for (const path of access.readPaths) inspectSegments(workspace, path, false);
+  const existing = access.writeDirectories.filter((path) => {
+    const inspected = inspectSegments(workspace, path, true);
+    if (inspected.exists && !inspected.directory)
+      throw new InputError(`Write access requires a directory: ${path}`);
+    return inspected.exists;
+  });
+  return { readPaths: [...new Set([...access.readPaths, ...existing])], writeDirectories: [] };
+}
+
 function covered(path: string, directories: string[]): boolean {
   return directories.some(
     (directory) => directory === '.' || path === directory || path.startsWith(`${directory}/`),

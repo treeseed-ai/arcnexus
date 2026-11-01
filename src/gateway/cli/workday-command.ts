@@ -1,3 +1,4 @@
+import { ExecutionCommand } from './execution-command.js';
 import { resolveWorkday } from '../../library/workday/workday-config.js';
 import { stateRoot } from '../../library/workspace/state.js';
 import { InputError } from '../../library/architecture/config.js';
@@ -5,22 +6,32 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts workday commands without duplicating runtime orchestration. */
 export class WorkdayCommand {
-  /** Retains workday arguments and the lock acquisition callback used only by execution. */
+  /** Retains lifecycle or historical inspection arguments and caller cancellation. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly signal: AbortSignal,
-    private readonly acquire: () => string,
   ) {}
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const action = this.positionals[1];
+    if (action === 'run')
+      throw new InputError(
+        'Manifest execution is retired; use task run "<prompt>" or workday start',
+      );
+    if (
+      this.positionals.length === 2 &&
+      ['start', 'pause', 'resume', 'stop', 'status'].includes(action ?? '')
+    ) {
+      if (Object.keys(this.values).length)
+        throw new InputError('Workday controls accept no options');
+      return new ExecutionCommand(this.signal).workday(action!);
+    }
     if (this.positionals.length !== 3)
       throw new InputError('workday requires action and manifest/identity');
     if (action === 'inspect') return this.inspectWorkday();
-    if (action === 'run') return this.runWorkday();
-    if (action === 'status' || action === 'follow') return this.viewWorkday();
+    if (action === 'history' || action === 'follow') return this.viewWorkday();
     throw new InputError('Unknown workday action');
   }
 
@@ -48,37 +59,6 @@ export class WorkdayCommand {
         values.json ? undefined : 2,
       ),
     );
-    return;
-  }
-
-  /** Passes the captured workday to the sequential coordination runtime. */
-  private async runWorkday(): Promise<void> {
-    const { values, positionals } = this;
-    if (
-      !values.project ||
-      Object.keys(values).some(
-        (k) =>
-          !['project', 'base', 'bindings', 'issue', 'codex-path', 'initializer-model'].includes(k),
-      ) ||
-      (values.issue !== undefined && !/^[1-9]\d*$/.test(values.issue))
-    )
-      throw new InputError('Invalid workday run arguments');
-    const input = resolveWorkday(
-      positionals[2]!,
-      values.project,
-      values.base,
-      values.bindings,
-      {},
-      values['initializer-model'],
-    );
-    const root = this.acquire();
-    const { WorkdayRunner } = await import('../../library/workday/workday.js');
-    const result = await new WorkdayRunner(root, this.signal, values['codex-path'] ?? 'codex').run(
-      input,
-      values.issue,
-    );
-    console.log(JSON.stringify(result));
-    process.exitCode = result.exitCode;
     return;
   }
 

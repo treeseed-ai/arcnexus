@@ -1,8 +1,13 @@
+import { digest } from '../architecture/assignment.js';
+import { SpecificationValidationError } from './specification-error.js';
+import { logExcerpt } from './attempts.js';
+import { CapturedVerification } from './captured-verification.js';
+import { RefactorCheckpoint } from './refactor-checkpoint.js';
 import { assertCapturedTests } from '../testing/captured-tests.js';
 import { SessionProgress } from './session-progress.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { changes } from '../change-inspection/changes.js';
+import { candidateDigest } from '../change-inspection/changes.js';
 import { type CommandResult } from '../operations/process.js';
 import { type AgentResult } from '../steward/codex.js';
 import { specificationFiles, withFrozenTests } from './checkpoints.js';
@@ -15,6 +20,8 @@ export class SessionVerification {
 
   /** Freezes regression files and requires the declared expected-red checkpoint. */
   async specification(spec: AgentResult) {
+    if (this.state.assignment.changeType === 'refactor')
+      return new RefactorCheckpoint(this.state).prepare();
     if (!this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
       this.state.options.record.outcome = 'no_changes';
@@ -66,7 +73,10 @@ export class SessionVerification {
       failed.exitCode !== this.state.regression.exitCode ||
       !readFileSync(failed.log, 'utf8').includes(this.state.regression.outputIncludes)
     )
-      throw new Error('Regression did not fail with the expected assertion');
+      throw new SpecificationValidationError(
+        `Expected ${JSON.stringify(this.state.regression)}; observed ${failed ? `exit ${failed.exitCode}: ${logExcerpt(failed.log)}; full retained log: ${failed.log}` : 'successful command, so no failing assertion was observed'}`,
+        digest(JSON.stringify([this.state.regression, this.state.frozen, failed?.exitCode ?? 0])),
+      );
     this.state.options.record.regressionCheckpoint = this.state.regression;
     this.state.journal('testing', 'completed', {
       host: 'expected regression failure observed',
@@ -97,16 +107,28 @@ export class SessionVerification {
 
   /** Rechecks scope, captured suites, frozen tests and independent acceptance. */
   async final() {
-    this.state.safe();
-    if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {
-      this.state.options.record.status = 'no_changes';
-      this.state.options.record.outcome = 'no_changes';
-      throw new Error('Candidate has no changes');
-    }
+    this.assertCandidate();
+    const { record } = this.state.options;
+    if (
+      record.generalExecution &&
+      record.finalVerifiedBase === record.base &&
+      record.finalVerifiedDigest === candidateDigest(record)
+    )
+      return;
     assertCapturedTests(this.state.component, this.state.options.record.workspace);
     for (const c of this.state.component.verification) await this.state.command(c, 'verification');
     assertCapturedTests(this.state.component, this.state.options.record.workspace);
     this.state.safe();
+    await this.verifyFrozen();
+    for (const c of this.state.hostChecks) await this.state.command(c, 'acceptance');
+    this.assertCandidate();
+    record.finalVerifiedDigest = candidateDigest(record);
+    record.finalVerifiedBase = record.base;
+    new SessionProgress(this.state).verified('final-verification');
+  }
+
+  /** Rechecks frozen behavioral, characterization and original acceptance sources independently. */
+  private async verifyFrozen(): Promise<void> {
     if (this.state.regression)
       await withFrozenTests(this.state.options.record, this.state.frozen, async () => {
         await this.state.command(
@@ -115,13 +137,17 @@ export class SessionVerification {
         );
         this.state.safe();
       });
-    for (const c of this.state.hostChecks) await this.state.command(c, 'acceptance');
+    await new RefactorCheckpoint(this.state).verify();
+    await new CapturedVerification(this.state).verify();
+  }
+
+  /** Requires an in-scope implementation both before checks and after their side effects. */
+  private assertCandidate(): void {
     this.state.safe();
-    if (this.state.assignment.kind === 'change' && !changes(this.state.options.record).length) {
+    if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
       this.state.options.record.outcome = 'no_changes';
       throw new Error('Candidate has no changes');
     }
-    new SessionProgress(this.state).verified('final-verification');
   }
 }

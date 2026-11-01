@@ -14,6 +14,7 @@ import {
   scopePath,
   validateOperations,
   type Component,
+  type Catalog,
   type CompositionProfile,
   type ExecutionProfile,
   type Role,
@@ -47,7 +48,7 @@ export interface Assignment {
   objective: string;
   kind: 'change' | 'research' | 'review';
   expectedOutcome: string;
-  changeType?: 'behavior' | 'documentation';
+  changeType?: 'behavior' | 'documentation' | 'refactor';
   acceptanceCriteria: string[];
   allowedWritePaths?: string[];
   hostChecks: HostCheck[];
@@ -95,6 +96,8 @@ export function resolveBase(repository: string, ref = 'HEAD'): { source: string;
 }
 
 export interface AssignmentOptions {
+  additionalVerification?: Command[];
+  capturedCatalog?: Catalog;
   initializerModel?: string;
   value?: unknown;
   bindings?: Bindings;
@@ -147,7 +150,8 @@ class AssignmentResolver {
     private readonly id: string,
     private readonly options: AssignmentOptions,
   ) {
-    this.catalog = loadCatalog(repository, base, options.bindings ?? loadBindings());
+    this.catalog =
+      options.capturedCatalog ?? loadCatalog(repository, base, options.bindings ?? loadBindings());
     this.context = ancestry(this.catalog, id);
     this.component = this.context.at(-1)!;
     this.env = environment(
@@ -217,7 +221,7 @@ class AssignmentResolver {
       ...(execution.compositionProfile ? { compositionProfile: execution.compositionProfile } : {}),
       executionProfile: execution.executionProfile,
       allowedWritePaths: assignmentScope(assignment, component),
-      verification: component.verification,
+      verification: [...component.verification, ...(this.options.additionalVerification ?? [])],
       artifacts: captureCheckArtifacts(assignment),
       pendingChecks: [...pendingChecks],
     };

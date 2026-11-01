@@ -1,0 +1,83 @@
+id: execution-runtime
+type: library
+purpose: Schedule durable assignments and project execution lifecycles
+path: src/library/execution-runtime
+objectives:
+  - Schedule durable assignments and project execution lifecycles
+constraints:
+  - Preserve captured authority and evidence
+verification:
+  - command: npm
+    args:
+      - run
+      - check
+  - command: npm
+    args:
+      - test
+  - command: node
+    args:
+      - dist/cli.js
+      - guidance
+      - validate
+      - --project
+      - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
+questions: []
+access:
+  readPaths:
+    - .
+  writeDirectories:
+    - src/library/execution-runtime
+    - tests/library/execution-runtime
+    - docs/library/execution-runtime
+    - architecture/components
+schemaVersion: 4
+role: systems-engineer
+executionProfile: luna
+interfaces:
+  - Durable sequential execution and dynamic owner requests
+relatedIds:
+  - coordination-store
+  - assignment
+  - workspace
+  - report
+parentId: cli-package
+operationIds:
+  - execution-runtime-lint
+  - execution-runtime-tests
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/library/execution-runtime
+    - tests/library/execution-runtime
+    - docs/library/execution-runtime
+    - architecture/components/execution-runtime.yaml
+  publicModules:
+    - src/library/execution-runtime/host-client.ts
+    - src/library/execution-runtime/project-host.ts
+    - src/library/execution-runtime/scheduler.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
+discovery:
+  source:
+    - src/library/execution-runtime
+  documentation:
+    - docs/library/execution-runtime
+  tests:
+    - tests/library/execution-runtime
+  exclude: []
+provides: []
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node

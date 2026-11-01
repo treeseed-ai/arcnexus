@@ -1,4 +1,10 @@
-# Initialization and task proposals
+# Historical initialization and task proposals
+
+Current task execution uses the [general runtime director](../execution-runtime/execution.md)
+and `task run "<prompt>"`. It retains goal state, selects any eligible owners and
+uses captured Astra direction/review profiles. The proposal execution path below
+is retired; historical proposals remain inspectable. Low-level session characterization
+retains the earlier initialization contract without exposing a second CLI run mode.
 
 Issue #65 defines the following contract; delivery is complete only after the
 built-program acceptance and live qualification gates pass.
@@ -80,3 +86,55 @@ contention does not masquerade as a runtime failure. Tests that deliberately
 exercise caller-configured limits retain their explicit short limits. These
 harness ceilings are not application execution defaults. Revisit required ceilings
 using recorded execution evidence rather than speculative short deadlines.
+
+Independent verification uses the separate `verification-result` contract. The
+host supplies indexed captured acceptance criteria. Each index must appear exactly
+once with a verified verdict, nonempty evidence and an explanation before delivery
+can be promoted. Missing, duplicate, unknown or gap entries and unresolved
+deficiencies prevent completion. Workers cannot supply this assessment themselves.
+Task goal assessment includes the original external goal and the retained assignment
+criteria; verified owner deliveries alone do not establish whole-goal completion.
+Historical ordinary agent-result review records remain inspectable.
+
+A later prompt may include a retained task UUID to refer to its question, goal,
+assignment outcomes and verified evidence. The director receives that retained
+context explicitly. The invocation still creates a new task and uses current
+captured authority; referencing prior work neither resumes uncertain operations nor
+imports unfinished candidate edits. The referenced task keeps its original outcome.
+
+Independent verification receives host-captured change evidence in addition to
+command outcomes and worker claims. The manifest identifies every tracked or
+unignored changed path; retained tracked patches and untracked file contents are
+available through a fixed read-only evidence operation. The operation reads only
+artifacts captured for that assessment, supports explicit paging, and reports full
+length and hashes so partial output cannot masquerade as the complete evidence.
+Owner assessment compares against its assignment candidate base. Whole-goal
+assessment compares the assembled candidate against captured source authority.
+The candidate digest is pinned before capture and checked after assessment.
+Unavailable native Git metadata does not require broader verifier filesystem access.
+
+Blocked-task direction receives current run identity and host-retained assignment
+checkpoint facts automatically: accepted plan and stage, safe-continuation status,
+thread identity, candidate references, pending dependencies and observed command
+outcomes. These facts are evidence, not expanded authority. The director must not
+ask the caller to retrieve runtime bookkeeping that the host already retains;
+clarification remains for substantive goal or architectural decisions. Uncertain
+checkpoints stay ineligible even when the director recommends continuation.
+
+Independent verification must be able to inspect pinned host-owned coordination
+history as well as candidate files. Expose relevant ordered request, assignment,
+activation and delivery evidence, captured source/candidate identities and observed
+command/checkpoint records through fixed read-only evidence artifacts. Keep worker
+claims explicitly distinct. A worker's summary of a request cannot establish that
+its persisted submission preceded implementation. Foreign-run records, arbitrary
+state paths and mutable candidate-authored evidence cannot supply that proof.
+
+Independent execution evidence also retains the observed SDK tool events and
+captured command output for matching assignments in the current run. Turn completion
+alone cannot prove that a worker inspected an API or checked a dependency. Preserve
+host observation timestamps, sequence and turn identity; expose complete retained
+output through the same pinned, paged evidence capability. SDK tool observations
+establish what the harness reported executing, while declared host checks remain a
+separate evidence class. Neither tool output nor agent messages grant authority.
+Missing or partial logs remain explicit gaps. Never follow an evidence reference into
+another run or accept arbitrary private filesystem paths.

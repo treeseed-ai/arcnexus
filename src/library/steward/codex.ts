@@ -13,6 +13,11 @@ export interface CoordinationResult {
 }
 
 export interface AgentResult {
+  inboxActions?: Array<{
+    requestId: string;
+    action: 'accept' | 'reject' | 'clarify' | 'answer';
+    text: string;
+  }>;
   coordination?: CoordinationResult | null;
   plan?: Plan | null;
   planUpdates?: PlanUpdate[];
@@ -24,6 +29,11 @@ export interface AgentResult {
   regression: { verificationIndex: number; exitCode: number; outputIncludes: string } | null;
   reviewFindings: string[];
   requests: Array<{
+    assignmentId?: string | null;
+    kind?: 'change' | 'research' | 'review' | null;
+    changeType?: 'behavior' | 'documentation' | 'refactor' | null;
+    allowedWritePaths?: string[] | null;
+    milestone?: 'accepted' | 'delivered';
     fromComponent: string;
     ownerId: string | null;
     request: string;
@@ -73,5 +83,49 @@ export async function runInitializerCodex(
     signal,
     responseContract: 'initializer-result',
     operations,
+  }).run();
+}
+
+/** Runs a separate verifier contract without worker checklist or delegation authority. */
+export async function runVerificationCodex(
+  root: string,
+  record: RecordData,
+  prompt: string,
+  executable: string,
+  model: string,
+  signal: AbortSignal,
+  operations?: OperationBridge,
+): Promise<import('../task-intake/direction.js').VerificationResult> {
+  return new CodexExecution<import('../task-intake/direction.js').VerificationResult>({
+    root,
+    record,
+    prompt,
+    executable,
+    model,
+    signal,
+    operations,
+    responseContract: 'verification-result',
+  }).run();
+}
+
+/** Runs general direction with explicit retained-continuation proposals and no worker checklist authority. */
+export async function runDirectorCodex(
+  root: string,
+  record: RecordData,
+  prompt: string,
+  executable: string,
+  model: string,
+  signal: AbortSignal,
+  operations?: OperationBridge,
+): Promise<import('../task-intake/direction.js').DirectorResult> {
+  return new CodexExecution<import('../task-intake/direction.js').DirectorResult>({
+    root,
+    record,
+    prompt,
+    executable,
+    model,
+    signal,
+    operations,
+    responseContract: 'director-result',
   }).run();
 }

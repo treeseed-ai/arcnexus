@@ -79,14 +79,43 @@ function persist(root: string, record: RecordData, plan: Plan, reason: string): 
   save(root, record);
 }
 
+/** Distinguishes rejected plan content from authority, operation and persistence failures. */
+export class PlanValidationError extends Error {
+  /** Retains the exact semantic/schema diagnostic for a safe read-only correction turn. */
+  constructor(cause: unknown) {
+    super(cause instanceof Error ? cause.message : String(cause));
+    this.name = 'PlanValidationError';
+  }
+}
+
+/** Identifies invalid final claims after model completion and scope validation, permitting safe correction. */
+export class CompletedPlanValidationError extends PlanValidationError {
+  /** Keeps the semantic diagnostic separate from uncertain execution or persistence failures. */
+  constructor(cause: PlanValidationError) {
+    super(cause);
+    this.name = 'CompletedPlanValidationError';
+  }
+}
+
 export function acceptPlan(
   root: string,
   record: RecordData,
   value: unknown,
   reason = 'Initial plan validated; host workflow remains mandatory',
 ): void {
-  const plan = validateSchema<Plan>('plan', value),
-    resolved = record.resolvedAssignment as ResolvedAssignment;
+  let plan: Plan;
+  try {
+    plan = validateProposedPlan(value, record.resolvedAssignment as ResolvedAssignment);
+  } catch (error) {
+    throw new PlanValidationError(error);
+  }
+  plan.hostChecks = [{ id: 'final-verification', status: 'pending', evidence: [] }];
+  persist(root, record, plan, reason);
+}
+
+/** Validates proposed content completely before any accepted-plan persistence can occur. */
+function validateProposedPlan(value: unknown, resolved: ResolvedAssignment): Plan {
+  const plan = validateSchema<Plan>('plan', value);
   const ids = new Set(plan.items.map((i) => i.id));
   if (ids.size !== plan.items.length) throw new Error('Duplicate checklist identity');
   const allowed = resolved.role.activities;
@@ -97,11 +126,21 @@ export function acceptPlan(
   for (let n = 0; n < resolved.assignment.acceptanceCriteria.length; n++)
     if (!plan.items.some((i) => i.criteria.includes(n)))
       throw new Error('Plan omits acceptance criterion');
-  plan.hostChecks = [{ id: 'final-verification', status: 'pending', evidence: [] }];
-  persist(root, record, plan, reason);
+  return plan;
 }
 
 export function updatePlan(root: string, record: RecordData, updates: unknown): void {
+  let plan: Plan;
+  try {
+    plan = validateUpdates(record, updates);
+  } catch (error) {
+    throw new PlanValidationError(error);
+  }
+  persist(root, record, plan, 'Steward progress update');
+}
+
+/** Validates the entire proposed batch on a copy before accepted-plan persistence. */
+function validateUpdates(record: RecordData, updates: unknown): Plan {
   const values = validateSchema<PlanUpdate[]>('plan-updates', updates),
     plan = structuredClone(record.plan) as Plan | undefined;
   if (!plan) throw new Error('No accepted plan');
@@ -118,7 +157,7 @@ export function updatePlan(root: string, record: RecordData, updates: unknown): 
       throw new Error('Checklist completion requires evidence and satisfied dependencies');
     Object.assign(item, update, { basis: 'agent claim' });
   }
-  persist(root, record, plan, 'Steward progress update');
+  return plan;
 }
 
 export function completePlan(root: string, record: RecordData): void {

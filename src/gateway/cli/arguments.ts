@@ -2,25 +2,25 @@ import { parseArgs } from 'node:util';
 import { InputError } from '../../library/architecture/config.js';
 
 export const help = `ArcNexus
+  workday start|pause|resume|stop|status
+  task run "<prompt>"
   test inspect|run [component-id] --project <repository> [--level unit|integration|acceptance] [--category regression] [--tag <tag>] [--json]
-  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
-  workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]
-  workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
-  workday status <workday-id> [--json]
-  workday follow <workday-id> [--json] [--after <sequence>]
-  experiment inspect <manifest> --bindings <file> [--json]
-  experiment run <manifest> --bindings <file> --mode simulation|live [--output <new-directory>]
-  guidance validate --project <repository> [--json]
-  validate --project <repository> [--base <ref>]
+Inspection, evidence and diagnostics:
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
-  run/inspect: --assignment <file> replaces objective
-  task plan --input <text-file> --project <repository> [--initializer-model <model>]
-  task inspect <proposal-id> [--json]
-  task run <proposal-id>
+  inspect: --assignment <file> replaces objective
+  validate --project <repository> [--base <ref>]
+  guidance validate --project <repository> [--json]
+  experiment inspect <manifest> --bindings <file> [--json]
+  experiment run <prompt-manifest> --bindings <file> --mode simulation|live [--output <new-directory>]
+  workday inspect <historical-manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
+  workday history <historical-workday-id> [--json]
+  workday follow <historical-workday-id> [--json] [--after <sequence>]
+  task inspect <historical-proposal-id> [--json]
   prepare --project <repository>
-  status <workspace-id> [--json]\n  follow <workspace-id> [--json] [--after <sequence>]\n  cleanup <workspace-id>
-Composed workspaces: prepare/run/inspect --bindings <file>
-Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
+  status <workspace-id> [--json]
+  follow <workspace-id> [--json] [--after <sequence>]
+  cleanup <workspace-id>
+Composed workspace inspection/preparation: --bindings <file>
 `;
 
 const cliOptions = {

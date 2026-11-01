@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fixtureFiles } from '../../../../dist/library/experiments/experiment-config.js';
 
 export function materializeFixture(
-  kind: 'identity' | 'http' | 'simulation' | 'workday',
+  kind: 'identity' | 'http' | 'simulation' | 'workday' | 'general',
   target: string,
 ): void {
   for (const [path, content] of Object.entries(fixtureFiles(kind))) {

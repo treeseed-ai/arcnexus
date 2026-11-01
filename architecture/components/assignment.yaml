@@ -1,6 +1,6 @@
 id: assignment
 type: library
-purpose: Coordinate bounded assignments and host verification
+purpose: Resume owner-scoped assignments through durable engineering and host verification stages
 path: src/library/assignment
 objectives:
   - Make actual execution outcomes easy to inspect
@@ -77,6 +77,11 @@ discovery:
     - tests/library/assignment
   exclude: []
 provides:
+  - id: general-agent-result
+    version: "1"
+    kind: json-schema
+    path: src/library/assignment/schemas/general-agent-result.json
+    compatibility: General execution inbox protocol; legacy reports remain readable
   - id: agent-result
     version: "1"
     kind: json-schema

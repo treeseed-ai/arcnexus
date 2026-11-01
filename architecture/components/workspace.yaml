@@ -1,6 +1,6 @@
 id: workspace
 type: library
-purpose: Prepare and clean workspaces while preserving execution evidence
+purpose: Isolate assignments and reconcile verified candidate snapshots while preserving evidence
 path: src/library/workspace
 objectives:
   - Preserve original run evidence across workspace lifecycle operations
@@ -59,6 +59,7 @@ ownership:
     - docs/library/workspace
     - architecture/components/workspace.yaml
   publicModules:
+    - src/library/workspace/candidates.ts
     - src/library/workspace/members.ts
     - src/library/workspace/state.ts
     - src/library/workspace/workspace.ts

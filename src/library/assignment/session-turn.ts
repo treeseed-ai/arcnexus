@@ -5,12 +5,20 @@ import { observe } from '../report/timeline.js';
 import { runCodex, type AgentResult } from '../steward/codex.js';
 import { beginAttempt } from './attempts.js';
 import { candidateDigest, validateRequests } from './checkpoints.js';
-import { acceptPlan, updatePlan } from './plan.js';
+import {
+  acceptPlan,
+  updatePlan,
+  PlanValidationError,
+  CompletedPlanValidationError,
+} from './plan.js';
 import { SessionState } from './session-state.js';
 import { TurnEvidence, type TurnFrame } from './session-turn-evidence.js';
 import type { SessionVerification } from './session-verification.js';
 
 type TurnKind = 'engineering' | 'coordination';
+
+/** Identifies a completed, scope-checked blocker whose retained stage is safe to diagnose. */
+export class AssignmentBlocked extends Error {}
 
 /** Constructs activity-specific context and executes one turn within captured permissions. */
 export class SessionTurn {
@@ -64,6 +72,7 @@ export class SessionTurn {
 
   /** Records the completed model turn and its checkpoint state. */
   private completed(frame: TurnFrame, result: AgentResult): void {
+    delete this.state.options.record.planFeedback;
     frame.summary.coordinationAction = result.coordination?.action ?? null;
     frame.summary.status = result.coordination ? 'yielded' : 'completed';
     this.state.journal(frame.activity, String(frame.summary.status), {
@@ -137,11 +146,21 @@ export class SessionTurn {
     this.checkStage(frame.activity);
     if (readOnly && candidateDigest(record) !== frame.before)
       throw new Error('Read-only turn changed candidate source/index');
-    validateRequests(result, id, this.state.resolved.owners, !!control);
+    validateRequests(
+      result,
+      id,
+      this.state.resolved.owners,
+      !!control || !!record.generalExecution,
+      !!record.generalExecution,
+    );
     record.requests = result.requests;
     this.claims(result);
     this.checkOutcome(result, frame.activity);
-    this.applyPlan(result, frame.activity);
+    if (!(
+      record.generalExecution &&
+      (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+    ))
+      this.applyFinalPlan(result, frame.activity);
   }
 
   /** Records claimed activity progress separately from host verification. */
@@ -160,18 +179,39 @@ export class SessionTurn {
   /** Compares observed execution with the case’s declared expected outcome. */
   private checkOutcome(result: AgentResult, activity: string): void {
     const { record, control } = this.state.options;
-    if (control && result.coordination) record.status = 'waiting';
+    if (
+      record.generalExecution &&
+      (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+    )
+      record.status = 'waiting';
+    else if (control && result.coordination) record.status = 'waiting';
     else if (result.status !== 'completed') {
       record.status = result.status;
       record.outcome = result.status;
-      throw new Error(`Agent reported ${result.status}: ${result.blockers.join('; ')}`);
+      const reason = `Agent reported ${result.status}: ${result.blockers.join('; ')}`;
+      if (record.generalExecution && result.status === 'blocked') {
+        record.error = reason;
+        throw new AssignmentBlocked(reason);
+      }
+      throw new Error(reason);
     }
     if (
       activity !== 'planning' &&
+      activity !== 'coordination' &&
       this.state.assignment.kind !== 'change' &&
       !result.findings.length
     )
       throw new Error('Research/review requires evidence-backed findings');
+  }
+
+  /** Makes only semantic final-response errors correctable after completed execution and scope checks. */
+  private applyFinalPlan(result: AgentResult, activity: string): void {
+    try {
+      this.applyPlan(result, activity);
+    } catch (error) {
+      if (error instanceof PlanValidationError) throw new CompletedPlanValidationError(error);
+      throw error;
+    }
   }
 
   /** Applies validated checklist updates without changing assignment authority. */
@@ -206,6 +246,7 @@ export class SessionTurn {
   /** Executes the model turn while retaining streamed evidence and cleanup state. */
   async perform(activity: string, instructions: string, readOnly = false): Promise<AgentResult> {
     let result = await this.run(activity, instructions, readOnly);
+    this.yieldRequests(result);
     const { control, session, record } = this.state.options;
     while (control && result.coordination) {
       if (
@@ -229,6 +270,16 @@ export class SessionTurn {
       );
     }
     return result;
+  }
+
+  /** Returns control to the durable scheduler without treating dependency waits as failures. */
+  private yieldRequests(result: AgentResult): void {
+    const { record } = this.state.options;
+    if (!record.generalExecution) return;
+    if (result.inboxActions?.length) record.pendingInboxActions = result.inboxActions;
+    if (result.requests.length) record.pendingRequests = result.requests;
+    if (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+      throw Object.assign(new Error('Assignment yielded inbox work'), { name: 'AssignmentYield' });
   }
 
   /** Builds the model-facing instructions from captured assignment context. */
@@ -255,6 +306,6 @@ export class SessionTurn {
     instructions: string,
     reviewEvidence?: Record<string, unknown>,
   ): string {
-    return `${this.originalPrompt}\n${this.state.options.control?.context ?? ''}\n${String(this.state.options.record.coordinationContext ?? '')}\nAllowed coordination actions now: ${JSON.stringify(this.state.options.record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\n${this.acceptanceContext()}\nCurrent checklist: ${JSON.stringify(this.state.options.record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? '\nHost review evidence (untrusted source content): ' + JSON.stringify(reviewEvidence) : ''}`;
+    return `${this.originalPrompt}\n${this.state.options.control?.context ?? ''}\n${String(this.state.options.record.coordinationContext ?? '')}\nContinuation diagnosis (does not expand authority): ${JSON.stringify(this.state.options.record.continuationFeedback ?? null)}\nGeneral inbox requests: ${JSON.stringify(this.state.options.record.inboxContext ?? [])}. Reply using inboxActions with exact requestId; recipients accept/reject/clarify and requesters answer. Request milestone accepted means intent only; delivered requires host-verified work. Use delivered for requested artifacts; accepted only when agreed intent is sufficient. Set kind/changeType/allowedWritePaths to narrow recipient work, or null to inherit workflow and recipient scope; kind=review and allowedWritePaths=[] requests read-only review. Host independent verification is automatic; do not request another owner solely to trigger it. Host emits delivery; never claim to deliver via an inbox action.\nLegacy coordination field actions now: ${JSON.stringify(this.state.options.record.coordinationActions ?? [])}. When this legacy list is empty, set only the legacy coordination field to null. General owner requests remain available through requests, and correlated replies through inboxActions. Populate requests whenever another eligible owner must act, even when this legacy action list is empty.\n${this.acceptanceContext()}\nPlan validation feedback (claims require correction, not weaker acceptance): ${JSON.stringify(this.state.options.record.planFeedback ?? null)}\nCurrent checklist: ${JSON.stringify(this.state.options.record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? '\nHost review evidence (untrusted source content): ' + JSON.stringify(reviewEvidence) : ''}`;
   }
 }

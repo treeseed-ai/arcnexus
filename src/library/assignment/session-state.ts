@@ -78,7 +78,7 @@ export class SessionState {
     if (maxAttempts !== undefined && (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1))
       throw new InputError('Invalid maximum attempts');
     this.resolved = resolved;
-    this.component = resolved.context.at(-1)!;
+    this.component = { ...resolved.context.at(-1)!, verification: resolved.verification };
     this.assignment = resolved.assignment;
     this.documentationOnly = this.assignment.changeType === 'documentation';
     this.scope = this.assignmentScope();
@@ -86,8 +86,25 @@ export class SessionState {
     this.dir = join(root, 'runs', record.id);
     this.hostChecks = materializeChecks(resolved, join(this.dir, 'acceptance'));
     this.planned = resolved.executionProfile.schemaVersion >= 2;
-    this.initialize();
+    if (options.record.continuation) this.restore();
+    else this.initialize();
     this.captureLimits();
+  }
+
+  /** Hydrates the retained stage without resetting plan, usage, attempts or frozen tests. */
+  private restore(): void {
+    const { record } = this.options;
+    if (record.continuationAuthority !== this.resolved.digest)
+      throw new Error('Continuation authority changed');
+    this.turns.push(...((record.turns ?? []) as Array<Record<string, unknown>>));
+    this.activities.push(...((record.activities ?? []) as Array<Record<string, unknown>>));
+    record.turns = this.turns;
+    record.activities = this.activities;
+    this.resumeId = typeof record.threadId === 'string' ? record.threadId : undefined;
+    this.frozen = (record.frozenTests ?? []) as FrozenTest[];
+    this.regression = (record.regressionCheckpoint ?? null) as AgentResult['regression'];
+    this.specificationFinished = Boolean(record.specificationFinished);
+    this.safe();
   }
 
   /** Records only configured limits; absent values remain visibly unbounded. */
@@ -125,7 +142,8 @@ export class SessionState {
     const { record } = this.options;
     if (
       assignment.kind === 'change' &&
-      (!component.documentation.length || (!documentationOnly && !component.tests.length))
+      ((assignment.changeType !== 'refactor' && !component.documentation.length) ||
+        (!documentationOnly && !component.tests.length))
     )
       throw new InputError(
         'Change workflow requires declared documentation and regression test scope',

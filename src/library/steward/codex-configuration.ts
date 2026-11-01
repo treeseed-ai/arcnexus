@@ -5,7 +5,11 @@ import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
 import { milliseconds } from '../architecture/config.js';
 import { targetEnvironment, toolDirectories } from '../architecture/bindings.js';
-import { preparePermissions, type AccessPolicy } from '../architecture/permissions.js';
+import {
+  preparePermissions,
+  readOnlyAccess,
+  type AccessPolicy,
+} from '../architecture/permissions.js';
 import type { Plan } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
 import { execute, git } from '../operations/process.js';
@@ -15,7 +19,7 @@ import { save, type RecordData } from '../workspace/state.js';
 import { persistExecutionEvidence } from './evidence.js';
 
 export interface CodexInput {
-  responseContract?: 'initializer-result';
+  responseContract?: 'initializer-result' | 'verification-result' | 'director-result';
   root: string;
   record: RecordData;
   prompt: string;
@@ -65,13 +69,17 @@ export class CodexConfiguration {
 
   /** Returns the structured result contract expected from the current model turn. */
   private resultSchema() {
-    if (this.input.responseContract) return readSchema('initializer-result');
-    const schema = readSchema('agent-result');
+    if (this.input.responseContract) return readSchema(this.input.responseContract);
+    const schema = readSchema(
+      this.input.record.generalExecution ? 'general-agent-result' : 'agent-result',
+    );
     if ((this.profile?.schemaVersion ?? 1) >= 2) schema.required = Object.keys(schema.properties);
     else {
       delete schema.properties.plan;
       delete schema.properties.planUpdates;
     }
+    if (this.input.record.generalExecution) schema.required = Object.keys(schema.properties);
+    this.restrictActivities(schema);
     const plan = this.input.record.plan as Plan | undefined;
     if ((this.profile?.schemaVersion ?? 1) >= 2 && plan)
       schema.properties.planUpdates.items.properties.id.enum = plan.items.map((item) => item.id);
@@ -80,6 +88,18 @@ export class CodexConfiguration {
       schema.required.push('coordination');
     }
     return schema;
+  }
+
+  /** Advertises only activities authorized by the captured role, including checklist declarations. */
+  private restrictActivities(schema: any): void {
+    const resolved = this.input.record.resolvedAssignment as ResolvedAssignment | undefined;
+    if (!resolved) return;
+    const activities = [...resolved.role.activities];
+    schema.properties.activities.items.properties.activity.enum = activities;
+    const plan = schema.properties.plan?.anyOf.find((entry: any) => entry.properties);
+    if (!plan) return;
+    plan.properties.activities.items.properties.activity.enum = activities;
+    plan.properties.items.items.properties.activity.enum = activities;
   }
 
   /** Builds the structured response contract for the current coordination turn. */
@@ -116,12 +136,7 @@ export class CodexConfiguration {
       allowedWritePaths: readOnly
         ? []
         : (resolved?.allowedWritePaths ?? component?.allowedWritePaths),
-      access: readOnly
-        ? {
-            readPaths: [...new Set([...declared.readPaths, ...declared.writeDirectories])],
-            writeDirectories: [],
-          }
-        : declared,
+      access: readOnly ? readOnlyAccess(record.workspace, declared) : declared,
       inherited:
         context?.slice(0, -1).map((item) => ({
           access: item.access,

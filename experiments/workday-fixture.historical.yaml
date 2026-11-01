@@ -1,0 +1,15 @@
+schemaVersion: 2
+modes:
+  - live
+cases:
+  - id: contract-handoff
+    project: fixture
+    workday: workdays/fixture.yaml
+    expectedOutcome: completed
+    acceptance:
+      - command: node
+        args:
+          - ../dist/library/experiments/checks/workday-report.js
+          - "{report}"
+        artifacts:
+          - ../dist/library/experiments/checks/workday-report.js

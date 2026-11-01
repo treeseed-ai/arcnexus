@@ -1,0 +1,15 @@
+{
+  'schemaVersion': 3,
+  'id': 'service-tests',
+  'purpose': 'Observe owned regression results',
+  'repository': 'greetings',
+  'cwd': '.',
+  'category': 'unit-test',
+  'activities': ['research', 'documentation', 'testing', 'implementation', 'review'],
+  'kind': 'command',
+  'command': 'node',
+  'args': ['--test', 'service/test.mjs'],
+  'generatedDirectories': [],
+  'artifacts': [],
+  'probes': [],
+}

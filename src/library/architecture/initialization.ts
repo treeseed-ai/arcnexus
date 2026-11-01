@@ -23,7 +23,7 @@ export interface ProposedAssignment {
   ownerId: string;
   objective: string;
   kind: 'change' | 'research' | 'review';
-  changeType: 'behavior' | 'documentation';
+  changeType: 'behavior' | 'documentation' | 'refactor';
   acceptanceCriteria: string[];
   allowedWritePaths: string[];
 }

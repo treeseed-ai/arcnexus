@@ -32,8 +32,9 @@ export class ProgressObserver {
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
+    field: 'progress' | 'independentProgress' = 'progress',
   ) {
-    this.state = (record.progress ??= { failures: {}, warnings: [] }) as ProgressState;
+    this.state = (record[field] ??= { failures: {}, warnings: [] }) as ProgressState;
   }
 
   /** Fingerprints the next observable action before it can repeat a diagnosed failure. */

@@ -1,77 +1,36 @@
+import { ExecutionCommand } from './execution-command.js';
 import { InputError } from '../../library/architecture/config.js';
-import { ProposalStore, TaskPlanner, TaskRunner } from '../../library/task-intake/tasks.js';
-import { lock, stateRoot } from '../../library/workspace/state.js';
+import { ProposalStore } from '../../library/task-intake/tasks.js';
+import { stateRoot } from '../../library/workspace/state.js';
 
-/** Adapts task planning, inspection and accepted execution to the public CLI. */
+/** Runs prompt tasks through the project host and reads historical proposals without executing them. */
 export class TaskCommand {
-  /** Retains task proposal arguments and cancellation for planning or execution. */
+  /** Retains task arguments and cancellation without creating execution state. */
   constructor(
-    private positionals: string[],
-    private values: Record<string, string | boolean | undefined>,
-    private signal: AbortSignal,
+    private readonly positionals: string[],
+    private readonly values: Record<string, string | boolean | undefined>,
+    private readonly signal: AbortSignal,
   ) {}
 
-  /** Executes this lifecycle through its configured collaborators and propagates failures. */
+  /** Rejects retired execution before dispatch and preserves read-only proposal inspection. */
   async run(): Promise<void> {
     const action = this.positionals[1];
-    this.validate(action);
-    const root = stateRoot();
-    if (action === 'inspect') {
-      console.log(
-        JSON.stringify(
-          new ProposalStore(root).load(this.positionals[2]!),
-          null,
-          this.values.json ? undefined : 2,
-        ),
-      );
-      return;
-    }
-    const unlock = lock(root);
-    try {
-      if (action === 'plan') console.log(JSON.stringify(await this.plan(root)));
-      else {
-        const result = await new TaskRunner(root, this.signal).run(this.positionals[2]!);
-        console.log(JSON.stringify(result.report));
-        process.exitCode = result.exitCode;
-      }
-    } finally {
-      unlock();
-    }
-  }
-
-  /** Reads the caller’s request text and invokes retained task planning. */
-  private plan(root: string) {
-    return new TaskPlanner(root, this.signal).plan({
-      input: this.values.input as string,
-      project: this.values.project as string,
-      base: this.values.base as string | undefined,
-      bindings: this.values.bindings as string | undefined,
-      initializerModel: this.values['initializer-model'] as string | undefined,
-      executable: (this.values['codex-path'] as string | undefined) ?? 'codex',
-    });
-  }
-
-  /** Rejects inputs that violate the captured configuration contract. */
-  private validate(action?: string): void {
-    const allowed =
-      action === 'plan'
-        ? ['input', 'project', 'base', 'bindings', 'initializer-model', 'codex-path']
-        : action === 'inspect'
-          ? ['json']
-          : [];
-    if (
-      !action ||
-      !['plan', 'inspect', 'run'].includes(action) ||
-      Object.keys(this.values).some((key) => !allowed.includes(key))
-    )
-      throw new InputError('Invalid task command or options');
-    if (
-      action === 'plan'
-        ? this.positionals.length !== 2 || !this.values.input || !this.values.project
-        : this.positionals.length !== 3
-    )
+    if (action === 'plan' || action === 'legacy-run')
+      throw new InputError('Proposal execution is retired; use task run "<prompt>"');
+    if (this.positionals.length !== 3 || !['run', 'inspect'].includes(action ?? ''))
       throw new InputError(
-        'task plan requires --input and --project; task inspect/run require a proposal ID',
+        'task run requires exactly one prompt; task inspect requires one historical proposal ID',
       );
+    const allowed = action === 'inspect' ? ['json'] : [];
+    if (Object.keys(this.values).some((key) => !allowed.includes(key)))
+      throw new InputError('Invalid task options');
+    if (action === 'run') return new ExecutionCommand(this.signal).task(this.positionals[2]!);
+    console.log(
+      JSON.stringify(
+        new ProposalStore(stateRoot()).load(this.positionals[2]!),
+        null,
+        this.values.json ? undefined : 2,
+      ),
+    );
   }
 }

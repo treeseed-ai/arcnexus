@@ -7,7 +7,6 @@ import { TestCommand } from './test-command.js';
 import { TaskCommand } from './task-command.js';
 import { argumentsForCommand, help, type CliValues } from './arguments.js';
 import { InputError } from '../../library/architecture/config.js';
-import { runSteward } from '../../library/assignment/steward.js';
 import { captureChanges } from '../../library/change-inspection/changes.js';
 import { saveMarkdown } from '../../library/report/report.js';
 import { observe } from '../../library/report/timeline.js';
@@ -93,6 +92,8 @@ class CliApplication {
   /** Routes a validated command to its adapter and preserves shared cancellation. */
   private async dispatch(): Promise<void> {
     switch (this.command) {
+      case 'run':
+        throw new InputError('Component execution is retired; use task run "<prompt>"');
       case 'test':
         this.validateExecution();
         this.startTimer();
@@ -105,9 +106,7 @@ class CliApplication {
       case 'task':
         return new TaskCommand(this.positionals, this.values, this.controller.signal).run();
       case 'workday':
-        return new WorkdayCommand(this.positionals, this.values, this.controller.signal, () =>
-          this.acquire(),
-        ).run();
+        return new WorkdayCommand(this.positionals, this.values, this.controller.signal).run();
       case 'experiment':
         return new ExperimentCommand(this.positionals, this.values, this.controller.signal).run();
       case 'guidance':
@@ -167,11 +166,7 @@ class CliApplication {
   /** Rejects unsupported command and flag combinations before dispatch. */
   private validateCommand(): void {
     const { values, positionals, command } = this;
-    if (
-      !['prepare', 'cleanup', 'run', 'validate', 'inspect', 'status', 'follow'].includes(
-        command ?? '',
-      )
-    )
+    if (!['prepare', 'cleanup', 'validate', 'inspect', 'status', 'follow'].includes(command ?? ''))
       throw new InputError(help);
     if (
       values['max-attempts'] !== undefined &&
@@ -183,12 +178,12 @@ class CliApplication {
     if (command === 'prepare' && (!values.project || positionals.length !== 1))
       throw new InputError('prepare requires --project');
     if (
-      ['run', 'inspect'].includes(command!) &&
+      command === 'inspect' &&
       (!values.project ||
         positionals.length !== (values.assignment ? 2 : 3) ||
         (!values.assignment && !positionals[2]?.trim()))
     )
-      throw new InputError('run requires component, objective and --project');
+      throw new InputError('inspect requires component, objective and --project');
     if (command === 'cleanup' && positionals.length !== 2)
       throw new InputError('cleanup requires workspace ID');
     this.validateExecution();
@@ -211,27 +206,14 @@ class CliApplication {
     input: ReturnType<AssignmentCommand['resolve']>,
     root: string,
   ): Promise<void> {
-    const { values, positionals, command } = this;
+    const { values } = this;
     const { resolved } = input;
     const workspace = new WorkspaceCommand(values);
     const record = (this.record = workspace.create(root, input));
     if (resolved) record.resolvedAssignment = resolved;
     if (['simulation', 'live'].includes(process.env.ARCNEXUS_EXPERIMENT_MODE ?? ''))
       record.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE;
-    if (command === 'run')
-      await runSteward(
-        root,
-        record,
-        positionals[1]!,
-        resolved!.assignment.objective,
-        resolved!.executionProfile.model,
-        values['codex-path'] ?? 'codex',
-        this.controller.signal,
-        values['max-attempts'] === undefined
-          ? resolved!.executionProfile.maxAttempts
-          : Number(values['max-attempts']),
-      );
-    else await workspace.prepare(root, record, this.controller.signal);
+    await workspace.prepare(root, record, this.controller.signal);
   }
 
   /** Translates a thrown error into public output and the appropriate process exit code. */

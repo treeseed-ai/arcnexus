@@ -79,7 +79,7 @@ class WorkdayStoreTests {
         env,
         timeout: 30 * 60 * 1000,
       });
-    const status = workday('status', 'one', '--json');
+    const status = workday('history', 'one', '--json');
     assert.equal(status.status, 0, status.stderr);
     assert.equal(JSON.parse(status.stdout).messages.length, 1);
     const follow = workday('follow', 'one', '--after', '1', '--json');
@@ -91,7 +91,7 @@ class WorkdayStoreTests {
         .map((line) => JSON.parse(line).sequence),
       [2, 3],
     );
-    assert.equal(workday('status', 'missing', '--json').status, 2);
+    assert.equal(workday('history', 'missing', '--json').status, 2);
   }
 }
 

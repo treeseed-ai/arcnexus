@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
-import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+import { stewardEntry, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises context behavior through observable scenarios. */
 class ContextTests {
@@ -115,7 +115,7 @@ class ContextTests {
     const r = spawnSync(
       process.execPath,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         '--assignment',

@@ -49,6 +49,18 @@ export class TestProcess {
     });
   }
 
+  /** Waits for the intended test boundary while surfacing early process exit with retained output. */
+  async waitForReady(condition: () => boolean, message: string): Promise<void> {
+    await waitFor(() => {
+      if (condition()) return true;
+      assert.ok(
+        this.child.exitCode === null && this.child.signalCode === null,
+        `${message}; child exited (${this.child.exitCode ?? this.child.signalCode}): ${this.stderr}\n${this.stdout}`,
+      );
+      return false;
+    }, message);
+  }
+
   /** Signals the managed test child to exercise cancellation or parent-loss behavior. */
   kill(signal: NodeJS.Signals): void {
     this.child.kill(signal);

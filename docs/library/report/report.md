@@ -40,6 +40,59 @@ assignment context and does not inspect test files or reorder the captured array
 When historical records have no captured test selection, the section says
 `unavailable`. An explicitly captured empty suite list says `No tests captured.`
 
+## General execution projections
+
+The execution report JSON at `report` is a projection of one durable run. `run.id`
+identifies that task or workday run; `run.mode` is `task` or `workday`, and the
+summary also carries its objective, status, creation time, and selected evidence
+fields. `assignments` is the run's separate work list. Each assignment has its own
+`id`, `owner`, objective, status, dependencies and evidence. An owner can therefore
+have multiple assignments in one run; count assignments, not distinct owners.
+
+`counts.ready` and `counts.waiting` count assignments in those exact statuses.
+`counts.verified` counts assignments whose status is `completed`, after owner
+delivery verification. They are queue and delivery counts, not goal-completion
+proof. In task execution, the host assesses the assembled candidate against the
+whole objective after all assignments are completed; the run becomes `completed`
+only when that assessment supplies `goalEvidence`. A completed worker turn or its
+checklist is a worker claim, not independent verification. Verified owner delivery
+is separate from both that claim and whole-goal completion.
+
+`run.data.candidateRevision` identifies the candidate revision retained with the
+run. `run.data.candidateLocation` is the captured candidate workspace path when
+available. These fields identify a candidate; the path alone does not prove its
+contents remain unchanged or integrated. Owner verification evidence is retained
+as `verifiedEvidence`; whole-goal evidence is separately retained as `goalEvidence`.
+A retained candidate is ready for caller review/integration, not already integrated:
+the caller owns integrating it into the source checkout.
+
+Detailed current-run `report.json` evidence records the run identity and mode,
+ordered events and requests, source observations, and per-assignment identity,
+status, milestones, delivered revision, verification and matching execution-record
+observations. A worker's completion summary is not substituted for these host
+observations. When historical records lack these newer fields, report them as
+unavailable. Do not infer success from missing evidence or rebuild historical
+evidence by reading mutable target files; preserve historical report readability.
+
+Configured limits shown by legacy execution-progress reports are observations, not
+proof that general task/workday execution enforces them. The general execution
+interface does not accept work budgets; obsolete budget settings are rejected.
+Optional legacy execution-profile limits remain unset unless explicitly selected.
+This does not waive cancellation, process supervision, output limits, permissions,
+or independent host checks.
+
+General execution remains in qualification. The qualification record retains live
+workday, lifecycle and self-development evidence, while the three-owner task gate
+and remaining migration work still prevent phase-three readiness. Deterministic
+tests do not substitute for the outstanding live demonstration.
+Implementation references for these projections are `src/library/report/execution-report.ts`
+and `src/library/report/execution-evidence.ts`; assignment and run fields are defined
+in `src/library/coordination-store/execution-types.ts`. Captured report checks are
+`report-format`, `report-lint`, and `report-tests` in the report component definition;
+`tests/library/execution-runtime/acceptance/verification-coverage.test.ts` covers
+separate owner and whole-goal verification. The qualification status is recorded in
+`docs/plans/general-agent-execution-qualification.md`.
+
 ## Coordination evidence
 
 Reports summarize planned/actual/corrective turns, implementation attempts, elapsed

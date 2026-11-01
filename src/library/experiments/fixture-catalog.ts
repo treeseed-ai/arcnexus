@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { InputError } from '../architecture/config.js';
 
-export type FixtureKind = 'identity' | 'http' | 'simulation' | 'workday';
+export type FixtureKind = 'identity' | 'http' | 'simulation' | 'workday' | 'general';
 
 /** Materializes known fixture contracts and compiled payloads for deterministic experiments. */
 export class FixtureCatalog {

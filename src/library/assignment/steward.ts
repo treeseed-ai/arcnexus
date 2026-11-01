@@ -1,9 +1,10 @@
+import { validateContinuation } from './continuation.js';
 import { initializeExecution, type InitializationEvidence } from '../task-intake/initializer.js';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { prepareCapabilities } from '../operations/probes.js';
 import type { AgentResult } from '../steward/codex.js';
-import type { RecordData } from '../workspace/state.js';
+import { save, type RecordData } from '../workspace/state.js';
 import { assertIdentity, assertOutputs, prepareWorkspace } from '../workspace/workspace.js';
 import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
@@ -67,7 +68,22 @@ export class StewardSession {
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
+    await this.initializeSession();
+    await new SessionWorkflow(this.state!, this.turns!, this.verification!).run();
+  }
+
+  /** Advances one durable stage, preserving continuation when an owner request yields. */
+  async step(): Promise<void> {
+    this.record.generalExecution = true;
+    await this.initializeSession();
+    await new SessionWorkflow(this.state!, this.turns!, this.verification!).step();
+  }
+
+  /** Reconstructs stage services and establishes prerequisites only on the initial activation. */
+  private async initializeSession(): Promise<void> {
     const { root, record, id, objective, model, executable, signal, maxAttempts, control } = this;
+    const retained = Boolean(record.continuation);
+    if (retained) validateContinuation(root, record);
     this.state = new SessionState({
       root,
       record,
@@ -80,9 +96,9 @@ export class StewardSession {
       control,
       session: this,
     });
-    await this.prepare();
+    if (!retained) await this.prepare();
     if (this.initialization) this.acceptInitialization();
-    if (!control?.initialized && !this.initialization)
+    if (!retained && !control?.initialized && !this.initialization && !record.directionAccepted)
       await initializeExecution({
         root,
         record,
@@ -93,7 +109,22 @@ export class StewardSession {
       });
     this.verification = new SessionVerification(this.state);
     this.turns = new SessionTurn(this.state, this.verification);
-    await new SessionWorkflow(this.state, this.turns, this.verification).run();
+  }
+
+  /** Answers an inbox clarification without advancing or resetting the suspended engineering stage. */
+  async reply(instructions: string): Promise<AgentResult> {
+    this.record.generalExecution = true;
+    await this.initializeSession();
+    this.record.safeCheckpoint = false;
+    save(this.root, this.record);
+    try {
+      const result = await this.controlTurn(instructions);
+      this.record.safeCheckpoint = true;
+      return result;
+    } finally {
+      this.captureCheckpoint();
+      save(this.root, this.record);
+    }
   }
 
   /** Requires a valid ready result before allowing participant inference. */
@@ -162,3 +193,5 @@ export async function runSteward(
     initialization,
   ).run();
 }
+
+export { validateContinuation } from './continuation.js';

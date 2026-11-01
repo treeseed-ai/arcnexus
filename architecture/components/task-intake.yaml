@@ -1,14 +1,14 @@
 id: task-intake
 type: library
-purpose: Initialize assignments and propose accountable owners before execution
+purpose: Direct prompt tasks and independently assess goals and deliveries
 path: src/library/task-intake
 objectives:
   - Interpret requests and identify accountable existing owners
   - Report missing responsibilities and architectural questions precisely
+  - Retain goal acceptance and reconsider decomposition without a participant ceiling
 constraints:
   - Never silently broaden a captured assignment or grant write authority
-  - Initializer activation is source-read-only and cannot recursively initialize
-    or apply architecture proposals
+  - Director and verifier activations are source-read-only and cannot apply architecture proposals
 verification:
   - command: npm
     args:
@@ -52,6 +52,7 @@ ownership:
     - docs/library/task-intake
     - architecture/components/task-intake.yaml
   publicModules:
+    - src/library/task-intake/direction.ts
     - src/library/task-intake/initializer.ts
     - src/library/task-intake/tasks.ts
   directoryExceptions:
@@ -67,12 +68,26 @@ discovery:
     - tests/library/task-intake
   exclude: []
 provides:
+  - id: director-result
+    version: "1"
+    kind: json-schema
+    path: src/library/task-intake/schemas/director-result.json
+    compatibility: General run proposals and safe retained continuations; preserve initializer history
+  - id: verification-result
+    version: "1"
+    kind: json-schema
+    path: src/library/task-intake/schemas/verification-result.json
+    compatibility: Indexed independent acceptance evidence; preserve historical agent-result reports
   - id: initializer-result
     version: "1"
     kind: json-schema
     path: src/library/task-intake/schemas/initializer-result.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
+  - id: director-result
+    version: "1"
+  - id: verification-result
+    version: "1"
   - id: initializer-result
     version: "1"
   - id: test-profile

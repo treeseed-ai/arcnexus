@@ -1,15 +1,14 @@
-schemaVersion: 2
-modes:
-  - live
-cases:
-  - id: contract-handoff
-    project: fixture
-    workday: workdays/fixture.yaml
-    expectedOutcome: completed
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/workday-report.js
-          - "{report}"
-        artifacts:
-          - ../dist/library/experiments/checks/workday-report.js
+{
+  "schemaVersion": 3,
+  "modes": [
+    "live"
+  ],
+  "cases": [
+    {
+      "id": "dynamic-shout",
+      "project": "fixture",
+      "prompt": "Implement opt-in shout greetings through the existing owners. Start only with cli; cli must discover and request the service owner, which must discover and request names. Use persisted delivered-milestone requests for these dynamically discovered dependencies. Names must deliver an API that trims then uppercases a name, preserving normalizeName. Service must deliver greet(name, {shout:true}) returning exactly HELLO, ADA! for name \" Ada \" and HELLO, WORLD! for name \"world\"; preserve default greet(name) behavior. CLI must deliver run([\"--shout\",\" Ada \"]) -> HELLO, ADA!, run([\"--shout\"]) -> HELLO, WORLD!, preserve run([\"Ada\"]) -> Hello, Ada! and run([]) -> Hello, world!. Keep all name normalization and casing in names, greeting construction in service, and argument parsing/default selection in cli. Each owner must make actual bounded implementation, documentation and regression changes. Capture precise owned API acceptance in each request; downstream CLI tests belong to cli and must not be a prerequisite for a supplier delivery. Require observed checks, independent owner verification and final goal assessment. Retain the candidate for caller integration without modifying source checkout or architecture.",
+      "expectedOutcome": "completed"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+schemaVersion: 3
+id: astra
+model: gpt-6-astra
+reasoning: medium
+webSearch: live
+operationCategories:
+  - build
+  - unit-test
+  - integration-test
+  - cli-check
+  - http-check
+  - lint

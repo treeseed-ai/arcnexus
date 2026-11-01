@@ -20,9 +20,11 @@ as it is reliable. Direct bootstrap development supplies only what that loop nee
 1. **Useful immediately:** the first phase accepts an objective for one component,
    executes real engineering work, runs verification, and exposes the actual diff
    and report through a CLI.
-2. **Accountable coordination:** two stewards complete a contract-dependent change
-   through bounded requests and handoffs, with one owner per assignment and
-   explicit blocked states. Demonstrate rejection and interruption as well as success.
+2. **Accountable coordination:** any number of existing package stewards execute
+   sequentially through durable assignments, inboxes and dynamic dependencies.
+   Support self-directed workdays and director-led tasks, with one accountable owner
+   per assignment. The [general execution contract](library/execution-runtime/execution.md)
+   and its live qualification gates must be satisfied before phase three.
 3. **Architect-directed operation:** a small UI lets the architect select a
    component, direct its steward, run a workday, and inspect evidence.
 4. **Self-development:** use ArcNexus to make a real improvement to ArcNexus; retain
@@ -67,8 +69,8 @@ are not automatic context.
   Delegating a dependency does not complete the original assignment.
 - Separate contract acceptance, implementation readiness, and release availability.
   Resume dependent work at the milestone it actually requires.
-- Bound executions and request exchanges; record failed, interrupted, and blocked
-  outcomes. A workday must end with an honest report, including partial results.
+- Govern execution by observed progress and cancellation, without work budgets;
+  record failed, interrupted, and blocked outcomes. A workday must end with an honest report, including partial results.
 - Verify actual changed paths and executed tests. Prompts and agent claims alone
   cannot enforce scope or prove success. Development success does not authorize production.
 - Use concise functions with coherent responsibilities, simple modules, and existing
@@ -125,20 +127,23 @@ for worker live tests and assess their results separately from earlier Astra run
 The architect specifies **an Astra supervisor directing Luna stewards**: reserve
 Astra for high-level decomposition, architectural reasoning and review; use Luna
 for bounded component engineering. Human architectural authority remains final.
-Deterministic runtime code still schedules, bounds and records execution. Prove
-the arrangement with two Luna workers before scaling the number of stewards.
+Deterministic runtime code schedules, enforces authority and records execution.
+The phase-two execution system supports arbitrary eligible steward counts; the
+qualification baseline includes three- and five-owner scheduling and a real
+three-owner goal with an owner discovered during execution.
 
 - Phase two uses a verified change in the shared candidate as its delivery milestone.
-  Threads continue only within the same live workday; process interruption ends the
-  workday without automatic recovery. See [workdays](library/workday/workdays.md).
+  Durable checkpoints support explicit pause/resume and validated recovery.
+  Uncertain operations are never replayed automatically. Historical two-owner
+  workdays remain inspectable but cannot resume under the new scheduler.
 - Later: which architectural decisions may stewards accept themselves, and which
   require the human or an explicitly authorized parent steward?
 
 ## Sequence, not a large implementation plan
 
 1. Single steward and real CLI engineering result.
-2. Two stewards and bounded contract coordination.
-3. Minimal architecture/direct-steward/workday UI.
+2. General agent execution, persistent workdays and director-led tasks; live qualification.
+3. Minimal architecture/direct-steward/workday UI, after the phase-two gate below.
 4. Expanded inheritance, reusable patterns, and conformance checks.
 5. Multi-project composition and release coordination.
 
@@ -153,3 +158,20 @@ explicit direction that ArcNexus should ultimately develop itself. The context
 folder is local and ignored by Git; this tracked charter must stand on its own.
 The conversation remains historical rationale. Later explicit architectural
 decisions should update this charter rather than require readers to reconstruct chat.
+
+## Phase-two execution gate
+
+Before phase three, the exact option-free workday controls and one-prompt task
+command must use one durable sequential project host, with no participant or
+execution-budget quotas. Historical reports remain readable; retired execution
+adapters cannot bypass the shared engine.
+
+The [qualification ledger](plans/general-agent-execution-qualification.md) must
+retain final static/build/ownership/guidance checks, the integrated behavioral matrix,
+CI and review status separately from live evidence. Live evidence must demonstrate
+all six accepted cases: a verified three-owner prompt with dynamic discovery;
+self-directed verified work and inbox service; unfinished work across pause/resume;
+a task interrupting and returning control to a workday; cancellation and validated
+host-loss recovery; and an independently verified ArcNexus improvement delivered
+through a stable supervising runtime. Keep the actual diff, reviews and reports.
+No simulation or completed checklist can substitute for a live case or missing evidence.

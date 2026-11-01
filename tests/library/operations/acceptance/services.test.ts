@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { endpointClosed } from '../../../../dist/library/operations/service-state.js';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
 import { TestProcess, waitFor } from '../../testing/support/test-process.js';
-import { cli } from '../../testing/support/workflow-fixture.js';
+import { stewardEntry } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises services behavior through observable scenarios. */
 class ServicesTests {
@@ -94,7 +94,7 @@ class ServicesTests {
     return new TestProcess(
       t,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         'Inspect service',

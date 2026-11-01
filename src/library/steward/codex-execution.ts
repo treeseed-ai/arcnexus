@@ -1,3 +1,4 @@
+import { ThreadRecovery } from './thread-recovery.js';
 import { ObservedProgress } from './observed-progress.js';
 import { Codex, type ThreadEvent } from '@openai/codex-sdk';
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -20,6 +21,8 @@ export class CodexExecution<T extends object = AgentResult> {
 
   private completed = false;
 
+  private activityObserved = false;
+
   private termination: Promise<void> | undefined;
 
   private readonly abort = () => {
@@ -36,24 +39,37 @@ export class CodexExecution<T extends object = AgentResult> {
   async run(): Promise<T> {
     await this.configuration.capture();
     await this.configuration.preflight();
-    const thread = this.thread(await this.tools.open());
+    const bridge = await this.tools.open();
+    const recovery = new ThreadRecovery(this.input);
     this.input.signal.addEventListener('abort', this.abort, { once: true });
     try {
-      this.input.signal.throwIfAborted();
-      const { events } = await thread.runStreamed(this.input.prompt, {
-        outputSchema: this.configuration.schema,
-        signal: this.tools.signal,
-      });
-      for await (const event of events) this.event(event);
-      if (this.tools.error) throw this.tools.error;
-      this.input.signal.throwIfAborted();
-      if (!this.completed) throw new Error('Codex stream ended without completed turn');
-      return this.result();
+      try {
+        return await this.stream(bridge);
+      } catch (error) {
+        if (this.activityObserved || this.tools.error || !recovery.permits(error)) throw error;
+        this.killGroup();
+        recovery.replace(error);
+        return await this.stream(bridge);
+      }
     } catch (error) {
       throw this.tools.error ?? error;
     } finally {
       await this.close();
     }
+  }
+
+  /** Streams one attempted turn and rejects partial output without claiming completion. */
+  private async stream(bridge: object): Promise<T> {
+    this.input.signal.throwIfAborted();
+    const { events } = await this.thread(bridge).runStreamed(this.input.prompt, {
+      outputSchema: this.configuration.schema,
+      signal: this.tools.signal,
+    });
+    for await (const event of events) this.event(event);
+    if (this.tools.error) throw this.tools.error;
+    this.input.signal.throwIfAborted();
+    if (!this.completed) throw new Error('Codex stream ended without completed turn');
+    return this.result();
   }
 
   /** Starts or resumes the retained SDK thread under explicit runtime settings. */
@@ -79,18 +95,15 @@ export class CodexExecution<T extends object = AgentResult> {
 
   /** Retains each SDK event before projecting observable progress. */
   private event(event: ThreadEvent): void {
-    const { root, record, resumeId } = this.input;
+    const { root, record } = this.input;
+    if (event.type.startsWith('item.') || event.type === 'thread.started')
+      this.activityObserved = true;
     observe(root, record, 'codex.event', event);
     appendFileSync(join(this.configuration.dir, 'events.jsonl'), JSON.stringify(event) + '\n', {
       mode: 0o600,
     });
     this.progress(event);
-    if (event.type === 'thread.started') {
-      if (resumeId && event.thread_id !== resumeId)
-        throw new Error('Codex resumed an unexpected thread ID');
-      record.threadId = event.thread_id;
-      save(root, record);
-    }
+    if (event.type === 'thread.started') this.recordThread(event.thread_id);
     if (event.type === 'item.completed' && event.item.type === 'agent_message')
       this.final = event.item.text;
     if (event.type === 'turn.completed') {
@@ -99,6 +112,17 @@ export class CodexExecution<T extends object = AgentResult> {
     }
     if (event.type === 'turn.failed') throw new Error(event.error.message);
     if (event.type === 'error') throw new Error(event.message);
+  }
+
+  /** Records retained or substituted thread identity while rejecting unexpected resumption. */
+  private recordThread(id: string): void {
+    const { root, record, resumeId } = this.input;
+    if (resumeId && id !== resumeId) throw new Error('Codex resumed an unexpected thread ID');
+    record.threadId = id;
+    const substitutions = record.threadSubstitutions as Array<Record<string, unknown>> | undefined;
+    const latest = substitutions?.at(-1);
+    if (latest && !latest.replacement) latest.replacement = id;
+    save(root, record);
   }
 
   /** Emits host-observed execution progress without exposing private reasoning. */
@@ -118,7 +142,12 @@ export class CodexExecution<T extends object = AgentResult> {
     const { dir, profile } = this.configuration;
     writeFileSync(join(dir, 'agent-result.raw.txt'), this.final, { mode: 0o600 });
     const result = validateSchema<T>(
-      this.input.responseContract ?? (record.workdayId ? 'workday-agent-result' : 'agent-result'),
+      this.input.responseContract ??
+        (record.generalExecution
+          ? 'general-agent-result'
+          : record.workdayId
+            ? 'workday-agent-result'
+            : 'agent-result'),
       JSON.parse(this.final),
     );
     if (!this.input.responseContract) this.checkCoordination(result as AgentResult);

@@ -47,7 +47,7 @@ export class ProposalStore {
     return proposal;
   }
 
-  /** Reads a retained proposal and checks its identity before inspection or execution. */
+  /** Reads a retained proposal and checks its identity before historical inspection. */
   load(id: string): TaskProposal {
     if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid proposal identity');
     try {
@@ -65,6 +65,6 @@ export class ProposalStore {
 
   /** Renders a caller-reviewable proposal without applying architectural changes. */
   private markdown(value: TaskProposal): string {
-    return `# Task proposal ${value.id}\n\nStatus: ${value.status}\n\nRevision: ${value.base}\n\n${value.request.text}\n\n## Captured initialization\n\n\`\`\`json\n${JSON.stringify(value.initialization, null, 2)}\n\`\`\`\n\nExecution requires explicit task run; architectural changes require caller integration and a new plan.\n`;
+    return `# Task proposal ${value.id}\n\nStatus: ${value.status}\n\nRevision: ${value.base}\n\n${value.request.text}\n\n## Captured initialization\n\n\`\`\`json\n${JSON.stringify(value.initialization, null, 2)}\n\`\`\`\n\nHistorical proposal; execution is retired. Submit its goal with task run as a new task under current authority.\n`;
   }
 }

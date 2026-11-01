@@ -1,6 +1,11 @@
-# Two-owner workdays
+# Historical two-owner workdays
 
-Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+This document describes the retained legacy format. New execution uses the
+[general runtime](../execution-runtime/execution.md), with arbitrary eligible owners,
+persistent lifecycle controls and no execution budgets. The legacy scheduler is
+being retired under [the CLI migration contract](../../gateway/cli/execution-migration.md).
+
+Historical version-three execution policy is defined in [progress and limits](../assignment/progress.md)
 and [initialization](../task-intake/initialization.md). Initialization precedes worker
 inference. There are no implicit execution or corrective quotas; the numeric limits
 below describe earlier defaults or explicitly captured legacy configurations. Planned

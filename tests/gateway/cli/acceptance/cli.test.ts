@@ -28,7 +28,7 @@ class CliTests {
       process.cwd(),
       '--json',
     );
-    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.status, 0, String(result.error ?? result.stderr));
     const owner = JSON.parse(result.stdout).context.at(-1);
     assert.ok(owner.allowedWritePaths.includes('tests/gateway/cli'));
     assert.ok(owner.access.writeDirectories.includes('src/gateway/cli'));
@@ -38,7 +38,10 @@ class CliTests {
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   private run(...args: string[]) {
-    return spawnSync(resolve('dist/cli.js'), args, { encoding: 'utf8' });
+    return spawnSync(resolve('dist/cli.js'), args, {
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+    });
   }
 }
 

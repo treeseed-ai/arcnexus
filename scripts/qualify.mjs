@@ -1,4 +1,4 @@
-// Compatibility entry point; execution lives in the TypeScript application.
-import { legacyMain } from '../dist/library/experiments/experiments.js';
+// Prompt campaigns use the same assembled CLI and project host as normal execution.
+process.argv.splice(2, 0, 'experiment', 'run');
 
-await legacyMain(process.argv.slice(2));
+await import('../dist/cli.js');

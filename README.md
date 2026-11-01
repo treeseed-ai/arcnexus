@@ -1,62 +1,77 @@
 # ArcNexus
 
 Architecture-directed software development, with ArcNexus itself as an early target.
-See the [charter](docs/charter.md) for purpose, the [development journey](docs/dev.md)
-for all five phases, and the [phase-one retrospective](docs/phase-one-retrospective.md)
-for evidence and coordination readiness. The [phase-one sequence](docs/plans/phase-one.md)
-records the delivered implementation slices.
+The [charter](docs/charter.md) defines its purpose and phase gates. General execution
+is a phase-two extension; phase three remains blocked until the
+[qualification requirements](docs/plans/general-agent-execution-qualification.md) pass.
 
-Requires Linux, Node >=22.13 <23, npm, Git, `setsid`, and an authenticated Codex CLI on PATH.
+Requires Linux, Node >=22.13 <23, npm, Git, `setsid`, and an authenticated Codex CLI.
 
 ```sh
 npm ci
 npm run build
 node dist/cli.js --help
-node dist/cli.js validate --project /path/to/repository
-node dist/cli.js inspect identity "Implement the objective" --project /path/to/repository --json
-node dist/cli.js prepare --project /path/to/repository
-node dist/cli.js run identity "Implement the objective" --project /path/to/repository
 ```
 
-Runs default to `gpt-6-luna` with medium reasoning; `--model` explicitly overrides it.
-A captured source-read-only initializer precedes worker inference. Its model has a
-separate `--initializer-model` override. See [task intake](docs/library/task-intake/initialization.md)
-for `task plan`, inspectable proposals, explicit acceptance and architecture escalation.
+From a configured target repository, use either a self-directed workday or an
+external task. These are the normal execution commands:
 
-Maintained configuration is YAML; legacy JSON remains supported. Evidence remains JSON.
-[Ownership](docs/library/architecture/configuration.md) and mirrored component directories keep
-source permissions explicit. Run `npm run format:check`, `npm run lint`, and
-`npm run check` before `npm test`.
+```sh
+arcnexus workday start
+arcnexus workday pause
+arcnexus workday resume
+arcnexus workday stop
+arcnexus workday status
 
-The version-three catalog has no default execution deadlines or turn/call/attempt
-quotas. Explicit limits remain supported; cancellation and observable loop guards
-remain enforced. [Progress and limits](docs/library/assignment/progress.md) explains the
-checklist and verified-progress evidence. The [pre-phase-three qualification](docs/acceptance/pre-phase-three.md)
-records live Luna initialization, a real report improvement, two-owner task routing,
-architectural escalation, preserved failures and integration checks.
+arcnexus task run "Implement the objective"
+```
 
-Targets declare [environment setup](docs/library/workspace/workspaces.md) and [components](docs/gateway/cli/stewards.md).
-The application creates and retains a dedicated worktree. Review its evidence and
-changes; commits, PRs and integration remain caller-owned. Use `cleanup <workspace-id>`
-only after resolving candidate source changes. Branches and reports are preserved.
+A workday runs in a background host, rotating fairly through eligible component
+stewards and servicing inbox requests. It stays idle when no relevant inputs change.
+Pause finishes the active turn and checkpoint; stop cancels managed execution and
+retains evidence. A task uses a director to select starting owners and assess the
+goal. Workers can request additional existing owners through persisted inboxes.
+Execution is sequential within a project, with no fixed participant count.
 
-`npm test` runs deterministic built-CLI acceptance. `npm run check` checks TypeScript.
-[CI](docs/release/ci.md) also validates repository guidance. The separate
-[live acceptance](docs/acceptance/live-sample.md) invokes real model work explicitly.
+A task automatically pauses an active workday and returns control afterward.
+An explicit user pause or stop takes precedence. Task commands stream progress and
+ask substantive clarification questions in a terminal; noninteractive tasks retain
+`needs_input` with their questions and evidence location.
 
-See the [versioned architecture contract](docs/library/architecture/architecture-contract.md) for catalog
-validation, immutable assignment inspection, and structured caller acceptance checks.
+Project/package discovery, profiles, verification and executable bindings are
+resolved automatically. New work requires a clean committed source checkout.
+See [the execution guide](docs/gateway/cli/stewards.md) for setup and lifecycle details,
+and [the general fixture](fixtures/general/README.md) for a complete three-owner
+package. ArcNexus's own profiles select Luna engineering and Astra direction/review.
+Machine-specific executable paths belong in the automatically discovered local
+bindings file, outside captured source authority.
 
-Validate tracked guidance in the current checkout with
-`node dist/cli.js guidance validate --project .` after building. See
-[guidance validation](docs/library/guidance-validation/guidance-validation.md) for the metadata-only contract and
-[maintenance](docs/library/agent-guidance/guidance-maintenance.md) for stewardship ownership.
+Verified changes accumulate in an application-owned candidate. Unfinished work stays
+isolated. Host checks, regression evidence and independent review establish delivery;
+a task also requires goal-level assessment. Review the retained diff and evidence
+before caller integration. Workers cannot commit, switch branches or publish.
 
-[Experiments](docs/library/experiments/experiments.md) provide explicit simulation and live qualification
-modes through the same supervised runtime.
+General execution has no time, turn, operation-call or corrective-attempt budget.
+Cancellation, transport safeguards, observable progress detection and test watchdogs
+remain. Obsolete executable budget configuration receives migration diagnostics;
+historical reports remain readable.
 
-[Two-owner workdays](docs/library/workday/workdays.md) add bounded contract requests, verified
-delivery and same-thread requester continuation in one managed candidate. Inspect
-the captured manifest with `workday inspect`, execute with `workday run`, and use
-`workday status` / `workday follow` for retained coordination evidence. SQLite is
-private coordination state; ordinary single-steward commands remain available.
+Maintained configuration is YAML; legacy JSON remains supported. Evidence remains
+JSON. [Ownership](docs/library/architecture/configuration.md) and component boundaries
+keep write authority explicit. Candidate instruction, test or permission edits cannot
+replace the authority captured for the active run.
+
+Useful development and inspection commands remain available:
+
+```sh
+node dist/cli.js validate --project .
+node dist/cli.js guidance validate --project .
+node dist/cli.js test inspect --project .
+node dist/cli.js test run --project .
+```
+
+Run `npm run format:check`, `npm run lint`, `npm run check` and `npm run build` before
+qualification. Deterministic tests, [CI](docs/release/ci.md) and live model execution
+provide distinct evidence. [Experiments](docs/library/experiments/experiments.md)
+label simulation and live runs explicitly. Legacy execution commands are retired; historical reports and manifests remain
+inspectable. Active campaigns use the shared task host.

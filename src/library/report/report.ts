@@ -260,6 +260,10 @@ function serviceLines(record: RecordData): string {
   return serviceLines;
 }
 
+export { ExecutionEvidence } from './execution-evidence.js';
+
+export { ExecutionReports } from './execution-report.js';
+
 export function markdownReport(record: RecordData): string {
   const outcome =
     typeof record.outcome === 'string' && record.outcome.length > 0
@@ -273,3 +277,5 @@ export function saveMarkdown(root: string, record: RecordData): void {
     mode: 0o600,
   });
 }
+
+export { DeliveryEvidence } from './delivery-evidence.js';
