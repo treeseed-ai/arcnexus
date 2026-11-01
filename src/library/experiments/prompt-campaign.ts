@@ -13,7 +13,7 @@ import { InputError } from '../architecture/config.js';
 import { HostClient } from '../execution-runtime/host-client.js';
 import { execute, git, type CommandResult } from '../operations/process.js';
 import type { PromptExperimentCase, PromptExperimentInput } from './prompt-config.js';
-import { runnerHash } from './experiments.js';
+import { runnerHash } from './runner-hash.js';
 
 interface PromptCaseReport {
   id: string;
