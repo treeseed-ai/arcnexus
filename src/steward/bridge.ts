@@ -1,3 +1,4 @@
+import { PendingCalls } from './pending-calls.js';
 import { chmodSync, mkdtempSync, rmSync } from 'node:fs';
 import { createServer, type Socket } from 'node:net';
 import { tmpdir } from 'node:os';
@@ -22,9 +23,20 @@ export async function openBridge(
   call: ToolCall,
   disconnect: () => void = () => {},
 ) {
-  const bridge = new HostBridge(tools, call, disconnect);
+  const pending = new PendingCalls(call);
+  const bridge = new HostBridge(
+    [...tools, pending.tool],
+    (name, args) => pending.call(name, args),
+    disconnect,
+  );
   await bridge.listen();
-  return { config: bridge.configuration(), close: () => bridge.close() };
+  return {
+    config: bridge.configuration(),
+    close: async () => {
+      await bridge.close();
+      await pending.drain();
+    },
+  };
 }
 
 class HostBridge {
@@ -67,7 +79,7 @@ class HostBridge {
           command: process.execPath,
           args: [fileURLToPath(new URL('./bridge-client.js', import.meta.url)), this.path],
           startup_timeout_sec: 10,
-          tool_timeout_sec: 125,
+          tool_timeout_sec: 10,
         },
       },
     };

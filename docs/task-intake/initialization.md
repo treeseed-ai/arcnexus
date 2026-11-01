@@ -57,3 +57,11 @@ Unknown-owner inbox requests still escalate; they cannot dynamically admit anoth
 
 `prepare`, `validate`, `inspect`, status/follow and cleanup do not invoke inference.
 There is no automatic recovery or resumption after interruption.
+
+For task-generated change assignments, the caller's optional binding file can declare
+`taskAcceptance`, mapping owner IDs (and `combined` for two-owner work) to trusted
+host-check definitions using the existing check contract. These checks are captured
+before inference and never supplied by the model. Without independent change
+acceptance, intake retains a clarification proposal rather than activating a worker.
+`taskRefresh` maps owner IDs to fixed refresh commands for two-owner candidate views.
+These commands are also caller-controlled captured input, not model-generated tools.

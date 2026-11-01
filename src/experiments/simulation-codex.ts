@@ -1,3 +1,4 @@
+import { SimulationInitializer } from './simulation-initializer.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { createHash } from 'node:crypto';
@@ -31,6 +32,7 @@ class SimulationCodex {
     this.prepare();
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
+    if (new SimulationInitializer().respond(prompt)) return;
     this.stage = prompt.match(/Activity turn: ([a-z-]+)/)?.[1];
     this.emit({
       type: 'thread.started',

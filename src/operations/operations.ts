@@ -53,6 +53,7 @@ class OperationRuntime {
   private readonly resolved: ResolvedAssignment;
   private readonly services: ServiceManager;
   private active: AbortController | undefined;
+  private pending?: Promise<unknown>;
 
   constructor(
     private readonly root: string,
@@ -66,8 +67,13 @@ class OperationRuntime {
     record.operationCalls ??= 0;
   }
 
-  close(): Promise<void> {
-    return this.services.stop();
+  async close(): Promise<void> {
+    this.active?.abort(new Error('Operation turn completed'));
+    try {
+      await this.pending;
+    } finally {
+      await this.services.stop();
+    }
   }
 
   disconnect(): void {
@@ -88,7 +94,9 @@ class OperationRuntime {
     const action = { activity: this.record.stage, operation: op.id };
     const candidate = materialCandidate(this.record);
     progress.before(action, candidate);
-    const result = await this.finite(op);
+    const execution = this.finite(op);
+    this.pending = execution;
+    const result = await execution;
     if (result.status === 'failed') {
       const warning = progress.failed(action, result.output, candidate);
       return { ...result, ...(warning ? { loopWarning: warning } : {}) };

@@ -32,11 +32,28 @@ export interface InitializeInput {
   resolved: ResolvedAssignment;
   owners: string[];
   envelope?: unknown;
+  proposal?: { request: string; shortlist: string[] };
   executable: string;
   signal: AbortSignal;
 }
 export async function initializeExecution(input: InitializeInput): Promise<void> {
-  await new Initializer(input).run();
+  const controller = new AbortController();
+  const seconds = input.resolved.initialization.profile.timeoutSeconds;
+  const timer =
+    seconds === undefined
+      ? undefined
+      : setTimeout(
+          () => controller.abort(new Error('Initializer deadline exhausted')),
+          seconds * 1000,
+        );
+  try {
+    await new Initializer({
+      ...input,
+      signal: AbortSignal.any([input.signal, controller.signal]),
+    }).run();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 class Initializer {
   private readonly snapshot: InitializationSnapshot;
@@ -71,7 +88,7 @@ class Initializer {
       this.validate(result);
       this.child.status = 'completed';
       this.child.outcome = result.status;
-      if (result.status !== 'ready') {
+      if (result.status !== 'ready' && !this.input.proposal) {
         this.input.record.status = 'blocked';
         this.input.record.outcome = result.status;
         throw new Error('Initialization requires caller input: ' + result.summary);
@@ -162,19 +179,34 @@ class Initializer {
     return [
       'ArcNexus initialization: source-read-only routing confirmation. Do not implement, edit source, commit, delegate, or initialize recursively.',
       'Confirm the captured explicit assignment and owners, or report a precise architectural question/proposal. You cannot broaden the objective, permissions, acceptance or participants.',
-      'Return ready only when those owners can perform the captured work. For explicit assignments return assignments=[] and dependency=null; do not replace the caller envelope.',
+      'For explicit assignments return ready only when captured owners can perform the work, assignments=[] and dependency=null. Task proposal instructions below, if present, instead request proposed routing for caller acceptance.',
       'Captured execution owners: ' + JSON.stringify(this.input.owners),
       'Captured assignment: ' +
         JSON.stringify(this.input.envelope ?? this.input.resolved.assignment),
       'Initializer responsibility: ' +
         JSON.stringify({ context: this.snapshot.context, role: this.snapshot.role }),
-      'Captured catalog: ' + JSON.stringify(this.snapshot.catalog),
+      'Captured catalog: ' + JSON.stringify(this.catalog()),
+      ...this.proposalInstructions(),
       'Repository revision: ' + this.input.record.base,
       'Workspace: ' + this.input.record.workspace,
     ].join('\n');
   }
+  private catalog() {
+    return this.input.proposal
+      ? this.snapshot.catalog.filter((c) => this.input.proposal!.shortlist.includes(c.id))
+      : this.snapshot.catalog;
+  }
+  private proposalInstructions(): string[] {
+    if (!this.input.proposal) return [];
+    return [
+      'Task proposal request: ' + this.input.proposal.request,
+      'This is unstructured task intake, not an explicit execution assignment. Propose assignments for selected existing owners, with concrete objectives, kind, changeType, acceptanceCriteria and narrowed allowedWritePaths. For two owners propose one requester-to-recipient dependency. No commands or new authority. The host captures existing verification.',
+      'The captured execution owners above are empty because routing is not yet accepted. Select from the retrieved catalog. Do not force a match: missing responsibility requires architecture_change_required with a precise architectureProposal; ambiguity requires needs_clarification. More than two necessary owners requires architectural decomposition.',
+      'For ready proposals provide assignments and, for two owners only, dependency. For non-ready proposals provide questions or an architectureProposal. Do not edit source or apply proposed definitions.',
+    ];
+  }
   private validate(result: InitializationResult): void {
-    if (result.status !== 'ready') return;
+    if (this.input.proposal || result.status !== 'ready') return;
     const selected = result.selectedOwners.map((owner) => owner.id).sort();
     if (JSON.stringify(selected) !== JSON.stringify([...this.input.owners].sort()))
       throw new Error('Initializer cannot change captured execution owners');

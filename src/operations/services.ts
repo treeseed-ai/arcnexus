@@ -89,11 +89,19 @@ export class ServiceManager {
     if (this.child) throw new Error('Only one active service lease is permitted');
     const record = this.createRecord(op.id);
     const child = this.launch(op, record);
+    const timeout = new AbortController();
+    const seconds = op.service.startupTimeoutSeconds;
+    const timer =
+      seconds === undefined
+        ? undefined
+        : setTimeout(() => timeout.abort(new Error('Service readiness timed out')), seconds * 1000);
     try {
-      return await this.awaitReadiness(op, child);
+      return await this.awaitReadiness(op, child, AbortSignal.any([this.signal, timeout.signal]));
     } catch (error) {
       await this.stop();
       throw error;
+    } finally {
+      clearTimeout(timer);
     }
   }
   private createRecord(id: string): ServiceRecord {
@@ -151,33 +159,33 @@ export class ServiceManager {
   private async awaitReadiness(
     op: Extract<Operation, { command: string }>,
     child: ChildProcess,
+    signal: AbortSignal,
   ): Promise<ServiceRecord> {
     const service = op.service!;
-    const start = Date.now();
-    while (
-      service.startupTimeoutSeconds === undefined ||
-      Date.now() - start < service.startupTimeoutSeconds * 1000
-    ) {
-      this.signal.throwIfAborted();
+    while (true) {
+      signal.throwIfAborted();
       const record = this.current!;
       if (child.exitCode !== null || record.status === 'stopped' || record.status === 'unresolved')
         throw new Error(record.error ?? 'Service supervisor exited');
-      if (await this.isReady(record, service)) {
+      if (await this.isReady(record, service, signal)) {
         this.update({ ...record, status: 'ready' });
         return this.current!;
       }
-      await delay(50, undefined, { signal: this.signal });
+      await delay(50, undefined, { signal });
     }
-    throw new Error('Service readiness timed out');
   }
-  private async isReady(record: ServiceRecord, service: ServiceDefinition): Promise<boolean> {
+  private async isReady(
+    record: ServiceRecord,
+    service: ServiceDefinition,
+    signal: AbortSignal,
+  ): Promise<boolean> {
     if (!record.pid || !record.port || !ownedLoopbackListener(record.pid, record.port))
       return false;
     try {
-      const response = await localRequest(record.port, service.readinessPath, this.signal);
+      const response = await localRequest(record.port, service.readinessPath, signal);
       return response.status === service.expectedStatus;
     } catch (error) {
-      this.signal.throwIfAborted();
+      signal.throwIfAborted();
       if (String(error).includes('redirect')) throw error;
       return false;
     }

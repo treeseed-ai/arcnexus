@@ -1,4 +1,4 @@
-import { initializeExecution } from '../task-intake/initializer.js';
+import { initializeExecution, type InitializationEvidence } from '../task-intake/initializer.js';
 import { milliseconds } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
@@ -33,7 +33,7 @@ export class WorkdayRunner {
     this.routing = new WorkdayRouting(this.state);
   }
 
-  async run(input: WorkdayInput, issue?: string) {
+  async run(input: WorkdayInput, issue?: string, initialization?: InitializationEvidence) {
     this.validate(input);
     this.state.input = input;
     const timeout = new AbortController();
@@ -50,7 +50,7 @@ export class WorkdayRunner {
       for (const participant of [input.requester, input.recipient]) this.createOwner(participant);
       this.captureAssignments();
       await this.baselines();
-      await this.initializeOwners();
+      await this.initializeOwners(initialization);
       await this.execute();
       await this.verifyOwners();
       await this.combinedAcceptance();
@@ -245,17 +245,25 @@ export class WorkdayRunner {
     }
   }
 
-  private async initializeOwners(): Promise<void> {
+  private async initializeOwners(initialization?: InitializationEvidence): Promise<void> {
     const state = this.state;
-    await initializeExecution({
-      root: state.root,
-      record: state.workspace,
-      resolved: state.input.requester.resolved,
-      owners: state.owners.map((owner) => owner.participant.resolved.componentId),
-      executable: state.executable,
-      signal: state.signal,
-      envelope: state.input,
-    });
+    if (initialization) {
+      if (
+        initialization.authorityHash !== state.input.digest ||
+        initialization.result?.status !== 'ready'
+      )
+        throw new InputError('Accepted initialization does not match workday authority');
+      state.workspace.initialization = initialization;
+    } else
+      await initializeExecution({
+        root: state.root,
+        record: state.workspace,
+        resolved: state.input.requester.resolved,
+        owners: state.owners.map((owner) => owner.participant.resolved.componentId),
+        executable: state.executable,
+        signal: state.signal,
+        envelope: state.input,
+      });
     for (const owner of state.owners) owner.record.initialization = state.workspace.initialization;
     state.persist('initialization.completed', { evidence: state.workspace.initialization });
   }
@@ -321,6 +329,7 @@ export class WorkdayRunner {
         : this.state.parentSignal.aborted
           ? 'cancelled'
           : (error instanceof Error && error.name === 'WorkdayBlocked') ||
+              this.state.workspace?.status === 'blocked' ||
               this.state.owners.some((o) => o.record.status === 'blocked')
             ? 'blocked'
             : /budget|deadline/i.test(String(error))

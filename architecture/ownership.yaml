@@ -176,6 +176,7 @@ owners:
       - docs/task-intake
     publicModules:
       - src/task-intake/initializer.ts
+      - src/task-intake/tasks.ts
     directoryExceptions: []
   - component: workday
     paths:

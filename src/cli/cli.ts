@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { TaskCommand } from './task-command.js';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -29,36 +30,41 @@ const help = `ArcNexus
   validate --project <repository> [--base <ref>]
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
   run/inspect: --assignment <file> replaces objective
+  task plan --input <text-file> --project <repository> [--initializer-model <model>]
+  task inspect <proposal-id> [--json]
+  task run <proposal-id>
   prepare --project <repository>
   status <workspace-id> [--json]\n  follow <workspace-id> [--json] [--after <sequence>]\n  cleanup <workspace-id>
 Composed workspaces: prepare/run/inspect --bindings <file>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
 `;
+const cliOptions = {
+  mode: { type: 'string' },
+  output: { type: 'string' },
+  bindings: { type: 'string' },
+  after: { type: 'string' },
+  'composition-profile': { type: 'string' },
+  'execution-profile': { type: 'string' },
+  assignment: { type: 'string' },
+  kind: { type: 'string' },
+  json: { type: 'boolean' },
+  project: { type: 'string' },
+  input: { type: 'string' },
+  model: { type: 'string' },
+  'initializer-model': { type: 'string' },
+  'codex-path': { type: 'string' },
+  'max-attempts': { type: 'string' },
+  base: { type: 'string' },
+  issue: { type: 'string' },
+  'timeout-seconds': { type: 'string' },
+  help: { type: 'boolean' },
+  version: { type: 'boolean' },
+} as const;
 function argumentsForCommand() {
   try {
     return parseArgs({
       allowPositionals: true,
-      options: {
-        mode: { type: 'string' },
-        output: { type: 'string' },
-        bindings: { type: 'string' },
-        after: { type: 'string' },
-        'composition-profile': { type: 'string' },
-        'execution-profile': { type: 'string' },
-        assignment: { type: 'string' },
-        kind: { type: 'string' },
-        json: { type: 'boolean' },
-        project: { type: 'string' },
-        model: { type: 'string' },
-        'initializer-model': { type: 'string' },
-        'codex-path': { type: 'string' },
-        'max-attempts': { type: 'string' },
-        base: { type: 'string' },
-        issue: { type: 'string' },
-        'timeout-seconds': { type: 'string' },
-        help: { type: 'boolean' },
-        version: { type: 'boolean' },
-      },
+      options: cliOptions,
     });
   } catch (error) {
     throw new InputError(String(error));
@@ -124,6 +130,8 @@ class CliApplication {
 
   private async dispatch(): Promise<void> {
     switch (this.command) {
+      case 'task':
+        return new TaskCommand(this.positionals, this.values, this.controller.signal).run();
       case 'workday':
         return this.workday();
       case 'experiment':

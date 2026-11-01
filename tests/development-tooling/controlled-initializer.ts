@@ -12,7 +12,7 @@ export class ControlledInitializer {
     return true;
   }
   private response(owners: string[], mode: string): unknown {
-    return {
+    const result: any = {
       status: mode === 'question' ? 'needs_clarification' : 'ready',
       summary: 'Captured owners confirmed',
       selectedOwners: owners.map((id) => ({
@@ -23,7 +23,43 @@ export class ControlledInitializer {
       questions: mode === 'question' ? ['Which contract should change?'] : [],
       assignments: [],
       dependency: null,
-      architectureProposal: null,
+      architectureProposal: null as any,
+    };
+    if (mode === 'proposal-missing') {
+      result.status = 'architecture_change_required';
+      result.architectureProposal = this.missing();
+    }
+    this.proposal(result, mode);
+    return result;
+  }
+  private proposal(result: any, mode: string): void {
+    if (mode === 'proposal-research') {
+      result.selectedOwners = [{ id: 'sample', reason: 'Source behavior owner' }];
+      result.assignments = [
+        {
+          ownerId: 'sample',
+          objective: 'Research sample behavior',
+          kind: 'research',
+          changeType: 'behavior',
+          acceptanceCriteria: ['Evidence-backed explanation'],
+          allowedWritePaths: [],
+        },
+      ];
+    }
+  }
+  private missing() {
+    return {
+      responsibility: 'Deployment requires a new accountable owner',
+      definitionsYaml: 'id: deployment',
+      directories: [{ owner: 'deployment', path: 'src/deployment' }],
+      relationships: ['platform'],
+      roles: ['systems-engineer'],
+      operations: [],
+      verification: ['Caller-defined deployment acceptance'],
+      affectedOwners: [],
+      migration: ['No existing source changes'],
+      acceptanceCriteria: ['Capture deployment authority'],
+      questions: [],
     };
   }
   private result(result: unknown): void {
