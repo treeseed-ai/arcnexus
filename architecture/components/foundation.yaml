@@ -4,7 +4,7 @@ purpose: Maintain package runtimes, TypeScript, build and shared programming sta
 path: .
 objectives:
   - Keep builds and deterministic tests reproducible
-  - Maintain formatting, linting, CI and shared test infrastructure
+  - Maintain runtime, build, formatting and lint standards; release and testing own their respective services
 constraints:
   - Do not weaken independent acceptance to make candidate work pass
   - Keep generated output separate from maintained source

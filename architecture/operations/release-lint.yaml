@@ -1,0 +1,20 @@
+schemaVersion: 3
+id: release-lint
+purpose: Read-only lint feedback for release
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - tests/release
+generatedDirectories: []
+artifacts: []
+probes: []
