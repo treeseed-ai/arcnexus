@@ -45,3 +45,7 @@ See the [official Codex configuration reference](https://learn.chatgpt.com/docs/
 
 Test harnesses use explicit watchdogs to prevent stalled CI. Those limits are test
 infrastructure, never runtime defaults.
+
+The current-command projection clears a managed operation when its recorded
+`operation.finished` event arrives, even while the steward continues thinking in
+the same activity. A finished command must not appear to still be running.
