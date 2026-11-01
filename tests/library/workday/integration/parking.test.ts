@@ -8,8 +8,11 @@ import { test } from 'node:test';
 import { ActiveBudget } from '../../../../dist/library/workday/workday-budget.js';
 import { WorktreeParking, entry } from '../../../../dist/library/workday/workday-parking.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises parking behavior through observable scenarios. */
 class ParkingTests {
-  parkingPreservesDistinctIndexBytesWorkingBytesDeletionsModesAndNewFiles_1(t: TestContext) {
+  /** Verifies that parking preserves distinct index bytes working bytes deletions modes and new files. */
+  parkingPreservesDistinctIndexBytesWorkingBytesDeletionsModesAndNewFiles(t: TestContext) {
     const f = workflowFixture(t);
     const { r, git } = this.prepareCandidate(f);
     this.editCandidate(r.workspace, git);
@@ -27,6 +30,8 @@ class ParkingTests {
     assert.equal(readFileSync(join(r.workspace, 'other.txt'), 'utf8'), 'recipient');
     assert.equal(statSync(join(r.workspace, 'source.txt')).mode & 0o777, 0o755);
   }
+
+  /** Handles prepare candidate within this component’s captured contract. */
   private prepareCandidate(f: any) {
     writeFileSync(join(f.repo, 'delete.txt'), 'delete');
     f.commit();
@@ -45,6 +50,8 @@ class ParkingTests {
       };
     return { r, git };
   }
+
+  /** Handles edit candidate within this component’s captured contract. */
   private editCandidate(workspace: string, git: (...args: string[]) => string): void {
     writeFileSync(join(workspace, 'source.txt'), Buffer.from([0, 1, 255]));
     git('add', 'source.txt');
@@ -53,7 +60,9 @@ class ParkingTests {
     unlinkSync(join(workspace, 'delete.txt'));
     writeFileSync(join(workspace, 'new.txt'), 'new');
   }
-  parkingRefusesReplacementAndCleanupRefusesUnresolvedWorkdayTransition_2(t: TestContext) {
+
+  /** Verifies that parking refuses replacement and cleanup refuses unresolved workday transition. */
+  parkingRefusesReplacementAndCleanupRefusesUnresolvedWorkdayTransition(t: TestContext) {
     const f = workflowFixture(t),
       p = spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo], {
         encoding: 'utf8',
@@ -76,7 +85,9 @@ class ParkingTests {
     assert.match(cleanup.stderr, /unresolved/);
     assert.equal(readFileSync(join(r.workspace, 'source.txt'), 'utf8'), 'replacement');
   }
-  async activeClockExcludesSuspensionButDoesNotResetItsConsumedAllowance_3() {
+
+  /** Verifies that active clock excludes suspension but does not reset its consumed allowance. */
+  async activeClockExcludesSuspensionButDoesNotResetItsConsumedAllowance() {
     const { setTimeout: delay } = await import('node:timers/promises'),
       b = new ActiveBudget(new AbortController().signal, 100);
     b.start();
@@ -92,13 +103,16 @@ class ParkingTests {
     b.pause();
   }
 }
+
 const suite = new ParkingTests();
 
 test('parking preserves distinct index bytes working bytes deletions modes and new files', (t: any) =>
-  suite.parkingPreservesDistinctIndexBytesWorkingBytesDeletionsModesAndNewFiles_1(t));
+  suite.parkingPreservesDistinctIndexBytesWorkingBytesDeletionsModesAndNewFiles(t));
+
 test('parking refuses replacement and cleanup refuses unresolved workday transition', (t: any) =>
-  suite.parkingRefusesReplacementAndCleanupRefusesUnresolvedWorkdayTransition_2(t));
+  suite.parkingRefusesReplacementAndCleanupRefusesUnresolvedWorkdayTransition(t));
+
 test('active clock excludes suspension but does not reset its consumed allowance', () =>
-  suite.activeClockExcludesSuspensionButDoesNotResetItsConsumedAllowance_3());
+  suite.activeClockExcludesSuspensionButDoesNotResetItsConsumedAllowance());
 
 registerSuite({ component: 'workday', level: 'integration', tags: ['deterministic'] });

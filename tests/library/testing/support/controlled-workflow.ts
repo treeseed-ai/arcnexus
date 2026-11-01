@@ -2,6 +2,7 @@ import { ControlledInitializer } from './controlled-initializer.js';
 import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import { ControlledPlanning } from './controlled-planning.js';
+
 export interface WorkflowOptions {
   mode: string;
   repairAfter?: number;
@@ -26,6 +27,7 @@ export interface WorkflowOptions {
   guidanceExpansion?: boolean;
   dependencyMutation?: boolean;
 }
+
 export interface WorkflowTurn {
   args: string[];
   prompt: string;
@@ -34,9 +36,15 @@ export interface WorkflowTurn {
   result: any;
   schema: any;
 }
+
+/** Exercises controlled workflow behavior through observable scenarios. */
 export class ControlledWorkflow {
   private args = process.argv.slice(2);
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private options: WorkflowOptions) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     if (this.args[0] === '--version') {
       console.log('controlled Codex');
@@ -60,6 +68,8 @@ export class ControlledWorkflow {
     if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
     this.emit(turn);
   }
+
+  /** Handles initialize within this component’s captured contract. */
   private initialize(prompt: string): boolean {
     return new ControlledInitializer().respond(
       prompt,
@@ -68,6 +78,8 @@ export class ControlledWorkflow {
       this.options.initializerMode,
     );
   }
+
+  /** Handles validate invocation within this component’s captured contract. */
   private validateInvocation(): void {
     if (
       this.args[0] !== 'exec' ||
@@ -77,6 +89,8 @@ export class ControlledWorkflow {
     )
       process.exit(7);
   }
+
+  /** Snapshots the inputs used by later verification. */
   private capture(prompt: string): WorkflowTurn {
     const stage = prompt.match(/Activity turn: ([a-z-]+)/)?.[1] ?? 'legacy';
     fs.appendFileSync(
@@ -102,6 +116,8 @@ export class ControlledWorkflow {
       : null;
     return { args: this.args, prompt, stage, count, result, schema };
   }
+
+  /** Runs the requested action through the configured execution boundary. */
   private execute(turn: WorkflowTurn): void {
     if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
     if (this.options.documentationOnly) this.documentation(turn);
@@ -115,6 +131,8 @@ export class ControlledWorkflow {
     if (this.options.mode === 'research-write' && turn.stage === 'research')
       fs.writeFileSync('source.txt', 'unauthorized');
   }
+
+  /** Handles specification within this component’s captured contract. */
   private specification(turn: WorkflowTurn): void {
     fs.writeFileSync('docs/behavior.md', 'Source must become after');
     fs.writeFileSync(
@@ -132,6 +150,8 @@ export class ControlledWorkflow {
       turn.result.regression.outputIncludes = 'NOT_THE_ASSERTION';
     if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
   }
+
+  /** Handles specification activities within this component’s captured contract. */
   private specificationActivities(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -154,6 +174,8 @@ export class ControlledWorkflow {
       },
     ];
   }
+
+  /** Handles implement within this component’s captured contract. */
   private implement(turn: WorkflowTurn): void {
     if (this.options.dependencyMutation && turn.stage === 'implementation')
       fs.writeFileSync('packages/dependency/source.txt', 'mutated');
@@ -176,6 +198,8 @@ export class ControlledWorkflow {
       fs.writeFileSync('tests/marker', 'hang');
     this.candidateMutations(mode);
   }
+
+  /** Handles candidate mutations within this component’s captured contract. */
   private candidateMutations(mode: string): void {
     if (mode === 'scope') fs.writeFileSync('outside.txt', 'unauthorized');
     if (mode === 'ignored') fs.writeFileSync('.env', 'unknown');
@@ -204,15 +228,21 @@ export class ControlledWorkflow {
       fs.writeFileSync('outside.txt', 'unauthorized');
     }
   }
+
+  /** Handles git within this component’s captured contract. */
   private git(...args: string[]): void {
     cp.execFileSync('git', args);
   }
+
+  /** Handles masked symlink within this component’s captured contract. */
   private maskedSymlink(): void {
     fs.symlinkSync('source.txt', 'new.txt');
     this.git('add', 'new.txt');
     fs.unlinkSync('new.txt');
     fs.writeFileSync('new.txt', 'regular');
   }
+
+  /** Handles review within this component’s captured contract. */
   private review(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -232,6 +262,8 @@ export class ControlledWorkflow {
     if (this.options.mode === 'review-repair' && turn.count === 3)
       turn.result.reviewFindings = ['Needs a corrective pass'];
   }
+
+  /** Handles block within this component’s captured contract. */
   private block(turn: WorkflowTurn): void {
     turn.result.status = 'blocked';
     turn.result.blockers = ['Another owner must change its contract'];
@@ -246,6 +278,8 @@ export class ControlledWorkflow {
       },
     ];
   }
+
+  /** Handles emit within this component’s captured contract. */
   private emit(turn: WorkflowTurn): void {
     this.shellEvents();
     const text = this.options.mode === 'malformed' ? 'invalid' : JSON.stringify(turn.result);
@@ -266,6 +300,8 @@ export class ControlledWorkflow {
       }),
     );
   }
+
+  /** Handles shell events within this component’s captured contract. */
   private shellEvents(): void {
     for (let index = 0; index < (this.options.observedShellFailures ?? 0); index++)
       console.log(
@@ -282,6 +318,8 @@ export class ControlledWorkflow {
         }),
       );
   }
+
+  /** Handles probe supplied tool within this component’s captured contract. */
   private probeSuppliedTool(prompt: string): void {
     const commands = JSON.parse(
       prompt.split('Captured verification commands (zero-based index): ')[1]!.split('\n')[0]!,
@@ -292,6 +330,8 @@ export class ControlledWorkflow {
     });
     if (probe.status !== 0) throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
   }
+
+  /** Handles sandbox feedback within this component’s captured contract. */
   private sandboxFeedback(turn: WorkflowTurn): void {
     if (!turn.prompt.includes('If sandbox restrictions prevent running the regression'))
       throw new Error('HOST_CHECK_HANDOFF_MISSING');
@@ -301,6 +341,8 @@ export class ControlledWorkflow {
       uncertainty: 'Proposed assertion must be checked by host',
     });
   }
+
+  /** Handles documentation within this component’s captured contract. */
   private documentation(turn: WorkflowTurn): void {
     if (turn.stage !== 'specification') return;
     if (!turn.prompt.includes('Make actual file edits now'))

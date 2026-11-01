@@ -6,6 +6,7 @@ export interface AccessPolicy {
   readPaths: string[];
   writeDirectories: string[];
 }
+
 export interface PreparedPermissions {
   configOverrides: string[];
   tmpDirectory: string;
@@ -18,6 +19,7 @@ function pathList(value: unknown, name: string): string[] {
     throw new InputError(`Invalid access.${name}`);
   return value.map((path) => (path === '.' ? path : relativePath(path)));
 }
+
 export function validateAccess(value: unknown): AccessPolicy {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new InputError('Every component requires access policy');
@@ -81,16 +83,21 @@ export function preparePermissions(
   );
 }
 
+/** Resolves declared sandbox directories without widening exact write authority. */
 class PermissionPreparation {
   private readonly workspace: string;
+
   private readonly access: AccessPolicy;
+
   private readonly createdDirectories: string[] = [];
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(workspacePath: string, rawAccess: unknown) {
     this.workspace = resolve(workspacePath);
     this.access = validateAccess(rawAccess);
   }
 
+  /** Establishes the prerequisites required by the subsequent execution. */
   prepare(
     allowedWritePaths: unknown,
     tmpDirectory: string,
@@ -114,6 +121,7 @@ class PermissionPreparation {
     return permissionSettings(filesystem, temp, createdDirectories);
   }
 
+  /** Handles validate policy within this component’s captured contract. */
   private validatePolicy(policy: { access: AccessPolicy; writes: unknown }): void {
     const { workspace } = this;
     if (!Array.isArray(policy.writes) || !policy.writes.every((path) => typeof path === 'string'))
@@ -132,6 +140,7 @@ class PermissionPreparation {
     }
   }
 
+  /** Handles directory within this component’s captured contract. */
   private directory(path: string): void {
     const { workspace, createdDirectories } = this;
     if (path === '.') return;
@@ -154,6 +163,7 @@ class PermissionPreparation {
     if (!checked.directory) throw new InputError(`Write access path is not a directory: ${path}`);
   }
 
+  /** Handles temporary within this component’s captured contract. */
   private temporary(tmpDirectory: string): string {
     const { workspace } = this;
     const temp = resolve(tmpDirectory);
@@ -166,6 +176,7 @@ class PermissionPreparation {
     return temp;
   }
 
+  /** Handles filesystem within this component’s captured contract. */
   private filesystem(temp: string, readOnlyRoots: string[], toolReadDirectories: string[]) {
     const { workspace, access } = this;
     const filesystem: Record<string, 'read' | 'write'> = { ':minimal': 'read' };

@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
+
 /** Scripted routing evidence for fixed simulations, never live qualification. */
 export class SimulationInitializer {
+  /** Handles respond within this component’s captured contract. */
   respond(prompt: string): boolean {
     if (!prompt.startsWith('ArcNexus initialization:')) return false;
     const owners: string[] = JSON.parse(
@@ -23,6 +25,8 @@ export class SimulationInitializer {
     });
     return true;
   }
+
+  /** Handles result within this component’s captured contract. */
   private result(owners: string[]) {
     return {
       status: 'ready',
@@ -38,6 +42,8 @@ export class SimulationInitializer {
       architectureProposal: null,
     };
   }
+
+  /** Handles emit within this component’s captured contract. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }

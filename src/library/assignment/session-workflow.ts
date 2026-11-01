@@ -6,13 +6,16 @@ import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
 
+/** Advances engineering stages and corrective attempts through mandatory host checkpoints. */
 export class SessionWorkflow {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly state: SessionState,
     private readonly turns: SessionTurn,
     private readonly verification: SessionVerification,
   ) {}
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { root, record } = this.state.options;
     try {
@@ -32,6 +35,7 @@ export class SessionWorkflow {
     }
   }
 
+  /** Handles planning within this component’s captured contract. */
   private async planning(): Promise<void> {
     if (this.state.planned)
       await this.turns.perform(
@@ -41,6 +45,7 @@ export class SessionWorkflow {
       );
   }
 
+  /** Handles research within this component’s captured contract. */
   private async research(): Promise<void> {
     await this.turns.perform(
       this.state.assignment.kind,
@@ -51,6 +56,7 @@ export class SessionWorkflow {
     this.state.options.record.outcome = `${this.state.assignment.kind}_completed`;
   }
 
+  /** Handles specification within this component’s captured contract. */
   private async specification(): Promise<void> {
     const spec = await this.turns.perform(
       'specification',
@@ -61,6 +67,7 @@ export class SessionWorkflow {
     if (!this.state.specificationFinished) await this.verification.specification(spec);
   }
 
+  /** Handles change within this component’s captured contract. */
   private async change(): Promise<void> {
     await this.specification();
     let feedback = '';
@@ -88,6 +95,7 @@ export class SessionWorkflow {
     throw new Error('Implementation attempts exhausted');
   }
 
+  /** Handles implement within this component’s captured contract. */
   private async implement(attempt: number, feedback: string): Promise<void> {
     const { record } = this.state.options;
     record.implementationAttempts = attempt;
@@ -102,6 +110,7 @@ export class SessionWorkflow {
     );
   }
 
+  /** Checks candidate implementation against independent acceptance evidence. */
   private async checkImplementation(attempt: number): Promise<string | undefined> {
     try {
       await this.verification.final();
@@ -125,6 +134,7 @@ export class SessionWorkflow {
     }
   }
 
+  /** Handles review within this component’s captured contract. */
   private async review(attempt: number): Promise<string | undefined> {
     const review = await this.turns.perform(
       'review',
@@ -139,6 +149,7 @@ export class SessionWorkflow {
     return new SessionProgress(this.state).failure('review-checkpoint', feedback);
   }
 
+  /** Records an implementation attempt before work can consume its allowance. */
   private markAttempt(detail: Record<string, unknown>): void {
     Object.assign((this.state.options.record.attempts as Array<object>).at(-1)!, {
       ...detail,
@@ -146,6 +157,7 @@ export class SessionWorkflow {
     });
   }
 
+  /** Handles failure within this component’s captured contract. */
   private failure(error: unknown): void {
     const { record, signal, control } = this.state.options;
     if (control && error instanceof Error && error.name === 'WorkdayBlocked')

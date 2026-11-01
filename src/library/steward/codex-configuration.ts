@@ -26,17 +26,27 @@ export interface CodexInput {
   operations?: OperationBridge;
 }
 
+/** Builds explicit SDK settings and rejects target configuration that weakens them. */
 export class CodexConfiguration {
   readonly dir: string;
+
   readonly launcher: string;
+
   readonly pidFile: string;
+
   readonly profile;
+
   readonly schema;
+
   readonly coordinationActions: string[];
+
   readonly permissions;
+
   readonly env: Record<string, string>;
+
   readonly settings;
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(readonly input: CodexInput) {
     this.dir = join(input.root, 'runs', input.record.id);
     this.launcher = join(this.dir, 'codex-launcher');
@@ -53,6 +63,7 @@ export class CodexConfiguration {
     this.settings = this.executionSettings(authority);
   }
 
+  /** Returns the structured result contract expected from the current model turn. */
   private resultSchema() {
     if (this.input.responseContract) return readSchema('initializer-result');
     const schema = readSchema('agent-result');
@@ -71,6 +82,7 @@ export class CodexConfiguration {
     return schema;
   }
 
+  /** Builds the structured response contract for the current coordination turn. */
   private coordinationSchema() {
     if (!this.coordinationActions.length) return { type: 'null' };
     return {
@@ -92,6 +104,7 @@ export class CodexConfiguration {
     };
   }
 
+  /** Handles authority within this component’s captured contract. */
   private authority(resolved: ResolvedAssignment | undefined) {
     const { record } = this.input;
     const context = record.context as
@@ -117,6 +130,7 @@ export class CodexConfiguration {
     };
   }
 
+  /** Builds the explicit directory policy used by the Codex sandbox. */
   private permissionPolicy(authority: ReturnType<CodexConfiguration['authority']>) {
     const { record } = this.input;
     return preparePermissions(
@@ -130,6 +144,7 @@ export class CodexConfiguration {
     );
   }
 
+  /** Handles environment within this component’s captured contract. */
   private environment(): Record<string, string> {
     const env: Record<string, string> = {};
     for (const name of [
@@ -161,6 +176,7 @@ export class CodexConfiguration {
     return env;
   }
 
+  /** Handles execution settings within this component’s captured contract. */
   private executionSettings(authority: ReturnType<CodexConfiguration['authority']>) {
     return {
       coordinationActions: this.input.record.workdayId ? this.coordinationActions : undefined,
@@ -183,6 +199,7 @@ export class CodexConfiguration {
     };
   }
 
+  /** Snapshots the inputs used by later verification. */
   async capture(): Promise<void> {
     appendFileSync(join(this.dir, 'events.jsonl'), '', { mode: 0o600 });
     writeFileSync(
@@ -206,6 +223,7 @@ export class CodexConfiguration {
     save(root, record);
   }
 
+  /** Rejects target settings that could weaken explicit runtime permissions. */
   private rejectTargetConfiguration(): void {
     const { record } = this.input;
     const paths = git(
@@ -223,6 +241,7 @@ export class CodexConfiguration {
       throw new Error('Target Codex configuration is unsupported');
   }
 
+  /** Handles preflight within this component’s captured contract. */
   async preflight(): Promise<void> {
     const { root, record } = this.input;
     try {
@@ -249,6 +268,7 @@ export class CodexConfiguration {
     }
   }
 
+  /** Handles probe within this component’s captured contract. */
   private async probe() {
     const { record, signal } = this.input;
     const turn = (record.turns as unknown[]).length;

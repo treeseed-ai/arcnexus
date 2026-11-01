@@ -5,12 +5,15 @@ import { stateRoot } from '../../library/workspace/state.js';
 
 /** Views retained execution evidence without controlling the active assignment. */
 export class ObservationCommand {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly command: string,
     private readonly signal: AbortSignal,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { values, positionals, command } = this;
     if (positionals.length !== 2 || (values.after !== undefined && !/^[0-9]+$/.test(values.after)))

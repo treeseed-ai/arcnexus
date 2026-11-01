@@ -14,8 +14,11 @@ interface Source {
   sha256?: string;
   unavailable?: string;
 }
+
 const sha256 = (value: Buffer | string) => createHash('sha256').update(value).digest('hex');
+
 const instructionOptions = { maxBuffer: 32 * 1024 * 1024 };
+
 function instructionProvenance(record: RecordData, env: Record<string, string>): Source[] {
   return [...trackedInstructions(record), userInstruction(env)];
 }
@@ -89,6 +92,7 @@ function userInstruction(env: Record<string, string>): Source {
     };
   }
 }
+
 function sdkVersion(): string {
   try {
     let path = dirname(fileURLToPath(import.meta.resolve('@openai/codex-sdk')));
@@ -105,6 +109,7 @@ function sdkVersion(): string {
   }
   return 'unavailable';
 }
+
 async function cliVersion(
   executable: string,
   env: Record<string, string>,
@@ -126,6 +131,7 @@ async function cliVersion(
     };
   }
 }
+
 export async function persistExecutionEvidence(
   root: string,
   record: RecordData,

@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+
+/** Independently checks workday report against retained candidate evidence. */
 class WorkdayReportAcceptance {
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(path: string): void {
     const report = JSON.parse(readFileSync(path, 'utf8'));
     assert.equal(report.status, 'completed');
@@ -13,6 +16,8 @@ class WorkdayReportAcceptance {
     assert.equal(report.parking.status, 'restored');
     for (const assignment of report.assignments) this.assignment(assignment);
   }
+
+  /** Handles assignment within this component’s captured contract. */
   private assignment(value: any): void {
     assert.equal(value.status, 'completed');
     const seconds =
@@ -29,4 +34,5 @@ class WorkdayReportAcceptance {
     );
   }
 }
+
 new WorkdayReportAcceptance().run(process.argv[2]!);

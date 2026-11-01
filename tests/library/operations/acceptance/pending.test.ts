@@ -4,7 +4,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
+
+/** Exercises pending operation behavior through observable scenarios. */
 class PendingOperationTests {
+  /** Handles waits without restart within this component’s captured contract. */
   waitsWithoutRestart(t: TestContext): void {
     const f = operationFixture(t);
     const path = join(f.repo, 'architecture/operations/test.json');
@@ -33,7 +36,9 @@ class PendingOperationTests {
     );
   }
 }
+
 const suite = new PendingOperationTests();
+
 test('SDK bridge observes a long operation without timing it out or invoking it twice', (t) =>
   suite.waitsWithoutRestart(t));
 

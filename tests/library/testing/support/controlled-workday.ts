@@ -7,6 +7,7 @@ interface ScenarioOptions {
   root: string;
   calls: string;
 }
+
 interface Call {
   owner: string;
   stage: string;
@@ -34,16 +35,26 @@ export async function run(options: ScenarioOptions): Promise<void> {
   new ControlledWorkday(options, args, prompt).execute();
 }
 
+/** Exercises controlled workday behavior through observable scenarios. */
 class ControlledWorkday {
   private readonly owner: string;
+
   private readonly stage: string;
+
   private readonly seen: number;
+
   private readonly number: number;
+
   private readonly dependency: boolean;
+
   private readonly file: string;
+
   private readonly docs: string;
+
   private readonly tests: string;
+
   private readonly after: string;
+
   private readonly result: any = {
     status: 'completed',
     summary: 'Bounded workday result',
@@ -58,6 +69,7 @@ class ControlledWorkday {
     coordination: null,
   };
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly options: ScenarioOptions,
     args: string[],
@@ -81,6 +93,7 @@ class ControlledWorkday {
     this.recordCall(args);
   }
 
+  /** Handles record call within this component’s captured contract. */
   private recordCall(args: string[]): void {
     const schema = JSON.parse(readFileSync(args[args.indexOf('--output-schema') + 1]!, 'utf8'));
     appendFileSync(
@@ -94,6 +107,7 @@ class ControlledWorkday {
     );
   }
 
+  /** Runs the requested action through the configured execution boundary. */
   execute(): void {
     this.engineering();
     this.faults();
@@ -107,6 +121,7 @@ class ControlledWorkday {
     this.emit();
   }
 
+  /** Handles engineering within this component’s captured contract. */
   private engineering(): void {
     if (this.stage === 'planning') this.plan();
     if (this.stage === 'specification') this.specification();
@@ -128,6 +143,7 @@ class ControlledWorkday {
       ];
   }
 
+  /** Handles plan within this component’s captured contract. */
   private plan(): void {
     this.result.plan = {
       approach: 'Bounded owner change',
@@ -150,6 +166,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Handles specification within this component’s captured contract. */
   private specification(): void {
     writeFileSync(this.docs + '/behavior.md', 'Contract must be ' + this.after);
     writeFileSync(
@@ -167,6 +184,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Handles faults within this component’s captured contract. */
   private faults(): void {
     const { mode } = this.options;
     if (mode === 'unsolicited-answer' && this.dependency && this.stage === 'specification')
@@ -185,6 +203,7 @@ class ControlledWorkday {
     }
   }
 
+  /** Handles response within this component’s captured contract. */
   private response(): void {
     const { mode } = this.options;
     if (this.dependency && this.stage === 'planning') {
@@ -207,6 +226,7 @@ class ControlledWorkday {
       this.result.coordination = this.coordination('answer', true);
   }
 
+  /** Handles request within this component’s captured contract. */
   private request(): void {
     const { mode } = this.options;
     if (!this.requestTriggered()) return;
@@ -230,6 +250,7 @@ class ControlledWorkday {
     ];
   }
 
+  /** Handles request triggered within this component’s captured contract. */
   private requestTriggered(): boolean {
     const { mode } = this.options;
     const trigger =
@@ -245,6 +266,7 @@ class ControlledWorkday {
     );
   }
 
+  /** Handles coordination within this component’s captured contract. */
   private coordination(action: string, complete = false) {
     return {
       action,
@@ -258,6 +280,7 @@ class ControlledWorkday {
     };
   }
 
+  /** Handles emit within this component’s captured contract. */
   private emit(): void {
     console.log(JSON.stringify({ type: 'thread.started', thread_id: this.owner + '-thread' }));
     console.log(

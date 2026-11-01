@@ -2,6 +2,8 @@ import { existsSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+
+/** Independently checks changed files against retained candidate evidence. */
 class ChangedFilesAcceptance {
   private readonly record = {
     id: 'independent-acceptance',
@@ -19,6 +21,8 @@ class ChangedFilesAcceptance {
       { path: 'a.ts', kind: 'A' },
     ],
   };
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(target: string): Promise<void> {
     const { markdownReport } = await import(
       pathToFileURL(
@@ -46,4 +50,5 @@ class ChangedFilesAcceptance {
     console.log('Independent report acceptance passed');
   }
 }
+
 await new ChangedFilesAcceptance().run(process.argv[2] ?? '');

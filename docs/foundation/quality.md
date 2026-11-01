@@ -67,3 +67,14 @@ Pinned qualification revisions retain their original file layouts. Standalone ac
 checks support both the historical flat report paths and the current owner directories,
 without changing the required report behavior or rewriting pinned inputs. Guidance
 acceptance resolves the maintenance reference for the target layout.
+
+## Readability checks
+
+The integrated syntax rules require class/method documentation headers and blank
+lines between declarations and methods. They cover constructors and concrete object
+methods as well as class methods. Inline suppression is disabled. See the
+[readable TypeScript standard](typescript-standard.md) for comment examples and
+review criteria; lint cannot decide whether an explanation is useful.
+
+Delivery verification is shared by `development.yaml`, `staging.yaml` and
+`production.yaml`. See [delivery verification](../release/verification.md).

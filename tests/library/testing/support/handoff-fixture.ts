@@ -3,13 +3,20 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { cli, workflowFixture } from './workflow-fixture.js';
+
 export function handoffFixture(t: TestContext, mode = 'implementation'): any {
   return new HandoffFixture(t, mode).create();
 }
+
+/** Exercises handoff fixture behavior through observable scenarios. */
 class HandoffFixture {
   private f: ReturnType<typeof workflowFixture>;
+
   private check: string;
+
   private manifest: string;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     t: TestContext,
     private mode: string,
@@ -18,6 +25,8 @@ class HandoffFixture {
     this.check = join(this.f.root, 'acceptance.cjs');
     this.manifest = join(this.f.root, 'workday.json');
   }
+
+  /** Handles create within this component’s captured contract. */
   create() {
     this.setup();
     this.profile();
@@ -29,6 +38,8 @@ class HandoffFixture {
     this.executable();
     return { ...this.f, manifest: this.manifest, workday: () => this.run() };
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   private run() {
     const f = this.f;
     return spawnSync(
@@ -37,6 +48,8 @@ class HandoffFixture {
       { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
     );
   }
+
+  /** Handles setup within this component’s captured contract. */
   private setup(): void {
     const f = this.f;
     mkdirSync(join(f.repo, 'dependency-docs'));
@@ -63,6 +76,8 @@ class HandoffFixture {
       "if(require('fs').existsSync('dependency-tests/regression.cjs'))require('./dependency-tests/regression.cjs')",
     );
   }
+
+  /** Handles profile within this component’s captured contract. */
   private profile(): void {
     const f = this.f;
     const profile = JSON.parse(
@@ -79,6 +94,8 @@ class HandoffFixture {
       JSON.stringify(profile),
     );
   }
+
+  /** Handles refresh within this component’s captured contract. */
   private refresh(): void {
     const f = this.f,
       mode = this.mode;
@@ -98,6 +115,8 @@ class HandoffFixture {
       );
     }
   }
+
+  /** Handles assignments within this component’s captured contract. */
   private assignments(): void {
     const f = this.f;
     for (const owner of ['sample', 'dependency'])
@@ -113,12 +132,16 @@ class HandoffFixture {
         }),
       );
   }
+
+  /** Handles acceptance within this component’s captured contract. */
   private acceptance(): void {
     writeFileSync(
       this.check,
       "const fs=require('fs');if(fs.readFileSync('source.txt','utf8')!=='uses:after'||fs.readFileSync('dependency.txt','utf8')!=='after'||fs.existsSync('new.txt'))process.exit(9)",
     );
   }
+
+  /** Handles definition within this component’s captured contract. */
   private definition(): void {
     writeFileSync(
       this.manifest,
@@ -142,6 +165,8 @@ class HandoffFixture {
       }),
     );
   }
+
+  /** Handles participants within this component’s captured contract. */
   private participants() {
     const mode = this.mode;
     return {
@@ -158,6 +183,8 @@ class HandoffFixture {
       },
     };
   }
+
+  /** Handles executable within this component’s captured contract. */
   private executable(): void {
     const f = this.f,
       mode = this.mode;

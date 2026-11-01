@@ -10,6 +10,7 @@ interface Diagnostic {
   code: string;
   message: string;
 }
+
 export interface GuidanceReport {
   schemaVersion: 1;
   project: string;
@@ -21,6 +22,7 @@ export interface GuidanceReport {
 
 /** Validates metadata and inventories instructions; never approves instruction semantics. */
 export class GuidanceValidator {
+  /** Rejects inputs that violate the captured configuration contract. */
   validate(project: string): GuidanceReport {
     const inventory = new GuidanceInventory(project);
     const report = inventory.report;
@@ -46,6 +48,7 @@ export class GuidanceValidator {
     return report;
   }
 
+  /** Validates tracked skill metadata and records file-oriented diagnostics. */
   private checkSkill(path: string, text: string, root: string, tracked: Set<string>): void {
     const lines = text.split(/\r?\n/);
     if (lines[0] !== '---') throw new Error('missing YAML frontmatter');
@@ -71,11 +74,15 @@ export class GuidanceValidator {
   }
 }
 
+/** Inventories tracked instruction and skill files without judging their prose. */
 class GuidanceInventory {
   readonly paths: string[];
+
   readonly tracked: Set<string>;
+
   readonly report: GuidanceReport;
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(project: string) {
     let root: string;
     try {
@@ -95,12 +102,14 @@ class GuidanceInventory {
     };
   }
 
+  /** Loads the requested content through this component boundary. */
   read(path: string): string {
     const bytes = readFileSync(join(this.report.project, path));
     if (!isUtf8(bytes)) throw new Error('File is not UTF-8');
     return bytes.toString('utf8');
   }
 
+  /** Checks the required invariant before allowing the next transition. */
   check(path: string, code: string, action: () => unknown): boolean {
     try {
       action();
@@ -116,12 +125,15 @@ class GuidanceInventory {
   }
 }
 
+/** Checks skill reference paths against tracked regular files and traversal restrictions. */
 class GuidanceReferences {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly root: string,
     private readonly tracked: Set<string>,
   ) {}
 
+  /** Rejects inputs that violate the captured configuration contract. */
   validate(value: unknown): void {
     if (!Array.isArray(value) || value.length === 0)
       throw new Error('references must be a nonempty array');
@@ -132,6 +144,7 @@ class GuidanceReferences {
     }
   }
 
+  /** Rejects paths outside the permitted repository-relative boundary. */
   private checkPath(reference: unknown, seen: Set<string>): asserts reference is string {
     if (typeof reference !== 'string' || !reference.trim())
       throw new Error('references entries must be nonempty strings');
@@ -148,6 +161,7 @@ class GuidanceReferences {
       throw new Error(`referenced file is not tracked: ${reference}`);
   }
 
+  /** Handles check file within this component’s captured contract. */
   private checkFile(reference: string): void {
     let current = this.root;
     const parts = reference.split('/');

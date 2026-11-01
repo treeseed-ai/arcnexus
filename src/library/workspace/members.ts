@@ -20,6 +20,7 @@ import {
 import { execute, git } from '../operations/process.js';
 import { assertOutputs } from './outputs.js';
 import { save, type RecordData } from './state.js';
+
 export interface Member {
   id: string;
   source: string;
@@ -30,6 +31,7 @@ export interface Member {
   status: 'pending' | 'created' | 'prepared';
   inventoryDigest?: string;
 }
+
 export function memberEnvironment(member: Member): Environment {
   return {
     schemaVersion: 1,
@@ -38,6 +40,7 @@ export function memberEnvironment(member: Member): Environment {
     generatedDirectories: member.definition.generatedDirectories,
   };
 }
+
 export function resolveMembers(
   source: string,
   base: string,
@@ -55,13 +58,18 @@ export function resolveMembers(
     throw new InputError(String(error));
   }
 }
+
+/** Pins declared repository members and validates their bindings before preparation. */
 class MemberResolver {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private source: string,
     private base: string,
     private workspace: string,
     private bindings: Bindings,
   ) {}
+
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(definition: Dependency): Member {
     const path = this.sourcePath(definition);
     const pinned = this.revision(path, definition);
@@ -76,6 +84,8 @@ class MemberResolver {
       status: 'pending' as const,
     };
   }
+
+  /** Resolves a source location within the captured repository boundary. */
   private sourcePath(definition: Dependency): string {
     const binding = Object.hasOwn(this.bindings.repositories, definition.id)
       ? this.bindings.repositories[definition.id]
@@ -88,6 +98,8 @@ class MemberResolver {
       throw new InputError(`Dependency source must be clean: ${definition.id}`);
     return path;
   }
+
+  /** Handles revision within this component’s captured contract. */
   private revision(path: string, definition: Dependency): string {
     const pinned = git(
       path,
@@ -101,6 +113,8 @@ class MemberResolver {
       throw new InputError(`Dependency mount contains tracked source: ${definition.path}`);
     return pinned;
   }
+
+  /** Resolves the shared Git administration directory used to verify ownership. */
   private commonDirectory(path: string): string {
     const commonDir = realpathSync(
       git(path, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
@@ -115,6 +129,7 @@ class MemberResolver {
     return commonDir;
   }
 }
+
 function checkPath(primary: string, path: string): void {
   let current = primary;
   for (const part of path.split('/')) {
@@ -124,6 +139,7 @@ function checkPath(primary: string, path: string): void {
       throw new Error(`Dependency path is redirected: ${path}`);
   }
 }
+
 function registered(member: Member): void {
   if (realpathSync(member.workspace) !== member.workspace)
     throw new Error('Dependency path redirected');
@@ -142,6 +158,7 @@ function registered(member: Member): void {
   )
     throw new Error('Dependency identity changed');
 }
+
 export function inventory(member: Member): string {
   const hash = createHash('sha256');
   const files = [
@@ -164,6 +181,7 @@ export function inventory(member: Member): string {
   }
   return hash.digest('hex');
 }
+
 export function assertMembers(record: RecordData, checkInventory = true): void {
   for (const member of (record.members ?? []) as Member[]) {
     checkPath(record.workspace, member.definition.path);
@@ -173,6 +191,7 @@ export function assertMembers(record: RecordData, checkInventory = true): void {
       throw new Error(`Read-only dependency changed: ${member.id}`);
   }
 }
+
 export async function prepareMembers(
   root: string,
   record: RecordData,
@@ -201,6 +220,7 @@ export async function prepareMembers(
     save(root, record);
   }
 }
+
 async function prepareMemberCommand(
   root: string,
   record: RecordData,
@@ -226,11 +246,13 @@ async function prepareMemberCommand(
     save(root, record);
   }
 }
+
 export function freezeMembers(root: string, record: RecordData): void {
   assertMembers(record, false);
   for (const m of (record.members ?? []) as Member[]) m.inventoryDigest = inventory(m);
   save(root, record);
 }
+
 export function cleanupMembers(root: string, record: RecordData, validateOnly = false): void {
   const path = join(root, 'runs', record.id, 'members-cleanup.json');
   const removed: string[] = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')).removed : [];
@@ -246,6 +268,7 @@ export function cleanupMembers(root: string, record: RecordData, validateOnly = 
     renameSync(path + '.tmp', path);
   }
 }
+
 function validateMemberRemoval(record: RecordData, m: Member, removed: string[]): void {
   if (removed.includes(m.id)) {
     if (lstatSync(m.workspace, { throwIfNoEntry: false }))

@@ -3,12 +3,14 @@ import { chmodSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { InputError } from '../architecture/config.js';
+
 export interface WorkdayEvent {
   sequence: number;
   observedAt: string;
   type: string;
   payload: unknown;
 }
+
 export interface Message {
   id: string;
   from: string;
@@ -17,14 +19,18 @@ export interface Message {
   replyTo?: string;
   payload: unknown;
 }
+
 interface Update {
   id: string;
   status: string;
   data: unknown;
 }
+
 /** Single writer; reports project transactional state rather than replacing it. */
 export class WorkdayStore {
   private db: DatabaseSync;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     readonly path: string,
     create = false,
@@ -51,6 +57,8 @@ export class WorkdayStore {
       throw new InputError('Unsupported workday database version');
     }
   }
+
+  /** Handles initialize within this component’s captured contract. */
   initialize(id: string, data: unknown, owners: string[]): void {
     this.transaction(() => {
       this.db
@@ -61,6 +69,8 @@ export class WorkdayStore {
       this.event('workday.created', { id, owners });
     });
   }
+
+  /** Handles transaction within this component’s captured contract. */
   private transaction(action: () => void): void {
     this.db.exec('BEGIN IMMEDIATE');
     try {
@@ -71,11 +81,15 @@ export class WorkdayStore {
       throw error;
     }
   }
+
+  /** Handles event within this component’s captured contract. */
   private event(type: string, payload: unknown): void {
     this.db
       .prepare('INSERT INTO events(observed_at,type,data) VALUES(?,?,?)')
       .run(new Date().toISOString(), type, JSON.stringify(payload));
   }
+
+  /** Handles commit within this component’s captured contract. */
   commit(
     type: string,
     payload: unknown,
@@ -100,6 +114,8 @@ export class WorkdayStore {
       this.event(type, payload);
     });
   }
+
+  /** Handles update within this component’s captured contract. */
   private update(table: 'workdays' | 'assignments', value: Update): void {
     const result = this.db
       .prepare(`UPDATE ${table} SET status=?,data=? WHERE id=?`)
@@ -107,6 +123,8 @@ export class WorkdayStore {
     if (result.changes !== 1)
       throw new Error(table === 'workdays' ? 'Unknown workday' : 'Unknown assignment');
   }
+
+  /** Handles snapshot within this component’s captured contract. */
   snapshot() {
     const rows = this.db.prepare('SELECT * FROM workdays').all();
     if (rows.length !== 1) throw new InputError('Incomplete workday database');
@@ -121,6 +139,8 @@ export class WorkdayStore {
       executions: this.db.prepare('SELECT * FROM executions ORDER BY rowid').all().map(decode),
     };
   }
+
+  /** Handles events within this component’s captured contract. */
   events(after = 0): WorkdayEvent[] {
     return this.db
       .prepare('SELECT * FROM events WHERE sequence>? ORDER BY sequence')
@@ -132,6 +152,8 @@ export class WorkdayStore {
         payload: JSON.parse(String(r.data)),
       }));
   }
+
+  /** Releases resources owned by this instance. */
   close(): void {
     this.db.close();
   }

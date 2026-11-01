@@ -9,9 +9,12 @@ import { catalogFixture, componentFields } from './catalog-fixture.js';
 /** Builds a real catalog and a tiny Node profile without invoking inference. */
 export class ComponentTestFixture {
   readonly root = mkdtempSync(join(tmpdir(), 'arcnexus-tests-'));
+
   readonly state = join(this.root, 'state');
+
   readonly repo = join(this.root, 'repo');
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     mkdirSync(this.repo);
@@ -27,6 +30,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
+  /** Handles fields within this component’s captured contract. */
   private fields() {
     const base = {
       ...componentFields,
@@ -48,6 +52,7 @@ export class ComponentTestFixture {
     return fields;
   }
 
+  /** Projects captured ownership, contracts and inventories for static validation output. */
   private catalog(): void {
     const fields = this.fields();
     this.containers(fields);
@@ -70,6 +75,7 @@ export class ComponentTestFixture {
     });
   }
 
+  /** Handles containers within this component’s captured contract. */
   private containers(fields: ReturnType<ComponentTestFixture['fields']>): void {
     this.put('architecture/components/platform.yaml', {
       ...fields,
@@ -92,6 +98,7 @@ export class ComponentTestFixture {
     });
   }
 
+  /** Handles profile within this component’s captured contract. */
   profile(overrides: Record<string, unknown> = {}): void {
     this.put('architecture/test-profiles/node.yaml', {
       schemaVersion: 1,
@@ -107,6 +114,7 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Reads literal suite metadata and maps the source to its compiled test artifact. */
   suite(category: string, name: string, tags: string[], level = category): void {
     this.put(
       `tests/${category}/${name}.test.ts`,
@@ -114,22 +122,26 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Handles put within this component’s captured contract. */
   put(path: string, value: unknown): void {
     mkdirSync(dirname(join(this.repo, path)), { recursive: true });
     writeFileSync(join(this.repo, path), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
+  /** Handles commit within this component’s captured contract. */
   commit(): void {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');
   }
 
+  /** Handles git within this component’s captured contract. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
+  /** Handles unused profile within this component’s captured contract. */
   unusedProfile(): void {
     const path = 'architecture/components/sample.yaml';
     const sample = JSON.parse(readFileSync(join(this.repo, path), 'utf8'));
@@ -149,6 +161,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
+  /** Handles other profile within this component’s captured contract. */
   private otherProfile(): void {
     this.put('architecture/test-profiles/other.yaml', {
       schemaVersion: 1,
@@ -165,6 +178,7 @@ export class ComponentTestFixture {
     );
   }
 
+  /** Handles assignment within this component’s captured contract. */
   assignment(): any {
     const result = spawnSync(
       process.execPath,
@@ -183,6 +197,7 @@ export class ComponentTestFixture {
     return JSON.parse(result.stdout);
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(...args: string[]) {
     return spawnSync(
       process.execPath,

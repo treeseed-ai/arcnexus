@@ -8,11 +8,14 @@ import type { CliValues } from './arguments.js';
 
 /** Adapts experiment commands without duplicating runtime orchestration. */
 export class ExperimentCommand {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly signal: AbortSignal,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const { values, positionals } = this;
     const action = positionals[1];

@@ -1,19 +1,27 @@
 import type { Command } from '../architecture/config.js';
 import { executeDirect, type CommandResult } from './process.js';
+
 interface Start {
   command: Command;
   cwd: string;
   log: string;
   options: { env?: NodeJS.ProcessEnv; timeoutMs?: number };
 }
+
+/** Stops managed subprocess groups when their controlling parent disappears. */
 class CommandSupervisor {
   private readonly controller = new AbortController();
+
   private started = false;
+
+  /** Handles listen within this component’s captured contract. */
   listen(): void {
     process.on('disconnect', () => this.controller.abort(new Error('Command parent disconnected')));
     process.on('SIGTERM', () => this.controller.abort(new Error('Command supervisor terminated')));
     process.on('message', (message: Start | { cancel: string }) => this.receive(message));
   }
+
+  /** Handles receive within this component’s captured contract. */
   private receive(message: Start | { cancel: string }): void {
     if ('cancel' in message) {
       this.controller.abort(new Error(message.cancel));
@@ -23,6 +31,8 @@ class CommandSupervisor {
     this.started = true;
     void this.execute(message);
   }
+
+  /** Runs the requested action through the configured execution boundary. */
   private async execute(message: Start): Promise<void> {
     let response: { result?: CommandResult; error?: string };
     try {
@@ -46,4 +56,5 @@ class CommandSupervisor {
     if (process.connected) process.send?.(response, () => process.disconnect());
   }
 }
+
 new CommandSupervisor().listen();

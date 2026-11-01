@@ -41,7 +41,16 @@ class WorkflowTests {
     for (const step of job.steps.filter((step: any) => step.uses))
       assert.match(step.uses, /^actions\/(checkout|setup-node)@[a-f0-9]{40}$/);
     const commands = job.steps.map((step: any) => step.run ?? '').join('\n');
-    for (const command of ['npm ci', 'npm run format:check', 'npm run lint', 'npm run check', 'npm test', 'guidance validate', 'validate --project', '--help'])
+    for (const command of [
+      'npm ci',
+      'npm run format:check',
+      'npm run lint',
+      'npm run check',
+      'npm test',
+      'guidance validate',
+      'validate --project',
+      '--help',
+    ])
       assert.ok(commands.includes(command), command);
     assert.doesNotMatch(commands, /npm publish|gh release create|docker push|git push/);
     assert.ok(job.steps.some((step: any) => step.if === 'inputs.distribution'));

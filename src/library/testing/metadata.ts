@@ -4,6 +4,7 @@ import { InputError } from '../architecture/config.js';
 
 /** Reads literal registration data without importing or executing a test module. */
 export class SuiteMetadataReader {
+  /** Loads the requested content through this component boundary. */
   read(path: string, text: string): SuiteMetadata {
     const source = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true);
     const registrations = source.statements.filter(
@@ -29,6 +30,7 @@ export class SuiteMetadataReader {
     return value;
   }
 
+  /** Reads only supported literal metadata without evaluating the module. */
   private literal(node: ts.Node): unknown {
     if (ts.isStringLiteral(node)) return node.text;
     if (ts.isArrayLiteralExpression(node)) return node.elements.map((item) => this.literal(item));

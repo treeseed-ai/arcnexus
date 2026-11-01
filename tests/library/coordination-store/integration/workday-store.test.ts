@@ -6,7 +6,10 @@ import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { WorkdayStore } from '../../../../dist/library/coordination-store/workday-store.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises workday store behavior through observable scenarios. */
 class WorkdayStoreTests {
+  /** Verifies that delivery and readiness are atomic. */
   deliveryAndReadinessAreAtomic(t: TestContext): void {
     const fixture = workflowFixture(t);
     const directory = join(fixture.state, 'workdays', 'one');
@@ -26,6 +29,8 @@ class WorkdayStoreTests {
     }
     this.assertBuiltViewers(fixture.env);
   }
+
+  /** Handles deliver within this component’s captured contract. */
   private deliver(store: WorkdayStore): void {
     store.commit(
       'request.delivered',
@@ -44,6 +49,8 @@ class WorkdayStoreTests {
       },
     );
   }
+
+  /** Handles assert duplicate rolls back within this component’s captured contract. */
   private assertDuplicateRollsBack(store: WorkdayStore): void {
     assert.throws(() =>
       store.commit(
@@ -63,6 +70,8 @@ class WorkdayStoreTests {
     );
     assert.equal(store.events().length, 2);
   }
+
+  /** Handles assert built viewers within this component’s captured contract. */
   private assertBuiltViewers(env: NodeJS.ProcessEnv): void {
     const workday = (...args: string[]) =>
       spawnSync(process.execPath, [cli, 'workday', ...args], {
@@ -85,7 +94,9 @@ class WorkdayStoreTests {
     assert.equal(workday('status', 'missing', '--json').status, 2);
   }
 }
+
 const suite = new WorkdayStoreTests();
+
 test('SQLite delivery and readiness commit atomically; built viewers retain ordered evidence', (t) =>
   suite.deliveryAndReadinessAreAtomic(t));
 

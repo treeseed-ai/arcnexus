@@ -13,12 +13,14 @@ import { covered } from '../architecture/components.js';
 import { commands, InputError, type Command } from '../architecture/config.js';
 import { ConfigurationReader, type ConfigurationSource } from '../architecture/configuration.js';
 import { validateSchema } from '../architecture/schema.js';
+
 interface Participant {
   component: string;
   assignment: string;
   maxAttempts?: number;
   refresh: Command[];
 }
+
 interface Definition {
   schemaVersion: 1 | 3;
   timeoutSeconds?: number;
@@ -28,11 +30,13 @@ interface Definition {
   dependency: { from: string; to: string; contract: string; delivery: string };
   acceptance: HostCheck[];
 }
+
 export interface WorkdayParticipant {
   resolved: ResolvedAssignment;
   maxAttempts?: number;
   refresh: Command[];
 }
+
 export interface WorkdayInput {
   configurationSources?: import('../architecture/configuration.js').ConfigurationSource[];
   schemaVersion: 1 | 3;
@@ -47,6 +51,7 @@ export interface WorkdayInput {
   artifacts: ResolvedAssignment['artifacts'];
   digest: string;
 }
+
 export function resolveWorkday(
   path: string,
   project: string,
@@ -69,11 +74,17 @@ export function resolveWorkday(
   }
 }
 
+/** Captures two disjoint owners and their permitted dependency before coordination begins. */
 class WorkdayResolver {
   private sources: ConfigurationSource[];
+
   private definition: Definition;
+
   private selection: ReturnType<typeof resolveBase>;
+
   private bindings: ReturnType<typeof loadBindings>;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private path: string,
     project: string,
@@ -88,6 +99,8 @@ class WorkdayResolver {
     this.bindings = loadBindings(bindingsPath);
     if (this.bindings.configurationSource) this.sources.push(this.bindings.configurationSource);
   }
+
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(): WorkdayInput {
     const requester = this.participant(this.definition.requester);
     const recipient = this.participant(this.definition.recipient);
@@ -107,6 +120,8 @@ class WorkdayResolver {
     };
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
+
+  /** Handles checks within this component’s captured contract. */
   private checks(checks: HostCheck[], directory: string): HostCheck[] {
     return checks.map((check) => ({
       ...check,
@@ -117,6 +132,8 @@ class WorkdayResolver {
       ),
     }));
   }
+
+  /** Handles assignment within this component’s captured contract. */
   private assignment(path: string): Assignment {
     const file = resolve(dirname(this.path), path);
     const source = new ConfigurationReader().file(file);
@@ -129,6 +146,8 @@ class WorkdayResolver {
     }));
     return value;
   }
+
+  /** Handles participant within this component’s captured contract. */
   private participant(participant: Participant): WorkdayParticipant {
     const value = this.assignment(participant.assignment);
     const resolved = resolveAssignment(
@@ -153,6 +172,8 @@ class WorkdayResolver {
       refresh: participant.refresh,
     };
   }
+
+  /** Checks declared owner paths and directory-granularity exceptions. */
   private validateOwners(requester: WorkdayParticipant, recipient: WorkdayParticipant): void {
     if (
       requester.resolved.componentId === recipient.resolved.componentId ||
@@ -177,6 +198,8 @@ class WorkdayResolver {
     )
       throw new InputError('Workday owner writable scopes overlap');
   }
+
+  /** Handles artifacts within this component’s captured contract. */
   private artifacts(checks: HostCheck[]): ResolvedAssignment['artifacts'] {
     const artifacts: ResolvedAssignment['artifacts'] = [],
       ids = new Set<string>();

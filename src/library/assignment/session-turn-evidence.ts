@@ -17,9 +17,12 @@ export interface TurnFrame {
   summary: Record<string, unknown>;
 }
 
+/** Retains prompts, SDK events, usage and structured outcomes for each model turn. */
 export class TurnEvidence {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly state: SessionState) {}
 
+  /** Handles review within this component’s captured contract. */
   review(): Record<string, unknown> {
     const evidence = {
       basis: this.state.assignment.kind === 'review' ? 'base-first-parent' : 'candidate',
@@ -30,6 +33,7 @@ export class TurnEvidence {
     return { ...evidence, sha256: digest(bytes), bytes: Buffer.byteLength(bytes) };
   }
 
+  /** Constructs the read-only review view from captured assignment inputs. */
   private baseReview() {
     const { access } = this.state.component;
     const paths = [...new Set([...access.readPaths, ...access.writeDirectories])].map(
@@ -53,6 +57,7 @@ export class TurnEvidence {
     return { patch, newFiles: {} };
   }
 
+  /** Checks the candidate at the review boundary without granting write authority. */
   private candidateReview() {
     const { root, record } = this.state.options;
     captureChanges(root, record);
@@ -69,6 +74,7 @@ export class TurnEvidence {
     return { patch, newFiles };
   }
 
+  /** Starts managed work and records the state needed for its later shutdown. */
   start(
     activity: string,
     prompt: string,
@@ -100,6 +106,7 @@ export class TurnEvidence {
     return { activity, prompt, start, commandStart, summary };
   }
 
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   finish(frame: TurnFrame): void {
     const { root, record } = this.state.options;
     const { summary } = frame;
@@ -126,6 +133,7 @@ export class TurnEvidence {
     save(root, record);
   }
 
+  /** Handles usage within this component’s captured contract. */
   private usage(summary: Record<string, unknown>): void {
     const { record } = this.state.options;
     summary.reportedUsage = record.attemptReportedUsage ?? null;

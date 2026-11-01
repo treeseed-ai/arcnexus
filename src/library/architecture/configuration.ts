@@ -12,6 +12,7 @@ export interface ConfigurationSource {
 }
 
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
+
 export const isConfiguration = (path: string) => /\.(json|yaml|yml)$/.test(path);
 
 function normalize(value: unknown): unknown {
@@ -30,18 +31,22 @@ function normalize(value: unknown): unknown {
 
 /** The only parser for project-authored configuration; evidence remains JSON. */
 export class ConfigurationReader {
+  /** Handles parse within this component’s captured contract. */
   parse(path: string, text: string): ConfigurationSource {
     try {
       const document = parseDocument(text, { uniqueKeys: true, strict: true });
       if (document.errors.length) throw document.errors[0];
       if (document.warnings.length) throw document.warnings[0];
       visit(document, {
+        /** Handles alias within this component’s captured contract. */
         Alias() {
           throw new Error('YAML aliases are not permitted');
         },
+        /** Handles node within this component’s captured contract. */
         Node(_key, node) {
           if (node.tag || node.anchor) throw new Error('YAML tags and anchors are not permitted');
         },
+        /** Handles pair within this component’s captured contract. */
         Pair(_key, pair) {
           if (!isScalar(pair.key) || typeof pair.key.value !== 'string' || pair.key.value === '<<')
             throw new Error('Expected string mapping key; merge keys are not permitted');
@@ -55,10 +60,12 @@ export class ConfigurationReader {
     }
   }
 
+  /** Handles file within this component’s captured contract. */
   file(path: string): ConfigurationSource {
     return this.parse(path, readFileSync(path, 'utf8'));
   }
 
+  /** Handles revision within this component’s captured contract. */
   revision(repository: string, base: string, path: string): ConfigurationSource {
     const mode = git(repository, 'ls-tree', base, '--', path).split(' ')[0];
     if (!['100644', '100755'].includes(mode!))
@@ -66,6 +73,7 @@ export class ConfigurationReader {
     return this.parse(path, git(repository, 'show', `${base}:${path}`));
   }
 
+  /** Handles definition within this component’s captured contract. */
   definition(repository: string, base: string, stem: string): ConfigurationSource {
     const paths = git(
       repository,

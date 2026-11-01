@@ -4,7 +4,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { handoffFixture } from '../../testing/support/handoff-fixture.js';
+
+/** Exercises workday context behavior through observable scenarios. */
 class WorkdayContextTests {
+  /** Verifies that preserves assignment acceptance. */
   preservesAssignmentAcceptance(t: TestContext): void {
     const f = handoffFixture(t);
     const result = f.workday();
@@ -28,7 +31,9 @@ class WorkdayContextTests {
     assert.match(prompt, /Incoming request acceptance text is supplemental/);
   }
 }
+
 const suite = new WorkdayContextTests();
+
 test('recipient plans against indexed captured acceptance after incoming request context', (t) =>
   suite.preservesAssignmentAcceptance(t));
 

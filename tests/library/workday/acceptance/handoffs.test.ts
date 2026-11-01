@@ -5,8 +5,11 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { handoffFixture } from '../../testing/support/handoff-fixture.js';
+
+/** Exercises handoffs behavior through observable scenarios. */
 class HandoffsTests {
-  scenario_1(t: TestContext, stage: any) {
+  /** Verifies the scenario delivers and resumes activity. */
+  deliversAndResumesActivity(t: TestContext, stage: any) {
     const f = handoffFixture(t, stage),
       r = f.workday();
     assert.equal(r.status, 0, r.stderr + '\n' + r.stdout);
@@ -36,7 +39,9 @@ class HandoffsTests {
     assert.match(markdown, /## Host checks/);
     assert.match(markdown, /## Outstanding needs/);
   }
-  rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges_2(t: TestContext) {
+
+  /** Verifies that rejected owner request ends workday with retained requester changes. */
+  rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges(t: TestContext) {
     const f = handoffFixture(t, 'reject'),
       r = f.workday();
     assert.equal(r.status, 1, r.stderr);
@@ -44,7 +49,9 @@ class HandoffsTests {
     assert.equal(w.status, 'blocked');
     assert.equal(w.parking.status, 'restored');
   }
-  scenario_3(t: TestContext, mode: any) {
+
+  /** Verifies the scenario rejects invalid handoff. */
+  rejectsInvalidHandoff(t: TestContext, mode: any) {
     const f = handoffFixture(t, mode),
       r = f.workday();
     assert.equal(r.status, 1, r.stderr);
@@ -66,7 +73,9 @@ class HandoffsTests {
         false,
       );
   }
-  recipientCorrectiveAttemptIsRealAndDoesNotResetRequesterCounters_4(t: TestContext) {
+
+  /** Verifies that recipient corrective attempt is real and does not reset requester counters. */
+  recipientCorrectiveAttemptIsRealAndDoesNotResetRequesterCounters(t: TestContext) {
     const f = handoffFixture(t, 'repair'),
       r = f.workday();
     assert.equal(r.status, 0, r.stderr);
@@ -80,7 +89,9 @@ class HandoffsTests {
       1,
     );
   }
-  combinedAcceptanceRejectsARegressionAfterVerifiedDelivery_5(t: TestContext) {
+
+  /** Verifies that combined acceptance rejects aregression after verified delivery. */
+  combinedAcceptanceRejectsARegressionAfterVerifiedDelivery(t: TestContext) {
     const f = handoffFixture(t, 'combined-failure'),
       r = f.workday();
     assert.equal(r.status, 1, r.stderr);
@@ -89,7 +100,9 @@ class HandoffsTests {
     assert.ok(w.messages.some((m: any) => m.payload.decision === 'delivered'));
     assert.match(w.error, /acceptance|Command failed/i);
   }
-  SDKOutputSchemaExposesOnlyCurrentlyEligibleCoordinationActions_6(t: TestContext) {
+
+  /** Verifies that sdkoutput schema exposes only currently eligible coordination actions. */
+  SDKOutputSchemaExposesOnlyCurrentlyEligibleCoordinationActions(t: TestContext) {
     const f = handoffFixture(t),
       r = f.workday();
     assert.equal(r.status, 0, r.stderr);
@@ -119,6 +132,8 @@ class HandoffsTests {
       { type: 'null' },
     );
   }
+
+  /** Handles contracts within this component’s captured contract. */
   private contracts(calls: any[]): void {
     for (const call of calls) {
       const schema = call.coordinationSchema.anyOf?.[1];
@@ -126,6 +141,7 @@ class HandoffsTests {
     }
   }
 }
+
 const suite = new HandoffsTests();
 
 for (const stage of [
@@ -138,9 +154,13 @@ for (const stage of [
   'completed-specification',
   'refresh',
 ])
-  test('built workday delivers and resumes ' + stage, (t: any) => suite.scenario_1(t, stage));
+  test('built workday delivers and resumes ' + stage, (t: any) =>
+    suite.deliversAndResumesActivity(t, stage),
+  );
+
 test('rejected owner request ends workday with retained requester changes', (t: any) =>
-  suite.rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges_2(t));
+  suite.rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges(t));
+
 for (const mode of [
   'unknown-owner',
   'foreign-contract',
@@ -153,15 +173,16 @@ for (const mode of [
   'no-delivery',
 ])
   test('workday retains failure without unauthorized delivery: ' + mode, (t: any) =>
-    suite.scenario_3(t, mode),
+    suite.rejectsInvalidHandoff(t, mode),
   );
+
 test('recipient corrective attempt is real and does not reset requester counters', (t: any) =>
-  suite.recipientCorrectiveAttemptIsRealAndDoesNotResetRequesterCounters_4(t));
+  suite.recipientCorrectiveAttemptIsRealAndDoesNotResetRequesterCounters(t));
 
 test('combined acceptance rejects a regression after verified delivery', (t: any) =>
-  suite.combinedAcceptanceRejectsARegressionAfterVerifiedDelivery_5(t));
+  suite.combinedAcceptanceRejectsARegressionAfterVerifiedDelivery(t));
 
 test('SDK output schema exposes only currently eligible coordination actions', (t: any) =>
-  suite.SDKOutputSchemaExposesOnlyCurrentlyEligibleCoordinationActions_6(t));
+  suite.SDKOutputSchemaExposesOnlyCurrentlyEligibleCoordinationActions(t));
 
 registerSuite({ component: 'workday', level: 'acceptance', tags: ['deterministic'] });

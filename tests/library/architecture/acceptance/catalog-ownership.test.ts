@@ -5,8 +5,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
 import { parse } from 'yaml';
+
+/** Exercises catalog ownership behavior through observable scenarios. */
 class CatalogOwnershipTests {
-  builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner_1() {
+  /** Verifies that built inspect assigns every real source module to one executable owner. */
+  builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner() {
     const components = readdirSync('architecture/components')
       .map((f: any) => parse(readFileSync('architecture/components/' + f, 'utf8')))
       .filter((c: any) => !['platform', 'package'].includes(c.type));
@@ -23,6 +26,8 @@ class CatalogOwnershipTests {
       );
     }
   }
+
+  /** Handles inspect owner within this component’s captured contract. */
   private inspectOwner(id: string): any {
     const r = spawnSync(
       process.execPath,
@@ -41,9 +46,10 @@ class CatalogOwnershipTests {
     return JSON.parse(r.stdout).context.at(-1);
   }
 }
+
 const suite = new CatalogOwnershipTests();
 
 test('built inspect assigns every real source module to one executable owner', () =>
-  suite.builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner_1());
+  suite.builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner());
 
 registerSuite({ component: 'architecture', level: 'acceptance', tags: ['deterministic'] });

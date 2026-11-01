@@ -11,11 +11,16 @@ import { saveMarkdown } from '../report/report.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { createWorkspace } from '../workspace/workspace.js';
 import { ProposalStore, type TaskProposal } from './proposal-store.js';
+
+/** Executes explicitly accepted proposals only while captured authority hashes still match. */
 export class TaskRunner {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private root: string,
     private signal: AbortSignal,
   ) {}
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(id: string): Promise<{ exitCode: number; report: unknown }> {
     const proposal = new ProposalStore(this.root).load(id);
     this.validate(proposal);
@@ -36,6 +41,8 @@ export class TaskRunner {
     }
     return this.single(proposal, execution.resolved);
   }
+
+  /** Rejects inputs that violate the captured configuration contract. */
   private validate(proposal: TaskProposal): void {
     if (proposal.status !== 'ready' || !proposal.execution)
       throw new InputError('Proposal is not ready for execution');
@@ -56,6 +63,8 @@ export class TaskRunner {
           ];
     for (const assignment of assignments) this.revalidate(proposal, assignment);
   }
+
+  /** Checks captured hashes again before executing an accepted proposal. */
   private revalidate(proposal: TaskProposal, assignment: ResolvedAssignment): void {
     const resolved = resolveAssignment(proposal.source, proposal.base, assignment.componentId, {
       value: assignment.assignment,
@@ -69,6 +78,8 @@ export class TaskRunner {
         if (digest(readFileSync(artifact.path)) !== artifact.sha256)
           throw new InputError('Combined acceptance changed');
   }
+
+  /** Handles single within this component’s captured contract. */
   private async single(proposal: TaskProposal, resolved: ResolvedAssignment) {
     const record = createWorkspace(this.root, {
       project: proposal.source,
@@ -93,6 +104,8 @@ export class TaskRunner {
     }
     return { exitCode, report: record };
   }
+
+  /** Runs the requested action through the configured execution boundary. */
   private async execute(proposal: TaskProposal, resolved: ResolvedAssignment, record: RecordData) {
     const controller = new AbortController();
     const seconds = resolved.executionProfile.timeoutSeconds;
@@ -119,6 +132,8 @@ export class TaskRunner {
       clearTimeout(timer);
     }
   }
+
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   private finish(record: RecordData): void {
     record.finishedAt = new Date().toISOString();
     record.elapsedMs = Date.now() - Date.parse(record.startedAt);

@@ -6,10 +6,11 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises composed behavior through observable scenarios. */
 class ComposedTests {
-  builtPrepareCreatesPinnedDependencyWorktreesAndGuardedCleanupPreservesOriginals_1(
-    t: TestContext,
-  ) {
+  /** Verifies that built prepare creates pinned dependency worktrees and guarded cleanup preserves originals. */
+  builtPrepareCreatesPinnedDependencyWorktreesAndGuardedCleanupPreservesOriginals(t: TestContext) {
     const f = composed(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -27,7 +28,9 @@ class ComposedTests {
     assert.deepEqual(readFileSync(join(f.state, 'runs', v.id, 'report.json')), report);
     assert.equal(f.git('rev-parse', v.branch), v.base);
   }
-  scenario_2(t: TestContext, kind: any) {
+
+  /** Verifies the scenario refuses dirty dependency cleanup. */
+  refusesDirtyDependencyCleanup(t: TestContext, kind: any) {
     const f = composed(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -43,7 +46,9 @@ class ComposedTests {
     assert.ok(existsSync(v.workspace));
     assert.equal(readFileSync(p, 'utf8'), 'keep');
   }
-  scenario_3(t: TestContext, kind: any) {
+
+  /** Verifies the scenario rejects invalid member preparation. */
+  rejectsInvalidMemberPreparation(t: TestContext, kind: any) {
     const f = composed(t),
       dep = f.environment.workspace.dependencies[0];
     if (kind === 'identity') dep.repository = 'https://example.invalid/wrong.git';
@@ -66,7 +71,9 @@ class ComposedTests {
     const r = f.prepare();
     assert.equal(r.status, 2, r.stderr);
   }
-  runGrantsDependencyReadAccessAndRetainsUnchangedInventory_4(t: TestContext) {
+
+  /** Verifies that run grants dependency read access and retains unchanged inventory. */
+  runGrantsDependencyReadAccessAndRetainsUnchangedInventory(t: TestContext) {
     const f = composed(t),
       r = f.run('--bindings', f.bindings);
     assert.equal(r.status, 0, r.stderr);
@@ -74,7 +81,9 @@ class ComposedTests {
     assert.equal(v.settings.filesystem[v.members[0].workspace], 'read');
     assert.ok(v.members[0].inventoryDigest);
   }
-  failedDependencyPreparationRetainsOwnershipAndSupportsSafeCleanup_5(t: TestContext) {
+
+  /** Verifies that failed dependency preparation retains ownership and supports safe cleanup. */
+  failedDependencyPreparationRetainsOwnershipAndSupportsSafeCleanup(t: TestContext) {
     const f = composed(t);
     f.environment.workspace.dependencies[0].setup = [
       { command: 'node', args: ['-e', 'process.exit(6)'] },
@@ -88,7 +97,9 @@ class ComposedTests {
     assert.ok(existsSync(v.members[0].workspace));
     assert.equal(f.cleanup(v.id).status, 0);
   }
-  cleanupRejectsAMemberPathSubstitutedOutsideTheOwnedWorkspace_6(t: TestContext) {
+
+  /** Verifies that cleanup rejects amember path substituted outside the owned workspace. */
+  cleanupRejectsAMemberPathSubstitutedOutsideTheOwnedWorkspace(t: TestContext) {
     const f = composed(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -100,7 +111,9 @@ class ComposedTests {
     assert.match(cleanup.stderr, /ownership/);
     assert.equal(readFileSync(join(f.dependency, 'source.txt'), 'utf8'), 'dependency');
   }
-  declaredDisposableDependencyOutputsCanBeCleanedAfterCallerUse_7(t: TestContext) {
+
+  /** Verifies that declared disposable dependency outputs can be cleaned after caller use. */
+  declaredDisposableDependencyOutputsCanBeCleanedAfterCallerUse(t: TestContext) {
     const f = composed(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
@@ -108,7 +121,9 @@ class ComposedTests {
     writeFileSync(join(v.members[0].workspace, 'generated/cwd'), 'caller rebuild');
     assert.equal(f.cleanup(v.id).status, 0);
   }
-  inspectCapturesResolvedDependencyRevisionsWithoutCreatingWorktrees_8(t: TestContext) {
+
+  /** Verifies that inspect captures resolved dependency revisions without creating worktrees. */
+  inspectCapturesResolvedDependencyRevisionsWithoutCreatingWorktrees(t: TestContext) {
     const f = composed(t),
       r = spawnSync(
         process.execPath,
@@ -130,7 +145,9 @@ class ComposedTests {
     assert.equal(v.workspaceMembers[0].base, f.environment.workspace.dependencies[0].commit);
     assert.equal(existsSync(f.state), false);
   }
-  assignmentCannotActivateAComponentOwnedByADependencyRepository_9(t: TestContext) {
+
+  /** Verifies that assignment cannot activate acomponent owned by adependency repository. */
+  assignmentCannotActivateAComponentOwnedByADependencyRepository(t: TestContext) {
     const f = composed(t);
     f.environment.workspace.primary.id = 'different-owner';
     f.commit();
@@ -138,7 +155,9 @@ class ComposedTests {
     assert.equal(r.status, 2);
     assert.match(r.stderr, /primary repository/);
   }
-  dependencyChangesByAControlledExecutableFailTheHostBoundaryCheck_10(t: TestContext) {
+
+  /** Verifies that dependency changes by acontrolled executable fail the host boundary check. */
+  dependencyChangesByAControlledExecutableFailTheHostBoundaryCheck(t: TestContext) {
     const f = composed(t);
     f.configure({ dependencyMutation: true });
     const r = f.run('--bindings', f.bindings);
@@ -146,7 +165,9 @@ class ComposedTests {
     assert.match(r.stderr, /changed source|dependency/i);
     assert.equal(f.dg('status', '--porcelain'), '');
   }
-  dependencySetupTimeoutRetainsPartialRecordsAndCanBeCleaned_11(t: TestContext) {
+
+  /** Verifies that dependency setup timeout retains partial records and can be cleaned. */
+  dependencySetupTimeoutRetainsPartialRecordsAndCanBeCleaned(t: TestContext) {
     const f = composed(t);
     f.environment.workspace.dependencies[0].setup = [
       { command: 'node', args: ['-e', 'setInterval(()=>{},1000)'] },
@@ -164,6 +185,7 @@ class ComposedTests {
     assert.equal(f.cleanup(v.id).status, 0);
   }
 }
+
 const suite = new ComposedTests();
 
 function composed(t: any): any {
@@ -187,6 +209,7 @@ function composed(t: any): any {
     spawnSync(process.execPath, [cli, 'cleanup', id], { env: f.env, encoding: 'utf8' });
   return { ...f, dependency, dg, environment, bindings, commit, prepare, cleanup };
 }
+
 function createDependency(root: string) {
   const dependency = join(root, 'dependency');
   mkdirSync(dependency);
@@ -205,6 +228,7 @@ function createDependency(root: string) {
   dg('commit', '-m', 'dependency');
   return { dependency, dg };
 }
+
 function writeBindings(root: string, dependency: string): string {
   const bindings = join(root, 'bindings.json');
   writeFileSync(
@@ -217,6 +241,7 @@ function writeBindings(root: string, dependency: string): string {
   );
   return bindings;
 }
+
 function workspaceEnvironment(commit: string): any {
   return {
     schemaVersion: 1,
@@ -229,6 +254,7 @@ function workspaceEnvironment(commit: string): any {
     },
   };
 }
+
 function dependencyDefinition(commit: string) {
   return {
     id: 'dependency',
@@ -248,11 +274,14 @@ function dependencyDefinition(commit: string) {
     generatedDirectories: ['generated'],
   };
 }
+
 test('built prepare creates pinned dependency worktrees and guarded cleanup preserves originals', (t: any) =>
-  suite.builtPrepareCreatesPinnedDependencyWorktreesAndGuardedCleanupPreservesOriginals_1(t));
+  suite.builtPrepareCreatesPinnedDependencyWorktreesAndGuardedCleanupPreservesOriginals(t));
+
 for (const kind of ['tracked', 'untracked', 'ignored'])
   test(`cleanup refuses dependency ${kind} changes before removing any member`, (t: any) =>
-    suite.scenario_2(t, kind));
+    suite.refusesDirtyDependencyCleanup(t, kind));
+
 for (const kind of [
   'identity',
   'dirty',
@@ -261,22 +290,30 @@ for (const kind of [
   'generated-overlap',
   'missing-binding',
 ])
-  test(`preflight rejects ${kind}`, (t: any) => suite.scenario_3(t, kind));
+  test(`preflight rejects ${kind}`, (t: any) => suite.rejectsInvalidMemberPreparation(t, kind));
+
 test('run grants dependency read access and retains unchanged inventory', (t: any) =>
-  suite.runGrantsDependencyReadAccessAndRetainsUnchangedInventory_4(t));
+  suite.runGrantsDependencyReadAccessAndRetainsUnchangedInventory(t));
+
 test('failed dependency preparation retains ownership and supports safe cleanup', (t: any) =>
-  suite.failedDependencyPreparationRetainsOwnershipAndSupportsSafeCleanup_5(t));
+  suite.failedDependencyPreparationRetainsOwnershipAndSupportsSafeCleanup(t));
+
 test('cleanup rejects a member path substituted outside the owned workspace', (t: any) =>
-  suite.cleanupRejectsAMemberPathSubstitutedOutsideTheOwnedWorkspace_6(t));
+  suite.cleanupRejectsAMemberPathSubstitutedOutsideTheOwnedWorkspace(t));
+
 test('declared disposable dependency outputs can be cleaned after caller use', (t: any) =>
-  suite.declaredDisposableDependencyOutputsCanBeCleanedAfterCallerUse_7(t));
+  suite.declaredDisposableDependencyOutputsCanBeCleanedAfterCallerUse(t));
+
 test('inspect captures resolved dependency revisions without creating worktrees', (t: any) =>
-  suite.inspectCapturesResolvedDependencyRevisionsWithoutCreatingWorktrees_8(t));
+  suite.inspectCapturesResolvedDependencyRevisionsWithoutCreatingWorktrees(t));
+
 test('assignment cannot activate a component owned by a dependency repository', (t: any) =>
-  suite.assignmentCannotActivateAComponentOwnedByADependencyRepository_9(t));
+  suite.assignmentCannotActivateAComponentOwnedByADependencyRepository(t));
+
 test('dependency changes by a controlled executable fail the host boundary check', (t: any) =>
-  suite.dependencyChangesByAControlledExecutableFailTheHostBoundaryCheck_10(t));
+  suite.dependencyChangesByAControlledExecutableFailTheHostBoundaryCheck(t));
+
 test('dependency setup timeout retains partial records and can be cleaned', (t: any) =>
-  suite.dependencySetupTimeoutRetainsPartialRecordsAndCanBeCleaned_11(t));
+  suite.dependencySetupTimeoutRetainsPartialRecordsAndCanBeCleaned(t));
 
 registerSuite({ component: 'workspace', level: 'acceptance', tags: ['deterministic'] });

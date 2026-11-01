@@ -8,8 +8,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { waitFor } from '../../testing/support/test-process.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises parent loss behavior through observable scenarios. */
 class ParentLossTests {
-  async builtSDKLauncherStopsCodexAfterHardHostLoss_1(t: TestContext) {
+  /** Verifies that built sdklauncher stops codex after hard host loss. */
+  async builtSDKLauncherStopsCodexAfterHardHostLoss(t: TestContext) {
     const f = workflowFixture(t, 'specification-timeout'),
       child = spawn(
         process.execPath,
@@ -39,6 +42,8 @@ class ParentLossTests {
     );
     assert.deepEqual(groupMembers(pid), [], 'no steward process survives host loss');
   }
+
+  /** Handles codex pid within this component’s captured contract. */
   private codexPid(f: any): number | undefined {
     if (!existsSync(f.calls) || !existsSync(join(f.state, 'runs'))) return undefined;
     for (const id of readdirSync(join(f.state, 'runs'))) {
@@ -48,9 +53,10 @@ class ParentLossTests {
     return undefined;
   }
 }
+
 const suite = new ParentLossTests();
 
 test('built SDK launcher stops Codex after hard host loss', (t: any) =>
-  suite.builtSDKLauncherStopsCodexAfterHardHostLoss_1(t));
+  suite.builtSDKLauncherStopsCodexAfterHardHostLoss(t));
 
 registerSuite({ component: 'steward', level: 'acceptance', tags: ['deterministic'] });

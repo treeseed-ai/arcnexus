@@ -6,10 +6,15 @@ import { writeFileSync } from 'node:fs';
 import { ConfigurationReader } from '../architecture/configuration.js';
 import type { AgentResult } from '../steward/codex.js';
 import type { Scenario } from './experiment-config.js';
+
+/** Produces labeled scripted SDK responses without credentials or inference calls. */
 class SimulationCodex {
   private readonly scenario = process.argv[2] as Scenario;
+
   private readonly args = process.argv.slice(3);
+
   private stage?: string;
+
   private readonly result: AgentResult = {
     status: 'completed',
     summary: 'SIMULATED fixed scenario ' + this.scenario,
@@ -28,6 +33,8 @@ class SimulationCodex {
     plan: null,
     planUpdates: [],
   };
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     this.prepare();
     let prompt = '';
@@ -54,6 +61,8 @@ class SimulationCodex {
       usage: { input_tokens: 0, cached_input_tokens: 0, output_tokens: 0 },
     });
   }
+
+  /** Establishes the prerequisites required by the subsequent execution. */
   private prepare(): void {
     if (!['success', 'repair', 'boundary', 'failure'].includes(this.scenario))
       throw new Error('Unknown fixed simulation scenario');
@@ -73,6 +82,8 @@ class SimulationCodex {
     )
       throw new Error('Incompatible simulation fixture');
   }
+
+  /** Handles plan within this component’s captured contract. */
   private plan(): void {
     this.result.plan = {
       approach: 'SIMULATED bounded fixture change',
@@ -94,6 +105,8 @@ class SimulationCodex {
       questions: [],
     };
   }
+
+  /** Handles boundary within this component’s captured contract. */
   private boundary(): void {
     this.result.status = 'blocked';
     this.result.blockers = ['SIMULATED dependency contract boundary'];
@@ -108,6 +121,8 @@ class SimulationCodex {
       },
     ];
   }
+
+  /** Handles specification within this component’s captured contract. */
   private specification(): void {
     writeFileSync('docs/behavior.md', 'SIMULATED: source must become after.\n');
     writeFileSync(
@@ -120,6 +135,8 @@ class SimulationCodex {
       outputIncludes: 'SIMULATION_EXPECTED_AFTER',
     };
   }
+
+  /** Runs the requested action through the configured execution boundary. */
   private async execute(): Promise<void> {
     this.edit();
     const client = new Client({ name: 'arcnexus-simulation', version: '1' }, { capabilities: {} });
@@ -147,6 +164,8 @@ class SimulationCodex {
       await client.close();
     }
   }
+
+  /** Handles edit within this component’s captured contract. */
   private edit(): void {
     if (this.stage === 'specification') this.specification();
     if (this.stage === 'implementation' || this.stage === 'correction')
@@ -155,6 +174,8 @@ class SimulationCodex {
         this.scenario === 'repair' && this.stage === 'implementation' ? 'broken' : 'after',
       );
   }
+
+  /** Handles feedback within this component’s captured contract. */
   private async feedback(client: Client): Promise<void> {
     const update = await client.callTool({
       name: 'plan.update',
@@ -171,8 +192,14 @@ class SimulationCodex {
     });
     if (update.isError) throw new Error('Simulation checklist update denied');
   }
+
+  /** Handles option within this component’s captured contract. */
   private option(name: 'command'): string;
+
+  /** Handles option within this component’s captured contract. */
   private option(name: 'args'): string[];
+
+  /** Handles option within this component’s captured contract. */
   private option(name: 'command' | 'args'): string | string[] {
     const prefix = 'mcp_servers.arcnexus.' + name + '=',
       value = this.args.find((arg) => arg.startsWith(prefix));
@@ -188,8 +215,10 @@ class SimulationCodex {
     throw new Error('Invalid bridge configuration');
   }
 
+  /** Handles emit within this component’s captured contract. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }
 }
+
 await new SimulationCodex().run();

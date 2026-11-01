@@ -4,10 +4,12 @@ import { join } from 'node:path';
 import { relativePath } from '../architecture/config.js';
 import { git } from '../operations/process.js';
 import type { RecordData } from '../workspace/state.js';
+
 export interface Change {
   path: string;
   kind: string;
 }
+
 function diffChanges(workspace: string, ...args: string[]): Change[] {
   const entries = git(workspace, ...args).split('\0');
   const result: Change[] = [];
@@ -15,6 +17,7 @@ function diffChanges(workspace: string, ...args: string[]): Change[] {
     result.push({ kind: entries[i]!, path: entries[i + 1]! });
   return result;
 }
+
 export function changes(record: RecordData): Change[] {
   const staged = diffChanges(
     record.workspace,
@@ -45,6 +48,7 @@ export function changes(record: RecordData): Change[] {
     if (!byPath.has(change.path)) byPath.set(change.path, change);
   return [...byPath.values()].sort((a, b) => a.path.localeCompare(b.path));
 }
+
 export function checkScope(workspace: string, observed: Change[], allowed: string[]): void {
   for (const change of observed) {
     relativePath(change.path);
@@ -65,6 +69,7 @@ export function checkScope(workspace: string, observed: Change[], allowed: strin
     }
   }
 }
+
 export function captureChanges(root: string, record: RecordData): void {
   if (!existsSync(join(record.workspace, '.git'))) return;
   const observed = changes(record);

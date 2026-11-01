@@ -119,3 +119,16 @@ in response to a hypothetical risk.
 If `.codegraph/` exists at the repository root, use `codegraph_explore` or
 `codegraph explore` before searching/reading code to locate or understand it.
 If absent, skip it; do not index without the user's decision. Otherwise prefer `rg`.
+
+## Readable implementation
+
+Write a documentation header for every maintained class and method, including
+constructors. Explain responsibility, meaningful side effects and failure behavior;
+do not repeat TypeScript parameter annotations. Separate methods and top-level
+declarations with blank lines, and separate imports from declarations. Group the
+method body into logical paragraphs when it improves reading.
+
+Keep descriptive scenario names without meaningless numeric suffixes. Preserve the
+500/30 physical-line limits without compressing code or deleting useful explanation.
+Lint checks header presence and spacing; review must still assess whether the
+explanation helps a newcomer. See [the readable TypeScript standard](docs/foundation/typescript-standard.md).

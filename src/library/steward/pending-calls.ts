@@ -1,14 +1,17 @@
 import { randomUUID } from 'node:crypto';
 import type { BridgeTool } from './bridge.js';
+
 interface PendingCall {
   settled: Promise<void>;
   result?: unknown;
   error?: unknown;
   complete: boolean;
 }
+
 /** Transport replies are bounded; underlying authorized work has no implicit deadline. */
 export class PendingCalls {
   private readonly calls = new Map<string, PendingCall>();
+
   readonly tool: BridgeTool = {
     name: 'execution.wait',
     description:
@@ -20,7 +23,11 @@ export class PendingCalls {
       additionalProperties: false,
     },
   };
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly execute: (name: string, args: unknown) => Promise<unknown>) {}
+
+  /** Handles call within this component’s captured contract. */
   async call(name: string, args: unknown): Promise<unknown> {
     if (name === this.tool.name) return this.complete(this.identity(args));
     const id = randomUUID();
@@ -40,10 +47,14 @@ export class PendingCalls {
     this.calls.set(id, pending);
     return this.wait(id);
   }
+
+  /** Handles drain within this component’s captured contract. */
   async drain(): Promise<void> {
     await Promise.all([...this.calls.values()].map((call) => call.settled));
     this.calls.clear();
   }
+
+  /** Handles identity within this component’s captured contract. */
   private identity(args: unknown): string {
     if (
       !args ||
@@ -56,6 +67,8 @@ export class PendingCalls {
       throw new Error('Unknown pending operation reference');
     return args.requestId;
   }
+
+  /** Handles complete within this component’s captured contract. */
   private async complete(id: string): Promise<unknown> {
     const pending = this.calls.get(id)!;
     await pending.settled;
@@ -63,6 +76,8 @@ export class PendingCalls {
     if (pending.error) throw pending.error;
     return pending.result;
   }
+
+  /** Handles wait within this component’s captured contract. */
   private async wait(id: string): Promise<unknown> {
     const pending = this.calls.get(id)!;
     let timer: NodeJS.Timeout | undefined;

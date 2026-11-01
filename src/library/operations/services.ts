@@ -12,17 +12,20 @@ import { operationEnvironment } from './environment.js';
 import type { Operation } from './operations.js';
 import type { CommandResult } from './process.js';
 import { ownedLoopbackListener, type ServiceRecord } from './service-state.js';
+
 export interface ServiceDefinition {
   port: number;
   readinessPath: string;
   expectedStatus: number;
   startupTimeoutSeconds?: number;
 }
+
 export interface HttpDefinition {
   serviceId: string;
   path: string;
   expectedStatus: number;
 }
+
 export function localRequest(
   port: number,
   path: string,
@@ -38,6 +41,7 @@ export function localRequest(
     req.end();
   });
 }
+
 function collectResponse(
   req: ClientRequest,
   res: IncomingMessage,
@@ -64,10 +68,16 @@ function collectResponse(
     resolve({ status, body: Buffer.concat(chunks).toString('utf8') });
   });
 }
+
+/** Leases one loopback HTTP service, records readiness, and verifies its shutdown. */
 export class ServiceManager {
   private child?: ChildProcess;
+
   private current?: ServiceRecord;
+
   private stopped?: Promise<void>;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private root: string,
     private record: RecordData,
@@ -75,6 +85,8 @@ export class ServiceManager {
   ) {
     record.services ??= [];
   }
+
+  /** Handles update within this component’s captured contract. */
   private update(value: ServiceRecord) {
     this.current = value;
     const records = this.record.services as ServiceRecord[],
@@ -84,6 +96,8 @@ export class ServiceManager {
     observe(this.root, this.record, 'service.' + value.status, value);
     save(this.root, this.record);
   }
+
+  /** Starts managed work and records the state needed for its later shutdown. */
   async start(op: Operation): Promise<ServiceRecord> {
     if (op.kind !== 'service' || !op.service) throw new Error('Not a service operation');
     if (this.child) throw new Error('Only one active service lease is permitted');
@@ -104,6 +118,8 @@ export class ServiceManager {
       clearTimeout(timer);
     }
   }
+
+  /** Creates initial lifecycle evidence before managed execution begins. */
   private createRecord(id: string): ServiceRecord {
     const directory = join(this.root, 'runs', this.record.id, 'services');
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -119,6 +135,8 @@ export class ServiceManager {
     };
     return record;
   }
+
+  /** Handles launch within this component’s captured contract. */
   private launch(op: Extract<Operation, { command: string }>, record: ServiceRecord): ChildProcess {
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     if (relative(this.record.workspace, cwd).startsWith('..'))
@@ -149,6 +167,8 @@ export class ServiceManager {
     });
     return child;
   }
+
+  /** Propagates caller cancellation to managed work without creating a deadline. */
   private watchCancellation(child: ChildProcess): void {
     const abort = () => {
       void this.stop().catch(() => {});
@@ -156,6 +176,8 @@ export class ServiceManager {
     this.signal.addEventListener('abort', abort, { once: true });
     child.once('close', () => this.signal.removeEventListener('abort', abort));
   }
+
+  /** Observes readiness until success, cancellation, exit or an explicit deadline. */
   private async awaitReadiness(
     op: Extract<Operation, { command: string }>,
     child: ChildProcess,
@@ -174,6 +196,8 @@ export class ServiceManager {
       await delay(50, undefined, { signal });
     }
   }
+
+  /** Reports whether is ready within this component’s captured contract. */
   private async isReady(
     record: ServiceRecord,
     service: ServiceDefinition,
@@ -190,6 +214,8 @@ export class ServiceManager {
       return false;
     }
   }
+
+  /** Handles status within this component’s captured contract. */
   status(id: string): ServiceRecord {
     if (!this.current || this.current.id !== id) throw new Error('Service lease unavailable');
     if (this.current.status !== 'ready') return this.current;
@@ -201,10 +227,14 @@ export class ServiceManager {
       throw new Error('Service lease is no longer listening');
     return this.current;
   }
+
+  /** Handles logs within this component’s captured contract. */
   logs(id: string): { log: string; output: string } {
     const r = this.status(id);
     return { log: r.log, output: readFileSync(r.log).subarray(0, 16384).toString('utf8') };
   }
+
+  /** Checks the required invariant before allowing the next transition. */
   async check(op: Operation, log: string, signal: AbortSignal): Promise<CommandResult> {
     if (op.kind !== 'http') throw new Error('Not an HTTP operation');
     const service = this.status(op.http.serviceId);
@@ -223,6 +253,8 @@ export class ServiceManager {
       log,
     };
   }
+
+  /** Stops managed work and retains its final lifecycle evidence. */
   async stop(): Promise<void> {
     const child = this.child;
     if (!child) {

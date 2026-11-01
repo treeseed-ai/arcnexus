@@ -6,6 +6,7 @@ import type { InitializationResult } from '../architecture/initialization.js';
 import type { WorkdayInput } from '../workday/workday-config.js';
 import type { InitializationEvidence } from './initializer.js';
 import type { RetrievedOwner } from './retrieval.js';
+
 export interface TaskProposal {
   schemaVersion: 1;
   id: string;
@@ -25,8 +26,13 @@ export interface TaskProposal {
     { kind: 'run'; resolved: ResolvedAssignment } | { kind: 'workday'; input: WorkdayInput };
   digest: string;
 }
+
+/** Persists captured intake proposals outside the candidate for explicit caller acceptance. */
 export class ProposalStore {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly root: string) {}
+
+  /** Persists the current evidence so later inspection can reconstruct this state. */
   save(value: Omit<TaskProposal, 'digest'>): TaskProposal {
     const proposal = { ...value, digest: digest(JSON.stringify(value)) };
     const directory = join(this.root, 'proposals');
@@ -40,6 +46,8 @@ export class ProposalStore {
     writeFileSync(join(directory, proposal.id + '.md'), this.markdown(proposal), { mode: 0o600 });
     return proposal;
   }
+
+  /** Handles load within this component’s captured contract. */
   load(id: string): TaskProposal {
     if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid proposal identity');
     try {
@@ -54,6 +62,8 @@ export class ProposalStore {
       throw new InputError(String(error));
     }
   }
+
+  /** Handles markdown within this component’s captured contract. */
   private markdown(value: TaskProposal): string {
     return `# Task proposal ${value.id}\n\nStatus: ${value.status}\n\nRevision: ${value.base}\n\n${value.request.text}\n\n## Captured initialization\n\n\`\`\`json\n${JSON.stringify(value.initialization, null, 2)}\n\`\`\`\n\nExecution requires explicit task run; architectural changes require caller integration and a new plan.\n`;
   }

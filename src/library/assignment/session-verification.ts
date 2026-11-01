@@ -7,8 +7,13 @@ import { type CommandResult } from '../operations/process.js';
 import { type AgentResult } from '../steward/codex.js';
 import { specificationFiles, withFrozenTests } from './checkpoints.js';
 import { SessionState } from './session-state.js';
+
+/** Enforces expected-red, frozen-test and final independent verification checkpoints. */
 export class SessionVerification {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly state: SessionState) {}
+
+  /** Handles specification within this component’s captured contract. */
   async specification(spec: AgentResult) {
     if (!this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
@@ -27,6 +32,8 @@ export class SessionVerification {
     this.state.checkpoint();
     new SessionProgress(this.state).verified('specification');
   }
+
+  /** Freezes the specification files outside the candidate before implementation. */
   private captureRegression(): void {
     this.state.frozen = specificationFiles(
       this.state.options.record,
@@ -43,6 +50,8 @@ export class SessionVerification {
       },
     );
   }
+
+  /** Handles regression within this component’s captured contract. */
   private async regression(spec: AgentResult): Promise<void> {
     this.state.regression = spec.regression;
     if (
@@ -65,6 +74,7 @@ export class SessionVerification {
     });
   }
 
+  /** Runs the declared regression and retains its diagnostic for the red checkpoint. */
   private async expectedFailure(): Promise<CommandResult | undefined> {
     let failed: CommandResult | undefined;
     try {
@@ -84,6 +94,8 @@ export class SessionVerification {
     }
     return failed;
   }
+
+  /** Handles final within this component’s captured contract. */
   async final() {
     this.state.safe();
     if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {

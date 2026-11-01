@@ -1,5 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 export const componentFields = {
   schemaVersion: 1,
   repository: 'sample',
@@ -12,6 +13,7 @@ export const componentFields = {
   questions: [],
   patterns: [],
 };
+
 export const members = {
   foundations: [],
   dependencies: [],
@@ -19,6 +21,7 @@ export const members = {
   libraries: ['sample'],
   releases: [],
 };
+
 export function catalogFixture(repo: any): any {
   for (const [path, value] of Object.entries({
     'roles/engineer': {

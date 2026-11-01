@@ -5,6 +5,7 @@ import { test } from 'node:test';
 
 /** Checks lexical selection across executable owner types without granting authority. */
 class RetrievalTests {
+  /** Handles includes release within this component’s captured contract. */
   includesRelease(): void {
     const owner: any = {
       id: 'release',
@@ -21,6 +22,8 @@ class RetrievalTests {
 }
 
 const suite = new RetrievalTests();
+
 test('task retrieval includes release owners with relevant responsibility', () =>
   suite.includesRelease());
+
 registerSuite({ component: 'task-intake', level: 'unit', tags: ['deterministic'] });

@@ -6,6 +6,7 @@ import { git } from '../operations/process.js';
 export class RevisionArtifacts {
   private readonly modes = new Map<string, string>();
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly repository: string,
     private readonly base: string,
@@ -18,6 +19,7 @@ export class RevisionArtifacts {
     }
   }
 
+  /** Rejects invalid or escaping paths before resolving their content. */
   validatePath(path: string): void {
     const segments = path.split('/');
     for (let i = 1; i <= segments.length; i++) {
@@ -27,6 +29,7 @@ export class RevisionArtifacts {
     }
   }
 
+  /** Loads the requested content through this component boundary. */
   read(path: string) {
     this.validatePath(path);
     if (!['100644', '100755'].includes(this.modes.get(path) ?? ''))

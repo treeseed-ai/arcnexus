@@ -2,8 +2,13 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { appendFileSync, writeFileSync } from 'node:fs';
 import type { WorkflowOptions, WorkflowTurn } from './controlled-workflow.js';
+
+/** Exercises controlled planning behavior through observable scenarios. */
 export class ControlledPlanning {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private options: WorkflowOptions) {}
+
+  /** Handles apply within this component’s captured contract. */
   async apply(turn: WorkflowTurn): Promise<void> {
     this.strictSchema(turn.schema);
     turn.result.plan = null;
@@ -18,6 +23,8 @@ export class ControlledPlanning {
         for (let i = 0; i < (this.options.operationRepeats ?? 1); i++) await this.operation(turn);
     }
   }
+
+  /** Handles strict schema within this component’s captured contract. */
   private strictSchema(schema: any): void {
     if (!schema || typeof schema !== 'object') return;
     if (
@@ -32,6 +39,8 @@ export class ControlledPlanning {
         : this.strictSchema(value),
     );
   }
+
+  /** Handles plan within this component’s captured contract. */
   private plan(turn: WorkflowTurn): void {
     if (this.options.mode === 'planning-write') writeFileSync('source.txt', 'bad');
     if (
@@ -59,6 +68,8 @@ export class ControlledPlanning {
       questions: [],
     };
   }
+
+  /** Handles update within this component’s captured contract. */
   private update() {
     return {
       id: this.options.forgedCompletion ? 'final-verification' : 'work',
@@ -67,6 +78,8 @@ export class ControlledPlanning {
       evidence: this.options.missingEvidence ? [] : ['source.txt'],
     };
   }
+
+  /** Handles check execution prompt within this component’s captured contract. */
   private checkExecutionPrompt(turn: WorkflowTurn): void {
     if (
       this.options.checkItemSchema &&
@@ -83,6 +96,8 @@ export class ControlledPlanning {
       turn.result.blockers = ['Deferred operations to an imaginary later execution turn'];
     }
   }
+
+  /** Handles bridge update within this component’s captured contract. */
   private async bridgeUpdate(turn: WorkflowTurn): Promise<void> {
     const reply = await this.call(turn, 'plan.update', {
       updates: [
@@ -96,6 +111,8 @@ export class ControlledPlanning {
     });
     if (reply.isError) throw new Error(JSON.stringify(reply));
   }
+
+  /** Handles operation within this component’s captured contract. */
   private async operation(turn: WorkflowTurn): Promise<void> {
     if (!turn.args.includes('mcp_servers.arcnexus.default_tools_approval_mode="approve"'))
       throw new Error('EXPLICIT_BRIDGE_APPROVAL_MISSING');
@@ -106,6 +123,8 @@ export class ControlledPlanning {
         });
     appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
+
+  /** Handles parallel operations within this component’s captured contract. */
   private async parallelOperations(turn: WorkflowTurn): Promise<void> {
     const replies = await this.withClient(turn, (client) =>
       Promise.all(
@@ -120,6 +139,8 @@ export class ControlledPlanning {
     for (const reply of replies)
       appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
+
+  /** Handles service within this component’s captured contract. */
   private async service(client: Client) {
     const started = await this.request(client, {
       name: 'services.start',
@@ -140,9 +161,13 @@ export class ControlledPlanning {
     if (this.options.delayedServiceExit) await new Promise((resolve) => setTimeout(resolve, 800));
     return reply;
   }
+
+  /** Handles call within this component’s captured contract. */
   private async call(turn: WorkflowTurn, name: string, args: Record<string, unknown>) {
     return this.withClient(turn, (client) => this.request(client, { name, arguments: args }));
   }
+
+  /** Handles request within this component’s captured contract. */
   private async request(
     client: Client,
     params: { name: string; arguments: Record<string, unknown> },
@@ -160,6 +185,8 @@ export class ControlledPlanning {
     }
     return reply;
   }
+
+  /** Handles with client within this component’s captured contract. */
   private async withClient<T>(
     turn: WorkflowTurn,
     action: (client: Client) => Promise<T>,

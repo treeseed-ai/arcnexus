@@ -15,13 +15,17 @@ import { validateSchema } from '../architecture/schema.js';
 import { git } from '../operations/process.js';
 import { resolveWorkday, type WorkdayInput } from '../workday/workday-config.js';
 import { FixtureCatalog, type FixtureKind } from './fixture-catalog.js';
+
 export type EvidenceMode = 'simulation' | 'live' | 'legacy-unspecified' | 'unselected';
+
 export type Scenario = 'success' | 'repair' | 'boundary' | 'failure' | 'handoff';
+
 interface LocalProject {
   path: string;
   base?: string;
   bindings?: string;
 }
+
 interface ExperimentBindings {
   schemaVersion: 1;
   runner: string;
@@ -31,6 +35,7 @@ interface ExperimentBindings {
   priorEvidence?: Record<string, NonNullable<Assignment['priorEvidence']>[number]>;
   issues?: Record<string, string>;
 }
+
 interface DefinitionCase {
   workday?: string;
   id: string;
@@ -45,11 +50,13 @@ interface DefinitionCase {
   scenario?: Scenario;
   priorEvidenceIds?: string[];
 }
+
 interface Definition {
   schemaVersion: 1;
   modes: Array<'simulation' | 'live'>;
   cases: DefinitionCase[];
 }
+
 export interface ExperimentCase {
   workday?: WorkdayInput;
   id: string;
@@ -67,6 +74,7 @@ export interface ExperimentCase {
   assignmentDigest?: string;
   resolvedAssignment?: ResolvedAssignment;
 }
+
 export interface ExperimentInput {
   configurationSources?: import('../architecture/configuration.js').ConfigurationSource[];
   schemaVersion: 1;
@@ -77,17 +85,21 @@ export interface ExperimentInput {
   files: Record<string, string>;
   digest: string;
 }
+
 const read = (path: string): unknown => new ConfigurationReader().file(path).value;
+
 function executable(path: string): string {
   if (!isAbsolute(path) || !statSync(path).isFile())
     throw new InputError('Expected absolute executable');
   accessSync(path, constants.X_OK);
   return realpathSync(path);
 }
+
 export function fixtureFiles(selection: boolean | FixtureKind = false): Record<string, string> {
   const kind = typeof selection === 'boolean' ? (selection ? 'workday' : 'simulation') : selection;
   return new FixtureCatalog().files(kind);
 }
+
 function checkFixture(project: string, base: string, workday = false): void {
   const files = fixtureFiles(workday),
     paths = git(project, 'ls-tree', '-rz', '--name-only', base).split('\0').filter(Boolean);
@@ -100,6 +112,7 @@ function checkFixture(project: string, base: string, workday = false): void {
   )
     throw new InputError('Simulation fixture contract differs from single-steward-v1');
 }
+
 function captureFiles(c: ExperimentCase, files: Record<string, string>): void {
   const resolved = resolveAssignment(c.project, c.base, c.component, {
     value: c.assignment,
@@ -123,6 +136,7 @@ function captureFiles(c: ExperimentCase, files: Record<string, string>): void {
     }
   if (c.bindings) put(c.bindings, readFileSync(c.bindings).toString('base64'));
 }
+
 export function resolveExperiment(
   manifestPath: string,
   bindingPath: string,
@@ -134,14 +148,23 @@ export function resolveExperiment(
     throw new InputError(String(error));
   }
 }
+
+/** Resolves ordered campaign cases, fixed checks and local bindings before execution. */
 class ExperimentResolver {
   private configurationSources: import('../architecture/configuration.js').ConfigurationSource[] =
     [];
+
   private files: Record<string, string> = {};
+
   private ids = new Set<string>();
+
   private manifest: Definition;
+
   private bindings: ExperimentBindings;
+
   private tools: Record<string, string>;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private manifestPath: string,
     bindingPath: string,
@@ -164,11 +187,15 @@ class ExperimentResolver {
       Object.entries(this.bindings.tools).map(([key, path]) => [key, executable(path)]),
     );
   }
+
+  /** Loads the requested content through this component boundary. */
   private read(path: string): unknown {
     const source = new ConfigurationReader().file(path);
     this.configurationSources.push(source);
     return structuredClone(source.value);
   }
+
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(): ExperimentInput {
     const runner = realpathSync(this.bindings.runner);
     if (!isAbsolute(this.bindings.runner) || !statSync(runner).isFile())
@@ -186,6 +213,8 @@ class ExperimentResolver {
     };
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
+
+  /** Handles command within this component’s captured contract. */
   private command(check: HostCheck, directory: string): HostCheck {
     const executablePath = Object.hasOwn(this.tools, check.command)
       ? this.tools[check.command]!
@@ -201,6 +230,8 @@ class ExperimentResolver {
       artifacts: [...paths.values()],
     };
   }
+
+  /** Handles resolve case within this component’s captured contract. */
   private resolveCase(c: DefinitionCase): ExperimentCase {
     if (this.ids.has(c.id)) throw new InputError('Duplicate experiment case identity');
     this.ids.add(c.id);
@@ -227,6 +258,8 @@ class ExperimentResolver {
       ? this.workdayCase(c, project, captured.source, base)
       : this.assignmentCase(c, project, captured.source, base);
   }
+
+  /** Handles workday case within this component’s captured contract. */
   private workdayCase(
     c: DefinitionCase,
     project: LocalProject,
@@ -257,6 +290,8 @@ class ExperimentResolver {
     this.captureWorkday(result, workday);
     return result;
   }
+
+  /** Rejects unsupported participant ownership or repository combinations. */
   private validateWorkdayOwners(workday: WorkdayInput): void {
     if (
       this.mode === 'simulation' &&
@@ -265,6 +300,8 @@ class ExperimentResolver {
     )
       throw new InputError('Incompatible handoff fixture owners');
   }
+
+  /** Snapshots workday inputs for later integrity checks and inspection. */
   private captureWorkday(result: ExperimentCase, workday: WorkdayInput): void {
     captureFiles(result, this.files);
     for (const participant of [workday.requester, workday.recipient]) {
@@ -274,6 +311,8 @@ class ExperimentResolver {
     }
     for (const a of workday.artifacts) this.files[a.path] = a.content;
   }
+
+  /** Handles assignment within this component’s captured contract. */
   private assignment(c: DefinitionCase): Assignment {
     const path = resolve(dirname(this.manifestPath), c.assignment),
       assignment = validateSchema<Assignment>('assignment', this.read(path));
@@ -298,6 +337,8 @@ class ExperimentResolver {
     this.addPriorEvidence(assignment, c.priorEvidenceIds ?? []);
     return assignment;
   }
+
+  /** Captures explicitly selected historical findings without granting new authority. */
   private addPriorEvidence(assignment: Assignment, ids: string[]): void {
     for (const id of ids) {
       const ref =
@@ -308,6 +349,8 @@ class ExperimentResolver {
       (assignment.priorEvidence ??= []).push(ref);
     }
   }
+
+  /** Handles assignment case within this component’s captured contract. */
   private assignmentCase(
     c: DefinitionCase,
     project: LocalProject,
@@ -332,12 +375,14 @@ class ExperimentResolver {
     return result;
   }
 }
+
 type LegacyManifest = {
   schemaVersion: 1;
   runner: string;
   codexPath?: string;
   cases: Array<Omit<ExperimentCase, 'assignment'> & { assignment: string }>;
 };
+
 export function resolveLegacy(path: string): ExperimentInput {
   const manifest = validateSchema<LegacyManifest>('campaign', read(path));
   if (!isAbsolute(manifest.runner) || (manifest.codexPath && !isAbsolute(manifest.codexPath)))

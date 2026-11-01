@@ -2,8 +2,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+
+/** Introduces a labeled implementation defect so qualification can prove corrective editing. */
 class ReportFaultInjection {
   private marker: string;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     markerPrefix: string | undefined,
     private acceptance: string | undefined,
@@ -12,11 +16,15 @@ class ReportFaultInjection {
       throw new Error('Expected external marker and acceptance script');
     this.marker = markerPrefix + '.' + basename(process.cwd());
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     if (!existsSync(this.marker)) this.inject();
     const result = spawnSync(process.execPath, [this.acceptance!], { stdio: 'inherit' });
     process.exitCode = result.status ?? 1;
   }
+
+  /** Handles inject within this component’s captured contract. */
   private inject(): void {
     const path =
         ['src/library/report/report.ts', 'src/report/report.ts', 'src/report.ts'].find(
@@ -46,4 +54,5 @@ class ReportFaultInjection {
     );
   }
 }
+
 new ReportFaultInjection(process.argv[2], process.argv[3]).run();

@@ -5,7 +5,9 @@ import { join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { operationFixture } from '../../library/testing/support/operations-fixture.js';
 
+/** Exercises lint operation behavior through observable scenarios. */
 class LintOperationTests {
+  /** Handles feedback within this component’s captured contract. */
   feedback(t: TestContext): void {
     const fixture = operationFixture(t);
     this.configure(fixture);
@@ -22,6 +24,7 @@ class LintOperationTests {
     );
   }
 
+  /** Handles configure within this component’s captured contract. */
   private configure(fixture: any): void {
     const path = join(fixture.repo, 'architecture/operations/test.json');
     const operation = JSON.parse(readFileSync(path, 'utf8'));
@@ -43,7 +46,9 @@ class LintOperationTests {
     fixture.commit();
   }
 }
+
 const suite = new LintOperationTests();
+
 test('declared lint feedback reaches the steward through the production bridge', (t) =>
   suite.feedback(t));
 

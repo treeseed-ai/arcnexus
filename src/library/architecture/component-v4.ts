@@ -31,10 +31,13 @@ export interface ComponentV4Fields {
 /** Resolves authored package-relative declarations into captured repository paths. */
 export class ComponentV4Resolver {
   private files: string[] = [];
+
   private artifacts?: RevisionArtifacts;
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly catalog: Catalog) {}
 
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve(): void {
     for (const component of Object.values(this.catalog.components)) {
       if (component.schemaVersion !== 4) continue;
@@ -45,6 +48,7 @@ export class ComponentV4Resolver {
     }
   }
 
+  /** Finds the containing package without treating containment as write authority. */
   private packageOwner(component: Component): Component | undefined {
     const seen = new Set<string>();
     let current: Component | undefined = component;
@@ -60,6 +64,7 @@ export class ComponentV4Resolver {
     return owner;
   }
 
+  /** Handles component within this component’s captured contract. */
   private component(component: Component): void {
     if (
       ['platform', 'package'].includes(component.type) &&
@@ -83,6 +88,7 @@ export class ComponentV4Resolver {
     this.inventory(component, root);
   }
 
+  /** Selects the captured repository binding for this package identity. */
   private selectRepository(component: Component): void {
     const revision = this.catalog.repositoryRevisions?.[component.repository];
     component.inventoryAvailability = revision ? 'captured' : 'requires_repository_binding';
@@ -92,6 +98,7 @@ export class ComponentV4Resolver {
       : [];
   }
 
+  /** Handles path within this component’s captured contract. */
   private path(root: string, path: string): string {
     scopePath(path);
     const resolved = posix.join(root, path);
@@ -99,6 +106,7 @@ export class ComponentV4Resolver {
     return resolved;
   }
 
+  /** Resolves package-relative owned paths into effective repository permissions. */
   private permissions(component: Component, root: string): void {
     const ownership = component.ownership;
     if (ownership) {
@@ -116,6 +124,7 @@ export class ComponentV4Resolver {
     };
   }
 
+  /** Handles inventory within this component’s captured contract. */
   private inventory(component: Component, root: string): void {
     component.inventory = [];
     if (!component.discovery || !this.artifacts) return;
@@ -135,10 +144,12 @@ export class ComponentV4Resolver {
     component.discovery.exclude = excluded;
   }
 
+  /** Handles covers within this component’s captured contract. */
   private covers(root: string, path: string): boolean {
     return root === '.' || root === path || path.startsWith(root + '/');
   }
 
+  /** Handles members within this component’s captured contract. */
   private members(component: Component): void {
     const children = Object.values(this.catalog.components).filter(
       (c) => c.parentId === component.id,

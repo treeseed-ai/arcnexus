@@ -6,8 +6,11 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+
+/** Exercises guidance behavior through observable scenarios. */
 class GuidanceTests {
-  guidanceAcceptsTrackedMetadataAndInventoriesAGENTSWithoutSemanticApproval_1(t: TestContext) {
+  /** Verifies that guidance accepts tracked metadata and inventories agentswithout semantic approval. */
+  guidanceAcceptsTrackedMetadataAndInventoriesAGENTSWithoutSemanticApproval(t: TestContext) {
     const f = fixture(t);
     f.skill(valid.replace('description:', 'metadata:\n  owner: test\ndescription:'));
     f.write('AGENTS.md', 'Conflicting instructions are not deterministically evaluated.');
@@ -19,7 +22,9 @@ class GuidanceTests {
     assert.equal(data.status, 'valid');
     assert.deepEqual(data.diagnostics, []);
   }
-  guidanceRejectsMetadataWithFileDiagnostics_2(t: TestContext) {
+
+  /** Verifies that guidance rejects metadata with file diagnostics. */
+  guidanceRejectsMetadataWithFileDiagnostics(t: TestContext) {
     const f = fixture(t);
     for (const content of [
       '# No header',
@@ -39,7 +44,9 @@ class GuidanceTests {
       assert.doesNotMatch(r.stderr, /Traceback/);
     }
   }
-  GUIDANCEREFERENCESREQUIRED_3(t: TestContext) {
+
+  /** Verifies that guidancereferencesrequired. */
+  GUIDANCEREFERENCESREQUIRED(t: TestContext) {
     const f = fixture(t);
     f.skill(
       valid.replace('description: Useful guidance', 'description: Useful guidance\nreferences: []'),
@@ -47,7 +54,9 @@ class GuidanceTests {
     const r = f.run();
     assert.equal(r.status, 1, r.stderr);
   }
-  guidanceValidatesOptionalReferencesAsTrackedRegularRepositoryFiles_4(t: TestContext) {
+
+  /** Verifies that guidance validates optional references as tracked regular repository files. */
+  guidanceValidatesOptionalReferencesAsTrackedRegularRepositoryFiles(t: TestContext) {
     const f = fixture(t);
     f.write('refs/guide.md', 'guide');
     f.write('refs/data.bin', Buffer.from([0, 255, 1]));
@@ -76,7 +85,9 @@ class GuidanceTests {
       assert.equal(f.run().status, 1, refs);
     }
   }
-  guidanceRejectsReferencesTraversingATrackedSymlinkParent_5(t: TestContext) {
+
+  /** Verifies that guidance rejects references traversing atracked symlink parent. */
+  guidanceRejectsReferencesTraversingATrackedSymlinkParent(t: TestContext) {
     const f = fixture(t);
     f.write('real/nested/guide.md', 'guide');
     f.git('add', 'real/nested/guide.md');
@@ -90,20 +101,26 @@ class GuidanceTests {
     );
     assert.equal(f.run().status, 1);
   }
-  untrackedSkillsDoNotSatisfyTrackedInventory_6(t: TestContext) {
+
+  /** Verifies that untracked skills do not satisfy tracked inventory. */
+  untrackedSkillsDoNotSatisfyTrackedInventory(t: TestContext) {
     const f = fixture(t);
     f.skill(valid, false);
     const r = f.run();
     assert.equal(r.status, 1);
     assert.match(r.stderr, /No tracked skills/);
   }
-  untrackedInvalidSkillDoesNotInvalidateTrackedSkills_7(t: TestContext) {
+
+  /** Verifies that untracked invalid skill does not invalidate tracked skills. */
+  untrackedInvalidSkillDoesNotInvalidateTrackedSkills(t: TestContext) {
     const f = fixture(t);
     f.skill();
     f.write('.agents/skills/local/SKILL.md', 'invalid', false);
     assert.equal(f.run().status, 0);
   }
-  changedLineWhitespaceRemainsASeparateExecutableGitGate_8(t: TestContext) {
+
+  /** Verifies that changed line whitespace remains aseparate executable git gate. */
+  changedLineWhitespaceRemainsASeparateExecutableGitGate(t: TestContext) {
     const f = fixture(t);
     f.skill();
     f.git('commit', '-qm', 'baseline');
@@ -116,7 +133,9 @@ class GuidanceTests {
     assert.notEqual(r.status, 0);
     assert.match(r.stdout, /trailing whitespace/);
   }
-  guidanceRejectsNonGitProjectsAndInvalidInvocationWithExit2_9(t: TestContext) {
+
+  /** Verifies that guidance rejects non git projects and invalid invocation with exit2. */
+  guidanceRejectsNonGitProjectsAndInvalidInvocationWithExit2(t: TestContext) {
     const f = fixture(t);
     rmSync(join(f.repo, '.git'), { recursive: true });
     assert.equal(f.run().status, 2);
@@ -125,7 +144,9 @@ class GuidanceTests {
       2,
     );
   }
-  guidanceReadsWorkingBytesAndReportsDeletedAGENTSAsUnreadable_10(t: TestContext) {
+
+  /** Verifies that guidance reads working bytes and reports deleted agentsas unreadable. */
+  guidanceReadsWorkingBytesAndReportsDeletedAGENTSAsUnreadable(t: TestContext) {
     const f = fixture(t);
     f.skill();
     f.write('nested/AGENTS.md', 'Readable');
@@ -138,10 +159,12 @@ class GuidanceTests {
     assert.equal(data.diagnostics.length, 2);
   }
 }
+
 const suite = new GuidanceTests();
 
 const cli = resolve('dist/cli.js'),
   valid = '---\nname: example\ndescription: Useful guidance\n---\n# Example\n';
+
 function fixture(t: any): any {
   const repo = mkdtempSync(join(tmpdir(), 'arcnexus-guidance-'));
   t.after(() => rmSync(repo, { recursive: true, force: true }));
@@ -166,24 +189,34 @@ function fixture(t: any): any {
     });
   return { repo, git, write, skill, run };
 }
+
 test('guidance accepts tracked metadata and inventories AGENTS without semantic approval', (t: any) =>
-  suite.guidanceAcceptsTrackedMetadataAndInventoriesAGENTSWithoutSemanticApproval_1(t));
+  suite.guidanceAcceptsTrackedMetadataAndInventoriesAGENTSWithoutSemanticApproval(t));
+
 test('guidance rejects metadata with file diagnostics', (t: any) =>
-  suite.guidanceRejectsMetadataWithFileDiagnostics_2(t));
-test('GUIDANCE_REFERENCES_REQUIRED', (t: any) => suite.GUIDANCEREFERENCESREQUIRED_3(t));
+  suite.guidanceRejectsMetadataWithFileDiagnostics(t));
+
+test('GUIDANCE_REFERENCES_REQUIRED', (t: any) => suite.GUIDANCEREFERENCESREQUIRED(t));
+
 test('guidance validates optional references as tracked regular repository files', (t: any) =>
-  suite.guidanceValidatesOptionalReferencesAsTrackedRegularRepositoryFiles_4(t));
+  suite.guidanceValidatesOptionalReferencesAsTrackedRegularRepositoryFiles(t));
+
 test('guidance rejects references traversing a tracked symlink parent', (t: any) =>
-  suite.guidanceRejectsReferencesTraversingATrackedSymlinkParent_5(t));
+  suite.guidanceRejectsReferencesTraversingATrackedSymlinkParent(t));
+
 test('untracked skills do not satisfy tracked inventory', (t: any) =>
-  suite.untrackedSkillsDoNotSatisfyTrackedInventory_6(t));
+  suite.untrackedSkillsDoNotSatisfyTrackedInventory(t));
+
 test('untracked invalid skill does not invalidate tracked skills', (t: any) =>
-  suite.untrackedInvalidSkillDoesNotInvalidateTrackedSkills_7(t));
+  suite.untrackedInvalidSkillDoesNotInvalidateTrackedSkills(t));
+
 test('changed-line whitespace remains a separate executable Git gate', (t: any) =>
-  suite.changedLineWhitespaceRemainsASeparateExecutableGitGate_8(t));
+  suite.changedLineWhitespaceRemainsASeparateExecutableGitGate(t));
+
 test('guidance rejects non-Git projects and invalid invocation with exit 2', (t: any) =>
-  suite.guidanceRejectsNonGitProjectsAndInvalidInvocationWithExit2_9(t));
+  suite.guidanceRejectsNonGitProjectsAndInvalidInvocationWithExit2(t));
+
 test('guidance reads working bytes and reports deleted AGENTS as unreadable', (t: any) =>
-  suite.guidanceReadsWorkingBytesAndReportsDeletedAGENTSAsUnreadable_10(t));
+  suite.guidanceReadsWorkingBytesAndReportsDeletedAGENTSAsUnreadable(t));
 
 registerSuite({ component: 'guidance-validation', level: 'acceptance', tags: ['deterministic'] });

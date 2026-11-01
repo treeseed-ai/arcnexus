@@ -24,13 +24,19 @@ function list(items: unknown): string {
       : 'None recorded.';
 }
 
+/** Renders captured handoff evidence while keeping missing historical fields explicit. */
 class CoordinationEvidence {
   private readonly turns: Array<Record<string, unknown>> | undefined;
+
   private readonly resolved;
+
   private readonly planned: number | undefined;
+
   private readonly activities;
+
   private readonly agent;
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly record: RecordData) {
     this.turns = Array.isArray(record.turns)
       ? (record.turns as Array<Record<string, unknown>>)
@@ -53,6 +59,7 @@ class CoordinationEvidence {
     this.agent = record.agent as { findings?: unknown[] } | undefined;
   }
 
+  /** Combines accounting, verification and outstanding needs from captured evidence only. */
   render(): string {
     return (
       this.accounting() +
@@ -65,6 +72,7 @@ class CoordinationEvidence {
     );
   }
 
+  /** Shows planned and observed turns without treating missing historical counters as zero. */
   private accounting(): string {
     const { record, turns, planned } = this;
     return `## Execution accounting
@@ -75,6 +83,8 @@ Implementation attempts: ${value(record.implementationAttempts)}; Elapsed ms: ${
 
 `;
   }
+
+  /** Displays recorded token accounting and explicitly reports incomplete usage. */
   private usage(): string {
     const { record } = this;
     return `## Usage
@@ -85,6 +95,8 @@ Captured usage: ${value(record.usage)}
 
 `;
   }
+
+  /** Links host-supplied prompts and provenance without claiming full model context visibility. */
   private context(): string {
     const { turns, resolved } = this;
     return `## Supplied context
@@ -103,6 +115,8 @@ Selected prior evidence: ${value(
 
 `;
   }
+
+  /** Separates host command results from agent claims, including expected-red failures. */
   private checks(): string {
     const { record, activities } = this;
     return `## Host checks
@@ -113,6 +127,8 @@ ${list(record.commands.map((c) => ({ stage: c.stage ?? activities.find((a) => a.
 
 `;
   }
+
+  /** Lists owner requests as claims rather than automatic dispatch authority. */
   private requests(): string {
     const { record } = this;
     return `## Boundary requests
@@ -123,6 +139,8 @@ ${list(record.requests)}
 
 `;
   }
+
+  /** Shows caller input required during execution, including unavailable historical data. */
   private interventions(): string {
     const { record } = this;
     return `## Caller interventions
@@ -131,6 +149,8 @@ ${list(record.callerInterventions)}
 
 `;
   }
+
+  /** Labels conclusions and uncertainty as agent claims for independent caller review. */
   private findings(): string {
     const { agent } = this;
     return `## Findings and uncertainty
@@ -210,6 +230,7 @@ export function markdownReport(record: RecordData): string {
       : 'No workflow outcome recorded.';
   return `# ArcNexus execution ${record.id}\n\nStatus: ${record.status}\n\nEvidence mode: ${String(record.evidenceMode ?? 'unavailable (historical)')}\n\nObjective: ${String(record.objective ?? 'Prepare environment')}\n\nWorkspace: ${record.workspace}\n\nBase: ${record.base}\n\n${record.error ? `Failure: ${record.error}\n\n` : ''}Commands recorded: ${record.commands.length}\n\n## Outcome\n\n${outcome}\n\n## Activities\n\n${activityLines(record)}\n\n${progressMarkdown(record)}${new CoordinationEvidence(record).render()}${record.plan ? planMarkdown(record.plan as Plan) + '\n' : ''}## Changed files\n\n${changedFiles(record)}\n\n## Operations\n\n${operationLines(record)}\n\n## Managed services\n\n${serviceLines(record)}\n\nSee report.json, events.jsonl, changes.patch and command logs for evidence.\n`;
 }
+
 export function saveMarkdown(root: string, record: RecordData): void {
   writeFileSync(join(root, 'runs', record.id, 'report.md'), markdownReport(record), {
     mode: 0o600,

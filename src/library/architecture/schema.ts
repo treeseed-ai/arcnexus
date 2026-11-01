@@ -2,7 +2,9 @@ import { Ajv2020 } from 'ajv/dist/2020.js';
 import { readFileSync } from 'node:fs';
 
 const ajv = new Ajv2020({ strict: true, allErrors: true });
+
 const validators = new Map<string, ReturnType<typeof ajv.compile>>();
+
 /** Loads trusted, packaged schemas rather than target-authored configuration. */
 export function readSchema(name: string): any {
   const registry = JSON.parse(

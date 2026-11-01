@@ -22,13 +22,16 @@ import {
 } from './members.js';
 import { assertOutputs } from './outputs.js';
 import { save, type RecordData } from './state.js';
+
 export { assertGeneratedOutputs, assertOutputs } from './outputs.js';
+
 export interface PrepareOptions {
   project: string;
   base?: string;
   issue?: string;
   bindings?: Bindings;
 }
+
 export function assertIdentity(record: RecordData): void {
   if (
     git(record.workspace, 'rev-parse', 'HEAD').trim() !== record.base ||
@@ -37,6 +40,7 @@ export function assertIdentity(record: RecordData): void {
     throw new Error('Candidate branch or HEAD changed');
   if ((record.members as Member[] | undefined)?.length) assertMembers(record);
 }
+
 export function createWorkspace(root: string, options: PrepareOptions): RecordData {
   const { source, base, env, commonDir } = inspectSource(options);
   const id = randomUUID(),
@@ -64,6 +68,7 @@ export function createWorkspace(root: string, options: PrepareOptions): RecordDa
   observe(root, record, 'run.created', { base, branch, workspace: record.workspace });
   return record;
 }
+
 export async function prepareWorkspace(
   root: string,
   record: RecordData,
@@ -83,6 +88,7 @@ export async function prepareWorkspace(
   observe(root, record, 'workspace.prepared', { members: record.members });
   save(root, record);
 }
+
 export function cleanup(root: string, id: string): RecordData {
   return new WorkspaceCleanup(root, id).run();
 }

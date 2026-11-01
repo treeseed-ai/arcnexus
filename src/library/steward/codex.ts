@@ -3,6 +3,7 @@ import type { Plan, PlanUpdate } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
 import type { RecordData } from '../workspace/state.js';
 import { CodexExecution } from './codex-execution.js';
+
 export interface CoordinationResult {
   action: 'request' | 'accept' | 'reject' | 'clarify' | 'answer';
   contract: string;
@@ -10,6 +11,7 @@ export interface CoordinationResult {
   text: string;
   activityComplete: boolean;
 }
+
 export interface AgentResult {
   coordination?: CoordinationResult | null;
   plan?: Plan | null;
@@ -30,6 +32,7 @@ export interface AgentResult {
     reason: string;
   }>;
 }
+
 export async function runCodex(
   root: string,
   record: RecordData,

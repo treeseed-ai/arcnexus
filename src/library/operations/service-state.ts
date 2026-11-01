@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, readlinkSync } from 'node:fs';
 import { connect } from 'node:net';
 import { join } from 'node:path';
+
 export interface ServiceRecord {
   id: string;
   runId: string;
@@ -16,6 +17,7 @@ export interface ServiceRecord {
   endpointClosed?: boolean;
   error?: string;
 }
+
 export function groupMembers(group: number): number[] {
   const members: number[] = [];
   for (const name of readdirSync('/proc').filter((n) => /^\d+$/.test(n))) {
@@ -26,6 +28,7 @@ export function groupMembers(group: number): number[] {
   }
   return members;
 }
+
 export function processStart(pid: number): string | undefined {
   try {
     return readFileSync(`/proc/${pid}/stat`, 'utf8').split(') ')[1]!.split(' ')[19];
@@ -33,6 +36,7 @@ export function processStart(pid: number): string | undefined {
     return undefined;
   }
 }
+
 export function ownedLoopbackListener(pid: number, port: number): boolean {
   const inodes = new Set<string>();
   for (const member of groupMembers(pid)) {
@@ -58,6 +62,7 @@ export function ownedLoopbackListener(pid: number, port: number): boolean {
     }
   return found;
 }
+
 export function endpointClosed(port: number): Promise<boolean> {
   return new Promise((resolve) => {
     const socket = connect({ host: '127.0.0.1', port });
@@ -73,6 +78,7 @@ export function endpointClosed(port: number): Promise<boolean> {
     socket.setTimeout(500, () => done(false));
   });
 }
+
 export function assertServicesStopped(root: string, id: string): void {
   const directory = join(root, 'runs', id, 'services');
   if (!existsSync(directory)) return;

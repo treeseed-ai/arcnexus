@@ -1,6 +1,9 @@
 import { appendFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+
+/** Exercises controlled initializer behavior through observable scenarios. */
 export class ControlledInitializer {
+  /** Handles respond within this component’s captured contract. */
   respond(prompt: string, args: string[], calls: string, mode = 'ready'): boolean {
     if (!prompt.startsWith('ArcNexus initialization:')) return false;
     const owners = JSON.parse(
@@ -11,6 +14,8 @@ export class ControlledInitializer {
     this.result(this.response(owners, mode), mode);
     return true;
   }
+
+  /** Handles response within this component’s captured contract. */
   private response(owners: string[], mode: string): unknown {
     const result: any = {
       status: mode === 'question' ? 'needs_clarification' : 'ready',
@@ -32,6 +37,8 @@ export class ControlledInitializer {
     this.proposal(result, mode);
     return result;
   }
+
+  /** Builds a retained routing proposal for explicit caller acceptance. */
   private proposal(result: any, mode: string): void {
     if (mode === 'proposal-workday') this.workday(result);
     if (mode === 'proposal-research') {
@@ -48,6 +55,8 @@ export class ControlledInitializer {
       ];
     }
   }
+
+  /** Handles workday within this component’s captured contract. */
   private workday(result: any): void {
     result.selectedOwners = ['sample', 'dependency'].map((id) => ({
       id,
@@ -74,6 +83,8 @@ export class ControlledInitializer {
       delivery: 'Verified dependency contract in this candidate',
     };
   }
+
+  /** Handles missing within this component’s captured contract. */
   private missing() {
     return {
       responsibility: 'Deployment requires a new accountable owner',
@@ -89,6 +100,8 @@ export class ControlledInitializer {
       questions: [],
     };
   }
+
+  /** Handles result within this component’s captured contract. */
   private result(result: unknown, mode: string): void {
     this.emit({
       type: 'thread.started',
@@ -105,6 +118,8 @@ export class ControlledInitializer {
       usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
     });
   }
+
+  /** Handles failed commands within this component’s captured contract. */
   private failedCommands(): void {
     for (let index = 0; index < 4; index++)
       this.emit({
@@ -119,6 +134,8 @@ export class ControlledInitializer {
         },
       });
   }
+
+  /** Handles emit within this component’s captured contract. */
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));
   }

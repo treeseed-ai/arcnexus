@@ -3,18 +3,26 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { connect } from 'node:net';
 import type { BridgeTool } from './bridge.js';
+
+/** Forwards constrained MCP requests to the private parent-owned operation connection. */
 class BridgeClient {
   private readonly socket = connect(process.argv[2]!);
+
   private sequence = 0;
+
   private input = '';
+
   private readonly pending = new Map<
     number,
     { resolve: (v: unknown) => void; reject: (e: Error) => void }
   >();
+
   private readonly server = new Server(
     { name: 'arcnexus', version: '0.1.0' },
     { capabilities: { tools: {} } },
   );
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     this.socket.on('data', (data) => this.receive(data));
     this.socket.on('error', () => {});
@@ -31,6 +39,8 @@ class BridgeClient {
       void this.server.close();
     });
   }
+
+  /** Handles request within this component’s captured contract. */
   private request(method: string, name?: string, args?: unknown): Promise<unknown> {
     return new Promise((resolve, reject) => {
       const id = ++this.sequence;
@@ -38,6 +48,8 @@ class BridgeClient {
       this.socket.write(JSON.stringify({ id, method, name, args }) + '\n');
     });
   }
+
+  /** Handles receive within this component’s captured contract. */
   private receive(data: Buffer): void {
     this.input += data.toString();
     if (Buffer.byteLength(this.input) > 256 * 1024) {
@@ -51,6 +63,8 @@ class BridgeClient {
       this.message(line);
     }
   }
+
+  /** Handles message within this component’s captured contract. */
   private message(line: string): void {
     try {
       const message = JSON.parse(line);
@@ -62,6 +76,8 @@ class BridgeClient {
       this.socket.destroy();
     }
   }
+
+  /** Handles disconnected within this component’s captured contract. */
   private disconnected(): void {
     for (const pending of this.pending.values())
       pending.reject(new Error('ArcNexus host disconnected'));
@@ -69,6 +85,8 @@ class BridgeClient {
     void this.server.close();
     process.stdin.destroy();
   }
+
+  /** Handles call within this component’s captured contract. */
   private async call(name: string, args: unknown) {
     try {
       const result = await this.request('call', name, args);
@@ -78,4 +96,5 @@ class BridgeClient {
     }
   }
 }
+
 await new BridgeClient().run();

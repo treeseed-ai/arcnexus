@@ -4,12 +4,16 @@ import { fileURLToPath } from 'node:url';
 import { digest } from '../architecture/assignment.js';
 import { InputError } from '../architecture/config.js';
 import { runnerHash } from '../experiments/experiments.js';
+
 export interface TaskAuthoritySnapshot {
   executable: string;
   executableHash?: string;
   supervisingBuild: { path: string; hash: string };
 }
+
+/** Captures the executable assignment envelope generated from a validated intake proposal. */
 export class TaskAuthority {
+  /** Snapshots the inputs used by later verification. */
   capture(executable: string): TaskAuthoritySnapshot {
     const path = fileURLToPath(new URL('../../cli.js', import.meta.url));
     const command = this.executable(executable);
@@ -19,6 +23,8 @@ export class TaskAuthority {
       supervisingBuild: { path, hash: runnerHash(path) },
     };
   }
+
+  /** Handles verify within this component’s captured contract. */
   verify(snapshot: TaskAuthoritySnapshot): void {
     if (
       digest(readFileSync(snapshot.executable)) !== snapshot.executableHash ||
@@ -26,6 +32,8 @@ export class TaskAuthority {
     )
       throw new InputError('Supervising build or executable changed; create a new task plan');
   }
+
+  /** Handles executable within this component’s captured contract. */
   private executable(value: string): string {
     const paths =
       isAbsolute(value) || value.includes('/')

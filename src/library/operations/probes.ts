@@ -23,8 +23,11 @@ export async function prepareCapabilities(
   await new CapabilityProbes(root, record, signal, resolved).run();
 }
 
+/** Exercises required execution routes before paying for model activation. */
 class CapabilityProbes {
   private readonly probes: unknown[] = [];
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
@@ -35,6 +38,7 @@ class CapabilityProbes {
     record.stage = 'capability-probes';
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const seen = new Set<string>();
     for (const op of this.resolved.operations)
@@ -47,6 +51,7 @@ class CapabilityProbes {
     await new BridgeProbe(this.root, this.record, this.signal, this.probes).run();
   }
 
+  /** Exercises the declared host execution route before model activation. */
   private async hostProbe(op: Operation, probe: Command): Promise<void> {
     const { root, record, signal, probes } = this;
     signal.throwIfAborted();
@@ -73,6 +78,7 @@ class CapabilityProbes {
     }
   }
 
+  /** Handles command within this component’s captured contract. */
   private command(probe: Command, cwd: string) {
     const { root, record, signal, probes, resolved } = this;
     return execute(
@@ -88,16 +94,20 @@ class CapabilityProbes {
   }
 }
 
+/** Checks the actual parent-to-bridge route before stewards depend on its tools. */
 class BridgeProbe {
   private readonly client = new Client(
     { name: 'arcnexus-capability-probe', version: '1' },
     { capabilities: {} },
   );
+
   private readonly abort = () => {
     void this.client.close();
   };
+
   private readonly start = Date.now();
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly root: string,
     private readonly record: RecordData,
@@ -105,6 +115,7 @@ class BridgeProbe {
     private readonly probes: unknown[],
   ) {}
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const bridge = await openBridge(
       [{ name: 'probe', description: 'Connectivity probe', inputSchema: { type: 'object' } }],
@@ -125,6 +136,7 @@ class BridgeProbe {
     }
   }
 
+  /** Checks the required invariant before allowing the next transition. */
   private async check(configuration: Record<string, unknown>): Promise<void> {
     const config = (configuration.mcp_servers as { arcnexus: { command: string; args: string[] } })
       .arcnexus;
@@ -140,6 +152,7 @@ class BridgeProbe {
     if (result.isError) throw new Error('Bridge functional probe failed');
   }
 
+  /** Handles passed within this component’s captured contract. */
   private passed(): void {
     const evidence = {
       route: 'stdio-mcp',
@@ -152,6 +165,7 @@ class BridgeProbe {
     observe(this.root, this.record, 'probe.completed', evidence);
   }
 
+  /** Handles failed within this component’s captured contract. */
   private failed(error: unknown): void {
     this.probes.push({
       route: 'stdio-mcp',

@@ -13,6 +13,7 @@ export function git(cwd: string, ...args: string[]): string {
     throw new Error(result.error?.message ?? result.stderr.trim());
   return result.stdout;
 }
+
 export interface CommandResult extends Command {
   stage?: string;
   cwd: string;
@@ -21,6 +22,7 @@ export interface CommandResult extends Command {
   exitCode: number | null;
   log: string;
 }
+
 export interface CommandOptions {
   env?: NodeJS.ProcessEnv;
   timeoutMs?: number;
@@ -40,19 +42,31 @@ export async function executeDirect(
   return new DirectCommand(command, cwd, log, signal, options).run();
 }
 
+/** Runs a command with cancellation, bounded output and explicit optional timeout. */
 class DirectCommand {
   private readonly start = Date.now();
+
   private readonly fd: number;
+
   private readonly stdout?: number;
+
   private readonly stderr?: number;
+
   private readonly result: CommandResult;
+
   private child!: ChildProcess;
+
   private failure?: Error;
+
   private killTimer?: NodeJS.Timeout;
+
   private timer?: NodeJS.Timeout;
+
   private outputBytes = 0;
+
   private readonly abort = () => this.terminate(new Error(String(this.signal.reason)));
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly command: Command,
     private readonly cwd: string,
@@ -73,6 +87,7 @@ class DirectCommand {
     };
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): Promise<CommandResult> {
     return new Promise((resolve, reject) => {
       this.child = spawn(this.command.command, this.command.args, {
@@ -97,6 +112,7 @@ class DirectCommand {
     });
   }
 
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   private finish(
     code: number | null,
     resolve: (result: CommandResult) => void,
@@ -108,6 +124,7 @@ class DirectCommand {
     reject(Object.assign(failure, { commandResult: this.result }));
   }
 
+  /** Handles terminate within this component’s captured contract. */
   private terminate(reason: Error): void {
     this.failure ??= reason;
     if (!this.child.pid) return;
@@ -115,6 +132,7 @@ class DirectCommand {
     this.killTimer ??= setTimeout(() => this.kill('SIGKILL'), this.options.killGraceMs ?? 300);
   }
 
+  /** Handles kill within this component’s captured contract. */
   private kill(signal: NodeJS.Signals): void {
     if (!this.child.pid) return;
     try {
@@ -124,6 +142,7 @@ class DirectCommand {
     }
   }
 
+  /** Snapshots the inputs used by later verification. */
   private capture(chunk: Buffer, separate?: number): void {
     const remaining = 64 * 1024 * 1024 - this.outputBytes;
     if (remaining > 0) {
@@ -135,6 +154,7 @@ class DirectCommand {
       this.terminate(new Error('Command output limit exceeded'));
   }
 
+  /** Handles closed within this component’s captured contract. */
   private closed(code: number | null): void {
     clearTimeout(this.timer);
     this.signal.removeEventListener('abort', this.abort);
@@ -160,16 +180,22 @@ export async function execute(
   return new SupervisedCommand(signal).run(command, cwd, log, options);
 }
 
+/** Delegates process-group lifetime to a supervisor that watches parent liveness. */
 class SupervisedCommand {
   private response?: { result?: CommandResult; error?: string };
+
   private failure?: Error;
+
   private supervisor!: ChildProcess;
+
   private readonly abort = () => {
     if (this.supervisor.connected) this.supervisor.send({ cancel: String(this.signal.reason) });
   };
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly signal: AbortSignal) {}
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(command: Command, cwd: string, log: string, options: CommandOptions): Promise<CommandResult> {
     return new Promise((resolve, reject) => {
       this.supervisor = fork(
@@ -198,6 +224,7 @@ class SupervisedCommand {
     });
   }
 
+  /** Handles error within this component’s captured contract. */
   private error(): Error | undefined {
     if (!this.failure && !this.response?.error && this.response?.result) return;
     return Object.assign(

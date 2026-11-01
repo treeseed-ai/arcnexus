@@ -1,5 +1,6 @@
 import { parseArgs } from 'node:util';
 import { InputError } from '../../library/architecture/config.js';
+
 export const help = `ArcNexus
   test inspect|run [component-id] --project <repository> [--level unit|integration|acceptance] [--category regression] [--tag <tag>] [--json]
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
@@ -21,6 +22,7 @@ export const help = `ArcNexus
 Composed workspaces: prepare/run/inspect --bindings <file>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
 `;
+
 const cliOptions = {
   level: { type: 'string' },
   category: { type: 'string' },
@@ -46,6 +48,7 @@ const cliOptions = {
   help: { type: 'boolean' },
   version: { type: 'boolean' },
 } as const;
+
 export function argumentsForCommand() {
   try {
     const parsed = parseArgs({

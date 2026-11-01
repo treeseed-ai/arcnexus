@@ -9,12 +9,17 @@ import { execute, type CommandResult } from '../operations/process.js';
 import { observe } from '../report/timeline.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { assertIdentity, assertOutputs } from '../workspace/workspace.js';
+
+/** Verifies intake prerequisites and enforces its source-read-only boundary. */
 export class InitializerChecks {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private root: string,
     private record: RecordData,
     private snapshot: InitializationSnapshot,
   ) {}
+
+  /** Handles verify within this component’s captured contract. */
   async verify(signal: AbortSignal): Promise<void> {
     const before = candidateDigest(this.record);
     await prepareCapabilities(this.root, this.record, signal);
@@ -38,6 +43,8 @@ export class InitializerChecks {
       }
     }
   }
+
+  /** Handles command within this component’s captured contract. */
   private command(command: import('../architecture/config.js').Command, signal: AbortSignal) {
     return execute(
       targetCommand(this.record, command),
@@ -55,6 +62,8 @@ export class InitializerChecks {
       },
     );
   }
+
+  /** Rejects unexpected source changes after a read-only or preparation activity. */
   unchanged(before: string): void {
     assertIdentity(this.record);
     if (candidateDigest(this.record) !== before)

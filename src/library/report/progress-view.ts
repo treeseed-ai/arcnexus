@@ -1,5 +1,6 @@
 import type { Plan } from '../assignment/plan.js';
 import type { RecordData } from '../workspace/state.js';
+
 export function progressView(
   record: RecordData,
   events: Array<{ type: string; payload: any }> = [],
@@ -23,6 +24,7 @@ export function progressView(
     ),
   };
 }
+
 function checklistProgress(plan?: Plan) {
   return {
     revision: plan?.version ?? null,
@@ -35,6 +37,7 @@ function checklistProgress(plan?: Plan) {
     basis: 'agent claims; host checks reported separately',
   };
 }
+
 function executionLimits(profile?: Record<string, unknown>) {
   return Object.fromEntries(
     [
@@ -48,6 +51,7 @@ function executionLimits(profile?: Record<string, unknown>) {
     ].map((key) => [key, profile?.[key] ?? 'not configured']),
   );
 }
+
 function text(value: unknown): string {
   return JSON.stringify(value ?? 'unavailable', (_key, item) => item ?? 'unavailable').replace(
     /[<>&`]/g,

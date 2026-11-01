@@ -1,0 +1,21 @@
+name: Production
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+permissions:
+  contents: read
+concurrency:
+  group: production-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/verification.yaml
+    with:
+      distribution: true

@@ -2,7 +2,9 @@ import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { markdownReport as typedMarkdownReport } from '../../../../dist/library/report/report.js';
+
 const markdownReport: (record: any) => string = typedMarkdownReport;
+
 function readableInitializationRecord(): any {
   return {
     ...record,
@@ -20,11 +22,13 @@ function readableInitializationRecord(): any {
     },
   };
 }
+
 function initializationSection(report: string): string {
   const section = report.split('## Initialization\n\n')[1]?.split('\n\n## Execution progress')[0];
   assert.ok(section, 'initialization section is present');
   return section;
 }
+
 function assertReadableInitialization(section: string): void {
   assert.ok(
     section.includes('Component: task-intake'),
@@ -46,6 +50,7 @@ function assertReadableInitialization(section: string): void {
   );
   assertInitializationLists(section);
 }
+
 function assertInitializationLists(section: string): void {
   assert.ok(
     section.includes(
@@ -63,8 +68,11 @@ function assertInitializationLists(section: string): void {
     'readable summary does not serialize the raw JSON object',
   );
 }
+
+/** Exercises report behavior through observable scenarios. */
 class ReportTests {
-  initializationSummaryIsReadableAndPreservesExecutionProgress_10() {
+  /** Verifies that initialization summary is readable and preserves execution progress. */
+  initializationSummaryIsReadableAndPreservesExecutionProgress() {
     const report = markdownReport(readableInitializationRecord());
     assertReadableInitialization(initializationSection(report));
     assert.ok(
@@ -79,7 +87,8 @@ class ReportTests {
     );
   }
 
-  changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence_1() {
+  /** Verifies that changed files are sorted independently of input and preserve captured evidence. */
+  changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence() {
     const changes = Object.freeze([
       Object.freeze({ path: 'z.txt', kind: '?' }),
       Object.freeze({ path: 'a.txt', kind: 'D' }),
@@ -106,12 +115,16 @@ class ReportTests {
     ])
       assert.ok(report.includes(field), field);
   }
-  absentAndEmptyChangesHaveAnExplicitEmptySection_2() {
+
+  /** Verifies that absent and empty changes have an explicit empty section. */
+  absentAndEmptyChangesHaveAnExplicitEmptySection() {
     for (const captured of [record, { ...record, changes: [] }]) {
       assert.equal(section(markdownReport(captured)), 'No changed files observed.');
     }
   }
-  workflowOutcomeAndActivityStatusesRenderFromCapturedDataWithoutMutation_3() {
+
+  /** Verifies that workflow outcome and activity statuses render from captured data without mutation. */
+  workflowOutcomeAndActivityStatusesRenderFromCapturedDataWithoutMutation() {
     const activities = Object.freeze([
       Object.freeze({ activity: 'documentation', status: 'completed' }),
       Object.freeze({ activity: 'testing', status: 'skipped' }),
@@ -130,13 +143,17 @@ class ReportTests {
     );
     assert.equal(JSON.stringify(captured), before);
   }
-  historicalRecordsWithoutWorkflowFieldsRenderSafely_4() {
+
+  /** Verifies that historical records without workflow fields render safely. */
+  historicalRecordsWithoutWorkflowFieldsRenderSafely() {
     const report = markdownReport(record);
     assert.ok(report.includes('## Outcome\n\n'));
     assert.ok(report.includes('## Activities\n\n'));
     assert.doesNotMatch(report, /undefined|null/);
   }
-  capturedOperationsAndManagedServicesRenderTheirRecordedFieldsWithoutMutation_5() {
+
+  /** Verifies that captured operations and managed services render their recorded fields without mutation. */
+  capturedOperationsAndManagedServicesRenderTheirRecordedFieldsWithoutMutation() {
     const operations = Object.freeze([
       Object.freeze({ id: 'compile', exitCode: 0, durationMs: 42, log: '/runs/compile.log' }),
       Object.freeze({ id: 'checks', exitCode: 3, durationMs: 81, log: '/runs/checks.log' }),
@@ -163,7 +180,9 @@ class ReportTests {
     assert.equal(JSON.stringify(captured), before);
     assert.doesNotMatch(report, /undefined|null/);
   }
-  historicalMissingAndEmptyOperationsAndServiceArraysUseExactMessages_6() {
+
+  /** Verifies that historical missing and empty operations and service arrays use exact messages. */
+  historicalMissingAndEmptyOperationsAndServiceArraysUseExactMessages() {
     for (const captured of [record, { ...record, operations: [], services: [] }]) {
       const report = markdownReport(captured);
       assert.ok(report.includes('## Operations\n\nNo managed operations recorded.'));
@@ -171,7 +190,9 @@ class ReportTests {
       assert.doesNotMatch(report, /undefined|null/);
     }
   }
-  filenamesRemainTextInsteadOfMarkdownOrHTML_7() {
+
+  /** Verifies that filenames remain text instead of markdown or html. */
+  filenamesRemainTextInsteadOfMarkdownOrHTML() {
     const path = '[link](https://bad) `code` <img> &amp;\n# heading\r\t*em*_x|';
     const report = markdownReport({ ...record, changes: [{ path, kind: 'A' }] });
     assert.equal(
@@ -180,6 +201,7 @@ class ReportTests {
     );
   }
 }
+
 const suite = new ReportTests();
 
 const record = {
@@ -191,29 +213,31 @@ const record = {
   error: 'failure evidence',
   commands: [{}],
 };
+
 const section = (report: any) => report.split('## Changed files\n\n')[1]?.split('\n\n')[0];
 
 test('changed files are sorted independently of input and preserve captured evidence', () =>
-  suite.changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence_1());
+  suite.changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence());
+
 test('INITIALIZATION_SUMMARY_READABLE', () =>
-  suite.initializationSummaryIsReadableAndPreservesExecutionProgress_10());
+  suite.initializationSummaryIsReadableAndPreservesExecutionProgress());
 
 test('absent and empty changes have an explicit empty section', () =>
-  suite.absentAndEmptyChangesHaveAnExplicitEmptySection_2());
+  suite.absentAndEmptyChangesHaveAnExplicitEmptySection());
 
 test('workflow outcome and activity statuses render from captured data without mutation', () =>
-  suite.workflowOutcomeAndActivityStatusesRenderFromCapturedDataWithoutMutation_3());
+  suite.workflowOutcomeAndActivityStatusesRenderFromCapturedDataWithoutMutation());
 
 test('historical records without workflow fields render safely', () =>
-  suite.historicalRecordsWithoutWorkflowFieldsRenderSafely_4());
+  suite.historicalRecordsWithoutWorkflowFieldsRenderSafely());
 
 test('captured Operations and Managed services render their recorded fields without mutation', () =>
-  suite.capturedOperationsAndManagedServicesRenderTheirRecordedFieldsWithoutMutation_5());
+  suite.capturedOperationsAndManagedServicesRenderTheirRecordedFieldsWithoutMutation());
 
 test('historical missing and empty operations and service arrays use exact messages', () =>
-  suite.historicalMissingAndEmptyOperationsAndServiceArraysUseExactMessages_6());
+  suite.historicalMissingAndEmptyOperationsAndServiceArraysUseExactMessages());
 
 test('filenames remain text instead of Markdown or HTML', () =>
-  suite.filenamesRemainTextInsteadOfMarkdownOrHTML_7());
+  suite.filenamesRemainTextInsteadOfMarkdownOrHTML());
 
 registerSuite({ component: 'report', level: 'unit', tags: ['deterministic'] });

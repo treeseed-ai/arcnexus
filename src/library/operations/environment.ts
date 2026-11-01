@@ -1,5 +1,6 @@
 import { targetEnvironment } from '../architecture/bindings.js';
 import type { RecordData } from '../workspace/state.js';
+
 export function operationEnvironment(record: RecordData): NodeJS.ProcessEnv {
   const target = targetEnvironment(record),
     env: NodeJS.ProcessEnv = {};

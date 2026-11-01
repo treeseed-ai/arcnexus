@@ -7,11 +7,14 @@ import { loadCatalog } from '../../library/architecture/components.js';
 
 /** Resolves immutable assignments and presents their captured authority. */
 export class AssignmentCommand {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly positionals: string[],
     private readonly values: CliValues,
     private readonly command: string,
   ) {}
+
+  /** Projects captured ownership, contracts and inventories for static validation output. */
   catalog(): void {
     const { values, positionals } = this;
     if (!values.project || positionals.length !== 1)
@@ -26,6 +29,7 @@ export class AssignmentCommand {
     return;
   }
 
+  /** Resolves captured inputs and rejects unsupported or inconsistent configuration. */
   resolve() {
     const { values, positionals, command } = this;
     const bindings = loadBindings(values.bindings);

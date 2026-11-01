@@ -2,14 +2,20 @@ import { createHash } from 'node:crypto';
 import { basename, join } from 'node:path';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+
+/** Independently checks operation campaign against retained candidate evidence. */
 class OperationCampaignAcceptance {
   private record: any;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     path: string,
     private kind: string,
   ) {
     this.record = JSON.parse(readFileSync(path, 'utf8'));
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     const record = this.record;
     assert.equal(record.status, 'completed');
@@ -37,6 +43,8 @@ class OperationCampaignAcceptance {
     if (this.kind === 'tree') assert.equal(record.members.length, 2);
     console.log('QUALIFIED_' + this.kind);
   }
+
+  /** Handles outcome within this component’s captured contract. */
   private outcome(): void {
     const record = this.record;
     if (this.kind === 'change' || this.kind === 'repair') {
@@ -53,6 +61,8 @@ class OperationCampaignAcceptance {
       assert.ok(record.agent.findings.length);
     }
   }
+
+  /** Handles repair within this component’s captured contract. */
   private repair(): void {
     const record = this.record;
     assert.equal(record.implementationAttempts, 2);
@@ -79,4 +89,5 @@ class OperationCampaignAcceptance {
     assert.notEqual(actual, marker.after, 'Luna changed the injected implementation');
   }
 }
+
 new OperationCampaignAcceptance(process.argv[2]!, process.argv[3]!).run();

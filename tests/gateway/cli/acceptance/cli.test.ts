@@ -6,6 +6,7 @@ import { test } from 'node:test';
 
 /** Exercises the generated executable and the gateway's effective ownership boundary. */
 class CliTests {
+  /** Handles executable contract within this component’s captured contract. */
   executableContract(): void {
     const help = this.run('--help');
     assert.equal(help.status, 0, help.stderr);
@@ -17,6 +18,7 @@ class CliTests {
     assert.equal(this.run('unknown-command').status, 2);
   }
 
+  /** Handles owns its tests within this component’s captured contract. */
   ownsItsTests(): void {
     const result = this.run(
       'inspect',
@@ -34,14 +36,18 @@ class CliTests {
     assert.ok(!owner.allowedWritePaths.includes('src/cli.ts'));
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   private run(...args: string[]) {
     return spawnSync(resolve('dist/cli.js'), args, { encoding: 'utf8' });
   }
 }
 
 const suite = new CliTests();
+
 test('generated CLI executable preserves help, version and invalid-command behavior', () =>
   suite.executableContract());
+
 test('CLI gateway owns its test directory without project-wide write access', () =>
   suite.ownsItsTests());
+
 registerSuite({ component: 'cli', level: 'acceptance', tags: ['deterministic'] });

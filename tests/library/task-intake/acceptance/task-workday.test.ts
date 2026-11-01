@@ -6,7 +6,10 @@ import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { handoffFixture } from '../../testing/support/handoff-fixture.js';
 import { cli } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises task workday behavior through observable scenarios. */
 class TaskWorkdayTests {
+  /** Handles routes existing owners within this component’s captured contract. */
   routesExistingOwners(t: TestContext): void {
     const f = handoffFixture(t);
     const bindings = this.bindings(f);
@@ -31,6 +34,8 @@ class TaskWorkdayTests {
       1,
     );
   }
+
+  /** Handles direction evidence within this component’s captured contract. */
   private directionEvidence(f: any, proposal: any): void {
     const prompt = readFileSync(
       join(f.state, 'runs', proposal.initialization.runId, 'prompt.txt'),
@@ -39,6 +44,8 @@ class TaskWorkdayTests {
     assert.match(prompt, /from is the requesting consumer/);
     assert.match(prompt, /"from":"sample","to":"dependency"/);
   }
+
+  /** Handles declare dependency within this component’s captured contract. */
   private declareDependency(f: any): void {
     const path = join(f.repo, 'architecture/components/sample.json');
     const component = JSON.parse(readFileSync(path, 'utf8'));
@@ -46,6 +53,8 @@ class TaskWorkdayTests {
     writeFileSync(path, JSON.stringify(component));
     f.commit();
   }
+
+  /** Handles plan within this component’s captured contract. */
   private plan(f: any, input: string, bindings: string) {
     return this.command(
       f,
@@ -60,6 +69,8 @@ class TaskWorkdayTests {
       f.executable,
     );
   }
+
+  /** Handles command within this component’s captured contract. */
   private command(f: any, ...args: string[]) {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
@@ -67,6 +78,8 @@ class TaskWorkdayTests {
       timeout: 30 * 60 * 1000,
     });
   }
+
+  /** Handles bindings within this component’s captured contract. */
   private bindings(f: any): string {
     const path = join(f.root, 'task-bindings.json');
     const dependency = join(f.root, 'dependency-acceptance.cjs');
@@ -94,7 +107,9 @@ class TaskWorkdayTests {
     return path;
   }
 }
+
 const suite = new TaskWorkdayTests();
+
 test('unstructured task uses one initializer and the production two-owner workday', (t) =>
   suite.routesExistingOwners(t));
 

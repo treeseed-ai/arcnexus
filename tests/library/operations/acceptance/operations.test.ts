@@ -7,8 +7,11 @@ import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { operationFixture as fixture } from '../../testing/support/operations-fixture.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+
+/** Exercises operations behavior through observable scenarios. */
 class OperationsTests {
-  productionSDKBridgeReturnsRealRedAndGreenOperationFeedback_1(t: TestContext) {
+  /** Verifies that production sdkbridge returns real red and green operation feedback. */
+  productionSDKBridgeReturnsRealRedAndGreenOperationFeedback(t: TestContext) {
     const f = fixture(t),
       r = f.run();
     assert.equal(r.status, 0, r.stderr);
@@ -20,13 +23,17 @@ class OperationsTests {
     );
     assert.match(readFileSync(join(f.root, 'operations.jsonl'), 'utf8'), /BOUNDARY_EXPECTED/);
   }
-  scenario_2(t: TestContext, mode: any) {
+
+  /** Verifies the scenario rejects unauthorized operation requests. */
+  rejectsUnauthorizedOperationRequests(t: TestContext, mode: any) {
     const f = fixture(t, mode),
       r = f.run();
     assert.equal(r.status, 1, r.stderr);
     assert.match(r.stderr, mode === 'denied' ? /operation/i : /budget/i);
   }
-  inspectCapturesOperationsAndRejectsAssignmentWidening_3(t: TestContext) {
+
+  /** Verifies that inspect captures operations and rejects assignment widening. */
+  inspectCapturesOperationsAndRejectsAssignmentWidening(t: TestContext) {
     const f = fixture(t),
       r = spawnSync(
         process.execPath,
@@ -56,7 +63,9 @@ class OperationsTests {
     assert.equal(denied.status, 2);
     assert.match(denied.stderr, /widens operation/);
   }
-  async operationOutputIsBoundedAndExcessOutputTerminatesTheCommand_4(t: TestContext) {
+
+  /** Verifies that operation output is bounded and excess output terminates the command. */
+  async operationOutputIsBoundedAndExcessOutputTerminatesTheCommand(t: TestContext) {
     const { execute } = await import('../../../../dist/library/operations/process.js');
     const f = workflowFixture(t),
       log = join(f.root, 'large.log');
@@ -79,7 +88,9 @@ class OperationsTests {
     const { statSync } = await import('node:fs');
     assert.equal(statSync(log).size, 64 * 1024 * 1024);
   }
-  declaredCommandCannotChangeSourceDuringReadOnlyResearch_5(t: TestContext) {
+
+  /** Verifies that declared command cannot change source during read only research. */
+  declaredCommandCannotChangeSourceDuringReadOnlyResearch(t: TestContext) {
     const f = fixture(t);
     const p = join(f.repo, 'architecture/operations/test.json'),
       op = JSON.parse(String(readFileSync(p)));
@@ -90,7 +101,9 @@ class OperationsTests {
     assert.equal(r.status, 1);
     assert.match(r.stderr, /scope|Read-only/);
   }
-  operationCommandsDoNotInheritUnrelatedCredentials_6(t: TestContext) {
+
+  /** Verifies that operation commands do not inherit unrelated credentials. */
+  operationCommandsDoNotInheritUnrelatedCredentials(t: TestContext) {
     const f = fixture(t);
     const p = join(f.repo, 'architecture/operations/test.json'),
       op = JSON.parse(String(readFileSync(p)));
@@ -120,7 +133,9 @@ class OperationsTests {
     assert.equal(r.status, 0, r.stderr);
     assert.equal(JSON.parse(r.stdout).operations[0].exitCode, 0);
   }
-  scenario_7(t: TestContext, defect: any) {
+
+  /** Verifies the scenario rejects incompatible operation catalog. */
+  rejectsIncompatibleOperationCatalog(t: TestContext, defect: any) {
     const f = fixture(t),
       p = join(f.repo, 'architecture/operations/test.json'),
       op = JSON.parse(String(readFileSync(p)));
@@ -145,22 +160,30 @@ class OperationsTests {
     assert.equal(r.status, 2, r.stdout + r.stderr);
   }
 }
+
 const suite = new OperationsTests();
 
 test('production SDK bridge returns real red and green operation feedback', (t: any) =>
-  suite.productionSDKBridgeReturnsRealRedAndGreenOperationFeedback_1(t));
+  suite.productionSDKBridgeReturnsRealRedAndGreenOperationFeedback(t));
+
 for (const mode of ['denied', 'budget'])
-  test(`host stops ${mode} operation requests`, (t: any) => suite.scenario_2(t, mode));
+  test(`host stops ${mode} operation requests`, (t: any) =>
+    suite.rejectsUnauthorizedOperationRequests(t, mode));
+
 test('inspect captures operations and rejects assignment widening', (t: any) =>
-  suite.inspectCapturesOperationsAndRejectsAssignmentWidening_3(t));
+  suite.inspectCapturesOperationsAndRejectsAssignmentWidening(t));
+
 test('operation output is bounded and excess output terminates the command', (t: any) =>
-  suite.operationOutputIsBoundedAndExcessOutputTerminatesTheCommand_4(t));
+  suite.operationOutputIsBoundedAndExcessOutputTerminatesTheCommand(t));
+
 test('declared command cannot change source during read-only research', (t: any) =>
-  suite.declaredCommandCannotChangeSourceDuringReadOnlyResearch_5(t));
+  suite.declaredCommandCannotChangeSourceDuringReadOnlyResearch(t));
+
 test('operation commands do not inherit unrelated credentials', (t: any) =>
-  suite.operationCommandsDoNotInheritUnrelatedCredentials_6(t));
+  suite.operationCommandsDoNotInheritUnrelatedCredentials(t));
+
 for (const defect of ['category', 'output', 'service'])
   test(`built validate rejects operation ${defect} inconsistency`, (t: any) =>
-    suite.scenario_7(t, defect));
+    suite.rejectsIncompatibleOperationCatalog(t, defect));
 
 registerSuite({ component: 'operations', level: 'acceptance', tags: ['deterministic'] });

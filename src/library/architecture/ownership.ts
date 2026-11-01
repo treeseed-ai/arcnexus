@@ -13,23 +13,29 @@ interface Owner {
   publicModules: string[];
   directoryExceptions: string[];
 }
+
 interface OwnershipPolicy {
   schemaVersion: 1;
   maintainedPaths: string[];
   owners: Owner[];
 }
+
 const covers = (path: string, root: string) =>
   root === '.' || path === root || path.startsWith(root + '/');
 
 /** Checks project-declared ownership against the captured Git tree. */
 export class OwnershipValidator {
   private readonly files = new Set<string>();
+
   private readonly graph = new Map<string, string[]>();
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly repository: string,
     private readonly base: string,
   ) {}
 
+  /** Rejects inputs that violate the captured configuration contract. */
   validate(catalog: Catalog): ConfigurationSource | undefined {
     const files = git(this.repository, 'ls-tree', '-r', '--name-only', this.base)
       .trim()
@@ -55,6 +61,7 @@ export class OwnershipValidator {
     return source;
   }
 
+  /** Derives the v4 ownership index from component declarations. */
   private versionFour(catalog: Catalog, files: string[]): void {
     const components = Object.values(catalog.components).filter(
       (c) => c.type === 'platform' || c.repository === catalog.primaryRepository,
@@ -81,6 +88,7 @@ export class OwnershipValidator {
     this.assertAcyclic();
   }
 
+  /** Rejects ownership roots whose intersection would create competing leaf owners. */
   private overlaps(owners: Owner[]): void {
     for (const owner of owners)
       for (const other of owners) {
@@ -93,6 +101,7 @@ export class OwnershipValidator {
       }
   }
 
+  /** Handles owner within this component’s captured contract. */
   private owner(file: string, policy: OwnershipPolicy): Owner {
     const owners = policy.owners.filter((o) => o.paths.some((p) => covers(file, p)));
     if (owners.length !== 1)
@@ -100,6 +109,7 @@ export class OwnershipValidator {
     return owners[0]!;
   }
 
+  /** Checks declared owner paths and directory-granularity exceptions. */
   private validateOwners(policy: OwnershipPolicy, catalog: Catalog, files: string[]): void {
     const identities = new Set<string>();
     for (const owner of policy.owners) {
@@ -128,6 +138,7 @@ export class OwnershipValidator {
     policy.maintainedPaths.filter((p) => p !== '.').forEach(relativePath);
   }
 
+  /** Requires covered files to resolve to exactly one declared leaf owner. */
   private requireOwners(catalog: Catalog, identities: Set<string>): void {
     for (const component of Object.values(catalog.components)) {
       if (catalog.primaryRepository && component.repository !== catalog.primaryRepository) continue;
@@ -136,6 +147,7 @@ export class OwnershipValidator {
     }
   }
 
+  /** Handles imports within this component’s captured contract. */
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {
     const text = git(this.repository, 'show', `${this.base}:${file}`);
     const edges: string[] = [];
@@ -146,6 +158,7 @@ export class OwnershipValidator {
     this.graph.set(file, edges);
   }
 
+  /** Handles target within this component’s captured contract. */
   private target(file: string, specifier: string): string | undefined {
     if (!specifier.startsWith('.')) return;
     let target = posix.normalize(posix.join(posix.dirname(file), specifier));
@@ -155,6 +168,7 @@ export class OwnershipValidator {
     return candidates.find((candidate) => this.files.has(candidate));
   }
 
+  /** Enumerates supported TypeScript source counterparts of a module reference. */
   private moduleCandidates(target: string): string[] {
     const extension = posix.extname(target);
     const variants: Record<string, string[]> = {
@@ -168,6 +182,7 @@ export class OwnershipValidator {
     return /\.[cm]?[jt]sx?$/.test(target) ? [target] : [];
   }
 
+  /** Checks a module reference against its owning component’s public boundary. */
   private checkImport(
     target: string,
     file: string,
@@ -182,6 +197,7 @@ export class OwnershipValidator {
     if (!typeOnly) edges.push(target);
   }
 
+  /** Rejects cycles before recursive dependency traversal can proceed. */
   private assertAcyclic(): void {
     const active = new Set<string>(),
       complete = new Set<string>();

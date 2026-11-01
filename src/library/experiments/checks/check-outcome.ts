@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
+
+/** Independently checks outcome against retained candidate evidence. */
 class OutcomeAcceptance {
   private record: any;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     path: string,
     private kind: string,
   ) {
     this.record = JSON.parse(readFileSync(path, 'utf8'));
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): void {
     assert.equal(this.record.settings.model, 'gpt-6-luna');
     assert.equal(this.record.settings.reasoning, 'medium');
@@ -22,6 +28,8 @@ class OutcomeAcceptance {
         ' outcome acceptance passed; findings still require caller review',
     );
   }
+
+  /** Handles boundary within this component’s captured contract. */
   private boundary(): void {
     const record = this.record;
     assert.equal(record.outcome, 'blocked');
@@ -34,6 +42,8 @@ class OutcomeAcceptance {
     );
     assert.match(JSON.stringify(request), /schema|contract|interface/i);
   }
+
+  /** Handles read only within this component’s captured contract. */
   private readOnly(): void {
     const record = this.record;
     assert.equal(record.outcome, this.kind + '_completed');
@@ -44,6 +54,8 @@ class OutcomeAcceptance {
     if (this.kind === 'research')
       assert.match(JSON.stringify(record.agent.findings), /architecture/);
   }
+
+  /** Handles change within this component’s captured contract. */
   private change(): void {
     const record = this.record;
     assert.equal(record.outcome, 'ready_for_integration');
@@ -54,6 +66,8 @@ class OutcomeAcceptance {
     );
     if (this.kind === 'repair') this.repair();
   }
+
+  /** Handles repair within this component’s captured contract. */
   private repair(): void {
     const record = this.record;
     assert.equal(record.implementationAttempts, 2);
@@ -83,4 +97,5 @@ class OutcomeAcceptance {
     );
   }
 }
+
 new OutcomeAcceptance(process.argv[2]!, process.argv[3]!).run();

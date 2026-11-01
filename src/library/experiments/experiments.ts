@@ -15,6 +15,7 @@ import type { RecordData } from '../workspace/state.js';
 import { ExperimentCapture, type PreparedCase } from './experiment-capture.js';
 import { resolveLegacy, type ExperimentInput } from './experiment-config.js';
 import { hash } from './experiment-hash.js';
+
 export function runnerHash(runner: string): string {
   const entries: Array<[string, string]> = [];
   const visit = (path: string) => {
@@ -39,11 +40,13 @@ export function runnerHash(runner: string): string {
   entries.push(['lock', hash(readFileSync(join(dirname(runner), '../package-lock.json')))]);
   return hash(JSON.stringify(entries));
 }
+
 interface Execution extends CommandResult {
   stdout: string;
   stderr: string;
   error?: string;
 }
+
 interface CaseRecord {
   id: string;
   status: string;
@@ -57,6 +60,7 @@ interface CaseRecord {
   interventionCount?: number;
   error?: string;
 }
+
 export interface Campaign {
   schemaVersion: 1;
   status: string;
@@ -72,11 +76,17 @@ export interface Campaign {
   snapshots: Array<{ path: string; snapshot: string; sha256: string }>;
   error?: string;
 }
+
 /** Executes captured experiments through the ordinary supervised CLI boundary. */
 export class ExperimentRunner {
   private campaign!: Campaign;
+
   private output!: string;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private signal: AbortSignal) {}
+
+  /** Persists the current evidence so later inspection can reconstruct this state. */
   private save(): void {
     const path = join(this.output, 'campaign.json');
     writeFileSync(path + '.tmp', JSON.stringify(this.campaign, null, 2) + '\n', { mode: 0o600 });
@@ -91,6 +101,8 @@ export class ExperimentRunner {
         .join('\n');
     writeFileSync(join(this.output, 'campaign.md'), text, { mode: 0o600 });
   }
+
+  /** Handles command within this component’s captured contract. */
   private async command(
     command: string,
     args: string[],
@@ -118,6 +130,8 @@ export class ExperimentRunner {
       return this.commandFailure(error, stdout, stderr);
     }
   }
+
+  /** Handles command failure within this component’s captured contract. */
   private commandFailure(error: unknown, stdout: string, stderr: string): Execution {
     if (error && typeof error === 'object' && 'commandResult' in error)
       return {
@@ -128,6 +142,8 @@ export class ExperimentRunner {
       };
     throw error;
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(input: ExperimentInput, output: string): Promise<Campaign> {
     const initialHash = this.initialize(input, output);
     try {
@@ -154,6 +170,8 @@ export class ExperimentRunner {
     }
     return this.finalize(input);
   }
+
+  /** Handles initialize within this component’s captured contract. */
   private initialize(input: ExperimentInput, output: string): string {
     this.validateOutput(input, output);
     const initialHash = runnerHash(input.runner);
@@ -173,6 +191,8 @@ export class ExperimentRunner {
     this.save();
     return initialHash;
   }
+
+  /** Handles validate output within this component’s captured contract. */
   private validateOutput(input: ExperimentInput, output: string): void {
     const { digest: capturedDigest, ...captured } = input;
     if (hash(JSON.stringify(captured)) !== capturedDigest)
@@ -195,6 +215,8 @@ export class ExperimentRunner {
     if (lstatSync(this.output, { throwIfNoEntry: false }))
       throw new InputError('Experiment output already exists');
   }
+
+  /** Executes one campaign case and retains its result without automatic campaign retry. */
   private async runCase(c: PreparedCase, input: ExperimentInput): Promise<void> {
     const entry = this.startCase(c);
     try {
@@ -218,6 +240,8 @@ export class ExperimentRunner {
     this.save();
     console.error(`${c.id}: ${entry.status}`);
   }
+
+  /** Records the case start before dispatching its managed execution. */
   private startCase(c: PreparedCase): CaseRecord {
     const entry: CaseRecord = {
       id: c.id,
@@ -230,6 +254,8 @@ export class ExperimentRunner {
     this.save();
     return entry;
   }
+
+  /** Handles arguments within this component’s captured contract. */
   private arguments(c: PreparedCase, input: ExperimentInput): string[] {
     const args = c.workdayPath
       ? [input.runner, 'workday', 'run', c.workdayPath, '--project', c.project, '--base', c.base]
@@ -256,6 +282,8 @@ export class ExperimentRunner {
       if (value) args.push('--' + name, value);
     return args;
   }
+
+  /** Retains the completed execution report as campaign evidence. */
   private captureReport(c: PreparedCase, entry: CaseRecord): RecordData {
     const report = JSON.parse(readFileSync(entry.execution!.stdout, 'utf8')) as RecordData;
     entry.report = report;
@@ -270,6 +298,8 @@ export class ExperimentRunner {
       : undefined;
     return report;
   }
+
+  /** Normalizes workday inputs before participant authority is captured. */
   private normalizeWorkday(report: RecordData): void {
     report.outcome = report.status;
     const owners = report.assignments as RecordData[];
@@ -280,6 +310,8 @@ export class ExperimentRunner {
     );
     report.services = owners.flatMap((o) => (Array.isArray(o.services) ? o.services : []));
   }
+
+  /** Handles verify outcome within this component’s captured contract. */
   private verifyOutcome(c: PreparedCase, entry: CaseRecord, report: RecordData): void {
     if (
       entry.execution!.exitCode !== (c.expectedOutcome === 'blocked' ? 1 : 0) ||
@@ -300,6 +332,8 @@ export class ExperimentRunner {
     )
       throw new Error('Qualification requires Luna at medium reasoning');
   }
+
+  /** Handles acceptance within this component’s captured contract. */
   private async acceptance(
     c: PreparedCase,
     entry: CaseRecord,
@@ -319,6 +353,8 @@ export class ExperimentRunner {
         throw new Error('Independent campaign acceptance failed');
     }
   }
+
+  /** Handles finalize within this component’s captured contract. */
   private finalize(input: ExperimentInput): Campaign {
     if (!this.campaign.finalRunnerHash)
       try {
@@ -333,6 +369,7 @@ export class ExperimentRunner {
     return this.campaign;
   }
 }
+
 export async function legacyMain(args: string[]): Promise<void> {
   const controller = new AbortController(),
     cancel = () => controller.abort(new Error('Campaign cancelled'));

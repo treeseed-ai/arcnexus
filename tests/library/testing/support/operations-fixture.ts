@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { workflowFixture } from './workflow-fixture.js';
+
 export function operationFixture(t: any, mode: any = 'success'): any {
   const f = workflowFixture(t, mode),
     profilePath = join(f.repo, 'architecture/execution-profiles/luna.yaml');
@@ -19,6 +20,7 @@ export function operationFixture(t: any, mode: any = 'success'): any {
   f.configure({ planning: true, operations: join(f.root, 'operations.jsonl') });
   return f;
 }
+
 function defineOperation(f: any): void {
   mkdirSync(join(f.repo, 'architecture/operations'));
   writeFileSync(

@@ -5,7 +5,10 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
+
+/** Exercises acceptance limit behavior through observable scenarios. */
 class AcceptanceLimitTests {
+  /** Handles report within this component’s captured contract. */
   report(t: TestContext, timeoutSeconds?: number): void {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-acceptance-limits-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -22,6 +25,8 @@ class AcceptanceLimitTests {
     assert.equal(result.status, timeoutSeconds === undefined ? 0 : 1, result.stderr);
     if (timeoutSeconds !== undefined) assert.match(result.stderr, /Explicit active-time limit/);
   }
+
+  /** Creates the evidence record before subsequent lifecycle work begins. */
   private record(timeoutSeconds?: number) {
     return {
       status: 'completed',
@@ -43,9 +48,12 @@ class AcceptanceLimitTests {
     };
   }
 }
+
 const suite = new AcceptanceLimitTests();
+
 test('workday acceptance permits elapsed time beyond former defaults when no limit is captured', (t) =>
   suite.report(t));
+
 test('workday acceptance still rejects exceeding an explicitly captured limit', (t) =>
   suite.report(t, 900));
 

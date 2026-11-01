@@ -31,14 +31,21 @@ interface CleanupIntent {
   inode?: number;
 }
 
+/** Removes verified owned worktrees using durable intent and resumable cleanup receipts. */
 export class WorkspaceCleanup {
   private readonly record: RecordData;
+
   private readonly directory: string;
+
   private readonly receiptPath: string;
+
   private readonly intentPath: string;
+
   private readonly members: Member[];
+
   private intent?: CleanupIntent;
 
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(
     private readonly root: string,
     private readonly id: string,
@@ -55,6 +62,7 @@ export class WorkspaceCleanup {
     this.intentPath = join(this.directory, 'cleanup-intent.json');
   }
 
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(): RecordData {
     this.resources();
     if (this.record.status === 'removed' || existsSync(this.receiptPath)) {
@@ -69,6 +77,7 @@ export class WorkspaceCleanup {
     return { ...this.record, cleanupStatus: 'removed' };
   }
 
+  /** Handles resources within this component’s captured contract. */
   private resources(): void {
     const { root, id, record } = this;
     if (['preparing', 'initializing', 'running'].includes(record.status))
@@ -86,6 +95,7 @@ export class WorkspaceCleanup {
     }
   }
 
+  /** Stops initializer-owned resources before handing control to execution. */
   private initializerResources(): void {
     const initialization = this.record.initialization as { runId?: string } | undefined;
     if (!initialization?.runId) return;
@@ -94,6 +104,7 @@ export class WorkspaceCleanup {
     assertServicesStopped(this.root, initialization.runId);
   }
 
+  /** Handles identity within this component’s captured contract. */
   private identity() {
     const { record, members, id } = this;
     return {
@@ -108,6 +119,7 @@ export class WorkspaceCleanup {
     };
   }
 
+  /** Reads the durable transition record used to reconcile interrupted cleanup. */
   private loadIntent(): void {
     this.intent = existsSync(this.intentPath)
       ? JSON.parse(readFileSync(this.intentPath, 'utf8'))
@@ -124,11 +136,13 @@ export class WorkspaceCleanup {
       throw new Error('Cleanup intent ownership mismatch');
   }
 
+  /** Durably records the destructive transition before removing owned worktrees. */
   private writeIntent(value: CleanupIntent): void {
     writeFileSync(this.intentPath + '.tmp', JSON.stringify(value), { mode: 0o600 });
     renameSync(this.intentPath + '.tmp', this.intentPath);
   }
 
+  /** Handles reconcile within this component’s captured contract. */
   private reconcile(): void {
     const { intent, record } = this;
     if (!intent || !['removing', 'removed'].includes(intent.status))
@@ -147,6 +161,7 @@ export class WorkspaceCleanup {
     });
   }
 
+  /** Reconciles each dependency member against durable cleanup progress. */
   private reconcileMembers(): void {
     const progress = join(this.directory, 'members-cleanup.json');
     const removed = existsSync(progress) ? JSON.parse(readFileSync(progress, 'utf8')).removed : [];
@@ -161,6 +176,7 @@ export class WorkspaceCleanup {
     }
   }
 
+  /** Handles remove within this component’s captured contract. */
   private remove(stat: Stats): void {
     const { record, intent, root } = this;
     this.validateExisting(stat);
@@ -178,6 +194,7 @@ export class WorkspaceCleanup {
     observe(root, timeline, 'cleanup.completed', { status: 'removed' });
   }
 
+  /** Handles validate existing within this component’s captured contract. */
   private validateExisting(stat: Stats): void {
     const { record, intent } = this;
     if (
@@ -194,6 +211,7 @@ export class WorkspaceCleanup {
       throw new Error('Workspace registration mismatch');
   }
 
+  /** Handles captured environment within this component’s captured contract. */
   private capturedEnvironment() {
     const { record, members } = this;
     // Use the immutable base configuration, not potentially edited report settings.
@@ -220,6 +238,7 @@ export class WorkspaceCleanup {
     return env;
   }
 
+  /** Handles receipt within this component’s captured contract. */
   private receipt(formatted: boolean): void {
     const receipt = { cleanupStatus: 'removed', removedAt: new Date().toISOString() };
     const text = formatted ? JSON.stringify(receipt, null, 2) + '\n' : JSON.stringify(receipt);
@@ -227,6 +246,7 @@ export class WorkspaceCleanup {
     renameSync(this.receiptPath + '.tmp', this.receiptPath);
   }
 
+  /** Handles timeline record within this component’s captured contract. */
   private timelineRecord(): RecordData {
     return { ...this.record, timelineSequence: readTimeline(this.directory).events.length };
   }

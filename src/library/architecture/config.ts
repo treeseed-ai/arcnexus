@@ -1,10 +1,14 @@
 import { posix } from 'node:path';
 import { validateSchema } from './schema.js';
+
+/** Distinguishes invalid invocation or configuration from execution failures. */
 export class InputError extends Error {}
+
 export interface Command {
   command: string;
   args: string[];
 }
+
 export interface Dependency {
   id: string;
   repository: string;
@@ -14,10 +18,12 @@ export interface Dependency {
   setup: Command[];
   generatedDirectories: string[];
 }
+
 export interface WorkspaceDefinition {
   primary: { id: string; repository: string };
   dependencies: Dependency[];
 }
+
 export interface Environment {
   workspace?: WorkspaceDefinition;
   schemaVersion: 1;
@@ -25,6 +31,7 @@ export interface Environment {
   setup: Command[];
   generatedDirectories: string[];
 }
+
 export function relativePath(value: unknown): string {
   if (
     typeof value !== 'string' ||
@@ -39,6 +46,7 @@ export function relativePath(value: unknown): string {
     throw new InputError(`Invalid relative path: ${String(value)}`);
   return value;
 }
+
 export function commands(value: unknown): Command[] {
   if (!Array.isArray(value)) throw new InputError('Expected command array');
   return value.map((c) => {
@@ -54,6 +62,7 @@ export function commands(value: unknown): Command[] {
     return { command: c.command, args: c.args };
   });
 }
+
 export function environment(value: unknown): Environment {
   let v: Environment;
   try {
@@ -107,6 +116,7 @@ function validateWorkspace(v: Environment): void {
 export function milliseconds(seconds?: number): number | undefined {
   return seconds === undefined ? undefined : seconds * 1000;
 }
+
 export function minimumLimit(...values: Array<number | undefined>): number | undefined {
   const configured = values.filter((value): value is number => value !== undefined);
   return configured.length ? Math.min(...configured) : undefined;

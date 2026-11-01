@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+
+/** Independently checks simulation against retained candidate evidence. */
 class SimulationAcceptance {
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   run(path: string, scenario: string): void {
     const record = JSON.parse(readFileSync(path, 'utf8'));
     assert.equal(record.evidenceMode, 'simulation');
@@ -11,6 +14,8 @@ class SimulationAcceptance {
     } else this.change(record, scenario);
     console.log('SIMULATED acceptance ' + scenario);
   }
+
+  /** Handles change within this component’s captured contract. */
   private change(record: any, scenario: string): void {
     assert.equal(record.outcome, 'ready_for_integration');
     assert.equal(readFileSync(record.workspace + '/source.txt', 'utf8'), 'after');
@@ -21,4 +26,5 @@ class SimulationAcceptance {
     }
   }
 }
+
 new SimulationAcceptance().run(process.argv[2]!, process.argv[3]!);

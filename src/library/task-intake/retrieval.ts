@@ -1,13 +1,19 @@
 import type { Component } from '../architecture/components.js';
+
 export interface RetrievedOwner {
   id: string;
   score: number;
   reasons: string[];
 }
+
 const words = (text: string) => [...new Set(text.toLowerCase().match(/[a-z0-9]+/g) ?? [])];
+
 /** Lexical retrieval proposes context, never execution authority. */
 export class OwnerRetrieval {
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly catalog: Component[]) {}
+
+  /** Handles select within this component’s captured contract. */
   select(request: string): RetrievedOwner[] {
     const tokens = words(request);
     const scores = this.catalog
@@ -18,6 +24,8 @@ export class OwnerRetrieval {
     for (const match of [...selected]) this.expand(match, selected);
     return selected;
   }
+
+  /** Handles score within this component’s captured contract. */
   private score(component: Component, tokens: string[]): RetrievedOwner {
     const text = words(
       JSON.stringify([
@@ -35,6 +43,8 @@ export class OwnerRetrieval {
       reasons: matches.map((token) => 'Lexical match: ' + token),
     };
   }
+
+  /** Handles expand within this component’s captured contract. */
   private expand(match: RetrievedOwner, selected: RetrievedOwner[]): void {
     const component = this.catalog.find((c) => c.id === match.id)!;
     for (const id of [

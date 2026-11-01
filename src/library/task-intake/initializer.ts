@@ -13,6 +13,7 @@ import { saveMarkdown } from '../report/report.js';
 import { observe, observeExecution } from '../report/timeline.js';
 import { runInitializerCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
+
 export interface InitializationEvidence {
   authorityHash: string;
   provenance: InitializationSnapshot['provenance'];
@@ -26,6 +27,7 @@ export interface InitializationEvidence {
   durationMs: number;
   result?: InitializationResult;
 }
+
 export interface InitializeInput {
   root: string;
   record: RecordData;
@@ -36,6 +38,7 @@ export interface InitializeInput {
   executable: string;
   signal: AbortSignal;
 }
+
 export async function initializeExecution(input: InitializeInput): Promise<void> {
   const controller = new AbortController();
   const seconds = input.resolved.initialization.profile.timeoutSeconds;
@@ -55,12 +58,20 @@ export async function initializeExecution(input: InitializeInput): Promise<void>
     clearTimeout(timer);
   }
 }
+
+/** Runs one read-only intake turn before any downstream assignment activation. */
 class Initializer {
   private readonly snapshot: InitializationSnapshot;
+
   private readonly child: RecordData;
+
   private readonly evidence: InitializationEvidence;
+
   private readonly started = Date.now();
+
   private readonly unsubscribe: () => void;
+
+  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
   constructor(private readonly input: InitializeInput) {
     this.snapshot = input.resolved.initialization;
     this.child = this.createRecord();
@@ -79,6 +90,8 @@ class Initializer {
       observe(input.root, input.record, 'initialization.event', event),
     );
   }
+
+  /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
     const before = candidateDigest(this.input.record);
     this.publish('started');
@@ -104,6 +117,8 @@ class Initializer {
       this.finish();
     }
   }
+
+  /** Handles fail within this component’s captured contract. */
   private fail(error: unknown): void {
     this.child.error = String(error);
     if (error instanceof Error && error.name === 'NeedsAttention') {
@@ -112,6 +127,8 @@ class Initializer {
       this.input.record.outcome = 'needs_attention';
     } else if (this.child.status !== 'completed') this.child.status = 'failed';
   }
+
+  /** Creates initial lifecycle evidence before managed execution begins. */
   private createRecord(): RecordData {
     const record: RecordData = {
       ...this.input.record,
@@ -136,6 +153,8 @@ class Initializer {
     save(this.input.root, record);
     return record;
   }
+
+  /** Handles assignment within this component’s captured contract. */
   private assignment(): ResolvedAssignment {
     const { digest: _digest, ...base } = this.input.resolved;
     const data = {
@@ -156,6 +175,8 @@ class Initializer {
     };
     return { ...data, digest: digest(JSON.stringify(data)) };
   }
+
+  /** Handles infer within this component’s captured contract. */
   private async infer(): Promise<InitializationResult> {
     const prompt = this.prompt();
     this.child.suppliedContext = {
@@ -179,6 +200,8 @@ class Initializer {
       this.operations(),
     );
   }
+
+  /** Handles operations within this component’s captured contract. */
   private operations() {
     const before = candidateDigest(this.child);
     const checks = new InitializerChecks(this.input.root, this.child, this.snapshot);
@@ -187,6 +210,8 @@ class Initializer {
       checks.unchanged(before),
     );
   }
+
+  /** Handles prompt within this component’s captured contract. */
   private prompt(): string {
     return [
       'ArcNexus initialization: source-read-only routing confirmation. Do not implement, edit source, commit, delegate, or initialize recursively.',
@@ -203,11 +228,15 @@ class Initializer {
       'Workspace: ' + this.input.record.workspace,
     ].join('\n');
   }
+
+  /** Projects captured ownership, contracts and inventories for static validation output. */
   private catalog() {
     return this.input.proposal
       ? this.snapshot.catalog.filter((c) => this.input.proposal!.shortlist.includes(c.id))
       : this.snapshot.catalog;
   }
+
+  /** Constrains the intake result to supported owners and captured authority. */
   private proposalInstructions(): string[] {
     if (!this.input.proposal) return [];
     return [
@@ -219,6 +248,8 @@ class Initializer {
       'For ready proposals provide assignments and, for two owners only, dependency. For non-ready proposals provide questions or an architectureProposal. Do not edit source or apply proposed definitions.',
     ];
   }
+
+  /** Validates dependency direction before any recipient can be activated. */
   private requestEdges(): { from: string; to: string }[] {
     const catalog = this.catalog();
     return catalog.flatMap((owner) =>
@@ -227,6 +258,8 @@ class Initializer {
         .map((id) => ({ from: owner.id, to: id })),
     );
   }
+
+  /** Rejects inputs that violate the captured configuration contract. */
   private validate(result: InitializationResult): void {
     if (this.input.proposal || result.status !== 'ready') return;
     const selected = result.selectedOwners.map((owner) => owner.id).sort();
@@ -242,6 +275,8 @@ class Initializer {
         'Ready initializer cannot replace the captured envelope or contain unresolved questions',
       );
   }
+
+  /** Appends initialization lifecycle evidence; this does not publish a release. */
   private publish(phase: string): void {
     if (phase === 'started') {
       this.input.record.stage = 'initialization';
@@ -250,6 +285,8 @@ class Initializer {
     observe(this.input.root, this.input.record, 'initialization.' + phase, this.evidence);
     save(this.input.root, this.input.record);
   }
+
+  /** Finalizes the current lifecycle while preserving its recorded outcome. */
   private finish(): void {
     this.unsubscribe();
     this.evidence.durationMs = Date.now() - this.started;
