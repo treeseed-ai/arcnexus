@@ -31,9 +31,9 @@ export class CodexTools {
 
   async open(): Promise<object> {
     if ((this.configuration.profile?.schemaVersion ?? 1) < 2) return {};
-    const { operations } = this.configuration.input;
+    const { operations, responseContract } = this.configuration.input;
     this.bridge = await openBridge(
-      [...(operations?.tools ?? []), planTool],
+      [...(operations?.tools ?? []), ...(responseContract ? [] : [planTool])],
       (name, args) => this.call(name, args),
       () => operations?.disconnect(),
     );
@@ -47,6 +47,8 @@ export class CodexTools {
         if (!operations) throw new Error('Operations unavailable');
         return await operations.call(name, args);
       }
+      if (this.configuration.input.responseContract)
+        throw new Error('Initializer has no checklist authority');
       return this.update(args);
     } catch (error) {
       this.error = error;

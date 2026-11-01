@@ -1,3 +1,4 @@
+import { validateInitialization } from './initialization.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
 import {
@@ -14,6 +15,7 @@ import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
 export interface Component {
+  initialization?: { schemaVersion: 3; componentId: string };
   schemaVersion: 1 | 2 | 3;
   operationIds?: string[];
   id: string;
@@ -168,6 +170,7 @@ class CatalogLoader {
     if (!Object.keys(this.catalog.components).length) throw new InputError('No components defined');
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
+    validateInitialization(this.catalog);
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);
     for (const component of Object.values(this.catalog.components)) grants.validate(component);

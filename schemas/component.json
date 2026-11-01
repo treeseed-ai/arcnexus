@@ -239,6 +239,23 @@
         "type": "string",
         "minLength": 1
       }
+    },
+    "initialization": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "const": 3
+        },
+        "componentId": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "componentId"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

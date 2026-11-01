@@ -3,7 +3,6 @@ import { dirname, join } from 'node:path';
 import { digest } from '../architecture/assignment.js';
 import { covered, type Component } from '../architecture/components.js';
 import { changes, checkScope } from '../change-inspection/changes.js';
-import { git } from '../operations/process.js';
 import type { AgentResult } from '../steward/codex.js';
 import type { RecordData } from '../workspace/state.js';
 export interface FrozenTest {
@@ -59,26 +58,8 @@ export async function withFrozenTests(
     }
   }
 }
-export function candidateDigest(record: RecordData): string {
-  const observed = changes(record);
-  checkScope(
-    record.workspace,
-    observed,
-    observed.map((c) => c.path),
-  );
-  return digest(
-    JSON.stringify({
-      index: git(record.workspace, 'diff', '--cached', '--binary', record.base, '--'),
-      working: git(record.workspace, 'diff', '--binary', '--'),
-      files: observed.map((c) => ({
-        path: c.path,
-        bytes: existsSync(join(record.workspace, c.path))
-          ? readFileSync(join(record.workspace, c.path)).toString('base64')
-          : null,
-      })),
-    }),
-  );
-}
+export { candidateDigest } from '../change-inspection/changes.js';
+
 export function validateRequests(
   result: AgentResult,
   componentId: string,

@@ -9,7 +9,7 @@ import { CodexConfiguration, type CodexInput } from './codex-configuration.js';
 import { CodexTools } from './codex-tools.js';
 import type { AgentResult } from './codex.js';
 
-export class CodexExecution {
+export class CodexExecution<T extends object = AgentResult> {
   private readonly configuration: CodexConfiguration;
   private readonly tools: CodexTools;
   private final = '';
@@ -24,7 +24,7 @@ export class CodexExecution {
     this.tools = new CodexTools(this.configuration);
   }
 
-  async run(): Promise<AgentResult> {
+  async run(): Promise<T> {
     await this.configuration.capture();
     await this.configuration.preflight();
     const thread = this.thread(await this.tools.open());
@@ -89,18 +89,19 @@ export class CodexExecution {
     if (event.type === 'error') throw new Error(event.message);
   }
 
-  private result(): AgentResult {
+  private result(): T {
     const { record } = this.input;
     const { dir, profile } = this.configuration;
     writeFileSync(join(dir, 'agent-result.raw.txt'), this.final, { mode: 0o600 });
-    const result = validateSchema<AgentResult>(
-      record.workdayId ? 'workday-agent-result' : 'agent-result',
+    const result = validateSchema<T>(
+      this.input.responseContract ?? (record.workdayId ? 'workday-agent-result' : 'agent-result'),
       JSON.parse(this.final),
     );
-    this.checkCoordination(result);
+    if (!this.input.responseContract) this.checkCoordination(result as AgentResult);
     if (
+      !this.input.responseContract &&
       (profile?.schemaVersion ?? 1) >= 2 &&
-      (!Object.hasOwn(result, 'plan') || !Array.isArray(result.planUpdates))
+      (!Object.hasOwn(result, 'plan') || !Array.isArray((result as AgentResult).planUpdates))
     )
       throw new Error('Planned response requires plan and planUpdates');
     writeFileSync(join(dir, 'agent-result.json'), JSON.stringify(result, null, 2) + '\n', {

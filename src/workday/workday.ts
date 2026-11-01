@@ -1,3 +1,4 @@
+import { initializeExecution } from '../task-intake/initializer.js';
 import { milliseconds } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
@@ -49,6 +50,7 @@ export class WorkdayRunner {
       for (const participant of [input.requester, input.recipient]) this.createOwner(participant);
       this.captureAssignments();
       await this.baselines();
+      await this.initializeOwners();
       await this.execute();
       await this.verifyOwners();
       await this.combinedAcceptance();
@@ -158,6 +160,7 @@ export class WorkdayRunner {
   private control(owner: Owner): SessionControl {
     return {
       prepared: true,
+      initialized: true,
       context: '',
       inspect: () =>
         assertOwner(owner.record, owner.participant.resolved.allowedWritePaths, owner.foreign),
@@ -240,6 +243,21 @@ export class WorkdayRunner {
         await this.state.command(owner, command, 'baseline');
       owner.budget.pause();
     }
+  }
+
+  private async initializeOwners(): Promise<void> {
+    const state = this.state;
+    await initializeExecution({
+      root: state.root,
+      record: state.workspace,
+      resolved: state.input.requester.resolved,
+      owners: state.owners.map((owner) => owner.participant.resolved.componentId),
+      executable: state.executable,
+      signal: state.signal,
+      envelope: state.input,
+    });
+    for (const owner of state.owners) owner.record.initialization = state.workspace.initialization;
+    state.persist('initialization.completed', { evidence: state.workspace.initialization });
   }
 
   private async execute(): Promise<void> {
@@ -389,6 +407,7 @@ export class WorkdayRunner {
       snapshot = state.store.snapshot();
     return {
       schemaVersion: 1,
+      initialization: state.workspace.initialization,
       ...state.state(),
       exitCode: this.exitCode(),
       assignments: snapshot.assignments.map((a) => a.data as RecordData),

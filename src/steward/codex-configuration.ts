@@ -14,6 +14,7 @@ import { save, type RecordData } from '../workspace/state.js';
 import { persistExecutionEvidence } from './evidence.js';
 
 export interface CodexInput {
+  responseContract?: 'initializer-result';
   root: string;
   record: RecordData;
   prompt: string;
@@ -52,6 +53,10 @@ export class CodexConfiguration {
   }
 
   private resultSchema() {
+    if (this.input.responseContract)
+      return JSON.parse(
+        readFileSync(new URL('../../schemas/initializer-result.json', import.meta.url), 'utf8'),
+      );
     const schema = JSON.parse(
       readFileSync(new URL('../../schemas/agent-result.json', import.meta.url), 'utf8'),
     );

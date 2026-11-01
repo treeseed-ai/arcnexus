@@ -1,0 +1,249 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "enum": [
+        "ready",
+        "needs_clarification",
+        "architecture_change_required"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "selectedOwners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "rejectedOwners": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assignments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ownerId": {
+            "type": "string"
+          },
+          "objective": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "change",
+              "research",
+              "review"
+            ]
+          },
+          "changeType": {
+            "enum": [
+              "behavior",
+              "documentation"
+            ]
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowedWritePaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ownerId",
+          "objective",
+          "kind",
+          "changeType",
+          "acceptanceCriteria",
+          "allowedWritePaths"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "dependency": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "contract": {
+              "type": "string"
+            },
+            "delivery": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "contract",
+            "delivery"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "architectureProposal": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "responsibility": {
+              "type": "string"
+            },
+            "definitionsYaml": {
+              "type": "string"
+            },
+            "directories": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "owner": {
+                    "type": "string"
+                  },
+                  "path": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "owner",
+                  "path"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "relationships": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "operations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "verification": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "affectedOwners": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "migration": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "acceptanceCriteria": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "questions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "responsibility",
+            "definitionsYaml",
+            "directories",
+            "relationships",
+            "roles",
+            "operations",
+            "verification",
+            "affectedOwners",
+            "migration",
+            "acceptanceCriteria",
+            "questions"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": [
+    "status",
+    "summary",
+    "selectedOwners",
+    "rejectedOwners",
+    "questions",
+    "assignments",
+    "dependency",
+    "architectureProposal"
+  ],
+  "additionalProperties": false
+}

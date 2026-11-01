@@ -53,9 +53,17 @@ export function resolveWorkday(
   base?: string,
   bindingsPath?: string,
   tools: Record<string, string> = {},
+  initializerModel?: string,
 ): WorkdayInput {
   try {
-    return new WorkdayResolver(path, project, base, bindingsPath, tools).resolve();
+    return new WorkdayResolver(
+      path,
+      project,
+      base,
+      bindingsPath,
+      tools,
+      initializerModel,
+    ).resolve();
   } catch (error) {
     throw new InputError(String(error));
   }
@@ -72,6 +80,7 @@ class WorkdayResolver {
     base: string | undefined,
     bindingsPath: string | undefined,
     private tools: Record<string, string>,
+    private initializerModel?: string,
   ) {
     this.sources = [new ConfigurationReader().file(path)];
     this.definition = validateSchema<Definition>('workday', this.sources[0]!.value);
@@ -129,6 +138,7 @@ class WorkdayResolver {
       {
         value,
         bindings: this.bindings,
+        initializerModel: this.initializerModel,
       },
     );
     commands(participant.refresh);

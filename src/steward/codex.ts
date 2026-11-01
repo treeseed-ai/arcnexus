@@ -1,3 +1,4 @@
+import type { InitializationResult } from '../architecture/initialization.js';
 import type { Plan, PlanUpdate } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
 import type { RecordData } from '../workspace/state.js';
@@ -47,6 +48,27 @@ export async function runCodex(
     model,
     signal,
     resumeId,
+    operations,
+  }).run();
+}
+
+export async function runInitializerCodex(
+  root: string,
+  record: RecordData,
+  prompt: string,
+  executable: string,
+  model: string,
+  signal: AbortSignal,
+  operations?: OperationBridge,
+): Promise<InitializationResult> {
+  return new CodexExecution<InitializationResult>({
+    root,
+    record,
+    prompt,
+    executable,
+    model,
+    signal,
+    responseContract: 'initializer-result',
     operations,
   }).run();
 }

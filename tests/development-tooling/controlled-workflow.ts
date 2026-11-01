@@ -1,8 +1,10 @@
+import { ControlledInitializer } from './controlled-initializer.js';
 import * as cp from 'node:child_process';
 import * as fs from 'node:fs';
 import { ControlledPlanning } from './controlled-planning.js';
 export interface WorkflowOptions {
   mode: string;
+  initializerMode?: string;
   calls: string;
   planning?: boolean;
   operations?: string;
@@ -45,6 +47,7 @@ export class ControlledWorkflow {
     process.chdir(this.args[this.args.indexOf('--cd') + 1]!);
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
+    if (this.initialize(prompt)) return;
     const turn = this.capture(prompt);
     if (this.options.mode === turn.stage + '-timeout') {
       setInterval(() => {}, 1000);
@@ -53,6 +56,14 @@ export class ControlledWorkflow {
     this.execute(turn);
     if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
     this.emit(turn);
+  }
+  private initialize(prompt: string): boolean {
+    return new ControlledInitializer().respond(
+      prompt,
+      this.args,
+      this.options.calls,
+      this.options.initializerMode,
+    );
   }
   private validateInvocation(): void {
     if (

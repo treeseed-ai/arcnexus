@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { relativePath } from '../architecture/config.js';
@@ -128,4 +129,27 @@ export function materialCandidate(record: RecordData): string {
         : null,
     })),
   );
+}
+
+export function candidateDigest(record: RecordData): string {
+  const observed = changes(record);
+  checkScope(
+    record.workspace,
+    observed,
+    observed.map((c) => c.path),
+  );
+  return createHash('sha256')
+    .update(
+      JSON.stringify({
+        index: git(record.workspace, 'diff', '--cached', '--binary', record.base, '--'),
+        working: git(record.workspace, 'diff', '--binary', '--'),
+        files: observed.map((c) => ({
+          path: c.path,
+          bytes: existsSync(join(record.workspace, c.path))
+            ? readFileSync(join(record.workspace, c.path)).toString('base64')
+            : null,
+        })),
+      }),
+    )
+    .digest('hex');
 }

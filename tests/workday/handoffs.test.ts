@@ -11,6 +11,13 @@ class HandoffsTests {
     assert.equal(r.status, 0, r.stderr + '\n' + r.stdout);
     const w = JSON.parse(r.stdout);
     assert.equal(w.status, 'completed');
+    assert.equal(w.initialization.turns, 1);
+    assert.equal(
+      readFileSync(f.calls + '.initialization', 'utf8')
+        .trim()
+        .split('\n').length,
+      1,
+    );
     assert.equal(w.assignments.length, 2);
     assert.ok(w.messages.some((m: any) => m.payload.decision === 'delivered'));
     const calls = readFileSync(f.calls, 'utf8')

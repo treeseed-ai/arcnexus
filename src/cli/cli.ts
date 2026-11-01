@@ -50,6 +50,7 @@ function argumentsForCommand() {
         json: { type: 'boolean' },
         project: { type: 'string' },
         model: { type: 'string' },
+        'initializer-model': { type: 'string' },
         'codex-path': { type: 'string' },
         'max-attempts': { type: 'string' },
         base: { type: 'string' },
@@ -178,12 +179,21 @@ class CliApplication {
     const { values, positionals } = this;
     if (
       !values.project ||
-      Object.keys(values).some((k) => !['project', 'base', 'bindings', 'json'].includes(k))
+      Object.keys(values).some(
+        (k) => !['project', 'base', 'bindings', 'json', 'initializer-model'].includes(k),
+      )
     )
       throw new InputError('workday inspect requires --project');
     console.log(
       JSON.stringify(
-        resolveWorkday(positionals[2]!, values.project, values.base, values.bindings),
+        resolveWorkday(
+          positionals[2]!,
+          values.project,
+          values.base,
+          values.bindings,
+          {},
+          values['initializer-model'],
+        ),
         null,
         values.json ? undefined : 2,
       ),
@@ -196,12 +206,20 @@ class CliApplication {
     if (
       !values.project ||
       Object.keys(values).some(
-        (k) => !['project', 'base', 'bindings', 'issue', 'codex-path'].includes(k),
+        (k) =>
+          !['project', 'base', 'bindings', 'issue', 'codex-path', 'initializer-model'].includes(k),
       ) ||
       (values.issue !== undefined && !/^[1-9]\d*$/.test(values.issue))
     )
       throw new InputError('Invalid workday run arguments');
-    const input = resolveWorkday(positionals[2]!, values.project, values.base, values.bindings);
+    const input = resolveWorkday(
+      positionals[2]!,
+      values.project,
+      values.base,
+      values.bindings,
+      {},
+      values['initializer-model'],
+    );
     const root = this.acquire();
     const { WorkdayRunner } = await import('../workday/workday.js');
     const result = await new WorkdayRunner(
@@ -374,6 +392,7 @@ class CliApplication {
           compositionProfile: values['composition-profile'],
           executionProfile: values['execution-profile'],
           model: values.model,
+          initializerModel: values['initializer-model'],
           timeoutSeconds: values['timeout-seconds'] === undefined ? undefined : this.seconds,
         })
       : undefined;

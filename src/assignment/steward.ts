@@ -1,3 +1,4 @@
+import { initializeExecution } from '../task-intake/initializer.js';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { prepareCapabilities } from '../operations/probes.js';
@@ -26,6 +27,7 @@ export interface StewardCheckpoint {
   usage: unknown;
 }
 export interface SessionControl {
+  initialized?: boolean;
   prepared: boolean;
   context: string;
   inspect: () => void;
@@ -68,6 +70,15 @@ export class StewardSession {
       session: this,
     });
     await this.prepare();
+    if (!control?.initialized)
+      await initializeExecution({
+        root,
+        record,
+        resolved: this.state.resolved,
+        owners: [id],
+        executable,
+        signal,
+      });
     this.verification = new SessionVerification(this.state);
     this.turns = new SessionTurn(this.state, this.verification);
     await new SessionWorkflow(this.state, this.turns, this.verification).run();

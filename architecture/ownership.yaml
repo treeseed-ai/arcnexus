@@ -58,6 +58,7 @@ owners:
       - src/architecture/components.ts
       - src/architecture/config.ts
       - src/architecture/configuration.ts
+      - src/architecture/initialization.ts
       - src/architecture/permissions.ts
       - src/architecture/schema.ts
     directoryExceptions: []
@@ -173,7 +174,8 @@ owners:
       - src/task-intake
       - tests/task-intake
       - docs/task-intake
-    publicModules: []
+    publicModules:
+      - src/task-intake/initializer.ts
     directoryExceptions: []
   - component: workday
     paths:
