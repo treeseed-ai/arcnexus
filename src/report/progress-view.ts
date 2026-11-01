@@ -61,8 +61,11 @@ export function progressMarkdown(record: RecordData): string {
 
 function observedCommand(events: Array<{ type: string; payload: any }>): unknown {
   let command: unknown = null;
-  for (const { type, payload } of events) {
-    if (type === 'setup.started') command = payload.command;
+  for (const event of events) {
+    const { type, payload } =
+      event.type === 'initialization.event' && event.payload?.type ? event.payload : event;
+    if (['setup.started', 'initializer.check.started'].includes(type)) command = payload.command;
+    if (['initializer.check.completed', 'initialization.finished'].includes(type)) command = null;
     if (type === 'setup.result' || type === 'operation.completed' || type === 'operation.failed')
       command = null;
     if (type === 'activity.started' && payload.detail?.command) command = payload.detail;
