@@ -6,18 +6,24 @@ interface Start {
   log: string;
   options: { env?: NodeJS.ProcessEnv; timeoutMs?: number };
 }
-const controller = new AbortController();
-let started = false;
-process.on('disconnect', () => controller.abort(new Error('Command parent disconnected')));
-process.on('SIGTERM', () => controller.abort(new Error('Command supervisor terminated')));
-process.on('message', (message: Start | { cancel: string }) => {
-  if ('cancel' in message) {
-    controller.abort(new Error(message.cancel));
-    return;
+class CommandSupervisor {
+  private readonly controller = new AbortController();
+  private started = false;
+  listen(): void {
+    process.on('disconnect', () => this.controller.abort(new Error('Command parent disconnected')));
+    process.on('SIGTERM', () => this.controller.abort(new Error('Command supervisor terminated')));
+    process.on('message', (message: Start | { cancel: string }) => this.receive(message));
   }
-  if (started) return;
-  started = true;
-  void (async () => {
+  private receive(message: Start | { cancel: string }): void {
+    if ('cancel' in message) {
+      this.controller.abort(new Error(message.cancel));
+      return;
+    }
+    if (this.started) return;
+    this.started = true;
+    void this.execute(message);
+  }
+  private async execute(message: Start): Promise<void> {
     let response: { result?: CommandResult; error?: string };
     try {
       response = {
@@ -25,7 +31,7 @@ process.on('message', (message: Start | { cancel: string }) => {
           message.command,
           message.cwd,
           message.log,
-          controller.signal,
+          this.controller.signal,
           message.options,
         ),
       };
@@ -38,5 +44,6 @@ process.on('message', (message: Start | { cancel: string }) => {
       };
     }
     if (process.connected) process.send?.(response, () => process.disconnect());
-  })();
-});
+  }
+}
+new CommandSupervisor().listen();
