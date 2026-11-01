@@ -8,10 +8,6 @@ constraints:
   - Preserve JSON evidence and existing report fields
   - Use the captured execution record without inspecting mutable target files
   - Keep the supervising runner unchanged
-allowedWritePaths:
-  - src/report
-  - tests/report
-  - docs/report
 verification:
   - command: npm
     args:
@@ -40,9 +36,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
@@ -50,18 +43,36 @@ access:
     - src/report
     - tests/report
     - docs/report
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - "saveMarkdown: render captured execution record"
-documentation:
-  - docs/report/report.md
-tests:
-  - tests/report/report.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - report-tests
   - report-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/report
+    - tests/report
+    - docs/report
+  publicModules:
+    - src/report/report.ts
+    - src/report/timeline.ts
+    - src/report/progress.ts
+    - src/report/workday-report.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/report
+  documentation:
+    - docs/report
+  tests:
+    - tests/report
+  exclude: []
+provides: []
+consumes: []

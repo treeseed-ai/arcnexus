@@ -9,10 +9,6 @@ constraints:
   - Never silently broaden a captured assignment or grant write authority
   - Initializer activation is source-read-only and cannot recursively initialize
     or apply architecture proposals
-allowedWritePaths:
-  - src/task-intake
-  - tests/task-intake
-  - docs/task-intake
 verification:
   - command: npm
     args:
@@ -26,8 +22,6 @@ verification:
       - src/task-intake
       - tests/task-intake
 questions: []
-patterns:
-  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -35,16 +29,11 @@ access:
     - src/task-intake
     - tests/task-intake
     - docs/task-intake
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Planned initialization result and task proposal contract
-documentation:
-  - docs/task-intake
-tests:
-  - tests/task-intake
 relatedIds:
   - architecture-maintenance
   - assignment
@@ -52,3 +41,31 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - task-intake-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/task-intake
+    - tests/task-intake
+    - docs/task-intake
+  publicModules:
+    - src/task-intake/initializer.ts
+    - src/task-intake/tasks.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/task-intake
+  documentation:
+    - docs/task-intake
+  tests:
+    - tests/task-intake
+  exclude: []
+provides:
+  - id: initializer-result
+    version: "1"
+    kind: json-schema
+    path: src/task-intake/schemas/initializer-result.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes:
+  - id: initializer-result
+    version: "1"

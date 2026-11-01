@@ -8,15 +8,6 @@ objectives:
 constraints:
   - Caller accepts architectural authority changes
   - Candidate definition edits never change authority for an active execution
-allowedWritePaths:
-  - architecture
-  - README.md
-  - CHANGELOG.md
-  - docs/charter.md
-  - docs/dev.md
-  - docs/phase-one-retrospective.md
-  - docs/guidance-audit.md
-  - docs/plans
 verification:
   - command: npm
     args:
@@ -41,8 +32,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -50,18 +39,44 @@ access:
     - architecture
     - docs/plans
     - .
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Maintained architecture catalog and ownership policy
   - Reviewable component and ownership proposals
-documentation: []
-tests: []
 relatedIds:
   - architecture
   - agent-guidance
   - task-intake
 parentId: cli-package
 operationIds: []
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - architecture
+    - README.md
+    - CHANGELOG.md
+    - docs/charter.md
+    - docs/dev.md
+    - docs/phase-one-retrospective.md
+    - docs/guidance-audit.md
+    - docs/plans
+    - LICENSE
+  publicModules: []
+  directoryExceptions:
+    - path: .
+      reason: Root-file directory granularity; exact ownership checks remain mandatory
+discovery:
+  source: []
+  documentation:
+    - docs/charter.md
+    - docs/dev.md
+    - docs/phase-one-retrospective.md
+    - docs/guidance-audit.md
+    - docs/plans
+  tests: []
+  exclude: []
+provides: []
+consumes: []

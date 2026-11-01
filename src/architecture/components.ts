@@ -1,3 +1,5 @@
+import { ComponentV4Resolver, type ComponentV4Fields } from './component-v4.js';
+import { ArchitectureReferences } from './references.js';
 import { validateInitialization } from './initialization.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
@@ -14,9 +16,9 @@ import { DirectoryGrants } from './directory-grants.js';
 import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
-export interface Component {
+export interface Component extends ComponentV4Fields {
   initialization?: { schemaVersion: 3; componentId: string };
-  schemaVersion: 1 | 2 | 3;
+  schemaVersion: 1 | 2 | 3 | 4;
   operationIds?: string[];
   id: string;
   type: string;
@@ -112,7 +114,11 @@ function read<T>(
   const source = new ConfigurationReader().revision(repository, base, path);
   sources.push(source);
   try {
-    return validateSchema<T>(schema, source.value);
+    const version = (source.value as { schemaVersion?: number }).schemaVersion;
+    return validateSchema<T>(
+      schema === 'component' && version === 4 ? 'component-v4' : schema,
+      source.value,
+    );
   } catch (error) {
     throw new InputError(`${path}: ${String(error)}`);
   }
@@ -159,6 +165,7 @@ class CatalogLoader {
 
   load(): Catalog {
     this.definitions();
+    new ComponentV4Resolver(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('operations')) this.operation(path);
     const source = new ConfigurationReader().definition(
       this.repository,
@@ -171,6 +178,7 @@ class CatalogLoader {
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
     validateInitialization(this.catalog);
+    new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);
     for (const component of Object.values(this.catalog.components)) grants.validate(component);
@@ -315,7 +323,7 @@ class CatalogComponentValidator {
       throw new InputError(`Conflicting repository ownership: ${c.id}`);
     for (const a of ancestors.filter((a) => a.repository === c.repository)) {
       if (
-        a.schemaVersion === 3 &&
+        a.schemaVersion >= 3 &&
         ['platform', 'package'].includes(a.type) &&
         !a.allowedWritePaths.length &&
         !a.access.writeDirectories.length

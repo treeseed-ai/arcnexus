@@ -59,10 +59,10 @@ function lineage(catalog: Catalog, component: Component): Component[] {
 }
 export function validateInitialization(catalog: Catalog): void {
   for (const component of Object.values(catalog.components)) {
-    if (component.schemaVersion === 3 && component.type === 'platform' && !component.initialization)
+    if (component.schemaVersion >= 3 && component.type === 'platform' && !component.initialization)
       throw new InputError('Version-three platform requires an initializer: ' + component.id);
     if (!component.initialization) continue;
-    if (component.schemaVersion !== 3 || component.type !== 'platform')
+    if (component.schemaVersion < 3 || component.type !== 'platform')
       throw new InputError('Only version-three platforms declare initialization');
     const initializer = catalog.components[component.initialization.componentId];
     if (!initializer || !lineage(catalog, initializer).some((owner) => owner.id === component.id))

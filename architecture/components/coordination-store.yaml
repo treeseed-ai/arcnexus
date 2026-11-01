@@ -6,10 +6,6 @@ objectives:
   - Persist atomic workday coordination and ordered evidence
 constraints:
   - Preserve captured authority and evidence
-allowedWritePaths:
-  - src/coordination-store
-  - tests/coordination-store
-  - docs/coordination-store
 verification:
   - command: npm
     args:
@@ -34,9 +30,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - One host writer; candidate input never widens authority
 access:
   readPaths:
     - .
@@ -44,16 +37,11 @@ access:
     - src/coordination-store
     - tests/coordination-store
     - docs/coordination-store
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Atomic SQLite coordination transitions
-documentation:
-  - docs/coordination-store/coordination-store.md
-tests:
-  - tests/coordination-store/workday-store.test.ts
 relatedIds:
   - assignment
   - workspace
@@ -61,3 +49,23 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - coordination-store-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/coordination-store
+    - tests/coordination-store
+    - docs/coordination-store
+  publicModules:
+    - src/coordination-store/workday-store.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/coordination-store
+  documentation:
+    - docs/coordination-store
+  tests:
+    - tests/coordination-store
+  exclude: []
+provides: []
+consumes: []

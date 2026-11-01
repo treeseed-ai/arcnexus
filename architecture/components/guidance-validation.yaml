@@ -3,14 +3,12 @@ type: library
 purpose: Validate guidance metadata and inventory instructions without semantic approval
 path: src/guidance-validation
 objectives:
-  - Validate guidance metadata and inventory instructions without semantic approval
+  - Validate guidance metadata and inventory instructions without semantic
+    approval
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
-allowedWritePaths:
-  - src/guidance-validation
-  - tests/guidance-validation
-  - docs/guidance-validation
 verification:
   - command: npm
     args:
@@ -36,9 +34,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
@@ -46,18 +41,33 @@ access:
     - src/guidance-validation
     - tests/guidance-validation
     - docs/guidance-validation
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces: []
-documentation:
-  - docs/guidance-validation/guidance-validation.md
-tests:
-  - tests/guidance-validation/guidance.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - guidance-build
   - guidance-tests
   - guidance-validation-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/guidance-validation
+    - tests/guidance-validation
+    - docs/guidance-validation
+  publicModules:
+    - src/guidance-validation/guidance.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/guidance-validation
+  documentation:
+    - docs/guidance-validation
+  tests:
+    - tests/guidance-validation
+  exclude: []
+provides: []
+consumes: []

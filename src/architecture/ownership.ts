@@ -33,6 +33,10 @@ export class OwnershipValidator {
     const files = git(this.repository, 'ls-tree', '-r', '--name-only', this.base)
       .trim()
       .split('\n');
+    if (Object.values(catalog.components).some((c) => c.schemaVersion === 4)) {
+      this.versionFour(catalog, files);
+      return;
+    }
     if (!files.some((p) => /^architecture\/ownership\.(json|ya?ml)$/.test(p))) return;
     const source = new ConfigurationReader().definition(
       this.repository,
@@ -47,6 +51,42 @@ export class OwnershipValidator {
     }
     this.assertAcyclic();
     return source;
+  }
+
+  private versionFour(catalog: Catalog, files: string[]): void {
+    const components = Object.values(catalog.components);
+    const owners = components
+      .filter((c) => c.ownership)
+      .map((c) => ({
+        component: c.id,
+        paths: c.ownership!.paths,
+        publicModules: c.ownership!.publicModules,
+        directoryExceptions: c.ownership!.directoryExceptions.map((e) => e.path),
+      }));
+    const exclusions = components
+      .filter((c) => c.type === 'platform')
+      .flatMap((c) => c.coverageExclusions ?? []);
+    exclusions.forEach((e) => e.path !== '.' && relativePath(e.path));
+    const policy: OwnershipPolicy = { schemaVersion: 1, maintainedPaths: ['.'], owners };
+    this.validateOwners(policy, catalog, files);
+    this.overlaps(owners);
+    for (const file of files.filter((p) => !exclusions.some((e) => covers(p, e.path)))) {
+      const owner = this.owner(file, policy);
+      if (/\.[cm]?[jt]sx?$/.test(file)) this.imports(file, owner, policy);
+    }
+    this.assertAcyclic();
+  }
+
+  private overlaps(owners: Owner[]): void {
+    for (const owner of owners)
+      for (const other of owners) {
+        if (owner === other) continue;
+        for (const path of owner.paths)
+          if (other.paths.some((p) => covers(path, p) || covers(p, path)))
+            throw new Error(
+              `Overlapping ownership: ${owner.component} / ${other.component}: ${path}`,
+            );
+      }
   }
 
   private owner(file: string, policy: OwnershipPolicy): Owner {

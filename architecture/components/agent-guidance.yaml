@@ -1,16 +1,15 @@
 id: agent-guidance
 type: library
-purpose: Maintain coherent development instructions and bundled skills under architectural direction
+purpose: Maintain coherent development instructions and bundled skills under
+  architectural direction
 path: .agents/skills
 objectives:
-  - Maintain coherent development instructions and bundled skills under architectural direction
+  - Maintain coherent development instructions and bundled skills under
+    architectural direction
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
-allowedWritePaths:
-  - docs/agent-guidance
-  - AGENTS.md
-  - .agents/skills
 verification:
   - command: node
     args:
@@ -28,9 +27,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
@@ -38,16 +34,31 @@ access:
     - docs/agent-guidance
     - .agents/skills
     - .
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: agent-guidance
 executionProfile: luna
 interfaces: []
-documentation:
-  - docs/agent-guidance/guidance-maintenance.md
-tests: []
 relatedIds:
   - guidance-validation
 parentId: cli-package
 operationIds:
   - guidance-validation
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - docs/agent-guidance
+    - AGENTS.md
+    - .agents/skills
+  publicModules: []
+  directoryExceptions:
+    - path: .
+      reason: Root-file directory granularity; exact ownership checks remain mandatory
+discovery:
+  source: []
+  documentation:
+    - docs/agent-guidance
+  tests: []
+  exclude: []
+provides: []
+consumes: []

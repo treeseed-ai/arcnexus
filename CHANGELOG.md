@@ -4,6 +4,8 @@
 
 ### Added
 
+- Derive component ownership, package identity, standards and contracts from version-four definitions (#71).
+
 - Initialize component-led tasks and report progress without implicit execution quotas (#65).
 
 ### Changed

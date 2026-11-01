@@ -8,21 +8,6 @@ objectives:
 constraints:
   - Do not weaken independent acceptance to make candidate work pass
   - Keep generated output separate from maintained source
-allowedWritePaths:
-  - tests/development-tooling
-  - docs/development-tooling
-  - package.json
-  - package-lock.json
-  - tsconfig.json
-  - .github
-  - .gitignore
-  - src/cli.ts
-  - eslint.config.ts
-  - .prettierrc.yaml
-  - .prettierignore
-  - tsconfig.tests.json
-  - tsconfig.fixtures.json
-  - tsconfig.tooling.json
 verification:
   - command: npm
     args:
@@ -47,8 +32,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -57,23 +40,47 @@ access:
     - docs/development-tooling
     - .github
     - .
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - npm run build, npm run check and npm test
   - Stable dist/cli.js executable entry point
-documentation:
-  - docs/development-tooling/ci.md
-tests:
-  - tests/development-tooling/catalog-fixture.ts
-  - tests/development-tooling/handoff-fixture.ts
-  - tests/development-tooling/operations-fixture.ts
-  - tests/development-tooling/workflow-fixture.ts
 relatedIds:
   - cli
   - architecture
 parentId: cli-package
 operationIds:
   - development-tooling-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - tests/development-tooling
+    - docs/development-tooling
+    - package.json
+    - package-lock.json
+    - tsconfig.json
+    - .github
+    - .gitignore
+    - src/cli.ts
+    - eslint.config.ts
+    - .prettierrc.yaml
+    - .prettierignore
+    - tsconfig.tests.json
+    - tsconfig.fixtures.json
+    - tsconfig.tooling.json
+  publicModules: []
+  directoryExceptions:
+    - path: .
+      reason: Root-file directory granularity; exact ownership checks remain mandatory
+discovery:
+  source:
+    - src/cli.ts
+  documentation:
+    - docs/development-tooling
+  tests:
+    - tests/development-tooling
+  exclude: []
+provides: []
+consumes: []

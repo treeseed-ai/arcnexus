@@ -10,7 +10,6 @@ constraints:
   - No automatic commits, integration or publishing; model delegation is
     disabled, and only captured workday participants may be dispatched by the
     host
-allowedWritePaths: []
 verification:
   - command: npm
     args:
@@ -27,45 +26,20 @@ verification:
       - --project
       - .
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
   writeDirectories: []
-schemaVersion: 3
+schemaVersion: 4
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces: []
-documentation:
-  - README.md
-  - docs
-tests:
-  - tests
 relatedIds: []
 parentId: arcnexus
-members:
-  foundations: []
-  dependencies: []
-  gateways:
-    - cli
-  libraries:
-    - architecture
-    - assignment
-    - steward
-    - workspace
-    - operations
-    - change-inspection
-    - report
-    - coordination-store
-    - workday
-    - agent-guidance
-    - guidance-validation
-    - experiments
-    - development-tooling
-    - architecture-maintenance
-    - task-intake
-  releases: []
 operationIds: []
+patternIds:
+  - readable-typescript
+repositoryRoot: .
+provides: []
+consumes: []

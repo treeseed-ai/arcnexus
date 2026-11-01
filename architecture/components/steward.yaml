@@ -3,15 +3,12 @@ type: library
 purpose: Adapt the Codex harness with explicit execution permissions and evidence
 path: src/steward
 objectives:
-  - Research and implement bounded objectives with independently verified evidence
+  - Research and implement bounded objectives with independently verified
+    evidence
 constraints:
   - Caller owns commits and integration
   - Do not edit architecture or weaken host verification
   - Implement only approved execution settings
-allowedWritePaths:
-  - src/steward
-  - tests/steward
-  - docs/steward
 verification:
   - command: npm
     args:
@@ -35,10 +32,6 @@ verification:
     args:
       - run
       - lint
-patterns:
-  - Document intent, test observable behavior, implement
-  - Verify actual SDK executable arguments and report settings
-  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
 access:
   readPaths:
     - .
@@ -46,20 +39,39 @@ access:
     - src/steward
     - tests/steward
     - docs/steward
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - "runCodex: explicit SDK permissions and structured result"
-documentation:
-  - docs/steward/execution-contract.md
-tests:
-  - tests/steward/context.test.ts
-  - tests/steward/parent-loss.test.ts
 relatedIds:
   - architecture
 questions: []
 parentId: cli-package
 operationIds:
   - steward-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/steward
+    - tests/steward
+    - docs/steward
+  publicModules:
+    - src/steward/bridge.ts
+    - src/steward/codex.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/steward
+  documentation:
+    - docs/steward
+  tests:
+    - tests/steward
+  exclude: []
+provides: []
+consumes:
+  - id: agent-result
+    version: "1"
+  - id: initializer-result
+    version: "1"

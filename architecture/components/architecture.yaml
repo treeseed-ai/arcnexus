@@ -1,17 +1,12 @@
 id: architecture
 type: library
-purpose: Resolve architectural definitions and immutable assignment inputs; execution is owned
-  by the assignment component
+purpose: Resolve architectural definitions and immutable assignment inputs;
+  execution is owned by the assignment component
 path: src/architecture
 objectives:
   - Make actual execution outcomes easy to inspect
 constraints:
   - Preserve captured authority and evidence
-allowedWritePaths:
-  - src/architecture
-  - tests/architecture
-  - docs/architecture
-  - schemas
 verification:
   - command: npm
     args:
@@ -36,9 +31,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
@@ -46,24 +38,76 @@ access:
     - src/architecture
     - tests/architecture
     - docs/architecture
-    - schemas
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - "loadCatalog: immutable graph validation"
   - "resolveAssignment: captured authority and deterministic digest"
-documentation:
-  - docs/architecture/architecture-contract.md
-  - docs/architecture/component-access.md
-  - docs/architecture/configuration.md
-tests:
-  - tests/architecture/architecture.test.ts
-  - tests/architecture/catalog-ownership.test.ts
-  - tests/architecture/permissions.test.ts
 relatedIds:
   - assignment
 parentId: cli-package
 operationIds:
   - architecture-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/architecture
+    - tests/architecture
+    - docs/architecture
+  publicModules:
+    - src/architecture/assignment.ts
+    - src/architecture/bindings.ts
+    - src/architecture/components.ts
+    - src/architecture/config.ts
+    - src/architecture/configuration.ts
+    - src/architecture/initialization.ts
+    - src/architecture/permissions.ts
+    - src/architecture/schema.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/architecture
+  documentation:
+    - docs/architecture
+  tests:
+    - tests/architecture
+  exclude: []
+provides:
+  - id: component-v4
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/component-v4.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: component
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/component.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: composition-profile
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/composition-profile.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: execution-profile
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/execution-profile.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: ownership
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/ownership.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: pattern
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/pattern.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: role
+    version: "1"
+    kind: json-schema
+    path: src/architecture/schemas/role.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes: []

@@ -6,10 +6,6 @@ objectives:
   - Resolve and execute bounded two-owner workdays
 constraints:
   - Preserve captured authority and evidence
-allowedWritePaths:
-  - src/workday
-  - tests/workday
-  - docs/workday
 verification:
   - command: npm
     args:
@@ -34,9 +30,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - One host writer; candidate input never widens authority
 access:
   readPaths:
     - .
@@ -44,19 +37,11 @@ access:
     - src/workday
     - tests/workday
     - docs/workday
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Captured two-owner workday contract
-documentation:
-  - docs/workday/workdays.md
-tests:
-  - tests/workday/handoffs.test.ts
-  - tests/workday/parking.test.ts
-  - tests/workday/workday-interruption.test.ts
-  - tests/workday/workdays.test.ts
 relatedIds:
   - assignment
   - workspace
@@ -64,3 +49,39 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - workday-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/workday
+    - tests/workday
+    - docs/workday
+  publicModules:
+    - src/workday/workday-config.ts
+    - src/workday/workday-view.ts
+    - src/workday/workday.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/workday
+  documentation:
+    - docs/workday
+  tests:
+    - tests/workday
+  exclude: []
+provides:
+  - id: workday-agent-result
+    version: "1"
+    kind: json-schema
+    path: src/workday/schemas/workday-agent-result.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: workday
+    version: "1"
+    kind: json-schema
+    path: src/workday/schemas/workday.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes:
+  - id: workday
+    version: "1"
+  - id: workday-agent-result
+    version: "1"
