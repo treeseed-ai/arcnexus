@@ -40,6 +40,7 @@ access:
     - qualification
     - fixtures
     - scripts
+    - docs/acceptance
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -60,10 +61,6 @@ ownership:
     - fixtures
     - scripts
     - docs/acceptance
-    - docs/experiment-qualification.json
-    - docs/guidance-qualification.json
-    - docs/operations-qualification.json
-    - docs/workday-qualification.json
   publicModules:
     - src/experiments/experiment-config.ts
     - src/experiments/experiments.ts
@@ -74,10 +71,6 @@ discovery:
   documentation:
     - docs/experiments
     - docs/acceptance
-    - docs/experiment-qualification.json
-    - docs/guidance-qualification.json
-    - docs/operations-qualification.json
-    - docs/workday-qualification.json
   tests:
     - tests/experiments
   exclude: []

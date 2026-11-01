@@ -43,3 +43,12 @@ patternIds:
   - readable-typescript
 provides: []
 consumes: []
+coverageExclusions:
+  - path: docs/experiment-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/guidance-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/operations-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/workday-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
