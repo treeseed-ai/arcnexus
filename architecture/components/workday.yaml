@@ -1,9 +1,9 @@
 id: workday
 type: library
-purpose: Resolve and execute bounded two-owner workdays
+purpose: Select fair self-directed stewardship turns from the eligible package catalog
 path: src/library/workday
 objectives:
-  - Resolve and execute bounded two-owner workdays
+  - Select fair self-directed stewardship turns from the eligible package catalog
 constraints:
   - Preserve captured authority and evidence
 verification:
@@ -42,7 +42,7 @@ schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
-  - Captured two-owner workday contract
+  - Self-directed stewardship policy and historical workday evidence inspection
 relatedIds:
   - assignment
   - workspace
