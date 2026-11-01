@@ -276,25 +276,54 @@ A bounded ArcNexus documentation improvement is running from clean source `9e14f
 in `source-v9`, using the stable captured supervisor `52354e4`. Its exact prompt,
 command and revisions are in `live-v9-invocation.json`; no delivered result is claimed.
 
+## Latest verified deliveries and qualification status
+
+The integrated suite at `f2a6d41` passed **419/419**, with static checks, build,
+ownership and guidance validation passing (`/tmp/arcnexus-78-*-v19.log`). GitHub
+Development run `41344690704` also passed at that revision. Later changes require
+fresh integrated verification.
+
+Live workday `c9b356cb-981f-4d19-bd3b-85f1c3eb57ce` delivered the names improvement
+with an inbox request: assignment `a1e689a2-ecf6-452f-a133-74c7c97402cb`, independent
+review `b996f76c-3eca-470a-a361-d71bf3884e05`, candidate
+`2d82698c8009459ce6ac98e12dd5e7595019e9fa`. Its actual whitespace normalization
+change, owner tests and direct CLI assertions are retained in `workday-live-v1`.
+`safe-recovery-verification.json` also records same-run continuation after host loss
+at a safe paused checkpoint. Normal stop then reached stopped with no active work.
+
+A second live workday `344ab01e-1386-4cf4-ab4f-841614f862cf` reached idle after
+verified CLI documentation and service/names inbox deliveries. One unrelated
+assignment failed; four completed. Evidence in `workday-live-v2` includes
+`idle-report.json`, `verified-usage.patch`, candidate test results and `stop.json`.
+This demonstrates successful work and failure isolation, not universal success.
+
+ArcNexus self-development task `4581fa39-75aa-480a-b0bb-95ae5c441180` completed.
+Worker `e20c95d5-539d-44da-aa8e-b0910631e667` changed only
+`docs/library/report/report.md`; every captured baseline and final host command
+passed. Owner verifier `d1b3a3db-7524-4310-8054-f6f868f53cdd` accepted all ten criteria;
+goal assessment `5403cc63-1109-4c2a-a522-bdbaf8abc399` accepted all eleven criteria.
+The stable supervisor was `52354e4`, source authority `9e14ff0`. The exact diff and
+assessment references are retained as `live-v9-verified.patch` and
+`live-v9-integration-evidence.json`. Caller integration is commit `285c741`; workers
+did not integrate, publish or change the source checkout.
+
+Live gates 2–6 now have demonstrations: self-directed verified work plus inbox,
+unfinished work across pause/resume, task/workday coordination, cancellation and
+host-loss recovery, and independently verified ArcNexus self-improvement. Their
+individual evidence above does not replace the deterministic race/crash matrix.
+Gate 1 remains open: a complete verified three-owner prompt with a dynamically
+discovered owner. V5 exposed missing readable supplier assessments (#104); V6
+exposed completed expected-regression mismatch handling (#105). Neither failed
+attempt is counted as a completed task, and original criteria remain unchanged.
+
 ## Remaining qualification and implementation work
 
-Full qualification remains incomplete. Outstanding combined gates include three-owner verified task delivery;
-self-directed workday improvement with inbox work; retained partial work across
-pause/resume; the remaining task-interruption race cases; validated host-loss continuation; and
-an independently verified ArcNexus improvement with its actual diff retained.
+Phase three remains blocked. Complete the three-owner live task, qualify the latest
+recovery/evidence changes, rerun integrated checks, and migrate legacy manifest and
+proposal experiments to the shared engine before removing their execution adapters.
+Historical report readers and useful validation/test/evidence commands remain.
 
-The newer verifier, captured-check and completed-turn recovery behavior still
-requires successful live qualification. Each attempt retains its original
-acceptance baseline; failed checks have not been waived.
-
-Implementation still needs integrated qualification of assembled-candidate checks,
-director reconsideration after blocked/decomposition changes, lifecycle and crash
-race cases, and migration of legacy manifest/proposal experiments to the shared
-engine. The legacy execution adapters remain available and are not the new normal
-interface. Historical reports must remain readable.
-
-Runtime/store/CLI changes so far are bootstrap development by the caller. The
-attempted documentation task is the first bounded use of the new runtime for
-ArcNexus's own improvement. Its incomplete edits are evidence, not a delivered
-self-development result. No source integration, publication or phase-three waiver
-has been performed by workers.
+Runtime/store/CLI changes remain bootstrap work by the caller. The independently
+verified report-guide improvement is the first delivered self-development result.
+Subsequent documentation status corrections are caller edits, distinguished from
+the retained exact runtime delivery.

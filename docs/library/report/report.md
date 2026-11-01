@@ -81,11 +81,10 @@ Optional legacy execution-profile limits remain unset unless explicitly selected
 This does not waive cancellation, process supervision, output limits, permissions,
 or independent host checks.
 
-General execution remains in qualification. The retained qualification record says
-all six live gates are unqualified, including multi-owner delivery, self-directed
-workday improvement, pause/resume, interruption, cancellation/host-loss recovery,
-and an independently verified ArcNexus improvement with its diff retained.
-Deterministic tests and partial live evidence do not declare phase-three readiness.
+General execution remains in qualification. The qualification record retains live
+workday, lifecycle and self-development evidence, while the three-owner task gate
+and remaining migration work still prevent phase-three readiness. Deterministic
+tests do not substitute for the outstanding live demonstration.
 Implementation references for these projections are `src/library/report/execution-report.ts`
 and `src/library/report/execution-evidence.ts`; assignment and run fields are defined
 in `src/library/coordination-store/execution-types.ts`. Captured report checks are
