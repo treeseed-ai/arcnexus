@@ -95,6 +95,7 @@ unsuccessful execution, `2` for invalid input/preflight, and `130` for cancellat
 General execution rejects obsolete time/turn/call/attempt budgets. Cancellation,
 transport safeguards, progress detection and test watchdogs remain active.
 
-Legacy explicit execution commands remain migration adapters for historical scenarios.
-Use the normal commands above for new work. Validation, test selection and retained
+Legacy component, manifest and proposal execution commands are retired.
+Use the normal commands above for new work; `workday history <id>` reads an old
+workday record and `task inspect <id>` reads an old proposal. Validation, test selection and retained
 report inspection remain supported; historical reports do not gain new authority.

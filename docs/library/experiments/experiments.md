@@ -1,4 +1,63 @@
-# Repeatable experiments
+# Repeatable prompt experiments
+
+Normal execution uses the shared task host. Inspect a version-3 campaign with
+`arcnexus experiment inspect <manifest> --bindings <file> --json`; execute it with
+`arcnexus experiment run <manifest> --bindings <file> --mode live` (or explicitly
+`simulation`). Machine bindings select clean pinned configured projects and an
+executable. The manifest contains prompts, not participant assignments or budgets.
+
+## Prompt campaigns
+
+Version-3 campaigns exercise the shared task execution system. Each ordered case
+has an ID, project binding, prompt and expected task outcome. Models, eligible
+owners, checks and independent review come from the captured package configuration;
+cases do not select a fixed requester/recipient pair, model or execution budget.
+Explicit `simulation` or `live` evidence labels remain mandatory. A simulation
+binding supplies a controlled executable and cannot establish live qualification.
+
+Each project binding pins the clean source checkout's current commit. The campaign
+captures local bindings before execution and creates a separate application-owned
+clone for each case, preserving the original checkout and prior case evidence.
+It invokes the ordinary `task run <prompt>` interface in that clone. The application
+host owns supervision and durable candidate evidence. Campaign cancellation sends
+normal task cancellation; an already detached project host remains authoritative
+if the campaign process itself is lost. Inspect or stop retained project execution
+before retrying an interrupted campaign; do not silently replay it.
+
+A completed case requires the expected task status and its corresponding exit code;
+verified completion still requires the task runtime's captured host checks,
+independent owner verification and director goal assessment. Retain the complete
+stream, terminal projection, state directory, candidate reference and captured
+source/bindings identity. Snapshot all case inputs before running the first case.
+No experiment commits or integrates a candidate into the original checkout.
+
+Legacy manifests and reports remain inspectable. Version-1/2 execution is retired;
+active examples use version 3. See the [migration contract](../../gateway/cli/execution-migration.md)
+for retained historical inputs and replacement coverage.
+
+The testing library supplies the reusable multi-owner controlled harness used by
+runtime and prompt-campaign acceptance. Sharing that fixture preserves identical
+SDK, dependency and verification behavior across both entry points; individual
+component suites retain their own scenarios and assertions.
+
+## General fixture and normal campaign example
+
+The bundled `general` fixture is a complete package with three executable owners:
+CLI argument handling, greeting construction and name normalization. Its committed
+configuration selects engineering and independent direction/review profiles, declares
+owner and assembled-package checks, and uses no execution budgets. Materialize its
+compiled payload into a clean Git repository, commit it, and provide only local
+executable bindings. The normal commands then discover everything from that package.
+
+`experiments/general-live.yaml` is the prompt-only live campaign example. It starts
+with the CLI owner and requires service and names to be discovered through persisted
+requests. Each supplier is accepted against its own API contract; downstream caller
+regressions are not prerequisites for supplier delivery. Real independent verification
+and final goal assessment determine completion. The fixture and campaign replace the
+fixed two-participant example for new qualification work; older fixture files remain
+historical characterization inputs.
+
+# Historical campaign formats
 
 Inspect without preparation or inference:
 
@@ -103,6 +162,7 @@ accepts the proposed rule; neither steward grants itself new authority.
 
 See [integrated qualification evidence](../../acceptance/experiments.md) for the completed
 live campaign and the separate simulation guarantees.
+
 ## Two-owner cases
 
 Version-2 experiment manifests may select `workday` (a manifest path) instead of a
@@ -142,52 +202,5 @@ An omitted experiment-case attempt limit leaves the runtime limit unset. Only an
 explicit `maxAttempts` is forwarded to the worker; experiment wrappers must not
 introduce an implicit single-attempt quota.
 
-## Prompt-driven campaign migration
-
-Version-3 campaigns exercise the shared task execution system. Each ordered case
-has an ID, project binding, prompt and expected task outcome. Models, eligible
-owners, checks and independent review come from the captured package configuration;
-cases do not select a fixed requester/recipient pair, model or execution budget.
-Explicit `simulation` or `live` evidence labels remain mandatory. A simulation
-binding supplies a controlled executable and cannot establish live qualification.
-
-Each project binding pins the clean source checkout's current commit. The campaign
-captures local bindings before execution and creates a separate application-owned
-clone for each case, preserving the original checkout and prior case evidence.
-It invokes the ordinary `task run <prompt>` interface in that clone. The application
-host owns supervision and durable candidate evidence. Campaign cancellation sends
-normal task cancellation; an already detached project host remains authoritative
-if the campaign process itself is lost. Inspect or stop retained project execution
-before retrying an interrupted campaign; do not silently replay it.
-
-A completed case requires the expected task status and its corresponding exit code;
-verified completion still requires the task runtime's captured host checks,
-independent owner verification and director goal assessment. Retain the complete
-stream, terminal projection, state directory, candidate reference and captured
-source/bindings identity. Snapshot all case inputs before running the first case.
-No experiment commits or integrates a candidate into the original checkout.
-
-Legacy manifests and reports remain readable during migration. Legacy scenarios
-must be ported to the shared engine before their execution adapters are removed.
-
-The testing library supplies the reusable multi-owner controlled harness used by
-runtime and prompt-campaign acceptance. Sharing that fixture preserves identical
-SDK, dependency and verification behavior across both entry points; individual
-component suites retain their own scenarios and assertions.
-
-## General fixture and normal campaign example
-
-The bundled `general` fixture is a complete package with three executable owners:
-CLI argument handling, greeting construction and name normalization. Its committed
-configuration selects engineering and independent direction/review profiles, declares
-owner and assembled-package checks, and uses no execution budgets. Materialize its
-compiled payload into a clean Git repository, commit it, and provide only local
-executable bindings. The normal commands then discover everything from that package.
-
-`experiments/general-live.yaml` is the prompt-only live campaign example. It starts
-with the CLI owner and requires service and names to be discovered through persisted
-requests. Each supplier is accepted against its own API contract; downstream caller
-regressions are not prerequisites for supplier delivery. Real independent verification
-and final goal assessment determine completion. The fixture and campaign replace the
-fixed two-participant example for new qualification work; older fixture files remain
-historical characterization inputs while their scenarios are migrated.
+The preceding legacy formats describe archived evidence. They cannot execute
+through the current CLI. Filenames ending in `.historical.yaml` retain their recipes.

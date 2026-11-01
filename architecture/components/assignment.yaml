@@ -1,6 +1,6 @@
 id: assignment
 type: library
-purpose: Coordinate bounded assignments and host verification
+purpose: Resume owner-scoped assignments through durable engineering and host verification stages
 path: src/library/assignment
 objectives:
   - Make actual execution outcomes easy to inspect

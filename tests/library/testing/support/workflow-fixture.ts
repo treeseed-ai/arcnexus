@@ -4,11 +4,13 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { catalogFixture, componentFields } from './catalog-fixture.js';
 import type { WorkflowOptions } from './controlled-workflow.js';
 
 export const cli = resolve('dist/cli.js');
+
+export const stewardEntry = fileURLToPath(new URL('./steward-entry.js', import.meta.url));
 
 export function workflowFixture(t: TestContext, mode = 'success'): WorkflowFixture {
   return new WorkflowFixture(t, mode);
@@ -74,7 +76,7 @@ export class WorkflowFixture {
     return spawnSync(
       process.execPath,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         'Improve behavior',

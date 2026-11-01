@@ -1,0 +1,64 @@
+schemaVersion: 1
+modes:
+  - simulation
+cases:
+  - id: success
+    project: fixture
+    component: sample
+    assignment: assignments/simulation.yaml
+    expectedOutcome: ready_for_integration
+    scenario: success
+    maxAttempts: 1
+    acceptance:
+      - command: node
+        args:
+          - ../dist/library/experiments/checks/simulation.js
+          - "{report}"
+          - success
+        artifacts:
+          - ../dist/library/experiments/checks/simulation.js
+  - id: repair
+    project: fixture
+    component: sample
+    assignment: assignments/simulation.yaml
+    expectedOutcome: ready_for_integration
+    scenario: repair
+    maxAttempts: 2
+    acceptance:
+      - command: node
+        args:
+          - ../dist/library/experiments/checks/simulation.js
+          - "{report}"
+          - repair
+        artifacts:
+          - ../dist/library/experiments/checks/simulation.js
+  - id: boundary
+    project: fixture
+    component: sample
+    assignment: assignments/simulation.yaml
+    expectedOutcome: blocked
+    scenario: boundary
+    maxAttempts: 1
+    acceptance:
+      - command: node
+        args:
+          - ../dist/library/experiments/checks/simulation.js
+          - "{report}"
+          - boundary
+        artifacts:
+          - ../dist/library/experiments/checks/simulation.js
+  - id: failure
+    project: fixture
+    component: sample
+    assignment: assignments/simulation.yaml
+    expectedOutcome: ready_for_integration
+    scenario: failure
+    maxAttempts: 1
+    acceptance:
+      - command: node
+        args:
+          - ../dist/library/experiments/checks/simulation.js
+          - "{report}"
+          - failure
+        artifacts:
+          - ../dist/library/experiments/checks/simulation.js

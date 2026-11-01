@@ -33,9 +33,7 @@ export class AssignmentCommand {
   resolve() {
     const { values, positionals, command } = this;
     const bindings = loadBindings(values.bindings);
-    const selection = ['run', 'inspect'].includes(command!)
-      ? resolveBase(values.project!, values.base)
-      : undefined;
+    const selection = command === 'inspect' ? resolveBase(values.project!, values.base) : undefined;
     const resolved = selection
       ? resolveAssignment(selection.source, selection.base, positionals[1]!, {
           objective: positionals[2],

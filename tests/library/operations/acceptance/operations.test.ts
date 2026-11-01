@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { operationFixture as fixture } from '../../testing/support/operations-fixture.js';
-import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+import { cli, stewardEntry, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises operations behavior through observable scenarios. */
 class OperationsTests {
@@ -127,7 +127,7 @@ class OperationsTests {
     const r = spawnSync(
       process.execPath,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         'Research',

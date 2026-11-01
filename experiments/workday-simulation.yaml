@@ -1,16 +1,14 @@
-schemaVersion: 2
-modes:
-  - simulation
-cases:
-  - id: contract-handoff
-    project: fixture
-    workday: workdays/fixture.yaml
-    expectedOutcome: completed
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/workday-report.js
-          - "{report}"
-        artifacts:
-          - ../dist/library/experiments/checks/workday-report.js
-    scenario: handoff
+{
+  "schemaVersion": 3,
+  "modes": [
+    "simulation"
+  ],
+  "cases": [
+    {
+      "id": "dynamic-chain",
+      "project": "fixture",
+      "prompt": "Research the dependency chain. Start with one eligible owner and request the additional existing owners needed for verified evidence. Retain independently verified deliveries and assess the complete goal.",
+      "expectedOutcome": "completed"
+    }
+  ]
+}

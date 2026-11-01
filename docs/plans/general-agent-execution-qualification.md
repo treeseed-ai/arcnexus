@@ -307,20 +307,33 @@ assessment references are retained as `live-v9-verified.patch` and
 `live-v9-integration-evidence.json`. Caller integration is commit `285c741`; workers
 did not integrate, publish or change the source checkout.
 
-Live gates 2–6 now have demonstrations: self-directed verified work plus inbox,
-unfinished work across pause/resume, task/workday coordination, cancellation and
-host-loss recovery, and independently verified ArcNexus self-improvement. Their
-individual evidence above does not replace the deterministic race/crash matrix.
-Gate 1 remains open: a complete verified three-owner prompt with a dynamically
-discovered owner. V5 exposed missing readable supplier assessments (#104); V6
-exposed completed expected-regression mismatch handling (#105). Neither failed
-attempt is counted as a completed task, and original criteria remain unchanged.
+Live task `a0f2a406-df46-4cd5-93c0-19ddbb030ac9` completed the three-owner goal
+under supervisor `d6c1fb0` against the original greeting source `855fd8f`. It started
+only CLI; persisted delivered-milestone requests activated service, then names.
+All three changed actual implementation, documentation and regressions (nine files,
+35 additions and five deletions). Candidate `5c4510de83ca11bf8d6fa7c105c795b832b9d4f7`
+passed three independent owner assessments and goal assessment
+`c30ce042-4ea6-4736-bd22-d1d554c6c457` covering nineteen criteria. Caller checks ran
+all owner tests and exact names/service/CLI examples successfully. Source stayed
+clean. Retained evidence in `general-live-v7` includes `verified-candidate.patch`,
+`verified-delivery.json`, `caller-tests.log` and `caller-exact-acceptance.log`.
+The completed qualification host was retired after confirming no active execution.
+
+All six live gates now have demonstrations. This does not replace the deterministic
+race/crash matrix, latest-revision static checks or required PR review. Earlier failed
+attempts remain retained and are not counted as completed tasks.
+
+The pre-migration integrated suite passed **429/429** in 548 seconds, retained as
+`b4147412-aa60-431f-b6eb-17ea86c83a80` and `/tmp/arcnexus-78-full-suite-v20.log`.
+It used the pre-migration assembled build; source migration overlapped its run, so
+it is not final revision qualification. Rerun after the migration tree is frozen.
 
 ## Remaining qualification and implementation work
 
-Phase three remains blocked. Complete the three-owner live task, qualify the latest
-recovery/evidence changes, rerun integrated checks, and migrate legacy manifest and
-proposal experiments to the shared engine before removing their execution adapters.
+Phase three remains blocked pending final integrated checks and review of the
+CLI/campaign migration. Legacy execution adapters have been removed in the working
+implementation; replacement and historical-inspection checks must pass before
+calling that slice complete.
 Historical report readers and useful validation/test/evidence commands remain.
 
 Runtime/store/CLI changes remain bootstrap work by the caller. The independently

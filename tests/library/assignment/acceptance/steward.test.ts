@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { TestProcess, waitFor } from '../../testing/support/test-process.js';
-import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+import { cli, stewardEntry, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises steward behavior through observable scenarios. */
 class StewardTests {
@@ -96,7 +96,7 @@ class StewardTests {
     return new TestProcess(
       t,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         'Improve behavior',
@@ -132,10 +132,14 @@ class StewardTests {
         encoding: 'utf8',
       });
     assert.equal(preview.status, 0, preview.stderr);
-    const r = spawnSync(process.execPath, [cli, 'run', ...args, '--codex-path', f.executable], {
-      encoding: 'utf8',
-      env: f.env,
-    });
+    const r = spawnSync(
+      process.execPath,
+      [stewardEntry, 'run', ...args, '--codex-path', f.executable],
+      {
+        encoding: 'utf8',
+        env: f.env,
+      },
+    );
     assert.equal(r.status, 0, r.stderr);
     const v = JSON.parse(r.stdout);
     assert.equal(v.resolvedAssignment.digest, JSON.parse(preview.stdout).digest);

@@ -73,5 +73,5 @@ node dist/cli.js test run --project .
 Run `npm run format:check`, `npm run lint`, `npm run check` and `npm run build` before
 qualification. Deterministic tests, [CI](docs/release/ci.md) and live model execution
 provide distinct evidence. [Experiments](docs/library/experiments/experiments.md)
-label simulation and live runs explicitly. Legacy explicit-execution adapters remain
-migration-only while their fixtures and scenarios move to the shared engine.
+label simulation and live runs explicitly. Legacy execution commands are retired; historical reports and manifests remain
+inspectable. Active campaigns use the shared task host.

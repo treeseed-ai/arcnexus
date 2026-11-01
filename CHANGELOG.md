@@ -12,6 +12,8 @@
 
 ### Changed
 
+- Retire component, fixed-owner workday and proposal execution commands; preserve historical inspection and route prompt campaigns through the shared host (#106).
+
 - Enforce readable class/method structure and separate delivery verification lifecycles (#73).
 - Align component directories and CLI adapters with ownership and shared test selection (#72).
 
@@ -84,6 +86,7 @@
 - Add initial repository validation CI (#3).
 
 ### Fixed
+
 - Supply executable and revision context to bounded stewards (#38).
 
 - Record qualification evidence and correct failure diagnostics and ownership (#32).

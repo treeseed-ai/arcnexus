@@ -1,80 +1,38 @@
-schemaVersion: 1
-modes:
-  - live
-cases:
-  - id: report-change
-    base: 0c2d68e9377f7512dda4de70094c176a52e0b395
-    component: report
-    expectedOutcome: ready_for_integration
-    project: arc
-    assignment: assignments/report-change.yaml
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/check-run.js
-          - "{report}"
-          - change
-        artifacts:
-          - ../dist/library/experiments/checks/check-run.js
-  - id: report-corrective-repair
-    base: 0c2d68e9377f7512dda4de70094c176a52e0b395
-    component: report
-    expectedOutcome: ready_for_integration
-    maxAttempts: 2
-    faultInjection: One-time external acceptance harness replaces the implemented
-      Operations heading; unchanged check must fail then pass after Luna edits
-      real code.
-    project: arc
-    assignment: assignments/report-corrective-repair.yaml
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/check-run.js
-          - "{report}"
-          - repair
-        artifacts:
-          - ../dist/library/experiments/checks/check-run.js
-  - id: treeseed-command
-    base: 6d5676317eab400c1e473bb2e0a89f575973c296
-    component: artifact-diagnostics
-    expectedOutcome: research_completed
-    project: tree
-    assignment: assignments/treeseed-command.yaml
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/check-run.js
-          - "{report}"
-          - tree
-        artifacts:
-          - ../dist/library/experiments/checks/check-run.js
-  - id: local-http
-    base: 5ecf737fada6bb22737011ffa85689a0a11fc5cc
-    component: http
-    expectedOutcome: research_completed
-    project: http
-    assignment: assignments/local-http.yaml
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/check-run.js
-          - "{report}"
-          - http
-        artifacts:
-          - ../dist/library/experiments/checks/check-run.js
-  - id: prior-evidence-research
-    base: 0c2d68e9377f7512dda4de70094c176a52e0b395
-    component: report
-    expectedOutcome: research_completed
-    project: arc
-    assignment: assignments/prior-evidence-research.yaml
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/check-run.js
-          - "{report}"
-          - history
-        artifacts:
-          - ../dist/library/experiments/checks/check-run.js
-    priorEvidenceIds:
-      - prior-findings
+{
+  "schemaVersion": 3,
+  "modes": [
+    "live"
+  ],
+  "cases": [
+    {
+      "id": "report-change",
+      "project": "arc",
+      "prompt": "Add Operations and Managed services summaries to the Markdown report using only captured JSON fields. Modify only src/library/report/report.ts, tests/library/report/report.test.mjs and docs/library/report/report.md. Inspect src/library/operations/operations.ts and src/library/operations/services.ts read-only for record shape. Preserve existing report fields. During specification edit docs/tests only, invoke operations.run report-tests to observe the regression, and select captured npm test (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red check. Implementation may build dist with npm run build before exploratory report-tests. Complete every checklist item or validly skip it with reason, respecting dependency order. No commits; caller owns issue/branch/release steps.\nAcceptance: Markdown has ## Operations with each captured operation id, passed when exitCode=0 otherwise failed, durationMs and log path; ## Managed services with id, status and endpointClosed boolean.; Historical absent/empty arrays show exactly No managed operations recorded. and No managed services recorded.; never undefined/null. Preserve existing sections and do not mutate records.; Document behavior and add regression tests including a built CLI report assertion. Run report-tests through operations.run for actual feedback; update plan checklist with evidence and provide caller handoff.. Use captured project checks and independent verification. Retain actual evidence and the candidate for caller integration.",
+      "expectedOutcome": "completed"
+    },
+    {
+      "id": "report-corrective-repair",
+      "project": "arc",
+      "prompt": "Add Operations and Managed services summaries to the Markdown report using only captured JSON fields. Modify only src/library/report/report.ts, tests/library/report/report.test.mjs and docs/library/report/report.md. Inspect src/library/operations/operations.ts and src/library/operations/services.ts read-only for record shape. Preserve existing report fields. During specification edit docs/tests only, invoke operations.run report-tests to observe the regression, and select captured npm test (verificationIndex 1) with a distinctive literal assertion diagnostic for the host expected-red check. Implementation may build dist with npm run build before exploratory report-tests. Complete every checklist item or validly skip it with reason, respecting dependency order. No commits; caller owns issue/branch/release steps.\nAcceptance: Markdown has ## Operations with each captured operation id, passed when exitCode=0 otherwise failed, durationMs and log path; ## Managed services with id, status and endpointClosed boolean.; Historical absent/empty arrays show exactly No managed operations recorded. and No managed services recorded.; never undefined/null. Preserve existing sections and do not mutate records.; Document behavior and add regression tests including a built CLI report assertion. Run report-tests through operations.run for actual feedback; update plan checklist with evidence and provide caller handoff.. Use captured project checks and independent verification. Retain actual evidence and the candidate for caller integration.",
+      "expectedOutcome": "completed"
+    },
+    {
+      "id": "treeseed-command",
+      "project": "tree",
+      "prompt": "Inspect the Platform artifact-diagnostics responsibility and pinned read-only CLI/SDK owners. Invoke operations.run artifact-diagnostics-tests once to obtain real bound-Bun test feedback. Explain what those archive tests establish and remaining uncertainty; do not edit source or start servers. Complete the checklist with observed evidence.\nAcceptance: Use the declared artifact-diagnostics-tests operation and report real output.; Explain repository ownership and diagnostic behavior from actual files and tests, with evidence and uncertainty.. Use captured project checks and independent verification. Retain actual evidence and the candidate for caller integration.",
+      "expectedOutcome": "completed"
+    },
+    {
+      "id": "local-http",
+      "project": "http",
+      "prompt": "Qualify the declared local HTTP service without source edits. During execution use services.start serve, operations.run health, services.logs serve and services.stop serve; report readiness, response, logs and closed endpoint. Complete the checklist with evidence. Planning should only plan, not start the service.\nAcceptance: Demonstrate managed local service readiness, declared HTTP request and bounded log access.; Stop the service and report its lifecycle evidence without source edits.. Use captured project checks and independent verification. Retain actual evidence and the candidate for caller integration.",
+      "expectedOutcome": "completed"
+    },
+    {
+      "id": "prior-evidence-research",
+      "project": "arc",
+      "prompt": "Investigate this architectural question: what does the report-tests operation prove about reporting, and what requires independent host acceptance? Use the explicitly supplied prior finding as evidence to evaluate, inspect current report tests, invoke operations.run report-tests once, and explain remaining uncertainty. Do not edit files. Complete checklist items with evidence.\nAcceptance: Identify the supplied prior finding and compare it with current source/tests.; Run declared report-tests and explain limits of that evidence and independent acceptance.. Use captured project checks and independent verification. Retain actual evidence and the candidate for caller integration.",
+      "expectedOutcome": "completed"
+    }
+  ]
+}

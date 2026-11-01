@@ -1,15 +1,14 @@
-schemaVersion: 2
-modes:
-  - live
-cases:
-  - id: guidance-handoff
-    project: arcnexus
-    workday: workdays/guidance.yaml
-    expectedOutcome: completed
-    acceptance:
-      - command: node
-        args:
-          - ../dist/library/experiments/checks/workday-report.js
-          - "{report}"
-        artifacts:
-          - ../dist/library/experiments/checks/workday-report.js
+{
+  "schemaVersion": 3,
+  "modes": [
+    "live"
+  ],
+  "cases": [
+    {
+      "id": "guidance-improvement",
+      "project": "arcnexus",
+      "prompt": "Improve the existing guidance validation contract under the declared agent-guidance, assignment and guidance-validation owners. Inspect current contracts, select a concrete useful improvement, request dependencies from their accountable owners, and preserve captured authority. Make actual documentation, regression and implementation changes where needed. Require captured host checks, independent verification and goal assessment. Retain the candidate for caller integration; architecture changes require a decision.",
+      "expectedOutcome": "completed"
+    }
+  ]
+}

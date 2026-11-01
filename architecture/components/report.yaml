@@ -1,6 +1,6 @@
 id: report
 type: library
-purpose: Expose honest, readable evidence from a steward execution
+purpose: Project honest run, assignment and verification evidence without changing authority
 path: src/library/report
 objectives:
   - Make actual execution outcomes easy to inspect

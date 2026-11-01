@@ -1,14 +1,14 @@
 id: task-intake
 type: library
-purpose: Initialize assignments and propose accountable owners before execution
+purpose: Direct prompt tasks and independently assess goals and deliveries
 path: src/library/task-intake
 objectives:
   - Interpret requests and identify accountable existing owners
   - Report missing responsibilities and architectural questions precisely
+  - Retain goal acceptance and reconsider decomposition without a participant ceiling
 constraints:
   - Never silently broaden a captured assignment or grant write authority
-  - Initializer activation is source-read-only and cannot recursively initialize
-    or apply architecture proposals
+  - Director and verifier activations are source-read-only and cannot apply architecture proposals
 verification:
   - command: npm
     args:

@@ -7,18 +7,14 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { waitFor } from '../../testing/support/test-process.js';
-import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
+import { stewardEntry, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises parent loss behavior through observable scenarios. */
 class ParentLossTests {
   /** Verifies that built sdklauncher stops codex after hard host loss. */
   async builtSDKLauncherStopsCodexAfterHardHostLoss(t: TestContext) {
     const f = workflowFixture(t, 'specification-timeout'),
-      child = spawn(
-        process.execPath,
-        [cli, 'run', 'sample', 'Bounded change', '--project', f.repo, '--codex-path', f.executable],
-        { env: f.env, stdio: 'ignore' },
-      );
+      child = this.launch(f);
     let pid: number | undefined;
     t.after(() => {
       child.kill('SIGKILL');
@@ -41,6 +37,24 @@ class ParentLossTests {
       5000,
     );
     assert.deepEqual(groupMembers(pid), [], 'no steward process survives host loss');
+  }
+
+  /** Starts the assembled steward session under a disposable test-only subprocess host. */
+  private launch(f: ReturnType<typeof workflowFixture>) {
+    return spawn(
+      process.execPath,
+      [
+        stewardEntry,
+        'run',
+        'sample',
+        'Bounded change',
+        '--project',
+        f.repo,
+        '--codex-path',
+        f.executable,
+      ],
+      { env: f.env, stdio: 'ignore' },
+    );
   }
 
   /** Reads the retained Codex PID used to verify shutdown after parent loss. */

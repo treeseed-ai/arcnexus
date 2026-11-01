@@ -115,7 +115,7 @@ class SchedulerScenarios {
 
 const scenarios = new SchedulerScenarios();
 
-for (const count of [3, 5])
+for (const count of [2, 3, 5])
   test(`built scheduler delivers ${count} dynamically selected owners across reopening`, (t) =>
     scenarios.nested(t, count));
 

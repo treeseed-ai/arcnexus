@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
-import { cli } from '../../testing/support/workflow-fixture.js';
+import { cli, stewardEntry } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises prior evidence behavior through observable scenarios. */
 class PriorEvidenceTests {
@@ -113,7 +113,7 @@ function invoke(f: any, a: any, command: any = 'run'): any {
   return spawnSync(
     process.execPath,
     [
-      cli,
+      command === 'run' ? stewardEntry : cli,
       command,
       'sample',
       '--assignment',

@@ -4,7 +4,7 @@ import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { TestProcess, waitFor } from '../../testing/support/test-process.js';
-import { cli } from '../../testing/support/workflow-fixture.js';
+import { stewardEntry } from '../../testing/support/workflow-fixture.js';
 import { operationFixture } from '../../testing/support/operations-fixture.js';
 
 /** Exercises operation queue behavior through observable scenarios. */
@@ -29,7 +29,7 @@ class OperationQueueTests {
     const child = new TestProcess(
       t,
       [
-        cli,
+        stewardEntry,
         'run',
         'sample',
         'Inspect',

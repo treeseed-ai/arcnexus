@@ -29,3 +29,19 @@ Bundled live examples must select the general configured fixture or an explicitl
 bound clean configured target. Earlier fixed-revision qualification manifests are
 historical evidence recipes; they are not ready-to-run instructions for new modes.
 No scripted campaign counts as a live gate.
+
+Retired test contracts and their replacements:
+
+| Earlier contract                                           | Current coverage                                                                                           |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Fixed requester/recipient recursion and parking            | Execution-runtime scheduler, inbox, continuation and workspace candidate suites                            |
+| Per-owner active budget and correction quota               | Historical readers retain fields; no-budget execution and progress-diagnosis suites cover current behavior |
+| Explicit proposal acceptance and two-owner routing         | Prompt CLI, direction evidence, director recovery and verification coverage suites                         |
+| Legacy campaign success/correction and external acceptance | Prompt campaign, assignment host-check/regression suites and independent verification suites               |
+| Legacy campaign cancellation and supervisor integrity      | Prompt cancellation, host-loss, runner-snapshot and campaign integrity tests                               |
+
+Permission, immutable-authority, captured-test, real regression, operation and service
+checks remain session characterization tests through a test-only subprocess entry.
+Historical workday SQLite, proposal integrity, campaign inspection and report-checker
+tests remain. Retiring a legacy outcome is not permission to remove the corresponding
+current failure-mode coverage or weaken any captured live acceptance source.

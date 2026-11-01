@@ -1,9 +1,9 @@
 id: coordination-store
 type: library
-purpose: Persist atomic workday coordination and ordered evidence
+purpose: Persist transactional project runs, assignments, inbox dependencies and ordered evidence
 path: src/library/coordination-store
 objectives:
-  - Persist atomic workday coordination and ordered evidence
+  - Persist transactional project runs, assignments, inbox dependencies and ordered evidence
 constraints:
   - Preserve captured authority and evidence
 verification:

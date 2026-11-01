@@ -1,101 +1,39 @@
-import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
+import { digest } from '../../../../dist/library/architecture/assignment.js';
+import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js';
 
-/** Exercises task behavior through observable scenarios. */
-class TaskTests {
-  /** Verifies that changed request invalidates a ready task before worker activation. */
-  readyResearch(t: TestContext, stale = false): void {
+/** Preserves historical proposal inspection without retaining proposal-driven execution. */
+class HistoricalProposalScenarios {
+  /** Reads intact historical data and rejects tampering without invoking a model. */
+  inspect(t: TestContext): void {
     const f = workflowFixture(t);
-    f.configure({ initializerMode: 'proposal-research' });
-    const input = join(f.root, 'request.txt');
-    writeFileSync(input, 'Research sample behavior');
-    const planned = this.plan(f, input);
-    assert.equal(planned.status, 0, planned.stderr);
-    const proposal = JSON.parse(planned.stdout);
-    assert.equal(proposal.status, 'ready');
-    if (stale) writeFileSync(input, 'Changed request');
-    const result = this.command(f, 'legacy-run', proposal.id);
-    assert.equal(result.status, stale ? 2 : 0, result.stderr);
-    assert.equal(
-      readFileSync(f.calls + '.initialization', 'utf8')
-        .trim()
-        .split('\n').length,
-      1,
-    );
-    if (stale) assert.equal(existsSync(f.calls), false);
-    else {
-      const report = JSON.parse(result.stdout);
-      assert.equal(report.outcome, 'research_completed');
-      assert.equal(report.acceptedProposal, proposal.id);
-    }
-  }
-
-  /** Invokes task planning with the controlled initializer and caller input file. */
-  private plan(f: ReturnType<typeof workflowFixture>, input: string) {
-    return this.command(
-      f,
-      'plan',
-      '--input',
-      input,
-      '--project',
-      f.repo,
-      '--codex-path',
-      f.executable,
-    );
-  }
-
-  /** Spawns the built task CLI with fixture isolation and a test-harness watchdog. */
-  private command(f: ReturnType<typeof workflowFixture>, ...args: string[]) {
-    return spawnSync(process.execPath, [cli, 'task', ...args], {
-      encoding: 'utf8',
-      cwd: f.repo,
-      env: f.env,
-      timeout: 30 * 60 * 1000,
-    });
-  }
-
-  /** Verifies that missing-owner task retains inspectable proposal without worker inference or source edits. */
-  missingOwner(t: TestContext): void {
-    const f = workflowFixture(t);
-    f.configure({ initializerMode: 'proposal-missing' });
-    const input = join(f.root, 'request.txt');
-    writeFileSync(input, 'Introduce a missing external deployment responsibility');
-    const result = spawnSync(
-      process.execPath,
-      [cli, 'task', 'plan', '--input', input, '--project', f.repo, '--codex-path', f.executable],
-      { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
-    );
+    const directory = join(f.state, 'proposals');
+    mkdirSync(directory, { recursive: true });
+    const value = { schemaVersion: 1, id: 'old', status: 'ready', request: { text: 'Old goal' } };
+    const path = join(directory, 'old.json');
+    const retained = { ...value, digest: digest(JSON.stringify(value)) };
+    writeFileSync(path, JSON.stringify(retained));
+    const invoke = () =>
+      spawnSync(process.execPath, [cli, 'task', 'inspect', 'old', '--json'], {
+        encoding: 'utf8',
+        env: f.env,
+      });
+    const result = invoke();
     assert.equal(result.status, 0, result.stderr);
-    const proposal = JSON.parse(result.stdout);
-    assert.equal(proposal.status, 'architecture_change_required');
-    assert.equal(existsSync(f.calls), false);
-    assert.equal(f.git('status', '--porcelain'), '');
-    const inspect = spawnSync(process.execPath, [cli, 'task', 'inspect', proposal.id, '--json'], {
-      encoding: 'utf8',
-      cwd: f.repo,
-      env: f.env,
-      timeout: 30 * 60 * 1000,
-    });
-    assert.equal(inspect.status, 0, inspect.stderr);
-    assert.equal(JSON.parse(inspect.stdout).digest, proposal.digest);
-    const run = this.command(f, 'legacy-run', proposal.id);
-    assert.equal(run.status, 2, run.stderr);
+    assert.deepEqual(JSON.parse(result.stdout), retained);
+    writeFileSync(path, JSON.stringify({ ...retained, status: 'completed' }));
+    assert.equal(invoke().status, 2);
   }
 }
 
-const suite = new TaskTests();
+const scenarios = new HistoricalProposalScenarios();
 
-test('missing-owner task retains inspectable proposal without worker inference or source edits', (t) =>
-  suite.missingOwner(t));
-
-test('ready task executes without duplicate initialization', (t) => suite.readyResearch(t));
-
-test('changed request invalidates a ready task before worker activation', (t) =>
-  suite.readyResearch(t, true));
+test('historical task proposals remain inspectable and integrity checked', (t) =>
+  scenarios.inspect(t));
 
 registerSuite({ component: 'task-intake', level: 'acceptance', tags: ['deterministic'] });

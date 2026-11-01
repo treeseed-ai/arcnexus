@@ -5,7 +5,7 @@ import {
   PromptExperimentResolver,
   resolveExperiment,
 } from '../../library/experiments/experiment-config.js';
-import { PromptExperimentRunner, ExperimentRunner } from '../../library/experiments/experiments.js';
+import { PromptExperimentRunner } from '../../library/experiments/experiments.js';
 import { stateRoot } from '../../library/workspace/state.js';
 import { InputError } from '../../library/architecture/config.js';
 import type { CliValues } from './arguments.js';
@@ -27,6 +27,10 @@ export class ExperimentCommand {
       schemaVersion?: number;
     };
     if (definition.schemaVersion === 3) return this.prompt(action);
+    if (action === 'run')
+      throw new InputError(
+        'Legacy campaign execution is retired; migrate to schemaVersion 3 prompts and task run',
+      );
     const input = resolveExperiment(
       positionals[2]!,
       values.bindings!,
@@ -36,12 +40,6 @@ export class ExperimentCommand {
       console.log(JSON.stringify(input, null, values.json ? undefined : 2));
       return;
     }
-    const output = values.output ?? join(stateRoot(), 'experiment-' + randomUUID());
-    const campaign = await new ExperimentRunner(this.signal).run(input, output);
-    process.exitCode = campaign.status === 'passed' ? 0 : campaign.status === 'cancelled' ? 130 : 1;
-    console.log(
-      JSON.stringify({ status: campaign.status, evidenceMode: campaign.evidenceMode, output }),
-    );
   }
 
   /** Validates the shared experiment CLI contract before selecting a versioned runner. */

@@ -1,8 +1,9 @@
 # General agent execution
 
-Issue #78 records this approved contract. It is under implementation; the legacy
-two-owner CLI remains available until its callers migrate. Phase three is blocked
-until deterministic and live qualification establish the behavior below.
+Issue #78 records this approved contract. Normal execution uses the shared project
+host; legacy component, two-owner manifest and proposal execution are retired.
+Historical inspection remains available. Phase three requires the final deterministic
+and live qualification recorded in the [qualification ledger](../../plans/general-agent-execution-qualification.md).
 
 ## Public interface
 

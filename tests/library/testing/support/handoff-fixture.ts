@@ -1,8 +1,7 @@
-import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
-import { cli, workflowFixture } from './workflow-fixture.js';
+import { workflowFixture } from './workflow-fixture.js';
 
 export function handoffFixture(t: TestContext, mode = 'implementation'): any {
   return new HandoffFixture(t, mode).create();
@@ -36,17 +35,7 @@ class HandoffFixture {
     this.acceptance();
     this.definition();
     this.executable();
-    return { ...this.f, manifest: this.manifest, workday: () => this.run() };
-  }
-
-  /** Executes this lifecycle through its configured collaborators and propagates failures. */
-  private run() {
-    const f = this.f;
-    return spawnSync(
-      process.execPath,
-      [cli, 'workday', 'run', this.manifest, '--project', f.repo, '--codex-path', f.executable],
-      { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
-    );
+    return { ...this.f, manifest: this.manifest, historical: true };
   }
 
   /** Creates disjoint owner files and verification commands for a real contract dependency. */
