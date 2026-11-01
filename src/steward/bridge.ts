@@ -100,7 +100,8 @@ class HostBridge {
 
 class BridgeConnection {
   private input = '';
-  private busy = false;
+  private pending = Promise.resolve();
+  private closed = false;
 
   constructor(
     private readonly socket: Socket,
@@ -111,6 +112,9 @@ class BridgeConnection {
   listen(): void {
     this.socket.on('error', () => {});
     this.socket.on('data', (data) => this.receive(data));
+    this.socket.on('close', () => {
+      this.closed = true;
+    });
   }
 
   private receive(data: Buffer): void {
@@ -123,26 +127,22 @@ class BridgeConnection {
     while ((boundary = this.input.indexOf('\n')) >= 0) {
       const line = this.input.slice(0, boundary);
       this.input = this.input.slice(boundary + 1);
-      void this.request(line);
+      this.pending = this.pending.then(() => {
+        if (!this.closed) return this.request(line);
+      });
     }
   }
 
   private async request(line: string): Promise<void> {
-    let acquired = false;
     let request: Request | undefined;
     try {
       request = JSON.parse(line);
       if (!request || !Number.isSafeInteger(request.id)) throw new Error('Invalid bridge request');
-      if (this.busy) throw new Error('Concurrent bridge request denied');
-      this.busy = true;
-      acquired = true;
       const dispatched = this.dispatch(request);
       const result = dispatched instanceof Promise ? await dispatched : dispatched;
       this.socket.write(JSON.stringify({ id: request.id, result }) + '\n');
     } catch (error) {
       this.socket.write(JSON.stringify({ id: request?.id, error: String(error) }) + '\n');
-    } finally {
-      if (acquired) this.busy = false;
     }
   }
 

@@ -13,7 +13,8 @@ export class ControlledPlanning {
       this.checkExecutionPrompt(turn);
       turn.result.planUpdates = [this.update()];
       if (this.options.mode === 'bridge-update') await this.bridgeUpdate(turn);
-      if (this.options.operations)
+      if (this.options.parallelOperations) await this.parallelOperations(turn);
+      else if (this.options.operations)
         for (let i = 0; i < (this.options.operationRepeats ?? 1); i++) await this.operation(turn);
     }
   }
@@ -104,6 +105,20 @@ export class ControlledPlanning {
           id: this.options.mode === 'denied' ? 'unknown' : 'test',
         });
     appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
+  }
+  private async parallelOperations(turn: WorkflowTurn): Promise<void> {
+    const replies = await this.withClient(turn, (client) =>
+      Promise.all(
+        [0, 1].map(() =>
+          this.request(client, {
+            name: 'operations.run',
+            arguments: { id: 'test' },
+          }),
+        ),
+      ),
+    );
+    for (const reply of replies)
+      appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
   private async service(client: Client) {
     const started = await this.request(client, {

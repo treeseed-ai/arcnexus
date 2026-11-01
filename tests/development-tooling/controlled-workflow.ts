@@ -11,6 +11,7 @@ export interface WorkflowOptions {
   planning?: boolean;
   operations?: string;
   operationRepeats?: number;
+  parallelOperations?: boolean;
   managedService?: boolean;
   holdService?: boolean;
   delayedServiceExit?: boolean;

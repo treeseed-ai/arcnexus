@@ -54,6 +54,8 @@ class OperationRuntime {
   private readonly services: ServiceManager;
   private active: AbortController | undefined;
   private pending?: Promise<unknown>;
+  private generation = 0;
+  private activeNumber = 0;
 
   constructor(
     private readonly root: string,
@@ -68,15 +70,18 @@ class OperationRuntime {
   }
 
   async close(): Promise<void> {
+    this.generation++;
     this.active?.abort(new Error('Operation turn completed'));
     try {
       await this.pending;
     } finally {
+      this.pending = undefined;
       await this.services.stop();
     }
   }
 
   disconnect(): void {
+    this.generation++;
     this.active?.abort(new Error('Operation bridge disconnected'));
     void this.services.stop().catch(() => {});
   }
@@ -90,13 +95,26 @@ class OperationRuntime {
       return result;
     }
     if (op.kind === 'service') throw new Error('Use services.start for service operations');
+    const number = Number(this.record.operationCalls);
+    observe(this.root, this.record, 'operation.queued', { id: op.id, number });
+    const generation = this.generation;
+    const execution = (this.pending ?? Promise.resolve()).then(() =>
+      this.perform(op, number, generation),
+    );
+    this.pending = execution;
+    return execution;
+  }
+
+  private async perform(op: Operation, number: number, generation: number) {
+    if (generation !== this.generation)
+      throw new Error('Operation scope closed before queued execution');
+    this.signal.throwIfAborted();
+    this.activeNumber = number;
     const progress = new ProgressObserver(this.root, this.record);
     const action = { activity: this.record.stage, operation: op.id };
     const candidate = materialCandidate(this.record);
     progress.before(action, candidate);
-    const execution = this.finite(op);
-    this.pending = execution;
-    const result = await execution;
+    const result = await this.finite(op);
     if (result.status === 'failed') {
       const warning = progress.failed(action, result.output, candidate);
       return { ...result, ...(warning ? { loopWarning: warning } : {}) };
@@ -180,7 +198,6 @@ class OperationRuntime {
   }
 
   private begin(op: Operation): { cwd: string; combined: AbortSignal; start: number } {
-    if (this.active) throw new Error('Concurrent operation denied');
     const cwd = realpathSync(join(this.record.workspace, op.cwd));
     const path = relative(this.record.workspace, cwd);
     if (path.startsWith('..') || path.startsWith('/'))
@@ -191,7 +208,7 @@ class OperationRuntime {
     this.record.currentOperation = op.id;
     observe(this.root, this.record, 'operation.started', {
       id: op.id,
-      number: this.record.operationCalls,
+      number: this.activeNumber,
       cwd,
     });
     save(this.root, this.record);
@@ -238,7 +255,7 @@ class OperationRuntime {
 
   private async command(op: Operation, cwd: string, signal: AbortSignal): Promise<CommandResult> {
     const { root, record, resolved } = this;
-    const log = join(root, 'runs', record.id, `operation-${record.operationCalls}.log`);
+    const log = join(root, 'runs', record.id, `operation-${this.activeNumber}.log`);
     if (op.kind === 'http')
       return this.services.check(
         op,
@@ -269,7 +286,7 @@ class OperationRuntime {
       throw new Error('Operation artifact must be a regular non-symlink file');
     const bytes = readFileSync(source);
     if (bytes.length > 64 * 1024 * 1024) throw new Error('Operation artifact limit exceeded');
-    const dir = join(root, 'runs', record.id, 'operation-artifacts', String(record.operationCalls));
+    const dir = join(root, 'runs', record.id, 'operation-artifacts', String(this.activeNumber));
     mkdirSync(dir, { recursive: true, mode: 0o700 });
     const sha256 = digest(bytes);
     writeFileSync(join(dir, sha256), bytes, { mode: 0o600 });
@@ -286,6 +303,7 @@ class OperationRuntime {
     if (result) (record.operations as unknown[]).push({ id, ...result, artifacts });
     observe(root, record, 'operation.finished', {
       id,
+      number: this.activeNumber,
       durationMs: Date.now() - start,
       result,
       artifacts,
