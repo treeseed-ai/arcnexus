@@ -8,6 +8,7 @@ import { runVerificationCodex, runDirectorCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OwnerRetrieval } from './retrieval.js';
 
+import { VerificationEvidence } from './verification-evidence.js';
 import { VerificationAssessment } from './verification-assessment.js';
 
 export { VerificationIssue, type VerificationResult } from './verification-assessment.js';
@@ -87,14 +88,19 @@ export class Direction {
     record.activationRole = goal ? 'director-assessment' : 'verifier';
     record.acceptanceCriteria = new VerificationAssessment().criteria(objective, evidence, goal);
     if (goal) delete record.assignmentId;
+    const captured = new VerificationEvidence(
+      this.root,
+      record,
+      goal ? this.context.base : record.base,
+    );
     await this.observe(record, () =>
-      this.assess(record, this.verificationPrompt(record, objective, evidence, goal)),
+      this.assess(record, this.verificationPrompt(record, objective, evidence, goal), captured),
     );
     return [join(this.root, 'runs', record.id, 'report.json')];
   }
 
   /** Runs the independent assessment and rejects incomplete or unsupported completion claims. */
-  private async assess(record: RecordData, prompt: string) {
+  private async assess(record: RecordData, prompt: string, captured: VerificationEvidence) {
     const result = await runVerificationCodex(
       this.root,
       record,
@@ -102,7 +108,7 @@ export class Direction {
       this.context.executable,
       this.model(record),
       this.signal,
-      this.operations(record),
+      captured.wrap(this.operations(record)),
     );
     new VerificationAssessment().validate(result, record.acceptanceCriteria as string[]);
     return result;
@@ -115,13 +121,15 @@ export class Direction {
     evidence: unknown,
     goal: boolean,
   ): string {
-    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nCaptured acceptance criteria: ${JSON.stringify(record.acceptanceCriteria)}\nReturn verification-result. Assess every zero-based criterion index exactly once, with verdict=verified only when observed evidence supports it. Missing evidence requires verdict=gap and explicit deficiencies. Never substitute worker claims for observed evidence.`;
+    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Read verification.evidence artifact=manifest and its paged artifacts for complete host-captured scope and changes; Git metadata access is unnecessary. Read all relevant pages through complete=true. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nCaptured acceptance criteria: ${JSON.stringify(record.acceptanceCriteria)}\nReturn verification-result. Assess every zero-based criterion index exactly once, with verdict=verified only when observed evidence supports it. Missing evidence requires verdict=gap and explicit deficiencies. Never substitute worker claims for observed evidence.`;
   }
 
   /** Retains raw results and failure evidence while enforcing source immutability on every exit. */
   private async observe<T>(record: RecordData, inference: () => Promise<T>): Promise<T> {
-    const before = candidateDigest(record);
+    const captured = record.verificationEvidence as { candidateDigest: string } | undefined;
+    const before = captured?.candidateDigest ?? candidateDigest(record);
     try {
+      this.unchanged(record, before);
       const result = await inference();
       record.agent = result;
       record.status = 'completed';

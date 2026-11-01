@@ -1,3 +1,4 @@
+import { ControlledEvidence } from './controlled-evidence.js';
 import { StructuredOutputCheck } from '../../testing/support/structured-output-check.js';
 import { appendFileSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -25,6 +26,11 @@ export class ControlledGeneral {
     for await (const chunk of process.stdin) prompt += chunk;
     appendFileSync(this.calls, JSON.stringify({ args, prompt }) + '\n');
     await this.checkpointGate(prompt);
+    if (
+      prompt.startsWith('Independent read-only verification.') &&
+      prompt.includes('READ_HOST_EVIDENCE')
+    )
+      await new ControlledEvidence(this.calls).inspect(args, prompt.includes('FORBIDDEN_ARTIFACT'));
     const result = prompt.startsWith('ArcNexus task direction.')
       ? this.direction(prompt)
       : this.worker(prompt);
