@@ -68,6 +68,11 @@ discovery:
     - tests/library/task-intake
   exclude: []
 provides:
+  - id: director-result
+    version: "1"
+    kind: json-schema
+    path: src/library/task-intake/schemas/director-result.json
+    compatibility: General run proposals and safe retained continuations; preserve initializer history
   - id: verification-result
     version: "1"
     kind: json-schema
@@ -79,6 +84,8 @@ provides:
     path: src/library/task-intake/schemas/initializer-result.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
+  - id: director-result
+    version: "1"
   - id: verification-result
     version: "1"
   - id: initializer-result

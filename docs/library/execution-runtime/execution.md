@@ -148,3 +148,20 @@ installation cannot replace a running host’s modules. Capture compares content
 hashes before and after copying and refuses an installation that changes during
 capture. Host evidence records the retained runner location and content hash.
 Machine-bound external executables remain separately identified by captured bindings.
+
+## Correcting blocked work
+
+Direction may propose an explicit continuation of an existing assignment, with its
+run-local assignment ID, owner and diagnosis. Stewardship may do the same for its
+own owner. The host validates retained checkpoints before reactivating work; the
+proposal cannot change its objective, acceptance criteria, plan, owner or scope.
+Uncertain operations, changed candidates and incomplete workspace transitions still
+require attention. Completed deliveries cannot be reopened.
+
+A known rejected routing outcome may be replaced by a new activation after its
+diagnosis is retained. Original requests and failure evidence remain inspectable.
+Dependents return to waiting for the original required milestone; continuation is
+neither acceptance nor delivery. Only assignments blocked by the resumed dependency
+are released from that propagated block. Other independent failures remain blocked.
+This allows an accepted request to be clarified and a rejected cycle proposal to be
+restructured without inventing delivery or silently waiving the goal.
