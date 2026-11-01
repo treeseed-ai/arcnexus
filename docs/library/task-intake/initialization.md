@@ -114,3 +114,11 @@ outcomes. These facts are evidence, not expanded authority. The director must no
 ask the caller to retrieve runtime bookkeeping that the host already retains;
 clarification remains for substantive goal or architectural decisions. Uncertain
 checkpoints stay ineligible even when the director recommends continuation.
+
+Independent verification must be able to inspect pinned host-owned coordination
+history as well as candidate files. Expose relevant ordered request, assignment,
+activation and delivery evidence, captured source/candidate identities and observed
+command/checkpoint records through fixed read-only evidence artifacts. Keep worker
+claims explicitly distinct. A worker's summary of a request cannot establish that
+its persisted submission preceded implementation. Foreign-run records, arbitrary
+state paths and mutable candidate-authored evidence cannot supply that proof.
