@@ -58,38 +58,43 @@ export class ControlledGeneral {
   /** Selects only the first owner for tasks and reports no work during unchanged stewardship. */
   private direction(prompt: string) {
     const idle = prompt.includes('Self-directed stewardship for');
+    const correction = prompt.includes('Goal correction');
+    const blocked = prompt.includes('Blocked task diagnosis');
+    const owner = idle
+      ? prompt.match(/Self-directed stewardship for ([a-z]+)/)![1]!
+      : correction
+        ? 'c'
+        : 'a';
     return {
-      status: 'ready',
+      status: blocked ? 'needs_clarification' : 'ready',
       summary: 'Controlled direction',
-      selectedOwners: [
-        {
-          id: idle ? prompt.match(/Self-directed stewardship for ([a-z]+)/)![1]! : 'a',
-          reason: idle ? 'Reviewed owner; no action' : 'Starting owner',
-        },
-      ],
-      rejectedOwners: [],
-      questions: [],
-      assignments: idle
+      selectedOwners: blocked
         ? []
-        : [
-            {
-              ownerId: 'a',
-              objective: 'Research the dependency chain',
-              kind: 'research',
-              changeType: 'behavior',
-              acceptanceCriteria: ['Evidence-backed result'],
-              allowedWritePaths: [],
-            },
-          ],
+        : [{ id: owner, reason: idle ? 'Reviewed owner; no action' : 'Starting owner' }],
+      rejectedOwners: [],
+      questions: blocked ? ['Which authorized resolution should replace the blocked work?'] : [],
+      assignments: idle || blocked ? [] : [this.assignment(owner, correction)],
       dependency: null,
       architectureProposal: null,
+    };
+  }
+
+  /** Supplies bounded initial or corrective research without changing the external goal. */
+  private assignment(owner: string, correction: boolean) {
+    return {
+      ownerId: owner,
+      objective: correction ? 'Additional goal evidence' : 'Research the dependency chain',
+      kind: 'research',
+      changeType: 'behavior',
+      acceptanceCriteria: ['Evidence-backed result'],
+      allowedWritePaths: [],
     };
   }
 
   /** Requests additional owners during planning and completes resumed research with evidence. */
   private worker(prompt: string): any {
     const result = this.result();
-    if (prompt.startsWith('Independent read-only verification.')) return result;
+    if (prompt.startsWith('Independent read-only verification.')) return this.review(prompt);
     const owner = prompt.match(/active component identity ([a-z]+) as fromComponent/)?.[1];
     const stage = prompt.match(/Activity turn: ([a-z]+)/)?.[1];
     if (
@@ -110,6 +115,21 @@ export class ControlledGeneral {
           explanation: 'Source inspected',
         },
       ];
+    return result;
+  }
+
+  /** Rejects one goal assessment until an additional observed assignment addresses the gap. */
+  private review(prompt: string): any {
+    const result = this.result();
+    if (
+      prompt.includes('As task director') &&
+      prompt.includes('REPLAN_GOAL') &&
+      !prompt.includes('Additional goal evidence')
+    ) {
+      result.status = 'blocked';
+      result.blockers = ['Missing goal evidence'];
+      result.reviewFindings = ['Missing goal evidence'];
+    }
     return result;
   }
 

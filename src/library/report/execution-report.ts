@@ -81,6 +81,7 @@ export class ExecutionReports {
       'candidateRevision',
       'verifiedEvidence',
       'goalEvidence',
+      'recoveryProposal',
     ];
     const candidate = run.data.candidateRecord as { workspace?: string } | undefined;
     return {

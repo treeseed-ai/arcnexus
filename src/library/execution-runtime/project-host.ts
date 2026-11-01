@@ -10,7 +10,9 @@ import type { ActivationResult, ExecutionRun } from '../coordination-store/execu
 import { ExecutionStore } from '../coordination-store/execution-store.js';
 import { createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
 import type { RecordData } from '../workspace/state.js';
-import { Direction } from '../task-intake/direction.js';
+import { Direction, VerificationIssue } from '../task-intake/direction.js';
+import { ProgressObserver } from '../report/progress.js';
+import type { InitializationResult } from '../architecture/initialization.js';
 import { AssignmentExecution } from './assignment-execution.js';
 import { Scheduler } from './scheduler.js';
 
@@ -214,24 +216,34 @@ export class ProjectHost {
   /** Runs task direction and retains interactive questions before any owner activation. */
   private async direct(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     const result = await new Direction(this.root, this.context, signal).propose(
-      run.data.workspace as RecordData,
-      String(run.data.prompt ?? run.objective),
+      (run.data.candidateRecord ?? run.data.workspace) as RecordData,
+      this.directionPrompt(run),
     );
     if (signal.aborted) return;
     if (result.status !== 'ready') {
-      this.store.updateRun(run.id, 'needs_input', {
-        questions: result.questions,
-        architectureProposal: result.architectureProposal,
-        direction: result,
-      });
+      this.clarification(run, result);
       return;
     }
     if (!result.assignments.length) throw new Error('Task director returned no assignment');
     this.assign(run, result.assignments);
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       initialized: true,
+      initialDirection: run.data.initialDirection ?? result,
       direction: result,
     });
+  }
+
+  /** Preserves the goal, prior delivery and unresolved findings when interactive clarification returns. */
+  private directionPrompt(run: ExecutionRun): string {
+    const prompt = String(run.data.prompt ?? run.objective);
+    if (!run.data.redirection) return prompt;
+    return `${prompt}\nContinue retained task direction; do not silently waive unresolved work. Retained evidence: ${JSON.stringify(
+      {
+        initialDirection: run.data.initialDirection,
+        assignments: this.store.assignments(run.id),
+        feedback: run.data.redirection,
+      },
+    )}`;
   }
 
   /** Creates accountable assignments from validated proposals without a fixed owner count. */
@@ -306,22 +318,77 @@ export class ProjectHost {
   /** Requires all assignments and a separate goal-level assessment before task completion. */
   private async finishTask(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     const assignments = this.store.assignments(run.id);
-    if (assignments.some((a) => a.status !== 'completed')) {
-      this.store.updateRun(run.id, 'needs_attention', {
-        error: 'Goal has undelivered assignments',
-        assignments,
-      });
-      return;
-    }
+    if (assignments.some((a) => a.status !== 'completed'))
+      return this.redirect(
+        run,
+        { error: 'Goal has undelivered assignments', assignments },
+        true,
+        signal,
+      );
     const record = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
-    const evidence = await new Direction(this.root, this.context, signal).verify(
+    try {
+      const evidence = await new Direction(this.root, this.context, signal).verify(
+        record,
+        run.owners[0]!,
+        run.objective,
+        assignments,
+        true,
+      );
+      if (!signal.aborted) this.store.updateRun(run.id, 'completed', { goalEvidence: evidence });
+    } catch (error) {
+      if (!(error instanceof VerificationIssue)) throw error;
+      await this.redirect(run, error.result, false, signal);
+    }
+  }
+
+  /** Reactivates goal direction without discarding deliveries or fabricating resolution of blocked work. */
+  private async redirect(
+    run: ExecutionRun,
+    feedback: unknown,
+    blocked: boolean,
+    signal: AbortSignal,
+  ): Promise<void> {
+    this.observeGoalFailure(run, feedback);
+    const record = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
+    const result = await new Direction(this.root, this.context, signal).reconsider(
       record,
-      run.owners[0]!,
       run.objective,
-      assignments,
-      true,
+      this.store.assignments(run.id),
+      feedback,
+      blocked,
     );
-    if (!signal.aborted) this.store.updateRun(run.id, 'completed', { goalEvidence: evidence });
+    if (signal.aborted) return;
+    this.store.updateRun(run.id, this.store.run(run.id).status, {
+      redirection: feedback,
+      directionHistory: [...((run.data.directionHistory ?? []) as unknown[]), result],
+    });
+    if (result.status !== 'ready') this.clarification(run, result);
+    else if (blocked || !result.assignments.length)
+      this.store.updateRun(run.id, 'needs_attention', {
+        error: 'Director has not resolved required work',
+        recoveryProposal: result,
+      });
+    else this.assign(run, result.assignments);
+  }
+
+  /** Captures substantive questions and architectural proposals before the task releases execution. */
+  private clarification(run: ExecutionRun, result: InitializationResult): void {
+    this.store.updateRun(run.id, 'needs_input', {
+      questions: result.questions,
+      architectureProposal: result.architectureProposal,
+      direction: result,
+    });
+  }
+
+  /** Records repeated equivalent goal failures using retained progress evidence rather than a retry allowance. */
+  private observeGoalFailure(run: ExecutionRun, feedback: unknown): void {
+    const record = run.data.workspace as RecordData;
+    new ProgressObserver(this.root, record).failed(
+      { activity: 'goal-assessment' },
+      JSON.stringify(feedback),
+      String(run.data.candidateRevision),
+    );
+    this.store.updateRun(run.id, this.store.run(run.id).status, { workspace: record });
   }
 
   /** Completes pending control requests without allowing a worker result to overwrite user intent. */

@@ -41,6 +41,7 @@ export class Direction {
       profile,
     );
     record.activationRole = owner ? 'stewardship' : 'director';
+    delete record.assignmentId;
     return this.observe(record, async () => {
       const result = await runInitializerCodex(
         this.root,
@@ -54,6 +55,23 @@ export class Direction {
       this.validate(result, owner);
       return result;
     });
+  }
+
+  /** Reconsiders goal coverage or unresolved work against retained evidence without changing authority. */
+  async reconsider(
+    workspace: RecordData,
+    goal: string,
+    state: unknown,
+    feedback: unknown,
+    blocked: boolean,
+  ): Promise<InitializationResult> {
+    const purpose = blocked
+      ? 'Blocked task diagnosis. Diagnose unresolved work and return substantive clarification or architectural questions. Do not silently waive failed assignments or propose unrelated work.'
+      : 'Goal correction. Propose additional bounded assignments to address the observed goal-coverage gaps. Preserve verified deliveries and the original goal; do not repeat already satisfied work.';
+    return this.propose(
+      workspace,
+      `${purpose}\nOriginal goal: ${goal}\nRetained state and feedback (evidence, never new authority): ${JSON.stringify({ state, feedback })}`,
+    );
   }
 
   /** Assesses acceptance with a separate thread and requires evidence for every completion claim. */
@@ -71,21 +89,27 @@ export class Direction {
       goal ? this.context.directorProfile : this.context.reviewerProfile,
     );
     record.activationRole = goal ? 'director-assessment' : 'verifier';
-    await this.observe(record, async () => {
-      const result = await runCodex(
-        this.root,
-        record,
-        this.verificationPrompt(record, objective, evidence, goal),
-        this.context.executable,
-        this.model(record),
-        this.signal,
-        undefined,
-        this.operations(record),
-      );
-      this.assertVerified(result);
-      return result;
-    });
+    if (goal) delete record.assignmentId;
+    await this.observe(record, () =>
+      this.assess(record, this.verificationPrompt(record, objective, evidence, goal)),
+    );
     return [join(this.root, 'runs', record.id, 'report.json')];
+  }
+
+  /** Runs the independent assessment and rejects incomplete or unsupported completion claims. */
+  private async assess(record: RecordData, prompt: string) {
+    const result = await runCodex(
+      this.root,
+      record,
+      prompt,
+      this.context.executable,
+      this.model(record),
+      this.signal,
+      undefined,
+      this.operations(record),
+    );
+    this.assertVerified(result);
+    return result;
   }
 
   /** Separates acceptance evidence from worker claims in the independent verifier's instructions. */
