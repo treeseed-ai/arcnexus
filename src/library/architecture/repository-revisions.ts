@@ -17,8 +17,11 @@ export function repositoryRevisions(
   bindings?: Bindings,
 ): void {
   const packages = Object.values(catalog.components).filter((c) => c.type === 'package');
+  for (const component of packages)
+    if (component.schemaVersion === 5 && !component.repository)
+      component.repository = environment.workspace?.primary.id ?? '';
   const identities = [...new Set(packages.map((c) => c.repository))];
-  if (!packages.some((c) => c.schemaVersion === 4)) return;
+  if (!packages.some((c) => c.schemaVersion >= 4)) return;
   const primary =
     environment.workspace?.primary.id ?? (identities.length === 1 ? identities[0] : undefined);
   if (!primary)

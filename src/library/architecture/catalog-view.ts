@@ -33,6 +33,7 @@ export function catalogView(catalog: Catalog) {
 function ownerView(component: Component) {
   return {
     type: component.type,
+    policy: component.policy,
     repository: component.repository,
     packageRoot: component.repositoryRoot ?? null,
     ownershipBasis: component.ownership ? 'component-definition' : 'legacy-write-scope-only',

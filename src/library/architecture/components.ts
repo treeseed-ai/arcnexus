@@ -1,3 +1,6 @@
+import { ancestry, covered, scopePath } from './component-paths.js';
+import { ComponentV5Resolver } from './component-v5.js';
+import type { ComponentV5Fields } from './component-v5-policy.js';
 import { captureComponentTests } from '../testing/captured-tests.js';
 import { repositoryRevisions, type RepositoryRevision } from './repository-revisions.js';
 import type { Bindings } from './bindings.js';
@@ -6,23 +9,18 @@ import { ArchitectureReferences } from './references.js';
 import { validateInitialization } from './initialization.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
-import {
-  commands,
-  environment,
-  InputError,
-  relativePath,
-  type Command,
-  type Environment,
-} from './config.js';
+import { commands, environment, InputError, type Command, type Environment } from './config.js';
 import { ConfigurationReader, isConfiguration, type ConfigurationSource } from './configuration.js';
 import { DirectoryGrants } from './directory-grants.js';
 import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
 
-export interface Component extends ComponentV4Fields {
+export { ancestry, covered, scopePath } from './component-paths.js';
+
+export interface Component extends ComponentV4Fields, ComponentV5Fields {
   initialization?: { schemaVersion: 3; componentId: string };
-  schemaVersion: 1 | 2 | 3 | 4;
+  schemaVersion: 1 | 2 | 3 | 4 | 5;
   operationIds?: string[];
   id: string;
   type: string;
@@ -94,11 +92,6 @@ export interface Catalog {
   profiles: Record<string, ExecutionProfile>;
 }
 
-export const covered = (path: string, scope: string[]) =>
-  scope.some((p) => p === '.' || path === p || path.startsWith(`${p}/`));
-
-export const scopePath = (path: string) => (path === '.' ? path : relativePath(path));
-
 export function validateOperations(
   operations: Operation[],
   profile: ExecutionProfile,
@@ -130,26 +123,12 @@ function read<T>(
   try {
     const version = (source.value as { schemaVersion?: number }).schemaVersion;
     return validateSchema<T>(
-      schema === 'component' && version === 4 ? 'component-v4' : schema,
+      schema === 'component' && (version === 4 || version === 5) ? `component-v${version}` : schema,
       source.value,
     );
   } catch (error) {
     throw new InputError(`${path}: ${String(error)}`);
   }
-}
-
-export function ancestry(catalog: Catalog, id: string): Component[] {
-  const result: Component[] = [],
-    seen = new Set<string>();
-  while (id) {
-    if (seen.has(id)) throw new InputError(`cyclic component ancestry: ${id}`);
-    seen.add(id);
-    const c = Object.hasOwn(catalog.components, id) ? catalog.components[id] : undefined;
-    if (!c) throw new InputError(`Missing component: ${id}`);
-    result.unshift(c);
-    id = c.parentId ?? '';
-  }
-  return result;
 }
 
 export function loadCatalog(repository: string, base: string, bindings?: Bindings): Catalog {
@@ -197,6 +176,7 @@ class CatalogLoader {
     const env = environment(source.value);
     repositoryRevisions(this.catalog, env, this.repository, this.base, this.bindings);
     new ComponentV4Resolver(this.catalog).resolve();
+    new ComponentV5Resolver(this.catalog).resolve();
     if (!Object.keys(this.catalog.components).length) throw new InputError('No components defined');
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
@@ -204,6 +184,12 @@ class CatalogLoader {
     captureComponentTests(this.catalog, this.repository, this.base);
     new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
+    this.ownership();
+    return this.catalog;
+  }
+
+  /** Validates physical grants and exact maintained-source ownership after resolution. */
+  private ownership(): void {
     const grants = new DirectoryGrants(this.repository, this.base);
     for (const component of Object.values(this.catalog.components))
       if (
@@ -213,7 +199,6 @@ class CatalogLoader {
         grants.validate(component);
     const ownership = new OwnershipValidator(this.repository, this.base).validate(this.catalog);
     if (ownership) this.catalog.configurationSources.push(ownership);
-    return this.catalog;
   }
 
   /** Enumerates supported definition files in the captured repository revision. */
@@ -242,7 +227,10 @@ class CatalogLoader {
           schema,
           catalog.configurationSources,
         );
-        if (path.replace(/\.(json|ya?ml)$/, '') !== `architecture/${directory}/${value.id}`)
+        if (
+          Number(value.schemaVersion) !== 5 &&
+          path.replace(/\.(json|ya?ml)$/, '') !== `architecture/${directory}/${value.id}`
+        )
           throw new InputError(`Identity must match filename: ${path}`);
         if (Object.hasOwn(target, value.id))
           throw new InputError(`Duplicate definition: ${value.id}`);
@@ -324,14 +312,19 @@ class CatalogComponentValidator {
     validateAccess(c.access);
     for (const p of [...c.allowedWritePaths, ...c.documentation, ...c.tests]) scopePath(p);
     commands(c.verification);
-    if (c.allowedWritePaths.some((p) => !covered(p, c.access.writeDirectories)))
+    if (
+      c.schemaVersion !== 5 &&
+      c.allowedWritePaths.some((p) => !covered(p, c.access.writeDirectories))
+    )
       throw new InputError(`Uncovered writable scope: ${c.id}`);
   }
 
   /** Checks referenced operations against the component profile and environment. */
   private operations(c: Component): void {
     const { catalog, env } = this;
-    for (const id of c.operationIds ?? []) {
+    if (c.schemaVersion === 5 && ['platform', 'package'].includes(c.type)) return;
+    const ids = c.schemaVersion === 5 ? Object.keys(c.operations ?? {}) : (c.operationIds ?? []);
+    for (const id of ids) {
       const op = catalog.operations[id];
       if (!Object.hasOwn(catalog.operations, id) || op?.repository !== c.repository)
         throw new InputError('Missing operation or conflicting repository owner: ' + id);
@@ -344,7 +337,7 @@ class CatalogComponentValidator {
     )
       throw new InputError(`Missing role/execution profile for ${c.id}`);
     validateOperations(
-      (c.operationIds ?? []).map((id) => catalog.operations[id]!),
+      ids.map((id) => catalog.operations[id]!),
       catalog.profiles[c.executionProfile]!,
       env,
     );

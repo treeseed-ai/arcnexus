@@ -66,7 +66,12 @@ function lineage(catalog: Catalog, component: Component): Component[] {
 
 export function validateInitialization(catalog: Catalog): void {
   for (const component of Object.values(catalog.components)) {
-    if (component.schemaVersion >= 3 && component.type === 'platform' && !component.initialization)
+    if (
+      component.schemaVersion >= 3 &&
+      component.schemaVersion < 5 &&
+      component.type === 'platform' &&
+      !component.initialization
+    )
       throw new InputError('Version-three platform requires an initializer: ' + component.id);
     if (!component.initialization) continue;
     if (component.schemaVersion < 3 || component.type !== 'platform')
