@@ -1,0 +1,21 @@
+schemaVersion: 3
+id: testing-lint
+purpose: Read-only lint feedback for testing
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/library/testing
+  - tests/library/testing
+generatedDirectories: []
+artifacts: []
+probes: []

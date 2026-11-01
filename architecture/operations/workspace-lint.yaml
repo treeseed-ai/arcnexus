@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/workspace
-  - tests/workspace
+  - src/library/workspace
+  - tests/library/workspace
 generatedDirectories: []
 artifacts: []
 probes: []

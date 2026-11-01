@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/workday
-  - tests/workday
+  - src/library/workday
+  - tests/library/workday
 generatedDirectories: []
 artifacts: []
 probes: []

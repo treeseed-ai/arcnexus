@@ -1,9 +1,9 @@
 schemaVersion: 1
 id: readable-typescript
-owner: development-tooling
+owner: foundation
 purpose: Keep maintained TypeScript understandable and verifiable
 applicability: Maintained application, tooling and test code
-document: docs/development-tooling/typescript-standard.md
+document: docs/foundation/typescript-standard.md
 examples: []
 operationIds:
-  - development-tooling-lint
+  - foundation-lint

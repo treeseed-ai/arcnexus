@@ -1,42 +1,51 @@
 schemaVersion: 2
 kind: change
 objective: >-
-  Implement the approved optional skill references metadata policy in GuidanceValidator. When
-  references is present in skill YAML frontmatter, require a nonempty array of unique
-  repository-relative paths to readable tracked regular files. Reject absolute paths, empty or
-  non-string entries, traversal segments, missing or untracked files, directories, and symlink
-  traversal including parents. References may contain binary data; do not impose UTF-8 or text-only
-  restrictions. Absence preserves existing metadata behavior and existing file-oriented diagnostic
-  codes; do not invent a GUIDANCE_REFERENCES_REQUIRED production diagnostic. Make no semantic
-  approval claims.
+  Implement the approved optional skill references metadata policy in
+  GuidanceValidator. When references is present in skill YAML frontmatter,
+  require a nonempty array of unique repository-relative paths to readable
+  tracked regular files. Reject absolute paths, empty or non-string entries,
+  traversal segments, missing or untracked files, directories, and symlink
+  traversal including parents. References may contain binary data; do not impose
+  UTF-8 or text-only restrictions. Absence preserves existing metadata behavior
+  and existing file-oriented diagnostic codes; do not invent a
+  GUIDANCE_REFERENCES_REQUIRED production diagnostic. Make no semantic approval
+  claims.
 
-  In the specification turn, edit docs/guidance-validation/guidance-validation.md and add built-CLI
-  tests to tests/guidance-validation/guidance.test.mjs while preserving existing scenarios. Name the
-  designated negative test GUIDANCE_REFERENCES_REQUIRED. It supplies references: [] and expects CLI
-  exit 1; the old checker returns 0. Run the declared guidance-tests operation through
-  operations.run. Return regression with verificationIndex=1, exitCode=1, and outputIncludes equal
-  to the FULL ACTUAL TAP failure line for that test, copied verbatim from operation output (not ok
-  followed by its observed test number and name). Do not return only the test name, a production
-  diagnostic code, or a paraphrase. Do not expect valid references to fail. Frozen specification
-  tests cannot be rewritten later.
+  In the specification turn, edit
+  docs/library/guidance-validation/guidance-validation.md and add built-CLI
+  tests to tests/library/guidance-validation/guidance.test.mjs while preserving
+  existing scenarios. Name the designated negative test
+  GUIDANCE_REFERENCES_REQUIRED. It supplies references: [] and expects CLI exit
+  1; the old checker returns 0. Run the declared guidance-tests operation
+  through operations.run. Return regression with verificationIndex=1,
+  exitCode=1, and outputIncludes equal to the FULL ACTUAL TAP failure line for
+  that test, copied verbatim from operation output (not ok followed by its
+  observed test number and name). Do not return only the test name, a production
+  diagnostic code, or a paraphrase. Do not expect valid references to fail.
+  Frozen specification tests cannot be rewritten later.
 
-  Track symlink regression fixtures, or track a regular nested file before replacing its parent with
-  a symlink; untracked rejection alone does not exercise symlink detection. After specification,
-  implement only in src/guidance-validation/guidance.ts. Use guidance-build and guidance-tests
-  operations for reliable host feedback. Captured verification index 0 rebuilds the CLI and index 1
-  runs tests. The host independently checks final behavior. Do not edit guidance content owned by
-  agent-guidance.
-expectedOutcome: Optional references field is deterministically validated without changing existing fields
+  Track symlink regression fixtures, or track a regular nested file before
+  replacing its parent with a symlink; untracked rejection alone does not
+  exercise symlink detection. After specification, implement only in
+  src/library/guidance-validation/guidance.ts. Use guidance-build and
+  guidance-tests operations for reliable host feedback. Captured verification
+  index 0 rebuilds the CLI and index 1 runs tests. The host independently checks
+  final behavior. Do not edit guidance content owned by agent-guidance.
+expectedOutcome: Optional references field is deterministically validated
+  without changing existing fields
 acceptanceCriteria:
-  - When optional references is present in skill YAML frontmatter, require a nonempty array of
-    unique repository-relative paths to readable tracked regular files. Reject absolute paths, empty
-    or non-string entries, traversal segments, missing or untracked files, directories, and symlink
-    traversal (including parent directories). No references field preserves existing metadata
-    behavior. Keep stable file-oriented diagnostics and no semantic approval claims.
+  - When optional references is present in skill YAML frontmatter, require a
+    nonempty array of unique repository-relative paths to readable tracked
+    regular files. Reject absolute paths, empty or non-string entries, traversal
+    segments, missing or untracked files, directories, and symlink traversal
+    (including parent directories). No references field preserves existing
+    metadata behavior. Keep stable file-oriented diagnostics and no semantic
+    approval claims.
 hostChecks:
   - id: reference-policy
     command: node
     args:
-      - ../../dist/experiments/checks/guidance-references.js
+      - ../../dist/library/experiments/checks/guidance-references.js
     artifacts:
-      - ../../dist/experiments/checks/guidance-references.js
+      - ../../dist/library/experiments/checks/guidance-references.js

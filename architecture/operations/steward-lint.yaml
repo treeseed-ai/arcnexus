@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/steward
-  - tests/steward
+  - src/library/steward
+  - tests/library/steward
 generatedDirectories: []
 artifacts: []
 probes: []

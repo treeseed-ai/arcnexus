@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "rootDir": "scripts/foundation", "outDir": ".tool-build", "declaration": false },
+  "include": ["scripts/foundation/build.ts"]
+}

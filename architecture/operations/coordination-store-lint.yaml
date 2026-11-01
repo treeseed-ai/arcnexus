@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/coordination-store
-  - tests/coordination-store
+  - src/library/coordination-store
+  - tests/library/coordination-store
 generatedDirectories: []
 artifacts: []
 probes: []

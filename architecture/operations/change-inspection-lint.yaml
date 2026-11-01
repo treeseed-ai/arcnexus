@@ -14,7 +14,7 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/change-inspection
+  - src/library/change-inspection
 generatedDirectories: []
 artifacts: []
 probes: []

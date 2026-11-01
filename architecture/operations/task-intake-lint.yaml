@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/task-intake
-  - tests/task-intake
+  - src/library/task-intake
+  - tests/library/task-intake
 generatedDirectories: []
 artifacts: []
 probes: []
