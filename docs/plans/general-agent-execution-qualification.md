@@ -53,6 +53,30 @@ formatting and lint have local evidence in `/tmp/arcnexus-78-*-v5.log` and
 `/tmp/arcnexus-78-request-*.log`. These local checks do not establish CI or live
 qualification. Final-revision checks must be refreshed after further changes.
 
+At `1f577a0`, all 46 execution-runtime acceptance tests passed, including
+host-captured verification artifacts and rejection of arbitrary artifact paths:
+`/tmp/arcnexus-91-runtime.log`, retained test-run
+`b65f8e08-88a3-45c8-9efa-ab58be7f0c54`. The three new evidence scenarios first
+failed against the preceding build. Formatting, lint, strict types, ownership and
+guidance checks passed in the issue-91 logs. An initial overlapping test preparation
+removed the build during guidance validation; that invocation failed and was rerun
+successfully after preparation. It is not counted as a passing validation.
+
+At `74dd383`, policy and engineering recovery passed 12 focused scenarios in
+`/tmp/arcnexus-92-green.log`; three unfinished policy-role regressions first failed.
+At `1ddc2e5`, all four blocked-continuation tests passed in
+`/tmp/arcnexus-78-cycle-controlled-final.log`, including a worker-produced cycle,
+director diagnosis and verified delivery by the same retained three assignments.
+These are controlled harness tests, not live model evidence.
+
+At `751923b`, idle wakeup, inbox and scheduler coverage passed 18 tests in
+`/tmp/arcnexus-93-green.log`; the idle request scenario first failed while manual
+pause/stop preservation already passed. Strict typing and scoped lint passed after
+correcting declaration spacing. The next full suite is retained in
+`/tmp/arcnexus-78-full-suite-v15.log` and remains pending until its exit is observed.
+GitHub Development CI passed at `869bf63b78305adb8d3e0864db79424d3d360bd7`,
+run `41332836654`; subsequent changes still need CI.
+
 ## Real harness attempts
 
 Retained evidence root:
@@ -77,7 +101,7 @@ and report owners discovered during execution. No simulated output counts here.
 | v4 | `90cf16d` | Real task-intake steward edited its own documentation and dynamically requested workday/report owners. Its additional exact-scope/read-only request could not be expressed by the captured protocol. Cancelled during recipient baseline; partial edits and evidence retained, no verified delivery claimed. |
 | v5 | `510b877` | Baseline passed. Real steward returned correctly scoped workday/report requests requiring delivery, but legacy validation rejected its completed turn status before scheduling the yield. Issue 83 records the defect. No delivery claimed. |
 | v6 | `20438d0` | Real workday no-work reasoning was rejected by an overstrict selected-owner check (issue 84). A separate task's incomplete initial plan was rejected without a correction activation (issue 85). Both defects now have failing-then-passing regressions; these attempts delivered no verified changes. |
-| v7 | `e733913` | Running. A real workday reached a no-work result, then safely paused for task `6252baab-b1d9-46b4-a634-8b9514f73c7e`. Task-intake dynamically requested workday and report deliveries. Both dynamically requested owners reached verification. The workday owner entered correction after two interruption tests missed startup markers during captured acceptance; issue 90 retains that failure. No completed delivery or live gate is claimed yet. |
+| v7 | `e733913` | Running. A real workday reached a no-work result, then safely paused for task `6252baab-b1d9-46b4-a634-8b9514f73c7e`. Task-intake dynamically requested workday and report deliveries. Both dynamically requested owners reached verification. The workday owner entered correction after two interruption tests missed startup markers during captured acceptance; issue 90 retains that failure. Independent review subsequently caught inaccurate recovery wording and missing access to complete changed-file evidence (issue 91). Delivery was withheld and correction continued. No completed delivery or live gate is claimed yet. |
 
 The v7 workday is `68ad1913-a73e-4b00-810a-d8cdc4401112`. Its task-pause
 projection is retained in `live-workday-v7-during-task.json`; task progress is in
@@ -90,6 +114,18 @@ Its task-intake record is `59692f1c-e30d-4b9c-9eaf-5b29939fea0c`.
 Inspect raw reports under `runs/<record>/report.json`, task projections under
 `projects/<project>/reports/<task>.json`, and `live-task*.log` for observed CLI
 progress. Worker claims, host checks and independent review are separate evidence.
+
+A second live campaign now exercises the current runner in a separate, committed
+three-owner greeting package. Evidence is under `general-live-v1`, task
+`c16f68a9-d3aa-4b42-b5a0-f5b9f27afde2`, captured source
+`855fd8f13ec2e5ca45c3c9dbd89f7816062454f2`, supervising implementation `751923b`.
+`invocation.json` retains the exact ordinary task command and role profiles;
+`prompt.txt` requires a real opt-in shout feature through CLI → service → names,
+with all three owners making actual documentation, regression and implementation
+changes. It uses the real Codex executable, Astra direction/review and Luna
+engineering. This is not the controlled simulation executable. It is running;
+no delivery or qualification pass is claimed yet. The host captured its runner
+before the next development build.
 
 ## Remaining qualification and implementation work
 
