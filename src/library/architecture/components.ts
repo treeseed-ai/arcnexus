@@ -18,6 +18,8 @@ import { validateSchema } from './schema.js';
 
 export { ancestry, covered, scopePath } from './component-paths.js';
 
+export { classifyComponentPath } from './file-classification.js';
+
 export interface Component extends ComponentV4Fields, ComponentV5Fields {
   initialization?: { schemaVersion: 3; componentId: string };
   schemaVersion: 1 | 2 | 3 | 4 | 5;

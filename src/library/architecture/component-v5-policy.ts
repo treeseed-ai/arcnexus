@@ -4,12 +4,13 @@ import { ancestry, covered, scopePath } from './component-paths.js';
 import { InputError } from './config.js';
 
 export interface ComponentV5Fields {
+  fileClassification?: import('./file-classification.js').FileClassification[];
   root?: string;
   owns?: string[];
   reads?: string[];
   api?: Array<{ module?: string; export?: string; schema?: string }>;
   operations?: Record<string, string[]>;
-  classification?: Array<{ path: string; kind: string }>;
+  classification?: import('./file-classification.js').FileClassification[];
   policy?: Record<string, { value: unknown; source: string }>;
   director?: { component: string; profile: string };
   reviewerProfile?: string;

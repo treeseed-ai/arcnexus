@@ -1,3 +1,4 @@
+import { classifyComponentPath, validateClassifications } from './file-classification.js';
 import { git } from '../operations/process.js';
 import type { Catalog, Component } from './components.js';
 import { ancestry, covered } from './component-paths.js';
@@ -35,6 +36,11 @@ export class ComponentV5Resolver {
     c.repositoryRoot = this.policy.root(c);
     c.path = c.repositoryRoot;
     this.policy.apply(c);
+    c.fileClassification = (owner?.classification ?? []).map((rule) => ({
+      ...rule,
+      path: this.policy.path(owner!, rule.path),
+    }));
+    validateClassifications(c.fileClassification);
     c.objectives ??= [];
     c.questions ??= [];
     c.relatedIds = [];
@@ -81,26 +87,10 @@ export class ComponentV5Resolver {
     c.allowedWritePaths.forEach((p) => artifacts.validatePath(p));
     const files = git(revision.source, 'ls-tree', '-r', '--name-only', revision.base).split('\n');
     for (const path of files.filter((p) => covered(p, c.allowedWritePaths))) {
-      const kind = this.classify(c, path);
+      const kind = classifyComponentPath(c, path);
       c.inventory.push({ path, kind, sha256: artifacts.read(path).sha256 });
       if (kind === 'documentation' || kind === 'tests') c[kind].push(path);
     }
-  }
-
-  /** Uses one path classifier for captured artifacts; exceptional rules cannot conflict. */
-  private classify(c: Component, path: string): string {
-    const owner = ancestry(this.authored, c.id)
-      .reverse()
-      .find((a) => a.type === 'package')!;
-    const matches = (owner.classification ?? []).filter((r) =>
-      covered(path, [this.policy.path(owner, r.path)]),
-    );
-    if (new Set(matches.map((r) => r.kind)).size > 1)
-      throw new InputError(`Conflicting file classifications: ${path}`);
-    if (matches.length) return matches[0]!.kind;
-    if (/\.(md|mdx|rst)$/i.test(path)) return 'documentation';
-    if (/(^|\/)(tests?|__tests__)(\/|$)|\.(test|spec)\.[cm]?[jt]sx?$/.test(path)) return 'tests';
-    return /\.[cm]?[jt]sx?$/.test(path) ? 'source' : 'unknown';
   }
 
   /** Derives direct executable members without a separately maintained inventory. */

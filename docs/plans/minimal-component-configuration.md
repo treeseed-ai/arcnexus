@@ -104,3 +104,29 @@ built validate and guidance validate. Observe 500/30 physical-line limits and do
 classes/methods. Report local, CI and live evidence separately. Record before/after
 field and distinct-command counts. Complete through issue-linked staging review/CI;
 never weaken frozen acceptance or publish automatically.
+
+## Implementation evidence (in progress)
+
+Issue: [#109](https://github.com/treeseed-ai/arcnexus/issues/109).
+The initial catalog implementation accepts minimal v5 definitions, derives package
+membership and implicit definition ownership, resolves inherited policies, rejects
+retired fields, and classifies existing/proposed files with the same rules.
+It is a bootstrap change developed directly; it does not enable v5 engineering execution.
+
+The pre-change architecture suite passed 51/51 cases. After the initial catalog
+change, the assembled architecture suite passed 70/70; proposed-file classification
+then added two cases, with all 21 focused v5 cases passing. Formatting, lint, type
+checking, build, catalog validation and guidance validation passed for the initial
+catalog checkpoint. These results are local evidence, not CI or live qualification.
+
+Remaining work includes complete effective-policy provenance and catalog caching,
+public symbol/schema/consumer analysis, shared operations and execution wiring,
+checked editing and confinement, migration of production configuration and fixtures,
+retirement of executable legacy paths, and integrated/live qualification. None of
+the six live gates is satisfied by these deterministic catalog tests.
+
+Baseline configuration counts: 21 definitions, 457 top-level fields, 1,104 recursive
+object keys, 96 inline command declarations and 11 distinct command/argument pairs.
+No before/after reduction is claimed until the real project configuration is migrated.
+The installed sandbox probe allowed declared generated output and rejected a source
+write with EROFS; this is feasibility evidence, not the required enforcement matrix.
