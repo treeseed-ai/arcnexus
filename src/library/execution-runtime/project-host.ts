@@ -256,10 +256,29 @@ export class ProjectHost {
     );
     if (result.status === 'ready') this.assign(run, result.assignments);
     seen[owner] = fingerprint;
+    this.recordStewardship(run, owner, fingerprint, seen, result);
+  }
+
+  /** Retains each owner's considered inputs and architectural questions independently. */
+  private recordStewardship(
+    run: ExecutionRun,
+    owner: string,
+    fingerprint: string,
+    seen: Record<string, string>,
+    result: import('../architecture/initialization.js').InitializationResult,
+  ): void {
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       seen,
       lastDispatch: 'stewardship',
-      questions: result.questions,
+      stewardshipReviews: {
+        ...((run.data.stewardshipReviews ?? {}) as object),
+        [owner]: {
+          fingerprint,
+          questions: result.questions,
+          summary: result.summary,
+          architectureProposal: result.architectureProposal,
+        },
+      },
     });
   }
 

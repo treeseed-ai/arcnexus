@@ -1,5 +1,3 @@
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { ExecutionCommand } from './execution-command.js';
 import { InputError } from '../../library/architecture/config.js';
 import { ProposalStore, TaskPlanner, TaskRunner } from '../../library/task-intake/tasks.js';
@@ -19,8 +17,7 @@ export class TaskCommand {
     const action = this.positionals[1];
     this.validate(action);
     const root = stateRoot();
-    if (action === 'run' && !existsSync(join(root, 'proposals', this.positionals[2]! + '.json')))
-      return new ExecutionCommand(this.signal).task(this.positionals[2]!);
+    if (action === 'run') return new ExecutionCommand(this.signal).task(this.positionals[2]!);
     if (action === 'inspect') {
       console.log(
         JSON.stringify(
@@ -66,7 +63,7 @@ export class TaskCommand {
           : [];
     if (
       !action ||
-      !['plan', 'inspect', 'run'].includes(action) ||
+      !['plan', 'inspect', 'run', 'legacy-run'].includes(action) ||
       Object.keys(this.values).some((key) => !allowed.includes(key))
     )
       throw new InputError('Invalid task command or options');
@@ -76,7 +73,7 @@ export class TaskCommand {
         : this.positionals.length !== 3
     )
       throw new InputError(
-        'task plan requires --input and --project; task inspect/run require a proposal ID',
+        'task run requires exactly one prompt; task inspect/legacy-run require one retained proposal ID',
       );
   }
 }

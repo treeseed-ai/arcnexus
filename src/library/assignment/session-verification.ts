@@ -4,7 +4,7 @@ import { assertCapturedTests } from '../testing/captured-tests.js';
 import { SessionProgress } from './session-progress.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { changes } from '../change-inspection/changes.js';
+import { candidateDigest } from '../change-inspection/changes.js';
 import { type CommandResult } from '../operations/process.js';
 import { type AgentResult } from '../steward/codex.js';
 import { specificationFiles, withFrozenTests } from './checkpoints.js';
@@ -101,16 +101,28 @@ export class SessionVerification {
 
   /** Rechecks scope, captured suites, frozen tests and independent acceptance. */
   async final() {
-    this.state.safe();
-    if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {
-      this.state.options.record.status = 'no_changes';
-      this.state.options.record.outcome = 'no_changes';
-      throw new Error('Candidate has no changes');
-    }
+    this.assertCandidate();
+    const { record } = this.state.options;
+    if (
+      record.generalExecution &&
+      record.finalVerifiedBase === record.base &&
+      record.finalVerifiedDigest === candidateDigest(record)
+    )
+      return;
     assertCapturedTests(this.state.component, this.state.options.record.workspace);
     for (const c of this.state.component.verification) await this.state.command(c, 'verification');
     assertCapturedTests(this.state.component, this.state.options.record.workspace);
     this.state.safe();
+    await this.verifyFrozen();
+    for (const c of this.state.hostChecks) await this.state.command(c, 'acceptance');
+    this.assertCandidate();
+    record.finalVerifiedDigest = candidateDigest(record);
+    record.finalVerifiedBase = record.base;
+    new SessionProgress(this.state).verified('final-verification');
+  }
+
+  /** Rechecks frozen behavioral, characterization and original acceptance sources independently. */
+  private async verifyFrozen(): Promise<void> {
     if (this.state.regression)
       await withFrozenTests(this.state.options.record, this.state.frozen, async () => {
         await this.state.command(
@@ -121,13 +133,15 @@ export class SessionVerification {
       });
     await new RefactorCheckpoint(this.state).verify();
     await new CapturedVerification(this.state).verify();
-    for (const c of this.state.hostChecks) await this.state.command(c, 'acceptance');
+  }
+
+  /** Requires an in-scope implementation both before checks and after their side effects. */
+  private assertCandidate(): void {
     this.state.safe();
-    if (this.state.assignment.kind === 'change' && !changes(this.state.options.record).length) {
+    if (this.state.assignment.kind === 'change' && !this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
       this.state.options.record.outcome = 'no_changes';
       throw new Error('Candidate has no changes');
     }
-    new SessionProgress(this.state).verified('final-verification');
   }
 }

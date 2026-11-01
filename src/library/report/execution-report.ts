@@ -1,6 +1,7 @@
-import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ExecutionStore } from '../coordination-store/execution-store.js';
+import type { RecordData } from '../workspace/state.js';
 import type { ExecutionRun } from '../coordination-store/execution-types.js';
 
 /** Projects durable runs into compact CLI progress and inspectable reports without changing authority. */
@@ -23,6 +24,7 @@ export class ExecutionReports {
       evidence: a.evidence,
       reason: a.data.reason,
       recordId: a.data.recordId,
+      progress: a.status === 'running' ? this.progress(a.data.recordId) : undefined,
       inbox: this.store.inbox(a.id).length,
     }));
     return {
@@ -37,6 +39,27 @@ export class ExecutionReports {
     };
   }
 
+  /** Reads host-observed stage and completed command evidence without exposing private model reasoning. */
+  private progress(id: unknown) {
+    if (typeof id !== 'string') return undefined;
+    const path = join(this.directory, '..', '..', 'runs', id, 'report.json');
+    try {
+      const record = JSON.parse(readFileSync(path, 'utf8')) as RecordData;
+      const latest = record.commands.at(-1);
+      return {
+        stage: record.stage,
+        status: record.status,
+        report: path,
+        completedCommands: record.commands.length,
+        latestCommand: latest
+          ? { command: latest.command, exitCode: latest.exitCode, log: latest.log }
+          : undefined,
+      };
+    } catch {
+      return { report: path, status: 'evidence_unavailable' };
+    }
+  }
+
   /** Retains a regenerable projection after a checkpoint; SQLite and raw harness evidence stay authoritative. */
   save(id: string): void {
     const report = this.view(id);
@@ -49,6 +72,7 @@ export class ExecutionReports {
   private summary(run: ExecutionRun) {
     const fields = [
       'questions',
+      'stewardshipReviews',
       'architectureProposal',
       'error',
       'pauseReason',

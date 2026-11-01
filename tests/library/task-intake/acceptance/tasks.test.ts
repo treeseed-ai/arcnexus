@@ -19,7 +19,7 @@ class TaskTests {
     const proposal = JSON.parse(planned.stdout);
     assert.equal(proposal.status, 'ready');
     if (stale) writeFileSync(input, 'Changed request');
-    const result = this.command(f, 'run', proposal.id);
+    const result = this.command(f, 'legacy-run', proposal.id);
     assert.equal(result.status, stale ? 2 : 0, result.stderr);
     assert.equal(
       readFileSync(f.calls + '.initialization', 'utf8')
@@ -53,6 +53,7 @@ class TaskTests {
   private command(f: ReturnType<typeof workflowFixture>, ...args: string[]) {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
+      cwd: f.repo,
       env: f.env,
       timeout: 30 * 60 * 1000,
     });
@@ -76,16 +77,13 @@ class TaskTests {
     assert.equal(f.git('status', '--porcelain'), '');
     const inspect = spawnSync(process.execPath, [cli, 'task', 'inspect', proposal.id, '--json'], {
       encoding: 'utf8',
+      cwd: f.repo,
       env: f.env,
       timeout: 30 * 60 * 1000,
     });
     assert.equal(inspect.status, 0, inspect.stderr);
     assert.equal(JSON.parse(inspect.stdout).digest, proposal.digest);
-    const run = spawnSync(process.execPath, [cli, 'task', 'run', proposal.id], {
-      encoding: 'utf8',
-      env: f.env,
-      timeout: 30 * 60 * 1000,
-    });
+    const run = this.command(f, 'legacy-run', proposal.id);
     assert.equal(run.status, 2, run.stderr);
   }
 }

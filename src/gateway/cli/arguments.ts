@@ -5,6 +5,7 @@ export const help = `ArcNexus
   workday start|pause|resume|stop|status
   task run "<prompt>"
   test inspect|run [component-id] --project <repository> [--level unit|integration|acceptance] [--category regression] [--tag <tag>] [--json]
+Legacy explicit-execution adapters (migration only):
   run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
   workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]
   workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
@@ -18,7 +19,7 @@ export const help = `ArcNexus
   run/inspect: --assignment <file> replaces objective
   task plan --input <text-file> --project <repository> [--initializer-model <model>]
   task inspect <proposal-id> [--json]
-  task run <proposal-id>
+  task legacy-run <proposal-id>
   prepare --project <repository>
   status <workspace-id> [--json]\n  follow <workspace-id> [--json] [--after <sequence>]\n  cleanup <workspace-id>
 Composed workspaces: prepare/run/inspect --bindings <file>

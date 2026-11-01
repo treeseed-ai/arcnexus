@@ -22,7 +22,7 @@ class TaskWorkdayTests {
     assert.equal(proposal.status, 'ready');
     assert.equal(proposal.execution.kind, 'workday');
     this.directionEvidence(f, proposal);
-    const result = this.command(f, 'run', proposal.id);
+    const result = this.command(f, 'legacy-run', proposal.id);
     assert.equal(result.status, 0, result.stderr + result.stdout);
     const report = JSON.parse(result.stdout);
     assert.equal(report.status, 'completed');
