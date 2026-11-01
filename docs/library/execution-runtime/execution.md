@@ -32,6 +32,8 @@ Ready assignments use a persistent FIFO queue: a yielded continuation rejoins th
 tail, and an already-ready assignment retains its place when unrelated state changes.
 Dependency wakeups and clarification answers enter the same queue. Reopening the
 store preserves that order; creation order alone must not starve later work.
+The stewardship rotation also persists its last visited owner and continues after
+that owner, even when an earlier owner receives new relevant input.
 
 Requests carry originating assignment, recipient owner, purpose, expected outcome,
 acceptance and required milestone. Acceptance is intent, not verified delivery.
