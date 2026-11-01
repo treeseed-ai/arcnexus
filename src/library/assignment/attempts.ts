@@ -32,9 +32,9 @@ export function beginAttempt(root: string, record: RecordData): void {
   delete record.sandboxPreflight;
 }
 
-/** Supplies bounded failure context and the complete retained-log reference to correction. */
+/** Supplies bounded failure context; evidence filenames do not define diagnostic identity. */
 export function logExcerpt(path: string): string {
-  return `Full retained log: ${path}\n${readDiagnosticExcerpt(path).output}`;
+  return readDiagnosticExcerpt(path).output;
 }
 
 export function archiveAttempt(

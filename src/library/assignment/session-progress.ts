@@ -12,13 +12,14 @@ export class SessionProgress {
   }
 
   /** Records equivalent observable failures for loop diagnosis. */
-  failure(activity: string, diagnostic: string): string {
+  failure(activity: string, diagnostic: string, log?: string): string {
     const warning = this.observer.failed(
       { activity },
       diagnostic,
       'no-verified-checkpoint-progress',
     );
-    return warning ? `${diagnostic}\n${warning}` : diagnostic;
+    const feedback = warning ? `${diagnostic}\n${warning}` : diagnostic;
+    return log ? `${feedback}\nFull retained log: ${log}` : feedback;
   }
 
   /** Records host-verified progress rather than checklist toggles or changed prose. */

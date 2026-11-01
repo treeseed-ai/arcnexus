@@ -130,7 +130,11 @@ export class SessionWorkflow {
       const feedback = `Command ${JSON.stringify({ command: failed.command, args: failed.args })}; exit code ${failed.exitCode}; ${logExcerpt(failed.log)}`;
       this.markAttempt({ status: 'failed', feedback });
       this.state.journal('implementation', 'failed', { attempt, feedback });
-      return new SessionProgress(this.state).failure('implementation-checkpoint', feedback);
+      return new SessionProgress(this.state).failure(
+        'implementation-checkpoint',
+        feedback,
+        failed.log,
+      );
     }
   }
 
