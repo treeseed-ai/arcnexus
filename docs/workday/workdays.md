@@ -1,5 +1,12 @@
 # Two-owner workdays
 
+Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+and [initialization](../task-intake/initialization.md). Initialization precedes worker
+inference. There are no implicit execution or corrective quotas; the numeric limits
+below describe earlier defaults or explicitly captured legacy configurations. Planned
+stages and host checkpoints remain required, and repeated failures require diagnosis.
+
+
 Phase two introduces a deterministic workday: one requester, one authorized recipient,
 one shared candidate worktree and sequential Luna execution. The runtime captures authority and verifies each handoff before dispatch.
 

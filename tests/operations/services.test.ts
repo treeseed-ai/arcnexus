@@ -95,10 +95,12 @@ class ServicesTests {
     );
   }
   private serviceRecord(f: any) {
-    const id = readdirSync(join(f.state, 'runs'))[0];
-    if (!id) return { directory: undefined, record: {} };
-    const directory = join(f.state, 'runs', id);
-    return { directory, record: JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8')) };
+    for (const id of readdirSync(join(f.state, 'runs'))) {
+      const directory = join(f.state, 'runs', id);
+      const record = JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8'));
+      if (record.services?.length) return { directory, record };
+    }
+    return { directory: undefined, record: {} };
   }
   private async assertStoppedService(path: string): Promise<void> {
     let resource: any;

@@ -1,5 +1,12 @@
 # Observable single-steward workflow
 
+Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+and [initialization](../task-intake/initialization.md). Initialization precedes worker
+inference. There are no implicit execution or corrective quotas; the numeric limits
+below describe earlier defaults or explicitly captured legacy configurations. Planned
+stages and host checkpoints remain required, and repeated failures require diagnosis.
+
+
 Increment two (#31) implements this contract. One Luna thread performs bounded
 work. Activities are research, documentation, testing, implementation, review and
 release/handoff; they are not separate agents. The host records transitions in

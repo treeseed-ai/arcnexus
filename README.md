@@ -19,6 +19,20 @@ node dist/cli.js run identity "Implement the objective" --project /path/to/repos
 ```
 
 Runs default to `gpt-6-luna` with medium reasoning; `--model` explicitly overrides it.
+A captured source-read-only initializer precedes worker inference. Its model has a
+separate `--initializer-model` override. See [task intake](docs/task-intake/initialization.md)
+for `task plan`, inspectable proposals, explicit acceptance and architecture escalation.
+
+Maintained configuration is YAML; legacy JSON remains supported. Evidence remains JSON.
+[Ownership](docs/architecture/configuration.md) and mirrored component directories keep
+source permissions explicit. Run `npm run format:check`, `npm run lint`, and
+`npm run check` before `npm test`.
+
+The version-three catalog has no default execution deadlines or turn/call/attempt
+quotas. Explicit limits remain supported; cancellation and observable loop guards
+remain enforced. [Progress and limits](docs/assignment/progress.md) explains the
+checklist and verified-progress evidence. Pre-phase-three live qualification and
+staging integration remain required before declaring this milestone complete.
 
 Targets declare [environment setup](docs/workspace/workspaces.md) and [components](docs/cli/stewards.md).
 The application creates and retains a dedicated worktree. Review its evidence and

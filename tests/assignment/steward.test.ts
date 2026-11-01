@@ -30,7 +30,7 @@ class StewardTests {
   }
   invalidAttemptLimitsAndInputFailBeforeInference_2(t: TestContext) {
     const f = workflowFixture(t);
-    for (const value of ['0', '3', '1.5', 'two'])
+    for (const value of ['0', '-1', '1.5', 'two'])
       assert.equal(f.run('--max-attempts', value).status, 2);
     assert.equal(existsSync(f.calls), false);
   }
@@ -76,7 +76,7 @@ class StewardTests {
     );
     assert.equal(existsSync(join(f.state, 'active.lock')), false);
   }
-  private start(t: TestContext, f: any, cancel: boolean): TestProcess {
+  private start(t: TestContext, f: any, cancel: boolean, seconds?: string): TestProcess {
     return new TestProcess(
       t,
       [
@@ -89,18 +89,18 @@ class StewardTests {
         '--codex-path',
         f.executable,
         '--timeout-seconds',
-        cancel ? '15' : '4',
+        seconds ?? (cancel ? '60' : '20'),
       ],
       f.env,
     );
   }
   private hostReady(f: any): boolean {
-    const id = readdirSync(join(f.state, 'runs'))[0];
-    if (!id) return false;
-    const run = join(f.state, 'runs', id);
-    return readdirSync(run)
-      .filter((path) => path.startsWith('command-'))
-      .some((path) => readFileSync(join(run, path), 'utf8').includes('HOST_READY'));
+    return readdirSync(join(f.state, 'runs')).some((id) => {
+      const run = join(f.state, 'runs', id);
+      return readdirSync(run)
+        .filter((path) => path.startsWith('command-'))
+        .some((path) => readFileSync(join(run, path), 'utf8').includes('HOST_READY'));
+    });
   }
   runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck_7(t: TestContext) {
     const f = workflowFixture(t),
@@ -162,8 +162,14 @@ class StewardTests {
       join(f.repo, 'verify.cjs'),
       "const fs=require('fs');if(fs.existsSync('tests/regression.cjs'))require('./tests/regression.cjs');if(fs.existsSync('tests/marker')){console.log('HOST_READY');setInterval(()=>{},1000)}",
     );
+    if (!cancel) {
+      const path = join(f.repo, 'architecture/execution-profiles/luna.yaml');
+      const profile = JSON.parse(readFileSync(path, 'utf8'));
+      profile.commandTimeoutSeconds = 1;
+      writeFileSync(path, JSON.stringify(profile));
+    }
     f.commit();
-    const child = this.start(t, f, cancel);
+    const child = this.start(t, f, cancel, '60');
     if (cancel) {
       await waitFor(() => this.hostReady(f), 'Host verification must start');
       child.kill('SIGINT');

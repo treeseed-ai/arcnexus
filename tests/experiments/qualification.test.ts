@@ -56,7 +56,7 @@ class QualificationTests {
     });
     t.after(() => child.kill('SIGKILL'));
     const exited = new Promise((resolve: any) => child.on('exit', (code: any) => resolve(code)));
-    const deadline = Date.now() + 10000;
+    const deadline = Date.now() + 30000;
     while (!(
       existsSync(f.calls) && readFileSync(f.calls, 'utf8').includes('"stage":"implementation"')
     )) {

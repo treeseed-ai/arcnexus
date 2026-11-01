@@ -44,7 +44,10 @@ function executionLimits(profile?: Record<string, unknown>) {
   );
 }
 function text(value: unknown): string {
-  return JSON.stringify(value ?? 'unavailable').replace(/[<>&`]/g, (c) => `&#${c.charCodeAt(0)};`);
+  return JSON.stringify(value ?? 'unavailable', (_key, item) => item ?? 'unavailable').replace(
+    /[<>&`]/g,
+    (c) => `&#${c.charCodeAt(0)};`,
+  );
 }
 export function progressMarkdown(record: RecordData): string {
   const view = progressView(record);

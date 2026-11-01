@@ -69,6 +69,7 @@ export class WorkdayContext {
       parking: { status: this.parking.status, path: this.parking.path },
       budgets: {
         workdaySeconds: this.input.timeoutSeconds ?? null,
+        coordinationTurns: this.input.maxCoordinationTurns ?? null,
         assignmentSeconds: this.owners.map(
           (owner) => owner.participant.resolved.executionProfile.timeoutSeconds ?? null,
         ),

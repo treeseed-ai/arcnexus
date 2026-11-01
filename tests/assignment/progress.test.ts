@@ -5,6 +5,16 @@ import { test, type TestContext } from 'node:test';
 import { workflowFixture } from '../development-tooling/workflow-fixture.js';
 import { operationFixture } from '../development-tooling/operations-fixture.js';
 class ProgressTests {
+  observedShell(t: TestContext): void {
+    const fixture = workflowFixture(t);
+    fixture.configure({ observedShellFailures: 4 });
+    const result = fixture.run();
+    assert.equal(result.status, 1, result.stderr);
+    const record = JSON.parse(result.stdout);
+    assert.equal(record.outcome, 'needs_attention');
+    const events = readFileSync(join(fixture.state, 'runs', record.id, 'events.jsonl'), 'utf8');
+    assert.match(events, /repeat-failing-check/);
+  }
   repeatedCheckpoints(t: TestContext): void {
     const fixture = workflowFixture(t, 'exhaust');
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -37,3 +47,6 @@ test('observable repeated failures diagnose a loop then stop unchanged dispatch'
 
 test('repeated unverified implementation cycles stop with retained corrective work', (t) =>
   suite.repeatedCheckpoints(t));
+
+test('repeated exposed SDK command failures stop the stream with retained raw events', (t) =>
+  suite.observedShell(t));

@@ -4,6 +4,13 @@
 
 # One bounded corrective attempt
 
+Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+and [initialization](../task-intake/initialization.md). Initialization precedes worker
+inference. There are no implicit execution or corrective quotas; the numeric limits
+below describe earlier defaults or explicitly captured legacy configurations. Planned
+stages and host checkpoints remain required, and repeated failures require diagnosis.
+
+
 `arcnexus run <component> "<objective>" --project <repository> --max-attempts 2`
 opts into at most one correction after failed host verification. The default is
 one attempt. Only integer values `1` and `2` are accepted, on `run` only. Both

@@ -315,6 +315,13 @@ class CatalogComponentValidator {
       throw new InputError(`Conflicting repository ownership: ${c.id}`);
     for (const a of ancestors.filter((a) => a.repository === c.repository)) {
       if (
+        a.schemaVersion === 3 &&
+        ['platform', 'package'].includes(a.type) &&
+        !a.allowedWritePaths.length &&
+        !a.access.writeDirectories.length
+      )
+        continue;
+      if (
         c.allowedWritePaths.some((p) => !covered(p, a.allowedWritePaths)) ||
         c.access.writeDirectories.some((p) => !covered(p, a.access.writeDirectories))
       )

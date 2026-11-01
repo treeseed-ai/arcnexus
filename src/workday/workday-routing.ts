@@ -159,7 +159,7 @@ export class WorkdayRouting {
     this.state.clarificationRounds++;
     const warning = new ProgressObserver(this.state.root, recipient.record).failed(
       { activity: 'clarification' },
-      c.text,
+      'No verified delivery or accepted contract after clarification',
       'waiting-for-owner',
     );
     this.state.persist('response.clarification', { round: this.state.clarificationRounds }, [

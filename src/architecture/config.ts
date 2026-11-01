@@ -113,6 +113,7 @@ export function minimumLimit(...values: Array<number | undefined>): number | und
 }
 
 export function capturedCommandTimeout(record: {
+  [key: string]: unknown;
   resolvedAssignment?: unknown;
   preparationCommandTimeoutSeconds?: unknown;
 }): number | undefined {

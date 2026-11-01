@@ -4,6 +4,8 @@ import * as fs from 'node:fs';
 import { ControlledPlanning } from './controlled-planning.js';
 export interface WorkflowOptions {
   mode: string;
+  repairAfter?: number;
+  observedShellFailures?: number;
   initializerMode?: string;
   calls: string;
   planning?: boolean;
@@ -157,6 +159,8 @@ export class ControlledWorkflow {
     const mode = this.options.mode;
     const broken =
       mode === 'exhaust' ||
+      (this.options.repairAfter !== undefined &&
+        turn.count - (this.options.planning ? 2 : 1) <= this.options.repairAfter) ||
       (['repair', 'weak-test'].includes(mode) && turn.stage === 'implementation');
     fs.writeFileSync('source.txt', broken ? 'broken' : 'after');
     turn.result.activities = [
@@ -242,6 +246,7 @@ export class ControlledWorkflow {
     ];
   }
   private emit(turn: WorkflowTurn): void {
+    this.shellEvents();
     const text = this.options.mode === 'malformed' ? 'invalid' : JSON.stringify(turn.result);
     console.log(
       JSON.stringify({
@@ -259,6 +264,22 @@ export class ControlledWorkflow {
         },
       }),
     );
+  }
+  private shellEvents(): void {
+    for (let index = 0; index < (this.options.observedShellFailures ?? 0); index++)
+      console.log(
+        JSON.stringify({
+          type: 'item.completed',
+          item: {
+            id: 'command-' + index,
+            type: 'command_execution',
+            command: 'repeat-failing-check',
+            aggregated_output: 'Same diagnostic',
+            exit_code: 1,
+            status: 'failed',
+          },
+        }),
+      );
   }
   private probeSuppliedTool(prompt: string): void {
     const commands = JSON.parse(

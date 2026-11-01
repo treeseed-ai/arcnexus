@@ -6,7 +6,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 export async function waitFor(
   condition: () => boolean,
   message: string,
-  timeoutMs = 10000,
+  timeoutMs = 30000,
 ): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (true) {

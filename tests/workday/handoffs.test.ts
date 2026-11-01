@@ -51,8 +51,9 @@ class HandoffsTests {
     assert.notEqual(w.status, 'completed');
     assert.match(
       w.error,
-      /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination/i,
+      /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination|NeedsAttention/i,
     );
+    if (mode === 'exhaust-clarification') assert.equal(w.status, 'needs_attention');
     if (mode === 'unknown-owner')
       assert.match(
         readFileSync(join(f.state, 'workdays', w.workspaceId, 'report.md'), 'utf8'),

@@ -7,7 +7,7 @@ import { operationEnvironment } from '../operations/operations.js';
 import { execute, type CommandResult } from '../operations/process.js';
 import { observe } from '../report/timeline.js';
 import { save, type RecordData } from '../workspace/state.js';
-import { assertIdentity } from '../workspace/workspace.js';
+import { assertIdentity, assertOutputs } from '../workspace/workspace.js';
 export class InitializerChecks {
   constructor(
     private root: string,
@@ -56,5 +56,6 @@ export class InitializerChecks {
     assertIdentity(this.record);
     if (candidateDigest(this.record) !== before)
       throw new Error('Read-only initializer changed source');
+    assertOutputs(this.record.workspace, this.record.environment);
   }
 }

@@ -1,3 +1,4 @@
+import { ObservedProgress } from './observed-progress.js';
 import { Codex, type ThreadEvent } from '@openai/codex-sdk';
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -73,6 +74,7 @@ export class CodexExecution<T extends object = AgentResult> {
     appendFileSync(join(this.configuration.dir, 'events.jsonl'), JSON.stringify(event) + '\n', {
       mode: 0o600,
     });
+    this.progress(event);
     if (event.type === 'thread.started') {
       if (resumeId && event.thread_id !== resumeId)
         throw new Error('Codex resumed an unexpected thread ID');
@@ -89,6 +91,15 @@ export class CodexExecution<T extends object = AgentResult> {
     if (event.type === 'error') throw new Error(event.message);
   }
 
+  private progress(event: ThreadEvent): void {
+    try {
+      new ObservedProgress(this.input.root, this.input.record).accept(event);
+    } catch (error) {
+      this.tools.error = error;
+      this.tools.controller.abort(error);
+      throw error;
+    }
+  }
   private result(): T {
     const { record } = this.input;
     const { dir, profile } = this.configuration;
