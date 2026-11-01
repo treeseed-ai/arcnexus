@@ -65,3 +65,12 @@ Worker response schemas advertise only activities permitted by the captured role
 including plan activities. Review and caller handoff do not require publication or
 an additional role permission. Host validation remains authoritative even when a
 response bypasses the constrained schema.
+
+Independent verification progress is measured by unresolved criterion identities
+and the reviewed candidate, not by the reviewer's wording. Rephrased summaries or
+evidence descriptions do not establish material progress. Three equivalent reviews
+of the same unchanged candidate require diagnosis; continued repetition without a
+material change stops the affected work with retained attention evidence. Passing
+other checks or changing checklist prose cannot clear this review history. A conflict
+between a worker-authored regression and original acceptance remains explicit; the
+runtime must not silently recapture weaker tests to bypass that conflict.
