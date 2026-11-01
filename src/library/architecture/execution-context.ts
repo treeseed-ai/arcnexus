@@ -74,9 +74,25 @@ export class ExecutionContext {
     return resolveAssignment(context.source, context.base, owner, {
       value,
       capturedCatalog: context.catalog,
+      additionalVerification: this.containerChecks(context, owner),
       bindings: context.bindings,
       executionProfile: profile,
     });
+  }
+
+  /** Adds declared containing-package checks while retaining owner indices and avoiding duplicate commands. */
+  private containerChecks(context: ProjectExecution, owner: string) {
+    const lineage = ancestry(context.catalog, owner);
+    const seen = new Set(lineage.at(-1)!.verification.map((command) => JSON.stringify(command)));
+    return lineage
+      .slice(0, -1)
+      .flatMap((component) => component.verification)
+      .filter((command) => {
+        const key = JSON.stringify(command);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
   }
 
   /** Reads declarative director/reviewer profiles without selecting models in scheduling code. */

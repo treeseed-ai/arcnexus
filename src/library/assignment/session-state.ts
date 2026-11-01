@@ -78,7 +78,7 @@ export class SessionState {
     if (maxAttempts !== undefined && (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1))
       throw new InputError('Invalid maximum attempts');
     this.resolved = resolved;
-    this.component = resolved.context.at(-1)!;
+    this.component = { ...resolved.context.at(-1)!, verification: resolved.verification };
     this.assignment = resolved.assignment;
     this.documentationOnly = this.assignment.changeType === 'documentation';
     this.scope = this.assignmentScope();

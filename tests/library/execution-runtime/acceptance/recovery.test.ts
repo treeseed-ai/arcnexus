@@ -101,6 +101,31 @@ class RecoveryScenarios {
     assert.throws(() => new ExecutionContext().resolve(f.repo), /defaultPackage must be/);
   }
 
+  /** A failing captured package check prevents engineering even when the owner's checks pass. */
+  async packageChecks(t: TestContext): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const path = join(f.repo, 'architecture/components/package.json');
+    const component = JSON.parse(readFileSync(path, 'utf8'));
+    component.verification = [{ command: 'node', args: ['package-check.cjs'] }];
+    writeFileSync(path, JSON.stringify(component));
+    writeFileSync(join(f.repo, 'package-check.cjs'), 'process.exit(17);');
+    f.commit();
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    host.control('start');
+    const run = host.store.runs()[0]!;
+    const assignment = host.store.enqueue(run.id, 'c', 'Research', ['Observed evidence']);
+    host.store.updateAssignment(assignment.id, 'ready', { proposal: { kind: 'research' } });
+    await host.tick();
+    const retained = host.store.assignment(assignment.id);
+    assert.equal(retained.status, 'failed');
+    const recordPath = join(f.state, 'runs', String(retained.data.recordId), 'report.json');
+    const record = JSON.parse(readFileSync(recordPath, 'utf8'));
+    const observed = record.commands.find((c: any) => c.args.includes('package-check.cjs'));
+    assert.equal(observed?.exitCode, 17);
+    assert.equal(record.turns.length, 0);
+  }
+
   /** Reconciles already observed delivery while retaining uncertain engineering as interrupted. */
   recovery(t: TestContext): void {
     const f = new GeneralFixture(t).fixture;
@@ -154,5 +179,8 @@ test('stewardship rotation retains position when an earlier owner changes', (t) 
   scenarios.rotation(t));
 
 test('obsolete and malformed execution defaults fail preflight', (t) => scenarios.defaults(t));
+
+test('general execution observes captured package checks in addition to owner checks', (t) =>
+  scenarios.packageChecks(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

@@ -96,6 +96,7 @@ export function resolveBase(repository: string, ref = 'HEAD'): { source: string;
 }
 
 export interface AssignmentOptions {
+  additionalVerification?: Command[];
   capturedCatalog?: Catalog;
   initializerModel?: string;
   value?: unknown;
@@ -220,7 +221,7 @@ class AssignmentResolver {
       ...(execution.compositionProfile ? { compositionProfile: execution.compositionProfile } : {}),
       executionProfile: execution.executionProfile,
       allowedWritePaths: assignmentScope(assignment, component),
-      verification: component.verification,
+      verification: [...component.verification, ...(this.options.additionalVerification ?? [])],
       artifacts: captureCheckArtifacts(assignment),
       pendingChecks: [...pendingChecks],
     };
