@@ -239,11 +239,48 @@ application before subsequent builds. Their invocation files retain exact ordina
 commands, source revisions and machine bindings. Both are running; their live gates
 remain pending.
 
+## Integrated checks and live lifecycle evidence
+
+The integrated run at `9e14ff0` passed **415/415** tests in 521 seconds, retained
+as `b0bafbff-d4bc-44c4-a866-fbfb4c1c4365` and
+`/tmp/arcnexus-78-full-suite-v18.log`. Formatting, lint, type checking, build,
+ownership and guidance validation also passed in the corresponding `v18` logs.
+This does not qualify later changes or substitute for live evidence.
+
+Live workday `c9b356cb-981f-4d19-bd3b-85f1c3eb57ce` reached `paused` with unfinished
+plans, regression snapshots, thread IDs and waiting dependencies retained, then
+resumed. Evidence is `workday-live-v1/paused-status.json`, `paused-evidence.json`,
+`pause-output.txt` and `resume-output.txt` under the qualification root. An external
+documentation task `cad6ace3-9680-4cd1-b7f4-612fd7a20b4c` then paused the workday,
+completed with owner verification and goal assessment, and returned control to it.
+Its actual `cli/USAGE.md` diff is retained in candidate
+`aa876419dc1f73faa7416fac99d3f944c9f92bf1`; the source checkout stayed clean.
+`after-task-status.json` records the resumed workday and completed task. This is a
+successful real mode-coordination case, not proof of every race or failure path.
+
+Live host loss was injected during task `8047b349-3034-4bac-95bb-cc59dc675ef6`:
+SIGKILL stopped all four observed managed descendants within 0.11 seconds. Restart
+through ordinary `workday status` retained the task as `interrupted` and dispatched
+nothing. Evidence is `general-live-v4/host-loss.json`, `before-host-loss.json` and
+`host-recovery-status.json`. The names delivery remains verified; unfinished
+service/CLI changes remain retained and unpromoted. This proves prompt subprocess
+termination and honest interruption, not safe replay of the interrupted operation.
+
+Issue #102 exposes retained SDK tool observations and host command output to the
+independent verifier. Its eight focused tests pass in
+`/tmp/arcnexus-102-green-final.log`; missing, partial and foreign observations stay
+explicit gaps. Live v4 also exposed repeated review gaps with changing prose (#103).
+The original acceptance and frozen regressions have not been weakened to bypass it.
+
+A bounded ArcNexus documentation improvement is running from clean source `9e14ff0`
+in `source-v9`, using the stable captured supervisor `52354e4`. Its exact prompt,
+command and revisions are in `live-v9-invocation.json`; no delivered result is claimed.
+
 ## Remaining qualification and implementation work
 
-All six live gates remain unqualified: three-owner verified task delivery;
+Full qualification remains incomplete. Outstanding combined gates include three-owner verified task delivery;
 self-directed workday improvement with inbox work; retained partial work across
-pause/resume; task interruption and return; cancellation/host-loss recovery; and
+pause/resume; the remaining task-interruption race cases; validated host-loss continuation; and
 an independently verified ArcNexus improvement with its actual diff retained.
 
 The newer verifier, captured-check and completed-turn recovery behavior still
