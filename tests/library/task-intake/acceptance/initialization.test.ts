@@ -8,7 +8,7 @@ import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js'
 
 /** Exercises initialization behavior through observable scenarios. */
 class InitializationTests {
-  /** Handles legacy run within this component’s captured contract. */
+  /** Verifies that legacy run initializes exactly once with captured read-only Luna provenance. */
   legacyRun(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run();
@@ -35,7 +35,7 @@ class InitializationTests {
     assert.match(result.stderr, /initializer|initialization/i);
   }
 
-  /** Handles loop needs attention within this component’s captured contract. */
+  /** Verifies that initializer loop retains needs_attention without dispatching a worker. */
   loopNeedsAttention(t: TestContext): void {
     const fixture = workflowFixture(t);
     fixture.configure({ initializerMode: 'loop' });
@@ -54,7 +54,7 @@ class InitializationTests {
     );
   }
 
-  /** Handles model override within this component’s captured contract. */
+  /** Verifies that initializer model override is independent of the worker. */
   modelOverride(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run('--initializer-model', 'gpt-6-astra');
@@ -76,7 +76,7 @@ class InitializationTests {
     assert.equal(record.initialization.turns, 1);
   }
 
-  /** Handles declare platform within this component’s captured contract. */
+  /** Adds an explicit platform initializer and commits the captured fixture definition. */
   private declarePlatform(fixture: ReturnType<typeof workflowFixture>): void {
     writeFileSync(
       join(fixture.repo, 'architecture/components/platform.yaml'),
@@ -102,7 +102,7 @@ class InitializationTests {
     fixture.commit();
   }
 
-  /** Handles missing declaration within this component’s captured contract. */
+  /** Verifies that version-three platform must declare its initializer component. */
   missingDeclaration(t: TestContext): void {
     const fixture = workflowFixture(t);
     writeFileSync(

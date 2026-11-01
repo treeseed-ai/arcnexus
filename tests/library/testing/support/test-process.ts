@@ -31,7 +31,7 @@ export class TestProcess {
 
   stderr = '';
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Starts the Node child, captures both output streams and registers cleanup after the test. */
   constructor(t: TestContext, args: string[], env: NodeJS.ProcessEnv) {
     this.child = spawn(process.execPath, args, { env });
     this.child.stdout.on('data', (chunk) => {
@@ -49,7 +49,7 @@ export class TestProcess {
     });
   }
 
-  /** Handles kill within this component’s captured contract. */
+  /** Signals the managed test child to exercise cancellation or parent-loss behavior. */
   kill(signal: NodeJS.Signals): void {
     this.child.kill(signal);
   }

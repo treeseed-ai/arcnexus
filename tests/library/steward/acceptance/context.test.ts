@@ -137,7 +137,7 @@ class ContextTests {
     assert.equal(report.status, 'completed');
   }
 
-  /** Handles documentation assignment within this component’s captured contract. */
+  /** Writes a documentation-only assignment so behavior checkpoints must be explicitly skipped. */
   private documentationAssignment(assignment: string): void {
     writeFileSync(
       assignment,

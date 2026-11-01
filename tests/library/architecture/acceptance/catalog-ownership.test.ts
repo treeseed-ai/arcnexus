@@ -39,7 +39,7 @@ class CatalogOwnershipTests {
     }
   }
 
-  /** Handles inspect owner within this component’s captured contract. */
+  /** Resolves effective owner authority through the built inspect command. */
   private inspectOwner(id: string): any {
     const r = spawnSync(
       process.execPath,

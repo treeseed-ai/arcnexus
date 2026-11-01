@@ -277,7 +277,7 @@ class WorkspaceTests {
     }
   }
 
-  /** Handles remove initial candidate within this component’s captured contract. */
+  /** Removes the initial candidate through current cleanup or a historical receipt fixture. */
   private removeInitialCandidate(f: any, record: any, legacy: boolean): void {
     if (legacy) {
       f.git('worktree', 'remove', record.workspace);
@@ -339,7 +339,7 @@ class WorkspaceTests {
     assert.equal(JSON.parse(readFileSync(captured.record, 'utf8')).finishedAt, undefined);
   }
 
-  /** Handles running setup within this component’s captured contract. */
+  /** Finds a retained setup command PID after its log announces process startup. */
   private runningSetup(f: any): { pid: number; record: string; log: string } | undefined {
     for (const id of readdirSync(join(f.state, 'runs'))) {
       const directory = join(f.state, 'runs', id),

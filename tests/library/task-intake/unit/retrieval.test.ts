@@ -5,7 +5,7 @@ import { test } from 'node:test';
 
 /** Checks lexical selection across executable owner types without granting authority. */
 class RetrievalTests {
-  /** Handles includes release within this component’s captured contract. */
+  /** Verifies that task retrieval includes release owners with relevant responsibility. */
   includesRelease(): void {
     const owner: any = {
       id: 'release',

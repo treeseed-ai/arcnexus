@@ -8,7 +8,7 @@ import { ComponentTestFixture } from '../support/component-test-fixture.js';
 
 /** Checks that later checkout edits cannot reduce the captured host selection. */
 class CapturedTests {
-  /** Handles preserves selection within this component’s captured contract. */
+  /** Mutates the candidate test declaration and checks the original captured selection remains authoritative. */
   preservesSelection(t: TestContext, change: 'remove' | 'retag' | 'implementation'): void {
     const fixture = new ComponentTestFixture(t);
     const owner = fixture.assignment().context.at(-1);

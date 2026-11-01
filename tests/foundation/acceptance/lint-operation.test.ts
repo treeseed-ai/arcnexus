@@ -7,7 +7,7 @@ import { operationFixture } from '../../library/testing/support/operations-fixtu
 
 /** Exercises lint operation behavior through observable scenarios. */
 class LintOperationTests {
-  /** Handles feedback within this component’s captured contract. */
+  /** Verifies that declared lint feedback reaches the steward through the production bridge. */
   feedback(t: TestContext): void {
     const fixture = operationFixture(t);
     this.configure(fixture);
@@ -24,7 +24,7 @@ class LintOperationTests {
     );
   }
 
-  /** Handles configure within this component’s captured contract. */
+  /** Declares a real ESLint operation whose failure changes when the candidate is repaired. */
   private configure(fixture: any): void {
     const path = join(fixture.repo, 'architecture/operations/test.json');
     const operation = JSON.parse(readFileSync(path, 'utf8'));

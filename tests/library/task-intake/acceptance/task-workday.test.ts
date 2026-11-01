@@ -9,7 +9,7 @@ import { cli } from '../../testing/support/workflow-fixture.js';
 
 /** Exercises task workday behavior through observable scenarios. */
 class TaskWorkdayTests {
-  /** Handles routes existing owners within this component’s captured contract. */
+  /** Verifies that unstructured task uses one initializer and the production two-owner workday. */
   routesExistingOwners(t: TestContext): void {
     const f = handoffFixture(t);
     const bindings = this.bindings(f);
@@ -35,7 +35,7 @@ class TaskWorkdayTests {
     );
   }
 
-  /** Handles direction evidence within this component’s captured contract. */
+  /** Requires the initializer prompt to explain the captured requester-to-provider edge. */
   private directionEvidence(f: any, proposal: any): void {
     const prompt = readFileSync(
       join(f.state, 'runs', proposal.initialization.runId, 'prompt.txt'),
@@ -45,7 +45,7 @@ class TaskWorkdayTests {
     assert.match(prompt, /"from":"sample","to":"dependency"/);
   }
 
-  /** Handles declare dependency within this component’s captured contract. */
+  /** Declares the sample owner relationship before the routing revision is captured. */
   private declareDependency(f: any): void {
     const path = join(f.repo, 'architecture/components/sample.json');
     const component = JSON.parse(readFileSync(path, 'utf8'));
@@ -54,7 +54,7 @@ class TaskWorkdayTests {
     f.commit();
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Invokes unstructured planning with pinned bindings and a controlled Codex executable. */
   private plan(f: any, input: string, bindings: string) {
     return this.command(
       f,
@@ -70,7 +70,7 @@ class TaskWorkdayTests {
     );
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Spawns the built task CLI with fixture isolation and a test-harness watchdog. */
   private command(f: any, ...args: string[]) {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
@@ -79,7 +79,7 @@ class TaskWorkdayTests {
     });
   }
 
-  /** Handles bindings within this component’s captured contract. */
+  /** Writes independent provider and combined acceptance checks outside candidate authority. */
   private bindings(f: any): string {
     const path = join(f.root, 'task-bindings.json');
     const dependency = join(f.root, 'dependency-acceptance.cjs');

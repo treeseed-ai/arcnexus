@@ -59,7 +59,7 @@ class ExperimentsTests {
     assert.equal(f.runCampaign().status, 2);
   }
 
-  /** Handles omitted attempts within this component’s captured contract. */
+  /** Verifies that experiment without an attempt limit preserves the unset runtime limit. */
   omittedAttempts(t: TestContext): void {
     const f = fixture(t);
     const data = parse(readFileSync(f.manifest, 'utf8'));
@@ -154,7 +154,7 @@ class ExperimentsTests {
     assert.notEqual(report.runnerHash, report.finalRunnerHash);
   }
 
-  /** Handles supervisor mutation within this component’s captured contract. */
+  /** Writes an acceptance fixture that deliberately changes the supervising executable. */
   private supervisorMutation(check: string): void {
     writeFileSync(
       check,
@@ -162,7 +162,7 @@ class ExperimentsTests {
     );
   }
 
-  /** Handles copy supervisor within this component’s captured contract. */
+  /** Copies the built supervisor outside the candidate while sharing installed dependencies. */
   private async copySupervisor(f: ExperimentFixture): Promise<string> {
     const { symlinkSync } = await import('node:fs');
     const runner = join(f.root, 'supervisor');
@@ -200,7 +200,7 @@ class ExperimentsTests {
     assert.ok(existsSync(join(f.output, 'success/report.json')));
   }
 
-  /** Handles waiting acceptance within this component’s captured contract. */
+  /** Adds a long-running external check with a PID marker for cancellation assertions. */
   private waitingAcceptance(f: ExperimentFixture, check: string, marker: string): string {
     writeFileSync(
       check,
@@ -246,7 +246,7 @@ class ExperimentFixture {
 
   readonly value: any;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Materializes a pinned simulation repository and external campaign inputs with automatic test cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     materializeFixture('simulation', this.repo);
@@ -267,7 +267,7 @@ class ExperimentFixture {
     writeFileSync(this.bindings, JSON.stringify(this.value));
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
@@ -283,7 +283,7 @@ class ExperimentFixture {
     });
   }
 
-  /** Handles campaign args within this component’s captured contract. */
+  /** Builds explicit simulation arguments with a fresh external evidence destination. */
   campaignArgs(manifest = this.manifest): string[] {
     return [
       'run',
@@ -297,7 +297,7 @@ class ExperimentFixture {
     ];
   }
 
-  /** Handles run campaign within this component’s captured contract. */
+  /** Runs the scripted campaign through the production experiment CLI. */
   runCampaign(manifest = this.manifest) {
     return this.run(...this.campaignArgs(manifest));
   }

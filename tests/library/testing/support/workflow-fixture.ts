@@ -45,7 +45,7 @@ export class WorkflowFixture {
 
   private options: WorkflowOptions;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates a committed engineering fixture and controlled executable with temporary cleanup. */
   constructor(t: TestContext, mode: string) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     this.options = { mode, calls: this.calls };
@@ -100,7 +100,7 @@ export class WorkflowFixture {
     );
   };
 
-  /** Handles files within this component’s captured contract. */
+  /** Writes baseline source, documentation and a regression-aware verification executable. */
   private files(): void {
     catalogFixture(this.repo);
     mkdirSync(join(this.repo, 'docs'));
@@ -115,7 +115,7 @@ export class WorkflowFixture {
     );
   }
 
-  /** Projects captured ownership, contracts and inventories for static validation output. */
+  /** Writes component definitions and disposable-output declarations for the fixture workspace. */
   private catalog(): void {
     writeFileSync(
       join(this.repo, 'architecture/components/sample.json'),

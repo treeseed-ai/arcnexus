@@ -10,7 +10,7 @@ import { catalogFixture } from '../../testing/support/catalog-fixture.js';
 export class ComponentV4Fixture {
   readonly root = mkdtempSync(join(tmpdir(), 'component-v4-'));
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates a committed version-four package fixture and registers its filesystem cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     this.git('init', '-b', 'main');
@@ -28,7 +28,7 @@ export class ComponentV4Fixture {
     this.commit();
   }
 
-  /** Handles hierarchy within this component’s captured contract. */
+  /** Defines platform containment and a repository package with package-relative ownership. */
   private hierarchy(): void {
     this.put(
       'architecture/components/platform.json',
@@ -58,7 +58,7 @@ export class ComponentV4Fixture {
     );
   }
 
-  /** Handles references within this component’s captured contract. */
+  /** Adds a provided contract and referenced standard to the sample owner. */
   references(): any {
     const component = this.component('sample', 'library', {
       parentId: 'package',
@@ -82,7 +82,7 @@ export class ComponentV4Fixture {
     return component;
   }
 
-  /** Handles pattern within this component’s captured contract. */
+  /** Writes the reusable pattern metadata consumed by the sample component. */
   private pattern(): void {
     this.put('architecture/patterns/standard.yaml', {
       schemaVersion: 1,
@@ -96,7 +96,7 @@ export class ComponentV4Fixture {
     });
   }
 
-  /** Handles primary repository within this component’s captured contract. */
+  /** Declares the primary repository identity used by workspace binding checks. */
   primaryRepository(): void {
     this.put('architecture/environment.json', {
       schemaVersion: 1,
@@ -110,7 +110,7 @@ export class ComponentV4Fixture {
     });
   }
 
-  /** Handles dependency catalog within this component’s captured contract. */
+  /** Binds independent repository catalogs with a cross-repository contract consumer. */
   dependencyCatalog(dependency: ComponentV4Fixture): void {
     this.git('remote', 'add', 'origin', 'https://example.invalid/sample.git');
     dependency.git('remote', 'add', 'origin', 'https://example.invalid/other.git');
@@ -142,7 +142,7 @@ export class ComponentV4Fixture {
     this.otherOwner();
   }
 
-  /** Handles other owner within this component’s captured contract. */
+  /** Declares the contract provider in the independent dependency package. */
   private otherOwner(): void {
     this.put(
       'architecture/components/other-package.json',
@@ -172,7 +172,7 @@ export class ComponentV4Fixture {
     this.consumer();
   }
 
-  /** Handles consumer within this component’s captured contract. */
+  /** Declares the sample owner as a consumer of the dependency contract. */
   private consumer(): void {
     this.put(
       'architecture/components/sample.json',
@@ -185,7 +185,7 @@ export class ComponentV4Fixture {
     );
   }
 
-  /** Handles importing owner within this component’s captured contract. */
+  /** Adds a disjoint component whose source imports the requested provider module. */
   importingOwner(specifier: string): void {
     this.put(
       'architecture/components/consumer.json',
@@ -198,7 +198,7 @@ export class ComponentV4Fixture {
     this.put('package/consumer/entry.ts', `import '../src/${specifier}';`);
   }
 
-  /** Handles public module within this component’s captured contract. */
+  /** Exposes one provider module through its captured ownership definition. */
   publicModule(path: string): void {
     this.put(
       'architecture/components/sample.json',
@@ -210,7 +210,7 @@ export class ComponentV4Fixture {
     );
   }
 
-  /** Handles component within this component’s captured contract. */
+  /** Builds a minimal version-four component with explicit authority and supplied overrides. */
   component(id: string, type: string, extra: object): any {
     return {
       schemaVersion: 4,
@@ -232,20 +232,20 @@ export class ComponentV4Fixture {
     };
   }
 
-  /** Handles put within this component’s captured contract. */
+  /** Creates parent directories and writes the fixture configuration or source file. */
   put(path: string, value: unknown): void {
     mkdirSync(join(this.root, path, '..'), { recursive: true });
     writeFileSync(join(this.root, path), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.root, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
-  /** Handles commit within this component’s captured contract. */
+  /** Stages fixture files and commits the revision that the built CLI will capture. */
   commit(): void {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');

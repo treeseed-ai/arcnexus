@@ -9,7 +9,7 @@ import { test, type TestContext } from 'node:test';
 
 /** Exercises component v4 behavior through observable scenarios. */
 class ComponentV4Tests {
-  /** Handles reports derived ownership within this component’s captured contract. */
+  /** Verifies that catalog validation exposes derived ownership and captured inventories. */
   reportsDerivedOwnership(t: TestContext): void {
     const fixture = new ComponentV4Fixture(t);
     const result = fixture.run('validate');
@@ -187,7 +187,7 @@ class ComponentV4Tests {
     assert.equal(f.run('validate').status, 0);
   }
 
-  /** Handles checks mts public modules within this component’s captured contract. */
+  /** Verifies that v4 maps compiled mjs imports to declared mts public modules. */
   checksMtsPublicModules(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     f.put('package/src/module.mts', 'export const value = 1;');

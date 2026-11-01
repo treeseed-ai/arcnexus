@@ -8,7 +8,7 @@ import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js'
 
 /** Exercises task behavior through observable scenarios. */
 class TaskTests {
-  /** Handles ready research within this component’s captured contract. */
+  /** Verifies that changed request invalidates a ready task before worker activation. */
   readyResearch(t: TestContext, stale = false): void {
     const f = workflowFixture(t);
     f.configure({ initializerMode: 'proposal-research' });
@@ -35,7 +35,7 @@ class TaskTests {
     }
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Invokes task planning with the controlled initializer and caller input file. */
   private plan(f: ReturnType<typeof workflowFixture>, input: string) {
     return this.command(
       f,
@@ -49,7 +49,7 @@ class TaskTests {
     );
   }
 
-  /** Handles command within this component’s captured contract. */
+  /** Spawns the built task CLI with fixture isolation and a test-harness watchdog. */
   private command(f: ReturnType<typeof workflowFixture>, ...args: string[]) {
     return spawnSync(process.execPath, [cli, 'task', ...args], {
       encoding: 'utf8',
@@ -58,7 +58,7 @@ class TaskTests {
     });
   }
 
-  /** Handles missing owner within this component’s captured contract. */
+  /** Verifies that missing-owner task retains inspectable proposal without worker inference or source edits. */
   missingOwner(t: TestContext): void {
     const f = workflowFixture(t);
     f.configure({ initializerMode: 'proposal-missing' });

@@ -133,7 +133,7 @@ class HandoffsTests {
     );
   }
 
-  /** Handles contracts within this component’s captured contract. */
+  /** Checks that every coordination response schema retains the captured contract identifier. */
   private contracts(calls: any[]): void {
     for (const call of calls) {
       const schema = call.coordinationSchema.anyOf?.[1];

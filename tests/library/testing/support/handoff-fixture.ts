@@ -16,7 +16,7 @@ class HandoffFixture {
 
   private manifest: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Reuses an isolated workflow repository and locates its external handoff evidence files. */
   constructor(
     t: TestContext,
     private mode: string,
@@ -26,7 +26,7 @@ class HandoffFixture {
     this.manifest = join(this.f.root, 'workday.json');
   }
 
-  /** Handles create within this component’s captured contract. */
+  /** Assembles a committed two-owner fixture and its external workday manifest. */
   create() {
     this.setup();
     this.profile();
@@ -49,7 +49,7 @@ class HandoffFixture {
     );
   }
 
-  /** Handles setup within this component’s captured contract. */
+  /** Creates disjoint owner files and verification commands for a real contract dependency. */
   private setup(): void {
     const f = this.f;
     mkdirSync(join(f.repo, 'dependency-docs'));
@@ -77,7 +77,7 @@ class HandoffFixture {
     );
   }
 
-  /** Handles profile within this component’s captured contract. */
+  /** Selects planned execution stages and explicit fixture-only turn allowances. */
   private profile(): void {
     const f = this.f;
     const profile = JSON.parse(
@@ -95,7 +95,7 @@ class HandoffFixture {
     );
   }
 
-  /** Handles refresh within this component’s captured contract. */
+  /** Declares generated-artifact rebuilding for scenarios that switch candidate views. */
   private refresh(): void {
     const f = this.f,
       mode = this.mode;
@@ -116,7 +116,7 @@ class HandoffFixture {
     }
   }
 
-  /** Handles assignments within this component’s captured contract. */
+  /** Writes caller-owned requester and recipient assignments outside their candidate scope. */
   private assignments(): void {
     const f = this.f;
     for (const owner of ['sample', 'dependency'])
@@ -133,7 +133,7 @@ class HandoffFixture {
       );
   }
 
-  /** Handles acceptance within this component’s captured contract. */
+  /** Writes an independent check requiring both owner changes in the combined candidate. */
   private acceptance(): void {
     writeFileSync(
       this.check,
@@ -141,7 +141,7 @@ class HandoffFixture {
     );
   }
 
-  /** Handles definition within this component’s captured contract. */
+  /** Captures the permitted dependency edge, participant envelopes and combined acceptance. */
   private definition(): void {
     writeFileSync(
       this.manifest,
@@ -166,7 +166,7 @@ class HandoffFixture {
     );
   }
 
-  /** Handles participants within this component’s captured contract. */
+  /** Selects requester refresh and recipient correction settings for the scripted scenario. */
   private participants() {
     const mode = this.mode;
     return {
@@ -184,7 +184,7 @@ class HandoffFixture {
     };
   }
 
-  /** Handles executable within this component’s captured contract. */
+  /** Writes a controlled Codex launcher using the compiled handoff scenario. */
   private executable(): void {
     const f = this.f,
       mode = this.mode;

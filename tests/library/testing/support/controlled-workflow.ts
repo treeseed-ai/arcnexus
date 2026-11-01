@@ -42,7 +42,7 @@ export interface WorkflowTurn {
 export class ControlledWorkflow {
   private args = process.argv.slice(2);
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Retains the selected scripted workflow and its invocation evidence destination. */
   constructor(private options: WorkflowOptions) {}
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
@@ -70,7 +70,7 @@ export class ControlledWorkflow {
     this.emit(turn);
   }
 
-  /** Handles initialize within this component’s captured contract. */
+  /** Routes initialization prompts to the scripted intake responder before engineering. */
   private initialize(prompt: string): boolean {
     return new ControlledInitializer().respond(
       prompt,
@@ -80,7 +80,7 @@ export class ControlledWorkflow {
     );
   }
 
-  /** Handles validate invocation within this component’s captured contract. */
+  /** Rejects invocations missing the explicit launcher and permission configuration. */
   private validateInvocation(): void {
     if (
       this.args[0] !== 'exec' ||
@@ -139,7 +139,7 @@ export class ControlledWorkflow {
       fs.writeFileSync('source.txt', 'unauthorized');
   }
 
-  /** Handles specification within this component’s captured contract. */
+  /** Writes documentation and a failing regression, with optional checkpoint violations. */
   private specification(turn: WorkflowTurn): void {
     fs.writeFileSync('docs/behavior.md', 'Source must become after');
     fs.writeFileSync(
@@ -158,7 +158,7 @@ export class ControlledWorkflow {
     if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
   }
 
-  /** Handles specification activities within this component’s captured contract. */
+  /** Records documentation and test claims plus the reason research was skipped. */
   private specificationActivities(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -182,7 +182,7 @@ export class ControlledWorkflow {
     ];
   }
 
-  /** Handles implement within this component’s captured contract. */
+  /** Writes the scripted implementation or repair and records its activity claim. */
   private implement(turn: WorkflowTurn): void {
     if (this.options.dependencyMutation && turn.stage === 'implementation')
       fs.writeFileSync('packages/dependency/source.txt', 'mutated');
@@ -206,7 +206,7 @@ export class ControlledWorkflow {
     this.candidateMutations(mode);
   }
 
-  /** Handles candidate mutations within this component’s captured contract. */
+  /** Introduces selected Git, path or instruction violations for host inspection. */
   private candidateMutations(mode: string): void {
     if (mode === 'scope') fs.writeFileSync('outside.txt', 'unauthorized');
     if (mode === 'ignored') fs.writeFileSync('.env', 'unknown');
@@ -236,12 +236,12 @@ export class ControlledWorkflow {
     }
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   private git(...args: string[]): void {
     cp.execFileSync('git', args);
   }
 
-  /** Handles masked symlink within this component’s captured contract. */
+  /** Stages a symlink then replaces its working copy to test index-aware path inspection. */
   private maskedSymlink(): void {
     fs.symlinkSync('source.txt', 'new.txt');
     this.git('add', 'new.txt');
@@ -249,7 +249,7 @@ export class ControlledWorkflow {
     fs.writeFileSync('new.txt', 'regular');
   }
 
-  /** Handles review within this component’s captured contract. */
+  /** Returns review/handoff claims or deliberately attempts a prohibited review edit. */
   private review(turn: WorkflowTurn): void {
     turn.result.activities = [
       {
@@ -270,7 +270,7 @@ export class ControlledWorkflow {
       turn.result.reviewFindings = ['Needs a corrective pass'];
   }
 
-  /** Handles block within this component’s captured contract. */
+  /** Returns an owner request, optionally naming an unknown owner for escalation coverage. */
   private block(turn: WorkflowTurn): void {
     turn.result.status = 'blocked';
     turn.result.blockers = ['Another owner must change its contract'];
@@ -286,7 +286,7 @@ export class ControlledWorkflow {
     ];
   }
 
-  /** Handles emit within this component’s captured contract. */
+  /** Writes result and usage events through the controlled SDK executable boundary. */
   private emit(turn: WorkflowTurn): void {
     this.shellEvents();
     const text = this.options.mode === 'malformed' ? 'invalid' : JSON.stringify(turn.result);
@@ -308,7 +308,7 @@ export class ControlledWorkflow {
     );
   }
 
-  /** Handles shell events within this component’s captured contract. */
+  /** Emits observable command failures for SDK-level loop-guard assertions. */
   private shellEvents(): void {
     for (let index = 0; index < (this.options.observedShellFailures ?? 0); index++)
       console.log(
@@ -326,7 +326,7 @@ export class ControlledWorkflow {
       );
   }
 
-  /** Handles probe supplied tool within this component’s captured contract. */
+  /** Checks that the captured tool binding reaches the controlled execution environment. */
   private probeSuppliedTool(prompt: string): void {
     const commands = JSON.parse(
       prompt.split('Captured verification commands (zero-based index): ')[1]!.split('\n')[0]!,
@@ -338,7 +338,7 @@ export class ControlledWorkflow {
     if (probe.status !== 0) throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
   }
 
-  /** Handles sandbox feedback within this component’s captured contract. */
+  /** Records direct sandbox limitations while exercising the declared host route. */
   private sandboxFeedback(turn: WorkflowTurn): void {
     if (!turn.prompt.includes('If sandbox restrictions prevent running the regression'))
       throw new Error('HOST_CHECK_HANDOFF_MISSING');
@@ -349,7 +349,7 @@ export class ControlledWorkflow {
     });
   }
 
-  /** Handles documentation within this component’s captured contract. */
+  /** Produces documentation-only work without pretending to satisfy a behavioral red test. */
   private documentation(turn: WorkflowTurn): void {
     if (turn.stage !== 'specification') return;
     if (!turn.prompt.includes('Make actual file edits now'))

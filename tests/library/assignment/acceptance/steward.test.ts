@@ -111,7 +111,7 @@ class StewardTests {
     );
   }
 
-  /** Handles host ready within this component’s captured contract. */
+  /** Declares a verified host operation route alongside an optional direct-shell limitation. */
   private hostReady(f: any): boolean {
     return readdirSync(join(f.state, 'runs')).some((id) => {
       const run = join(f.state, 'runs', id);
@@ -144,7 +144,7 @@ class StewardTests {
     assert.ok(!prompt.includes(Buffer.from(readFileSync(check)).toString('base64')));
   }
 
-  /** Handles assignment with acceptance within this component’s captured contract. */
+  /** Writes a caller-owned assignment with an external acceptance check. */
   private assignmentWithAcceptance(file: string, check: string): void {
     writeFileSync(
       check,

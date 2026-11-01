@@ -14,7 +14,7 @@ export class ComponentTestFixture {
 
   readonly repo = join(this.root, 'repo');
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates a tracked catalog with unit and regression suites and registers temporary cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     mkdirSync(this.repo);
@@ -30,7 +30,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
-  /** Handles fields within this component’s captured contract. */
+  /** Builds shared version-four fixture component fields with explicit owned test roots. */
   private fields() {
     const base = {
       ...componentFields,
@@ -52,7 +52,7 @@ export class ComponentTestFixture {
     return fields;
   }
 
-  /** Projects captured ownership, contracts and inventories for static validation output. */
+  /** Writes sample ownership, profile references and tracked fixture tests. */
   private catalog(): void {
     const fields = this.fields();
     this.containers(fields);
@@ -75,7 +75,7 @@ export class ComponentTestFixture {
     });
   }
 
-  /** Handles containers within this component’s captured contract. */
+  /** Defines platform and package containment without granting blanket source ownership. */
   private containers(fields: ReturnType<ComponentTestFixture['fields']>): void {
     this.put('architecture/components/platform.yaml', {
       ...fields,
@@ -98,7 +98,7 @@ export class ComponentTestFixture {
     });
   }
 
-  /** Handles profile within this component’s captured contract. */
+  /** Declares the shared Node preparation and compiled-test runner once. */
   profile(overrides: Record<string, unknown> = {}): void {
     this.put('architecture/test-profiles/node.yaml', {
       schemaVersion: 1,
@@ -122,26 +122,26 @@ export class ComponentTestFixture {
     );
   }
 
-  /** Handles put within this component’s captured contract. */
+  /** Creates parent directories and writes the fixture configuration or source file. */
   put(path: string, value: unknown): void {
     mkdirSync(dirname(join(this.repo, path)), { recursive: true });
     writeFileSync(join(this.repo, path), typeof value === 'string' ? value : JSON.stringify(value));
   }
 
-  /** Handles commit within this component’s captured contract. */
+  /** Stages fixture files and commits the revision that the built CLI will capture. */
   commit(): void {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
-  /** Handles unused profile within this component’s captured contract. */
+  /** Adds an unselected profile to verify irrelevant configuration does not alter execution. */
   unusedProfile(): void {
     const path = 'architecture/components/sample.yaml';
     const sample = JSON.parse(readFileSync(join(this.repo, path), 'utf8'));
@@ -161,7 +161,7 @@ export class ComponentTestFixture {
     this.commit();
   }
 
-  /** Handles other profile within this component’s captured contract. */
+  /** Adds another owner profile to exercise preparation and runner compatibility. */
   private otherProfile(): void {
     this.put('architecture/test-profiles/other.yaml', {
       schemaVersion: 1,
@@ -178,7 +178,7 @@ export class ComponentTestFixture {
     );
   }
 
-  /** Handles assignment within this component’s captured contract. */
+  /** Resolves a captured assignment for test-selection immutability assertions. */
   assignment(): any {
     const result = spawnSync(
       process.execPath,

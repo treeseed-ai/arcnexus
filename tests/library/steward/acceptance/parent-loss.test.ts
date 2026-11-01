@@ -43,7 +43,7 @@ class ParentLossTests {
     assert.deepEqual(groupMembers(pid), [], 'no steward process survives host loss');
   }
 
-  /** Handles codex pid within this component’s captured contract. */
+  /** Reads the retained Codex PID used to verify shutdown after parent loss. */
   private codexPid(f: any): number | undefined {
     if (!existsSync(f.calls) || !existsSync(join(f.state, 'runs'))) return undefined;
     for (const id of readdirSync(join(f.state, 'runs'))) {

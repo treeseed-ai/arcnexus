@@ -10,7 +10,7 @@ import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js'
 
 /** Exercises progress projection behavior through observable scenarios. */
 class ProgressProjectionTests {
-  /** Handles initializer command within this component’s captured contract. */
+  /** Verifies that parent status exposes the currently observed initializer command. */
   initializerCommand(t: TestContext): void {
     const f = workflowFixture(t);
     const record = this.preparingRecord(f);
@@ -33,7 +33,7 @@ class ProgressProjectionTests {
     assert.equal(JSON.parse(result.stdout).progress.currentCommand, 'initializer-tool --version');
   }
 
-  /** Handles finished operation within this component’s captured contract. */
+  /** Verifies that status clears a finished operation before the next activity transition. */
   finishedOperation(t: TestContext): void {
     const f = workflowFixture(t);
     const record = this.preparingRecord(f);
@@ -48,7 +48,7 @@ class ProgressProjectionTests {
     assert.equal(JSON.parse(result.stdout).progress.currentCommand, null);
   }
 
-  /** Handles preparing record within this component’s captured contract. */
+  /** Prepares a real workspace, then records an unfinished initialization for viewer assertions. */
   private preparingRecord(f: ReturnType<typeof workflowFixture>): any {
     const prepared = spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo], {
       encoding: 'utf8',
@@ -64,7 +64,7 @@ class ProgressProjectionTests {
     return record;
   }
 
-  /** Handles reports verified progress within this component’s captured contract. */
+  /** Verifies that status and readable report separate checklist claims from verified progress. */
   reportsVerifiedProgress(t: TestContext): void {
     const f = operationFixture(t);
     const result = f.run();

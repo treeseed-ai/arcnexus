@@ -5,10 +5,10 @@ import type { WorkflowOptions, WorkflowTurn } from './controlled-workflow.js';
 
 /** Exercises controlled planning behavior through observable scenarios. */
 export class ControlledPlanning {
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Selects scripted plan faults and operation behavior for the current executable scenario. */
   constructor(private options: WorkflowOptions) {}
 
-  /** Handles apply within this component’s captured contract. */
+  /** Adds a structured plan or checklist update and exercises requested bridge operations. */
   async apply(turn: WorkflowTurn): Promise<void> {
     this.strictSchema(turn.schema);
     turn.result.plan = null;
@@ -24,7 +24,7 @@ export class ControlledPlanning {
     }
   }
 
-  /** Handles strict schema within this component’s captured contract. */
+  /** Rejects response schemas incompatible with the controlled strict-output contract. */
   private strictSchema(schema: any): void {
     if (!schema || typeof schema !== 'object') return;
     if (
@@ -40,7 +40,7 @@ export class ControlledPlanning {
     );
   }
 
-  /** Handles plan within this component’s captured contract. */
+  /** Builds the scripted plan, including deliberate scope or criterion faults when requested. */
   private plan(turn: WorkflowTurn): void {
     if (this.options.mode === 'planning-write') writeFileSync('source.txt', 'bad');
     if (
@@ -69,7 +69,7 @@ export class ControlledPlanning {
     };
   }
 
-  /** Handles update within this component’s captured contract. */
+  /** Builds a completion claim, optionally omitting evidence or targeting a host-owned item. */
   private update() {
     return {
       id: this.options.forgedCompletion ? 'final-verification' : 'work',
@@ -79,7 +79,7 @@ export class ControlledPlanning {
     };
   }
 
-  /** Handles check execution prompt within this component’s captured contract. */
+  /** Requires bounded checklist IDs and accurate research-turn instructions. */
   private checkExecutionPrompt(turn: WorkflowTurn): void {
     if (
       this.options.checkItemSchema &&
@@ -97,7 +97,7 @@ export class ControlledPlanning {
     }
   }
 
-  /** Handles bridge update within this component’s captured contract. */
+  /** Sends a real plan.update MCP call and rejects transport errors. */
   private async bridgeUpdate(turn: WorkflowTurn): Promise<void> {
     const reply = await this.call(turn, 'plan.update', {
       updates: [
@@ -112,7 +112,7 @@ export class ControlledPlanning {
     if (reply.isError) throw new Error(JSON.stringify(reply));
   }
 
-  /** Handles operation within this component’s captured contract. */
+  /** Invokes a declared operation or managed service and retains the bridge response. */
   private async operation(turn: WorkflowTurn): Promise<void> {
     if (!turn.args.includes('mcp_servers.arcnexus.default_tools_approval_mode="approve"'))
       throw new Error('EXPLICIT_BRIDGE_APPROVAL_MISSING');
@@ -124,7 +124,7 @@ export class ControlledPlanning {
     appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
 
-  /** Handles parallel operations within this component’s captured contract. */
+  /** Submits concurrent MCP calls so host serialization and log isolation can be checked. */
   private async parallelOperations(turn: WorkflowTurn): Promise<void> {
     const replies = await this.withClient(turn, (client) =>
       Promise.all(
@@ -140,7 +140,7 @@ export class ControlledPlanning {
       appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
 
-  /** Handles service within this component’s captured contract. */
+  /** Starts the fixture service, exercises HTTP/status/log tools and optionally holds its lease. */
   private async service(client: Client) {
     const started = await this.request(client, {
       name: 'services.start',
@@ -162,12 +162,12 @@ export class ControlledPlanning {
     return reply;
   }
 
-  /** Handles call within this component’s captured contract. */
+  /** Opens the configured bridge and invokes one named tool with structured arguments. */
   private async call(turn: WorkflowTurn, name: string, args: Record<string, unknown>) {
     return this.withClient(turn, (client) => this.request(client, { name, arguments: args }));
   }
 
-  /** Handles request within this component’s captured contract. */
+  /** Waits on pending execution tokens without resubmitting the underlying operation. */
   private async request(
     client: Client,
     params: { name: string; arguments: Record<string, unknown> },
@@ -186,7 +186,7 @@ export class ControlledPlanning {
     return reply;
   }
 
-  /** Handles with client within this component’s captured contract. */
+  /** Connects to the SDK-configured stdio bridge and closes it after the supplied action. */
   private async withClient<T>(
     turn: WorkflowTurn,
     action: (client: Client) => Promise<T>,

@@ -66,7 +66,7 @@ export function evidence(f: any, record: any): any {
   const reports = ['report.json', 'report.md'].map((name: any) => readFileSync(join(dir, name)));
   return {
     dir,
-    /** Handles assert reports within this component’s captured contract. */
+    /** Requires cleanup to preserve the original JSON and Markdown report bytes. */
     assertReports() {
       for (const [i, name] of ['report.json', 'report.md'].entries()) {
         assert.deepEqual(readFileSync(join(dir, name)), reports[i], `${name} changed`);

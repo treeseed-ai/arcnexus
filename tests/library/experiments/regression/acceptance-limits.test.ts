@@ -8,7 +8,7 @@ import { test, type TestContext } from 'node:test';
 
 /** Exercises acceptance limit behavior through observable scenarios. */
 class AcceptanceLimitTests {
-  /** Handles report within this component’s captured contract. */
+  /** Verifies that workday acceptance still rejects exceeding an explicitly captured limit. */
   report(t: TestContext, timeoutSeconds?: number): void {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-acceptance-limits-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));

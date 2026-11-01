@@ -9,7 +9,7 @@ import { test, type TestContext } from 'node:test';
 
 /** Exercises check layout behavior through observable scenarios. */
 class CheckLayoutTests {
-  /** Handles report within this component’s captured contract. */
+  /** Builds a candidate layout fixture and runs the independent checker against its report module. */
   report(t: TestContext, layout: string, check: string): void {
     const root = mkdtempSync(join(tmpdir(), 'arcnexus-check-layout-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));

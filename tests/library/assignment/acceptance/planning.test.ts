@@ -38,7 +38,7 @@ class PlanningTests {
     this.assertViewers(f.env, record.id);
   }
 
-  /** Handles assert viewers within this component’s captured contract. */
+  /** Requires built status and follow commands to expose the captured plan and terminal state. */
   private assertViewers(env: NodeJS.ProcessEnv, id: string): void {
     for (const command of ['status', 'follow']) {
       const viewed = spawnSync(process.execPath, [cli, command, id, '--json'], {
@@ -95,7 +95,7 @@ class PlanningTests {
     }
   }
 
-  /** Handles update checklist within this component’s captured contract. */
+  /** Exercises checklist updates against the retained plan and host-owned entries. */
   private async updateChecklist(client: Client): Promise<void> {
     await client.callTool({
       name: 'plan.update',

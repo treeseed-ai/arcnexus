@@ -108,7 +108,7 @@ class HandoffCampaign {
 
   private output: string;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Writes a controlled workday campaign with explicit bindings and outcome acceptance. */
   constructor(
     private fixture: any,
     outcome: string,
@@ -135,7 +135,7 @@ class HandoffCampaign {
     );
   }
 
-  /** Handles write bindings within this component’s captured contract. */
+  /** Writes machine-local bindings for the pinned fixture and supervising executable. */
   private writeBindings(): void {
     const fixture = this.fixture;
     writeFileSync(
@@ -150,7 +150,7 @@ class HandoffCampaign {
     );
   }
 
-  /** Handles acceptance within this component’s captured contract. */
+  /** Creates an external owner-request assertion for blocked cases and a success check otherwise. */
   private acceptance(outcome: string) {
     if (outcome !== 'blocked')
       return [{ command: 'node', args: ['-e', 'process.exit(0)'], artifacts: [] }];
@@ -172,12 +172,12 @@ class HandoffCampaign {
     return this.invoke('run', '--mode', 'live', '--output', this.output);
   }
 
-  /** Handles report within this component’s captured contract. */
+  /** Reads the retained campaign projection for outcome assertions. */
   report(): any {
     return JSON.parse(readFileSync(join(this.output, 'campaign.json'), 'utf8'));
   }
 
-  /** Handles invoke within this component’s captured contract. */
+  /** Spawns the built experiment CLI with explicit fixture bindings and test cancellation bounds. */
   private invoke(command: string, ...args: string[]) {
     return spawnSync(
       process.execPath,
@@ -195,7 +195,7 @@ class SimulationCampaign {
 
   private bindings = join(this.root, 'bindings.json');
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Materializes and commits the workday simulation fixture, then writes pinned local bindings. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     materializeFixture('workday', this.repo);
@@ -207,14 +207,14 @@ class SimulationCampaign {
     this.writeBindings();
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
-  /** Handles write bindings within this component’s captured contract. */
+  /** Writes machine-local bindings for the pinned fixture and supervising executable. */
   private writeBindings(): void {
     writeFileSync(
       this.bindings,
@@ -227,7 +227,7 @@ class SimulationCampaign {
     );
   }
 
-  /** Handles break contract within this component’s captured contract. */
+  /** Commits an incompatible fixture contract and refreshes its pinned binding revision. */
   breakContract(): void {
     writeFileSync(join(this.repo, 'workday-contract.yaml'), '{}');
     this.git('add', '.');
@@ -259,7 +259,7 @@ class SimulationCampaign {
     );
   }
 
-  /** Handles report within this component’s captured contract. */
+  /** Reads the retained campaign projection for outcome assertions. */
   report(name: string): any {
     return JSON.parse(readFileSync(join(this.root, name, 'campaign.json'), 'utf8'));
   }

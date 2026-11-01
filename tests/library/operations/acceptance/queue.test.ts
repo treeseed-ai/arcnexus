@@ -9,7 +9,7 @@ import { operationFixture } from '../../testing/support/operations-fixture.js';
 
 /** Exercises operation queue behavior through observable scenarios. */
 class OperationQueueTests {
-  /** Handles serializes within this component’s captured contract. */
+  /** Verifies that concurrent valid operation requests execute serially with separate evidence. */
   serializes(t: TestContext): void {
     const f = this.fixture(t, "setTimeout(()=>console.log('Completed queued operation'),2000)");
     const result = f.run('--kind', 'research');
@@ -23,7 +23,7 @@ class OperationQueueTests {
     for (const op of record.operations) assert.equal(op.exitCode, 0);
   }
 
-  /** Handles cancels queued within this component’s captured contract. */
+  /** Verifies that cancellation stops active operation and prevents queued execution. */
   async cancelsQueued(t: TestContext): Promise<void> {
     const f = this.fixture(t, 'setInterval(()=>{},1000)');
     const child = new TestProcess(
@@ -59,7 +59,7 @@ class OperationQueueTests {
     }
   }
 
-  /** Handles fixture within this component’s captured contract. */
+  /** Declares a command without a timeout and requests concurrent bridge calls to test serialization. */
   private fixture(t: TestContext, command: string): any {
     const f = operationFixture(t);
     const path = join(f.repo, 'architecture/operations/test.json');

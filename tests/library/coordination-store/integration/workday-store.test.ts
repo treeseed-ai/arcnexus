@@ -30,7 +30,7 @@ class WorkdayStoreTests {
     this.assertBuiltViewers(fixture.env);
   }
 
-  /** Handles deliver within this component’s captured contract. */
+  /** Commits message delivery and dependent readiness through one durable store transition. */
   private deliver(store: WorkdayStore): void {
     store.commit(
       'request.delivered',
@@ -50,7 +50,7 @@ class WorkdayStoreTests {
     );
   }
 
-  /** Handles assert duplicate rolls back within this component’s captured contract. */
+  /** Requires duplicate delivery to roll back without additional scheduling or events. */
   private assertDuplicateRollsBack(store: WorkdayStore): void {
     assert.throws(() =>
       store.commit(
@@ -71,7 +71,7 @@ class WorkdayStoreTests {
     assert.equal(store.events().length, 2);
   }
 
-  /** Handles assert built viewers within this component’s captured contract. */
+  /** Runs the built workday viewers against the persisted coordination state. */
   private assertBuiltViewers(env: NodeJS.ProcessEnv): void {
     const workday = (...args: string[]) =>
       spawnSync(process.execPath, [cli, 'workday', ...args], {

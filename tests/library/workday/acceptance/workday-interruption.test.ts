@@ -35,7 +35,7 @@ class WorkdayInterruptionTests {
     }
   }
 
-  /** Handles assert interrupted within this component’s captured contract. */
+  /** Reads the built workday viewer and requires interruption to remain visible in durable state. */
   private async assertInterrupted(f: any): Promise<void> {
     const { readdirSync } = await import('node:fs'),
       id = readdirSync(join(f.state, 'workdays'))[0]!,

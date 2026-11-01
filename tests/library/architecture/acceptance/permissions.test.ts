@@ -87,7 +87,7 @@ class PermissionsTests {
     this.rejectPolicy(root, work, ['.'], ['.'], ['../outside'], /Invalid relative path/);
   }
 
-  /** Handles reject policy within this component’s captured contract. */
+  /** Requires unsafe directory and exact-scope combinations to fail permission preparation. */
   private rejectPolicy(
     root: string,
     work: string,

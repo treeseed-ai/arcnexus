@@ -39,7 +39,7 @@ export class ArchitectureFixture {
 
   component: any;
 
-  /** Captures the dependencies and state used throughout this instance’s lifecycle. */
+  /** Creates a committed legacy catalog fixture and registers temporary repository cleanup. */
   constructor(t: TestContext) {
     t.after(() => rmSync(this.root, { recursive: true, force: true }));
     mkdirSync(this.repo);
@@ -55,26 +55,26 @@ export class ArchitectureFixture {
     this.commit();
   }
 
-  /** Handles git within this component’s captured contract. */
+  /** Runs Git against the fixture repository and propagates command failures. */
   private git(...args: string[]): string {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
   }
 
-  /** Handles put within this component’s captured contract. */
+  /** Creates parent directories and writes the fixture configuration or source file. */
   put(path: string, value: unknown): void {
     mkdirSync(join(this.repo, path, '..'), { recursive: true });
     writeFileSync(join(this.repo, path), JSON.stringify(value));
   }
 
-  /** Handles source within this component’s captured contract. */
+  /** Writes fixture source bytes while creating missing parent directories. */
   source(path: string, content: string): void {
     mkdirSync(join(this.repo, path, '..'), { recursive: true });
     writeFileSync(join(this.repo, path), content);
   }
 
-  /** Handles commit within this component’s captured contract. */
+  /** Stages fixture files and commits the revision that the built CLI will capture. */
   commit(): void {
     this.git('add', '.');
     this.git('commit', '-m', 'fixture');
@@ -88,7 +88,7 @@ export class ArchitectureFixture {
     });
   }
 
-  /** Handles hierarchy within this component’s captured contract. */
+  /** Defines legacy platform, package and leaf ownership for ancestry acceptance. */
   private hierarchy(): void {
     this.put('architecture/components/platform.json', {
       ...this.common,
@@ -114,7 +114,7 @@ export class ArchitectureFixture {
     this.put('architecture/components/sample.json', this.component);
   }
 
-  /** Handles execution within this component’s captured contract. */
+  /** Declares the fixture engineering role and Luna execution profile. */
   private execution(): void {
     this.put('architecture/roles/engineer.json', {
       schemaVersion: 1,
@@ -136,7 +136,7 @@ export class ArchitectureFixture {
     });
   }
 
-  /** Handles environment within this component’s captured contract. */
+  /** Declares an empty preparation environment for catalog-focused scenarios. */
   private environment(): void {
     this.put('architecture/environment.json', {
       schemaVersion: 1,

@@ -89,7 +89,7 @@ class ServicesTests {
     }
   }
 
-  /** Handles start research within this component’s captured contract. */
+  /** Starts a controlled read-only assignment that exercises the managed-service bridge. */
   private startResearch(t: TestContext, f: any): TestProcess {
     return new TestProcess(
       t,
@@ -109,7 +109,7 @@ class ServicesTests {
     );
   }
 
-  /** Handles service record within this component’s captured contract. */
+  /** Finds the execution record containing managed-service ownership evidence. */
   private serviceRecord(f: any) {
     for (const id of readdirSync(join(f.state, 'runs'))) {
       const directory = join(f.state, 'runs', id);
@@ -119,7 +119,7 @@ class ServicesTests {
     return { directory: undefined, record: {} };
   }
 
-  /** Handles assert stopped service within this component’s captured contract. */
+  /** Requires both a stopped resource receipt and a closed HTTP endpoint. */
   private async assertStoppedService(path: string): Promise<void> {
     let resource: any;
     await waitFor(
@@ -134,7 +134,7 @@ class ServicesTests {
     assert.equal(await endpointClosed(resource.port), true);
   }
 
-  /** Handles stop codex within this component’s captured contract. */
+  /** Kills the recorded Codex process group to exercise bridge-loss cleanup. */
   private stopCodex(directory?: string): void {
     if (!directory || !existsSync(join(directory, 'codex.pid'))) return;
     const pid = Number(readFileSync(join(directory, 'codex.pid'), 'utf8'));

@@ -6,7 +6,7 @@ import { test } from 'node:test';
 
 /** Exercises component test command behavior through observable scenarios. */
 class ComponentTestCommandTests {
-  /** Handles inspects report unit tests within this component’s captured contract. */
+  /** Verifies that component test CLI inspects real report unit tests without inference. */
   inspectsReportUnitTests(): void {
     const result = this.run('inspect', 'report', '--level', 'unit', '--json');
     assert.equal(result.status, 0, result.stderr);
@@ -20,7 +20,7 @@ class ComponentTestCommandTests {
     assert.equal(selection.inference, false);
   }
 
-  /** Handles rejects empty selection within this component’s captured contract. */
+  /** Verifies that component test CLI rejects an empty required selection. */
   rejectsEmptySelection(): void {
     const result = this.run('inspect', 'report', '--tag', 'does-not-exist', '--json');
     assert.equal(result.status, 2);

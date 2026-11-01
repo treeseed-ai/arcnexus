@@ -9,7 +9,7 @@ import { cli, workflowFixture } from '../../testing/support/workflow-fixture.js'
 
 /** Exercises execution limit behavior through observable scenarios. */
 class ExecutionLimitTests {
-  /** Handles absent within this component’s captured contract. */
+  /** Checks omitted execution limits remain unconfigured in the captured assignment. */
   absent(t: TestContext, schemaVersion: number): void {
     const fixture = workflowFixture(t);
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -36,7 +36,7 @@ class ExecutionLimitTests {
       assert.equal(resolved.executionProfile[key], undefined);
   }
 
-  /** Handles continuing work within this component’s captured contract. */
+  /** Verifies that unconfigured turn and attempt quotas permit a verified fourth implementation attempt. */
   continuingWork(t: TestContext, operations: boolean): void {
     const fixture = operationFixture(t);
     const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
@@ -58,7 +58,7 @@ class ExecutionLimitTests {
     }
   }
 
-  /** Handles explicit attempts within this component’s captured contract. */
+  /** Verifies that caller may explicitly select more than the former two-attempt ceiling. */
   explicitAttempts(t: TestContext): void {
     const fixture = workflowFixture(t);
     const result = fixture.run('--max-attempts', '3');

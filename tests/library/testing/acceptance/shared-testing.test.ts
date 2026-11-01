@@ -9,7 +9,7 @@ import { ComponentTestFixture } from '../support/component-test-fixture.js';
 
 /** Exercises static selection and supervised test execution through the built gateway. */
 class SharedTestingTests {
-  /** Handles selects without execution within this component’s captured contract. */
+  /** Verifies that test inspection intersects tags without executing modules or preparation. */
   selectsWithoutExecution(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.put(
@@ -33,7 +33,7 @@ class SharedTestingTests {
     assert.equal(existsSync(join(f.repo, 'prepared')), false);
   }
 
-  /** Handles selects regression level within this component’s captured contract. */
+  /** Verifies that test selection combines regression category and explicit integration level. */
   selectsRegressionLevel(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     const result = f.run('inspect', '--category', 'regression', '--level', 'integration');
@@ -41,7 +41,7 @@ class SharedTestingTests {
     assert.equal(JSON.parse(result.stdout).suites[0].category, 'regression');
   }
 
-  /** Handles executes once within this component’s captured contract. */
+  /** Verifies that shared test runner prepares once and retains real Node results. */
   executesOnce(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     const result = f.run('run');
@@ -68,7 +68,7 @@ class SharedTestingTests {
     assert.equal(report.commands.length, 2);
   }
 
-  /** Handles prints npm evidence within this component’s captured contract. */
+  /** Verifies that npm compatibility runner prints retained test output for CI diagnosis. */
   printsNpmEvidence(t: TestContext): void {
     const fixture = new ComponentTestFixture(t);
     const result = spawnSync(
@@ -110,7 +110,7 @@ class SharedTestingTests {
     assert.ok(existsSync(report.commands[0].log));
   }
 
-  /** Handles retains build failure within this component’s captured contract. */
+  /** Verifies that shared test runner retains compilation failure evidence. */
   retainsBuildFailure(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.put('tests/support/invalid.ts', 'const value: string = 42;');
@@ -157,7 +157,7 @@ class SharedTestingTests {
     );
   }
 
-  /** Handles cancels preparation within this component’s captured contract. */
+  /** Verifies that test cancellation stops preparation and retains evidence. */
   async cancelsPreparation(t: TestContext): Promise<void> {
     const f = new ComponentTestFixture(t);
     f.put(
@@ -179,7 +179,7 @@ class SharedTestingTests {
     assert.equal(existsSync(join(report.evidence, 'result.json')), true);
   }
 
-  /** Handles explicit timeout is failure within this component’s captured contract. */
+  /** Verifies that an explicitly configured test timeout is failure rather than caller cancellation. */
   explicitTimeoutIsFailure(t: TestContext): void {
     const fixture = new ComponentTestFixture(t);
     fixture.put('build.cjs', 'setInterval(()=>{},1000)');
@@ -200,7 +200,7 @@ class SharedTestingTests {
     assert.match(result.stderr, /test-profile/);
   }
 
-  /** Handles rejects symlink traversal within this component’s captured contract. */
+  /** Verifies that test discovery rejects symlink traversal. */
   rejectsSymlinkTraversal(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     symlinkSync('/tmp', join(f.repo, 'tests', 'escape'));

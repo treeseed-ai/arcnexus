@@ -31,7 +31,7 @@ class ParkingTests {
     assert.equal(statSync(join(r.workspace, 'source.txt')).mode & 0o777, 0o755);
   }
 
-  /** Handles prepare candidate within this component’s captured contract. */
+  /** Creates a real owned workspace and returns Git helpers for index-state assertions. */
   private prepareCandidate(f: any) {
     writeFileSync(join(f.repo, 'delete.txt'), 'delete');
     f.commit();
@@ -51,7 +51,7 @@ class ParkingTests {
     return { r, git };
   }
 
-  /** Handles edit candidate within this component’s captured contract. */
+  /** Creates distinct staged and working bytes, executable mode, deletion and new-file changes. */
   private editCandidate(workspace: string, git: (...args: string[]) => string): void {
     writeFileSync(join(workspace, 'source.txt'), Buffer.from([0, 1, 255]));
     git('add', 'source.txt');

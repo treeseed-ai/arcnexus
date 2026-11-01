@@ -7,7 +7,7 @@ import { operationFixture } from '../../testing/support/operations-fixture.js';
 
 /** Exercises pending operation behavior through observable scenarios. */
 class PendingOperationTests {
-  /** Handles waits without restart within this component’s captured contract. */
+  /** Verifies that sDK bridge observes a long operation without timing it out or invoking it twice. */
   waitsWithoutRestart(t: TestContext): void {
     const f = operationFixture(t);
     const path = join(f.repo, 'architecture/operations/test.json');

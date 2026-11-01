@@ -6,7 +6,7 @@ import { test } from 'node:test';
 
 /** Exercises the generated executable and the gateway's effective ownership boundary. */
 class CliTests {
-  /** Handles executable contract within this component’s captured contract. */
+  /** Verifies that generated CLI executable preserves help, version and invalid-command behavior. */
   executableContract(): void {
     const help = this.run('--help');
     assert.equal(help.status, 0, help.stderr);
@@ -18,7 +18,7 @@ class CliTests {
     assert.equal(this.run('unknown-command').status, 2);
   }
 
-  /** Handles owns its tests within this component’s captured contract. */
+  /** Verifies that cLI gateway owns its test directory without project-wide write access. */
   ownsItsTests(): void {
     const result = this.run(
       'inspect',
