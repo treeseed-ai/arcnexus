@@ -30,3 +30,10 @@ planning stage, return the exact semantic/schema validation error, and accept a
 replacement only when it covers every criterion under the same authority. Apply
 the existing equivalent-failure diagnosis; do not introduce a retry allowance.
 Filesystem, permission, operation and transport errors do not use this path.
+
+Captured acceptance restores declared test/verification inputs and tracked files
+named directly by check commands. Directory-valued command arguments such as
+`--project .` do not expand that automatic file capture to the whole repository.
+The implementation under test remains the candidate implementation while captured
+checks run; restoring a baseline implementation would not establish its acceptance.
+Unchanged captured inputs need no separate frozen-check pass.
