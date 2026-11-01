@@ -1,9 +1,23 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
+import { workflowFixture } from '../development-tooling/workflow-fixture.js';
 import { operationFixture } from '../development-tooling/operations-fixture.js';
 class ProgressTests {
+  repeatedCheckpoints(t: TestContext): void {
+    const fixture = workflowFixture(t, 'exhaust');
+    const path = join(fixture.repo, 'architecture/execution-profiles/luna.yaml');
+    const profile = JSON.parse(readFileSync(path, 'utf8'));
+    profile.maxTurns = 20;
+    writeFileSync(path, JSON.stringify(profile));
+    fixture.commit();
+    const result = fixture.run('--max-attempts', '5');
+    assert.equal(result.status, 1, result.stderr);
+    const record = JSON.parse(result.stdout);
+    assert.equal(record.outcome, 'needs_attention');
+    assert.equal(record.implementationAttempts, 4);
+  }
   repeatedFailures(t: TestContext): void {
     const fixture = operationFixture(t);
     fixture.configure({ operationRepeats: 4 });
@@ -20,3 +34,6 @@ class ProgressTests {
 const suite = new ProgressTests();
 test('observable repeated failures diagnose a loop then stop unchanged dispatch', (t) =>
   suite.repeatedFailures(t));
+
+test('repeated unverified implementation cycles stop with retained corrective work', (t) =>
+  suite.repeatedCheckpoints(t));

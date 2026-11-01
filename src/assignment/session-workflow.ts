@@ -1,3 +1,4 @@
+import { SessionProgress } from './session-progress.js';
 import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
 import { completePlan } from './plan.js';
@@ -120,7 +121,7 @@ export class SessionWorkflow {
       const feedback = `Command ${JSON.stringify({ command: failed.command, args: failed.args })}; exit code ${failed.exitCode}; ${logExcerpt(failed.log)}`;
       this.markAttempt({ status: 'failed', feedback });
       this.state.journal('implementation', 'failed', { attempt, feedback });
-      return feedback;
+      return new SessionProgress(this.state).failure('implementation-checkpoint', feedback);
     }
   }
 
@@ -135,7 +136,7 @@ export class SessionWorkflow {
       throw new Error(`Review requires repair: ${review.reviewFindings.join('; ')}`);
     const feedback = review.reviewFindings.join('\n');
     this.markAttempt({ status: 'failed', feedback });
-    return feedback;
+    return new SessionProgress(this.state).failure('review-checkpoint', feedback);
   }
 
   private markAttempt(detail: Record<string, unknown>): void {

@@ -9,7 +9,9 @@ interface ProgressState {
   lastVerified?: { at: string; evidence: unknown };
 }
 function fingerprint(value: unknown): string {
-  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  return createHash('sha256')
+    .update(JSON.stringify(value) ?? 'undefined')
+    .digest('hex');
 }
 function diagnosticText(value: string): string {
   return stripVTControlCharacters(value)
@@ -52,6 +54,7 @@ export class ProgressObserver {
     return 'Three equivalent failed actions without material progress. Diagnose the loop and choose a fundamentally different action; repeating it stops dispatch.';
   }
   verified(evidence: unknown): void {
+    if (fingerprint(this.state.lastVerified?.evidence) === fingerprint(evidence)) return;
     this.state.failures = {};
     delete this.state.forbidden;
     this.state.lastVerified = { at: new Date().toISOString(), evidence };

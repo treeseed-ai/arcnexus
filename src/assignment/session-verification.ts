@@ -1,3 +1,4 @@
+import { SessionProgress } from './session-progress.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { changes } from '../change-inspection/changes.js';
@@ -13,6 +14,19 @@ export class SessionVerification {
       this.state.options.record.outcome = 'no_changes';
       throw new Error('Candidate has no changes');
     }
+    this.captureRegression();
+    if (!this.state.documentationOnly) await this.regression(spec);
+    else
+      this.state.journal('testing', 'skipped', {
+        reason:
+          'Caller declared documentation-only assignment; project verification remains required',
+      });
+
+    this.state.specificationFinished = true;
+    this.state.checkpoint();
+    new SessionProgress(this.state).verified('specification');
+  }
+  private captureRegression(): void {
     this.state.frozen = specificationFiles(
       this.state.options.record,
       this.state.component,
@@ -27,15 +41,6 @@ export class SessionVerification {
         mode: 0o600,
       },
     );
-    if (!this.state.documentationOnly) await this.regression(spec);
-    else
-      this.state.journal('testing', 'skipped', {
-        reason:
-          'Caller declared documentation-only assignment; project verification remains required',
-      });
-
-    this.state.specificationFinished = true;
-    this.state.checkpoint();
   }
   private async regression(spec: AgentResult): Promise<void> {
     this.state.regression = spec.regression;
@@ -102,5 +107,6 @@ export class SessionVerification {
       this.state.options.record.outcome = 'no_changes';
       throw new Error('Candidate has no changes');
     }
+    new SessionProgress(this.state).verified('final-verification');
   }
 }

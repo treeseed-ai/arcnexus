@@ -297,14 +297,17 @@ export class WorkdayRunner {
 
   private failure(error: unknown): void {
     this.state.error = String(error);
-    this.state.status = this.state.parentSignal.aborted
-      ? 'cancelled'
-      : (error instanceof Error && error.name === 'WorkdayBlocked') ||
-          this.state.owners.some((o) => o.record.status === 'blocked')
-        ? 'blocked'
-        : /budget|deadline/i.test(String(error))
-          ? 'budget_exhausted'
-          : 'failed';
+    this.state.status =
+      error instanceof Error && error.name === 'NeedsAttention'
+        ? 'needs_attention'
+        : this.state.parentSignal.aborted
+          ? 'cancelled'
+          : (error instanceof Error && error.name === 'WorkdayBlocked') ||
+              this.state.owners.some((o) => o.record.status === 'blocked')
+            ? 'blocked'
+            : /budget|deadline/i.test(String(error))
+              ? 'budget_exhausted'
+              : 'failed';
   }
 
   private finalize(): void {
