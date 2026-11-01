@@ -76,6 +76,7 @@ ownership:
     - tests/library/testing/support/operations-fixture.ts
     - tests/library/testing/support/test-process.ts
     - tests/library/testing/support/workflow-fixture.ts
+    - tests/library/testing/support/structured-output-check.ts
     - src/library/testing/captured-tests.ts
   directoryExceptions:
     - path: architecture/components
