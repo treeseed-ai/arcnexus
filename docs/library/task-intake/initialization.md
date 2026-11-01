@@ -122,3 +122,13 @@ command/checkpoint records through fixed read-only evidence artifacts. Keep work
 claims explicitly distinct. A worker's summary of a request cannot establish that
 its persisted submission preceded implementation. Foreign-run records, arbitrary
 state paths and mutable candidate-authored evidence cannot supply that proof.
+
+Independent execution evidence also retains the observed SDK tool events and
+captured command output for matching assignments in the current run. Turn completion
+alone cannot prove that a worker inspected an API or checked a dependency. Preserve
+host observation timestamps, sequence and turn identity; expose complete retained
+output through the same pinned, paged evidence capability. SDK tool observations
+establish what the harness reported executing, while declared host checks remain a
+separate evidence class. Neither tool output nor agent messages grant authority.
+Missing or partial logs remain explicit gaps. Never follow an evidence reference into
+another run or accept arbitrary private filesystem paths.
