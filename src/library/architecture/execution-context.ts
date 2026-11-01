@@ -22,6 +22,11 @@ export interface ProjectExecution {
   verificationInputs: string[];
 }
 
+/** Identifies captured source/package authority and machine bindings across host restarts. */
+export function executionIdentity(context: ProjectExecution): string {
+  return digest(JSON.stringify([context.base, context.packageId, context.bindings]));
+}
+
 /** Resolves package context and frozen execution defaults from the current directory. */
 export class ExecutionContext {
   /** Discovers repository, committed authority and machine bindings; ambiguous packages fail. */

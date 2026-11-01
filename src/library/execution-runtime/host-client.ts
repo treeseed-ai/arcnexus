@@ -9,7 +9,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { RunnerSnapshot } from './runner-snapshot.js';
 import { setTimeout as delay } from 'node:timers/promises';
-import { ExecutionContext, type ProjectExecution } from '../architecture/execution-context.js';
+import {
+  ExecutionContext,
+  executionIdentity,
+  type ProjectExecution,
+} from '../architecture/execution-context.js';
 import { stateRoot } from '../workspace/state.js';
 
 export interface HostRequest {
@@ -65,9 +69,7 @@ export class HostClient {
   private async compatible(action: string): Promise<boolean> {
     if (['status', 'stop', 'pause'].includes(action)) return true;
     const context = (await this.request({ action: 'identity' })) as ProjectExecution;
-    const identity = (c: ProjectExecution) =>
-      digest(JSON.stringify([c.base, c.packageId, c.bindings]));
-    if (identity(context) === identity(this.context)) return true;
+    if (executionIdentity(context) === executionIdentity(this.context)) return true;
     const status = await this.request({ action: 'status' });
     if (
       (status.workday && status.workday.status !== 'stopped') ||

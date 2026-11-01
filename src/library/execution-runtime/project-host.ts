@@ -1,3 +1,4 @@
+import { RunAuthority } from './run-authority.js';
 import { ExecutionEvidence, ExecutionReports } from '../report/report.js';
 import { StewardshipPolicy } from '../workday/workday.js';
 import { git } from '../operations/process.js';
@@ -26,6 +27,8 @@ export class ProjectHost {
 
   private readonly workspaces: RunWorkspace;
 
+  private readonly authority: RunAuthority;
+
   private busy = false;
 
   private active?: { runId: string; controller: AbortController };
@@ -40,6 +43,7 @@ export class ProjectHost {
     this.store = new ExecutionStore(join(root, 'projects', context.key, 'execution.sqlite'));
     this.reports = new ExecutionReports(join(root, 'projects', context.key), this.store);
     this.workspaces = new RunWorkspace(root, context, this.store);
+    this.authority = new RunAuthority(context, this.store);
     this.recover();
   }
 
@@ -78,6 +82,7 @@ export class ProjectHost {
   /** Retains a clarification response and schedules the director on the same task. */
   answer(id: string, answer: string): void {
     const run = this.store.run(id);
+    this.authority.assert(run);
     if (run.mode !== 'task' || run.status !== 'needs_input')
       throw new Error('Task is not awaiting input');
     this.store.updateRun(id, 'running', {
@@ -90,6 +95,7 @@ export class ProjectHost {
   cancel(id: string): void {
     const run = this.store.run(id);
     if (run.mode !== 'task') throw new Error('Expected task identity');
+    if (!['running', 'pausing', 'needs_input'].includes(run.status)) return;
     this.store.updateRun(id, 'cancelled');
     if (this.active?.runId === id) this.active.controller.abort(new Error('Cancelled'));
   }
@@ -154,6 +160,7 @@ export class ProjectHost {
     this.store.updateRun(run.id, 'running', {
       candidateRevision: this.latestCandidate(),
       authorityBase: this.context.base,
+      executionIdentity: this.authority.identity,
       packageId: this.context.packageId,
     });
     return this.store.run(run.id);
@@ -190,6 +197,7 @@ export class ProjectHost {
 
   /** Prepares context, advances ready assignments or invokes the mode-specific selection policy. */
   private async advance(run: ExecutionRun, signal: AbortSignal): Promise<void> {
+    this.authority.assert(run);
     if (!run.data.workspace) await this.workspaces.prepare(run, signal);
     run = this.store.run(run.id);
     if (run.data.workspacePrepared !== true)
@@ -398,6 +406,7 @@ export class ProjectHost {
   private resume(run: ExecutionRun): void {
     if (['stopped', 'stopping'].includes(run.status))
       throw new Error('Stopped workday cannot resume; start a new workday');
+    this.authority.assert(run);
     if (run.data.integrityError)
       throw new Error(
         'Candidate integrity requires attention; stop before starting validated work',
@@ -460,6 +469,7 @@ export class ProjectHost {
       if (['running', 'pausing', 'stopping'].includes(run.status))
         this.store.updateRun(run.id, 'interrupted');
     }
+    this.authority.recover();
   }
 
   /** Finds the latest workday without confusing queued external tasks with its lifecycle. */
