@@ -6,6 +6,7 @@ import { ControlledPlanning } from './controlled-planning.js';
 export interface WorkflowOptions {
   mode: string;
   repairAfter?: number;
+  requiredFeedback?: string;
   observedShellFailures?: number;
   initializerMode?: string;
   calls: string;
@@ -119,6 +120,8 @@ export class ControlledWorkflow {
 
   /** Runs the requested action through the configured execution boundary. */
   private execute(turn: WorkflowTurn): void {
+    if (turn.stage === 'correction' && this.options.requiredFeedback && !turn.prompt.includes(this.options.requiredFeedback))
+      throw new Error('Corrective prompt omitted the actual late failure');
     if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
     if (this.options.documentationOnly) this.documentation(turn);
     else {

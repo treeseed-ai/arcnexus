@@ -1,15 +1,16 @@
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync, existsSync, rmdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
 import { parse } from 'yaml';
 
 /** Exercises catalog ownership behavior through observable scenarios. */
 class CatalogOwnershipTests {
   /** Verifies that built inspect assigns every real source module to one executable owner. */
-  builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner() {
+  builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner(t: TestContext) {
+    this.protectedDirectories(t);
     const components = readdirSync('architecture/components')
       .map((f: any) => parse(readFileSync('architecture/components/' + f, 'utf8')))
       .filter((c: any) => !['platform', 'package'].includes(c.type));
@@ -24,6 +25,16 @@ class CatalogOwnershipTests {
         1,
         `${path} must have one executable owner`,
       );
+    }
+  }
+
+  /** Reproduces empty protection directories created by the real Codex sandbox. */
+  private protectedDirectories(t: TestContext): void {
+    for (const name of ['.agents', '.aws', '.codex', '.git']) {
+      const path = 'architecture/components/' + name;
+      if (existsSync(path)) continue;
+      mkdirSync(path);
+      t.after(() => rmdirSync(path));
     }
   }
 
@@ -49,7 +60,7 @@ class CatalogOwnershipTests {
 
 const suite = new CatalogOwnershipTests();
 
-test('built inspect assigns every real source module to one executable owner', () =>
-  suite.builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner());
+test('built inspect assigns every real source module to one executable owner', (t) =>
+  suite.builtInspectAssignsEveryRealSourceModuleToOneExecutableOwner(t));
 
 registerSuite({ component: 'architecture', level: 'acceptance', tags: ['deterministic'] });

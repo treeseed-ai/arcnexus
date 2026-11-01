@@ -85,6 +85,20 @@ class SharedTestingTests {
     assert.equal(JSON.parse(result.stdout.trim().split('\n').at(-1)!).status, 'passed');
   }
 
+  /** Shared test results retain a late build diagnostic within the model-facing bound. */
+  retainsLateDiagnostic(t: TestContext): void {
+    const f = new ComponentTestFixture(t);
+    f.profile({ preparation: [{ command: process.execPath, args: ['-e',
+      "require('fs').writeSync(1,'passing output\\n'.repeat(12000));console.error('Error: LATE_BUILD_FAILURE');process.exit(1)"] }] });
+    const result = f.run('run');
+    assert.equal(result.status, 1, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.match(report.output, /LATE_BUILD_FAILURE/);
+    assert.ok(Buffer.byteLength(report.output) <= 16384);
+    assert.equal(report.outputTruncated, true);
+    assert.ok(existsSync(report.commands[0].log));
+  }
+
   /** Handles retains build failure within this component’s captured contract. */
   retainsBuildFailure(t: TestContext): void {
     const f = new ComponentTestFixture(t);
@@ -218,5 +232,7 @@ test('test inspection rejects unsupported runner profiles', (t) =>
   suite.rejectsUnsupportedProfile(t));
 
 test('test discovery rejects symlink traversal', (t) => suite.rejectsSymlinkTraversal(t));
+
+test('shared test feedback preserves late diagnostics', (t) => suite.retainsLateDiagnostic(t));
 
 registerSuite({ component: 'testing', level: 'acceptance', tags: ['deterministic'] });
