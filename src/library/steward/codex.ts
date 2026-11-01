@@ -30,6 +30,9 @@ export interface AgentResult {
   reviewFindings: string[];
   requests: Array<{
     assignmentId?: string | null;
+    kind?: 'change' | 'research' | 'review' | null;
+    changeType?: 'behavior' | 'documentation' | 'refactor' | null;
+    allowedWritePaths?: string[] | null;
     milestone?: 'accepted' | 'delivered';
     fromComponent: string;
     ownerId: string | null;

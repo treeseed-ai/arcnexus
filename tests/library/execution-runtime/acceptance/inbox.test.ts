@@ -37,6 +37,51 @@ class InboxScenarios {
     assert.equal(store.assignments(run.id).length, before);
   }
 
+  /** Explicit review and document requests preserve their workflow and narrowed recipient scope. */
+  recipientScope(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A documentation goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    store.updateAssignment(a.id, 'ready', {
+      proposal: { kind: 'change', changeType: 'documentation' },
+    });
+    const request = {
+      key: 'review',
+      owner: 'b',
+      objective: 'Review the delivered docs',
+      acceptance: ['Observed'],
+      kind: 'review' as const,
+      changeType: null,
+      allowedWritePaths: [],
+    };
+    const b = store.request(a.id, request);
+    assert.deepEqual(b.data.proposal, {
+      kind: 'review',
+      changeType: 'documentation',
+      allowedWritePaths: [],
+    });
+    assert.equal(store.request(a.id, request).id, b.id);
+  }
+
+  /** A shared objective cannot silently change an existing recipient's accepted workflow. */
+  sharedScope(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'Shared work');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const b = store.enqueue(run.id, 'b', 'Review');
+    store.updateAssignment(b.id, 'ready', { proposal: { kind: 'review', allowedWritePaths: [] } });
+    const request = {
+      key: 'shared',
+      owner: 'b',
+      objective: 'Review',
+      acceptance: [],
+      existingAssignmentId: b.id,
+      kind: 'change' as const,
+    };
+    assert.throws(() => store.request(a.id, request), /Shared assignment/);
+    assert.equal(store.assignment(a.id).dependencies.length, 0);
+  }
+
   /** Correlates clarification, retries and rejection without releasing undelivered dependents. */
   decisions(t: TestContext): void {
     const store = this.store(t);
@@ -130,5 +175,11 @@ test('durable scheduling outcomes deduplicate crash replay', (t) => scenarios.re
 
 test('duplicate verified delivery cannot rewind the accumulated candidate', (t) =>
   scenarios.promotions(t));
+
+test('inbox requests preserve explicit recipient workflow and narrowed scope', (t) =>
+  scenarios.recipientScope(t));
+
+test('shared recipient work rejects conflicting workflow authority', (t) =>
+  scenarios.sharedScope(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

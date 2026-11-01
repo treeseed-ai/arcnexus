@@ -170,15 +170,34 @@ export class ExecutionStore {
       ...((sender.data.milestones ?? {}) as object),
       [recipient.id]: request.milestone ?? 'delivered',
     };
-    const proposal = sender.data.proposal as Record<string, unknown> | undefined;
-    recipient.data.proposal ??= {
-      kind: proposal?.kind ?? 'change',
-      changeType: proposal?.changeType ?? 'behavior',
-    };
+    this.captureProposal(sender, recipient, request);
     this.db.put('assignment', recipient);
     this.db.put('request', { ...request, id: randomUUID(), from, assignmentId: recipient.id });
     this.connect(sender, recipient);
     return recipient;
+  }
+
+  /** Preserves explicit recipient workflow and rejects incompatible reuse of accepted shared work. */
+  private captureProposal(
+    sender: ExecutionAssignment,
+    recipient: ExecutionAssignment,
+    request: OwnerRequest,
+  ): void {
+    const inherited = sender.data.proposal as Record<string, unknown> | undefined;
+    const proposed = {
+      kind: request.kind ?? inherited?.kind ?? 'change',
+      changeType: request.changeType ?? inherited?.changeType ?? 'behavior',
+      ...(request.allowedWritePaths ? { allowedWritePaths: request.allowedWritePaths } : {}),
+    };
+    const existing = recipient.data.proposal as Record<string, unknown> | undefined;
+    for (const key of ['kind', 'changeType', 'allowedWritePaths'] as const)
+      if (
+        existing &&
+        request[key] != null &&
+        JSON.stringify(existing[key]) !== JSON.stringify(proposed[key])
+      )
+        throw new Error('Shared assignment workflow or scope differs');
+    recipient.data.proposal ??= proposed;
   }
 
   /** Rejects a repeated ancestor intent as a blocking cycle without merging unrelated same-owner work. */

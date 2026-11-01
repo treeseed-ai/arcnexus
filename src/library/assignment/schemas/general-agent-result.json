@@ -146,6 +146,19 @@
           },
           "milestone": {
             "enum": ["accepted", "delivered"]
+          },
+          "kind": {
+            "enum": ["change", "research", "review", null]
+          },
+          "changeType": {
+            "enum": ["behavior", "documentation", "refactor", null]
+          },
+          "allowedWritePaths": {
+            "type": ["array", "null"],
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
           }
         },
         "required": [
@@ -156,7 +169,10 @@
           "acceptanceCriteria",
           "reason",
           "assignmentId",
-          "milestone"
+          "milestone",
+          "kind",
+          "changeType",
+          "allowedWritePaths"
         ],
         "additionalProperties": false
       }

@@ -95,6 +95,9 @@ export class ControlledGeneral {
   private request(owner: string) {
     return {
       assignmentId: null,
+      kind: null,
+      changeType: null,
+      allowedWritePaths: null,
       milestone: 'delivered',
       fromComponent: owner,
       ownerId: owner === 'a' ? 'b' : 'c',
