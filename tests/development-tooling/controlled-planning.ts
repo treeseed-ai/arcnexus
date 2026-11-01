@@ -13,7 +13,8 @@ export class ControlledPlanning {
       this.checkExecutionPrompt(turn);
       turn.result.planUpdates = [this.update()];
       if (this.options.mode === 'bridge-update') await this.bridgeUpdate(turn);
-      if (this.options.operations) await this.operation(turn);
+      if (this.options.operations)
+        for (let i = 0; i < (this.options.operationRepeats ?? 1); i++) await this.operation(turn);
     }
   }
   private strictSchema(schema: any): void {

@@ -1,3 +1,5 @@
+import { materialCandidate } from '../change-inspection/changes.js';
+import { ProgressObserver } from '../report/progress.js';
 import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { digest, type ResolvedAssignment } from '../architecture/assignment.js';
@@ -82,7 +84,16 @@ class OperationRuntime {
       return result;
     }
     if (op.kind === 'service') throw new Error('Use services.start for service operations');
-    return this.finite(op);
+    const progress = new ProgressObserver(this.root, this.record);
+    const action = { activity: this.record.stage, operation: op.id };
+    const candidate = materialCandidate(this.record);
+    progress.before(action, candidate);
+    const result = await this.finite(op);
+    if (result.status === 'failed') {
+      const warning = progress.failed(action, result.output, candidate);
+      return { ...result, ...(warning ? { loopWarning: warning } : {}) };
+    }
+    return result;
   }
 
   private list(args: unknown) {
@@ -179,7 +190,7 @@ class OperationRuntime {
     return { cwd, combined, start };
   }
 
-  private async finite(op: Operation): Promise<unknown> {
+  private async finite(op: Operation) {
     const { cwd, combined, start } = this.begin(op);
     const outcome: { result?: CommandResult } = {};
     let artifacts: unknown[] = [];

@@ -105,3 +105,27 @@ function captureNewFiles(workspace: string, observed: Change[]): Record<string, 
   }
   return added;
 }
+
+/** Source/test bytes can distinguish actions; prose and checklist claims cannot. */
+export function materialCandidate(record: RecordData): string {
+  const context = record.context as Array<{ documentation?: string[] }> | undefined;
+  const documentation = context?.at(-1)?.documentation ?? [];
+  const selected = changes(record).filter(
+    (change) =>
+      !/\.(md|mdx|rst)$/i.test(change.path) &&
+      !documentation.some((path) => change.path === path || change.path.startsWith(path + '/')),
+  );
+  checkScope(
+    record.workspace,
+    selected,
+    selected.map((change) => change.path),
+  );
+  return JSON.stringify(
+    selected.map((change) => ({
+      ...change,
+      bytes: existsSync(join(record.workspace, change.path))
+        ? readFileSync(join(record.workspace, change.path)).toString('base64')
+        : null,
+    })),
+  );
+}

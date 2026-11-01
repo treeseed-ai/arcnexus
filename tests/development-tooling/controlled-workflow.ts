@@ -6,6 +6,7 @@ export interface WorkflowOptions {
   calls: string;
   planning?: boolean;
   operations?: string;
+  operationRepeats?: number;
   managedService?: boolean;
   holdService?: boolean;
   delayedServiceExit?: boolean;

@@ -149,7 +149,7 @@ export class SessionWorkflow {
     const { record, signal, control } = this.state.options;
     if (control && error instanceof Error && error.name === 'WorkdayBlocked')
       record.status = 'blocked';
-    if (!['blocked', 'no_changes'].includes(record.status))
+    if (!['blocked', 'no_changes', 'needs_attention'].includes(record.status))
       record.status =
         signal.aborted && String(signal.reason) === 'Error: Cancelled' ? 'cancelled' : 'failed';
     const latest = (record.attempts as Array<Record<string, unknown>>).at(-1);

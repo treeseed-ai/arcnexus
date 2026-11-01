@@ -156,6 +156,7 @@ owners:
     publicModules:
       - src/report/report.ts
       - src/report/timeline.ts
+      - src/report/progress.ts
       - src/report/workday-report.ts
     directoryExceptions: []
   - component: steward

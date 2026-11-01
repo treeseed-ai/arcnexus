@@ -415,7 +415,7 @@ class CliApplication {
     if (this.record) {
       this.record.status = this.cancelled
         ? 'cancelled'
-        : ['blocked', 'no_changes'].includes(this.record.status)
+        : ['blocked', 'no_changes', 'needs_attention'].includes(this.record.status)
           ? this.record.status
           : 'failed';
       this.record.error = String(error);
