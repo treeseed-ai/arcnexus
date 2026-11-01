@@ -89,3 +89,13 @@ bindings are discovered at `<git-common-dir>/arcnexus/bindings.yaml`; `tools.cod
 selects a local executable. Captured bindings and profiles are immutable per run.
 The normal interface does not accept work budgets; obsolete configured budget fields
 produce an actionable migration error.
+
+## Inbox decisions
+
+The general result contract exposes correlated inbox decisions independently of
+ordinary boundary requests. Recipients accept, reject or ask clarification; the
+originating assignment answers in a read-only control activation. The host records
+verified delivery itself. Requests may deliberately link an existing assignment and
+specify accepted intent or verified delivery as their required milestone. An inbox
+reply must match its captured sender/recipient identities. A clarification does not
+restart engineering or mark the original assignment complete.
