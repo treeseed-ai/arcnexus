@@ -60,6 +60,7 @@ ownership:
     - docs/library/architecture
     - architecture/components/architecture.yaml
   publicModules:
+    - src/library/architecture/execution-context.ts
     - src/library/architecture/assignment.ts
     - src/library/architecture/bindings.ts
     - src/library/architecture/components.ts

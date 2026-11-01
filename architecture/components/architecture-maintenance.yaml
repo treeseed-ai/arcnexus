@@ -68,6 +68,7 @@ ownership:
     - architecture/operations
     - architecture/roles
     - architecture/environment.yaml
+    - architecture/execution.yaml
     - architecture/components/arcnexus.yaml
     - architecture/components/cli-package.yaml
     - architecture/components/architecture-maintenance.yaml

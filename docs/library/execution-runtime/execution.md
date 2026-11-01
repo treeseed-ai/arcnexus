@@ -79,3 +79,13 @@ self-directed verified improvement, inbox delivery, pause/resume, task interrupt
 and return, cancellation/recovery, and a real ArcNexus improvement under a stable
 supervising build. Retain actual diffs, host results and independent verification.
 Report simulation, local checks, CI and live evidence separately.
+
+## Project defaults
+
+Committed `architecture/execution.yaml` selects `directorProfile`, `reviewerProfile`
+and optional `defaultPackage`. ArcNexus uses its `astra` profile for direction and
+independent review; owners retain their declared engineering profiles. Local machine
+bindings are discovered at `<git-common-dir>/arcnexus/bindings.yaml`; `tools.codex`
+selects a local executable. Captured bindings and profiles are immutable per run.
+The normal interface does not accept work budgets; obsolete configured budget fields
+produce an actionable migration error.

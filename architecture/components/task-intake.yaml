@@ -52,6 +52,7 @@ ownership:
     - docs/library/task-intake
     - architecture/components/task-intake.yaml
   publicModules:
+    - src/library/task-intake/direction.ts
     - src/library/task-intake/initializer.ts
     - src/library/task-intake/tasks.ts
   directoryExceptions:
