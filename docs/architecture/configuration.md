@@ -28,16 +28,15 @@ Exact changed-path checks remain authoritative even where root instruction files
 require broader directory sandbox grants. Platform/package containment is context,
 not an implicit grant of write authority to every descendant.
 
-## Following increments
+## Current execution contract
 
-Increment 2 migrates maintained tests/tooling to TypeScript, formats code, enforces
-500-line files and 30-line functions, and exposes linting as a steward operation.
-Increment 3 adds mandatory component-led initialization and task proposals, removes
-implicit execution limits, and retains cancellation and observable loop guards.
-These are delivery intentions, not claims of currently available commands.
+Maintained tests/tooling use TypeScript, with formatting and 500-line files and
+30-line functions enforced. Linting is available through declared operations.
+Mandatory initialization and task proposals preserve captured authority; cancellation
+and observable loop guards replace implicit execution limits.
 
-Version-three platform/package nodes may declare empty write paths and directory
-grants to express containment without execution authority. These empty container
-policies do not act as a deny-all ceiling for independently authorized leaf owners.
-Explicit nonempty ancestor permission ceilings remain enforced, as does legacy
-version-one/two permission inheritance. Container nodes cannot execute assignments.
+Version-four ownership is defined in each component. See the
+[version-four contract](component-contracts-v4.md) for derived coverage, package roots,
+patterns, contracts and discovered inventories. Versions 1–3 preserve their existing
+interpretation. Empty version-three/four container permissions express containment,
+not a deny-all ceiling. Container nodes cannot execute assignments.

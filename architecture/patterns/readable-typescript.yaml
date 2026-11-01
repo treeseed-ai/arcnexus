@@ -1,0 +1,9 @@
+schemaVersion: 1
+id: readable-typescript
+owner: development-tooling
+purpose: Keep maintained TypeScript understandable and verifiable
+applicability: Maintained application, tooling and test code
+document: docs/development-tooling/typescript-standard.md
+examples: []
+operationIds:
+  - development-tooling-lint

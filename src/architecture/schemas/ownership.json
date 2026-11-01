@@ -2,11 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schemaVersion",
-    "maintainedPaths",
-    "owners"
-  ],
+  "required": ["schemaVersion", "maintainedPaths", "owners"],
   "properties": {
     "schemaVersion": {
       "const": 1
@@ -24,12 +20,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "component",
-          "paths",
-          "publicModules",
-          "directoryExceptions"
-        ],
+        "required": ["component", "paths", "publicModules", "directoryExceptions"],
         "properties": {
           "component": {
             "type": "string",
@@ -62,5 +53,6 @@
         }
       }
     }
-  }
+  },
+  "$id": "https://arcnexus.local/schemas/ownership-v1"
 }

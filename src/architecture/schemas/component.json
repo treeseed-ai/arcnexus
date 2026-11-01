@@ -4,11 +4,7 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "enum": [
-        1,
-        2,
-        3
-      ]
+      "enum": [1, 2, 3]
     },
     "id": {
       "type": "string",
@@ -16,13 +12,7 @@
       "pattern": "^[a-zA-Z0-9_-]+$"
     },
     "type": {
-      "enum": [
-        "platform",
-        "package",
-        "foundation",
-        "gateway",
-        "library"
-      ]
+      "enum": ["platform", "package", "foundation", "gateway", "library"]
     },
     "repository": {
       "type": "string",
@@ -132,10 +122,7 @@
           "uniqueItems": true
         }
       },
-      "required": [
-        "readPaths",
-        "writeDirectories"
-      ],
+      "required": ["readPaths", "writeDirectories"],
       "additionalProperties": false
     },
     "allowedWritePaths": {
@@ -162,10 +149,7 @@
             }
           }
         },
-        "required": [
-          "command",
-          "args"
-        ],
+        "required": ["command", "args"],
         "additionalProperties": false
       }
     },
@@ -223,13 +207,7 @@
           "uniqueItems": true
         }
       },
-      "required": [
-        "foundations",
-        "dependencies",
-        "gateways",
-        "libraries",
-        "releases"
-      ],
+      "required": ["foundations", "dependencies", "gateways", "libraries", "releases"],
       "additionalProperties": false
     },
     "operationIds": {
@@ -251,10 +229,7 @@
           "minLength": 1
         }
       },
-      "required": [
-        "schemaVersion",
-        "componentId"
-      ],
+      "required": ["schemaVersion", "componentId"],
       "additionalProperties": false
     }
   },
@@ -304,9 +279,7 @@
         }
       },
       "then": {
-        "required": [
-          "operationIds"
-        ],
+        "required": ["operationIds"],
         "properties": {
           "operationIds": {
             "type": "array",

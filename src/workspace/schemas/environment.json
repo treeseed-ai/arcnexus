@@ -4,10 +4,7 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "enum": [
-        1,
-        3
-      ]
+      "enum": [1, 3]
     },
     "prerequisites": {
       "type": "array",
@@ -25,10 +22,7 @@
             }
           }
         },
-        "required": [
-          "command",
-          "args"
-        ],
+        "required": ["command", "args"],
         "additionalProperties": false
       }
     },
@@ -48,10 +42,7 @@
             }
           }
         },
-        "required": [
-          "command",
-          "args"
-        ],
+        "required": ["command", "args"],
         "additionalProperties": false
       }
     },
@@ -80,10 +71,7 @@
               "pattern": "^https://"
             }
           },
-          "required": [
-            "id",
-            "repository"
-          ],
+          "required": ["id", "repository"],
           "additionalProperties": false
         },
         "dependencies": {
@@ -125,10 +113,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "command",
-                    "args"
-                  ],
+                  "required": ["command", "args"],
                   "additionalProperties": false
                 }
               },
@@ -148,10 +133,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "command",
-                    "args"
-                  ],
+                  "required": ["command", "args"],
                   "additionalProperties": false
                 }
               },
@@ -176,18 +158,10 @@
           }
         }
       },
-      "required": [
-        "primary",
-        "dependencies"
-      ],
+      "required": ["primary", "dependencies"],
       "additionalProperties": false
     }
   },
-  "required": [
-    "schemaVersion",
-    "prerequisites",
-    "setup",
-    "generatedDirectories"
-  ],
+  "required": ["schemaVersion", "prerequisites", "setup", "generatedDirectories"],
   "additionalProperties": false
 }

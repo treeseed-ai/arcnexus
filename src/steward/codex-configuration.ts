@@ -1,4 +1,5 @@
-import { existsSync, appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readSchema } from '../architecture/schema.js';
+import { existsSync, appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
@@ -53,13 +54,8 @@ export class CodexConfiguration {
   }
 
   private resultSchema() {
-    if (this.input.responseContract)
-      return JSON.parse(
-        readFileSync(new URL('../../schemas/initializer-result.json', import.meta.url), 'utf8'),
-      );
-    const schema = JSON.parse(
-      readFileSync(new URL('../../schemas/agent-result.json', import.meta.url), 'utf8'),
-    );
+    if (this.input.responseContract) return readSchema('initializer-result');
+    const schema = readSchema('agent-result');
     if ((this.profile?.schemaVersion ?? 1) >= 2) schema.required = Object.keys(schema.properties);
     else {
       delete schema.properties.plan;

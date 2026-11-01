@@ -5,16 +5,9 @@ path: src/experiments
 objectives:
   - Resolve and execute repeatable experiments with honestly labeled evidence
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
-allowedWritePaths:
-  - src/experiments
-  - tests/experiments
-  - docs/experiments
-  - experiments
-  - qualification
-  - fixtures
-  - scripts
 verification:
   - command: npm
     args:
@@ -36,9 +29,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
@@ -50,20 +40,67 @@ access:
     - qualification
     - fixtures
     - scripts
-schemaVersion: 3
-repository: arcnexus
+    - docs/acceptance
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces: []
-documentation:
-  - docs/experiments/experiments.md
-  - docs/experiments/qualification.md
-tests:
-  - tests/experiments/experiments.test.ts
-  - tests/experiments/qualification.test.ts
-  - tests/experiments/sample-check.test.ts
-  - tests/experiments/workday-experiments.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - experiments-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/experiments
+    - tests/experiments
+    - docs/experiments
+    - experiments
+    - qualification
+    - fixtures
+    - scripts
+    - docs/acceptance
+  publicModules:
+    - src/experiments/experiment-config.ts
+    - src/experiments/experiments.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/experiments
+  documentation:
+    - docs/experiments
+    - docs/acceptance
+  tests:
+    - tests/experiments
+  exclude: []
+provides:
+  - id: campaign
+    version: "1"
+    kind: json-schema
+    path: src/experiments/schemas/campaign.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: experiment-bindings
+    version: "1"
+    kind: json-schema
+    path: src/experiments/schemas/experiment-bindings.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: experiment-v2
+    version: "1"
+    kind: json-schema
+    path: src/experiments/schemas/experiment-v2.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: experiment
+    version: "1"
+    kind: json-schema
+    path: src/experiments/schemas/experiment.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes:
+  - id: experiment
+    version: "1"
+  - id: experiment-v2
+    version: "1"
+  - id: experiment-bindings
+    version: "1"
+  - id: campaign
+    version: "1"

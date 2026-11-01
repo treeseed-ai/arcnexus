@@ -107,14 +107,14 @@ class ExperimentsTests {
       ),
     );
   }
-  async changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(t: TestContext) {
+  async changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(
+    t: TestContext,
+    artifact = 'dist/report.js',
+  ) {
     const f = fixture(t),
       runner = await this.copySupervisor(f);
     const check = join(f.root, 'mutate.mjs');
-    writeFileSync(
-      check,
-      "import{appendFileSync}from'node:fs';appendFileSync(process.argv[2]+'/report.js','\\n// changed supervisor\\n');",
-    );
+    this.supervisorMutation(check);
     const data = parse(readFileSync(f.manifest, 'utf8')),
       c = {
         ...data.cases[0],
@@ -122,7 +122,7 @@ class ExperimentsTests {
         acceptance: [
           {
             command: 'node',
-            args: [check, join(runner, 'dist')],
+            args: [check, join(runner, artifact)],
             artifacts: [check],
           },
         ],
@@ -137,11 +137,18 @@ class ExperimentsTests {
     assert.match(report.error, /Supervising build changed/);
     assert.notEqual(report.runnerHash, report.finalRunnerHash);
   }
+  private supervisorMutation(check: string): void {
+    writeFileSync(
+      check,
+      "import{appendFileSync}from'node:fs';appendFileSync(process.argv[2],'\\n// changed supervisor\\n');",
+    );
+  }
+
   private async copySupervisor(f: ExperimentFixture): Promise<string> {
     const { symlinkSync } = await import('node:fs');
     const runner = join(f.root, 'supervisor');
     for (const name of ['dist', 'schemas', '.fixture-build', 'fixtures/simulation'])
-      cpSync(name, join(runner, name), { recursive: true });
+      if (existsSync(name)) cpSync(name, join(runner, name), { recursive: true });
     for (const name of ['package.json', 'package-lock.json']) cpSync(name, join(runner, name));
     symlinkSync(resolve('node_modules'), join(runner, 'node_modules'), 'dir');
     f.value.runner = join(runner, 'dist/cli.js');
@@ -269,3 +276,9 @@ for (const signal of ['SIGINT', 'SIGKILL'] as const)
 
 test('experiment without an attempt limit preserves the unset runtime limit', (t) =>
   suite.omittedAttempts(t));
+
+test('changed packaged schema invalidates the supervising build', (t) =>
+  suite.changedSupervisorInvalidatesCampaignBeforeAnotherCase_6(
+    t,
+    'dist/architecture/schemas/component-v4.json',
+  ));

@@ -6,10 +6,6 @@ objectives:
   - Make actual execution outcomes easy to inspect
 constraints:
   - Preserve captured authority and evidence
-allowedWritePaths:
-  - src/assignment
-  - tests/assignment
-  - docs/assignment
 verification:
   - command: npm
     args:
@@ -34,10 +30,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
-  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
 access:
   readPaths:
     - .
@@ -45,21 +37,11 @@ access:
     - src/assignment
     - tests/assignment
     - docs/assignment
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - "runSteward: bounded execution and host verification"
-documentation:
-  - docs/assignment/corrective-attempts.md
-  - docs/assignment/steward-workflow.md
-tests:
-  - tests/assignment/attempts.test.ts
-  - tests/assignment/planning.test.ts
-  - tests/assignment/prior-evidence.test.ts
-  - tests/assignment/steward.test.ts
-  - tests/assignment/workflow.test.ts
 relatedIds:
   - steward
   - workspace
@@ -68,3 +50,51 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - assignment-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/assignment
+    - tests/assignment
+    - docs/assignment
+  publicModules:
+    - src/assignment/checkpoints.ts
+    - src/assignment/plan.ts
+    - src/assignment/steward.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/assignment
+  documentation:
+    - docs/assignment
+  tests:
+    - tests/assignment
+  exclude: []
+provides:
+  - id: agent-result
+    version: "1"
+    kind: json-schema
+    path: src/assignment/schemas/agent-result.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: assignment
+    version: "1"
+    kind: json-schema
+    path: src/assignment/schemas/assignment.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: plan-updates
+    version: "1"
+    kind: json-schema
+    path: src/assignment/schemas/plan-updates.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: plan
+    version: "1"
+    kind: json-schema
+    path: src/assignment/schemas/plan.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes:
+  - id: assignment
+    version: "1"
+  - id: plan
+    version: "1"
+  - id: plan-updates
+    version: "1"

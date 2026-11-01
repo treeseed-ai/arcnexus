@@ -10,7 +10,6 @@ constraints:
   - No automatic commits, integration or publishing; model delegation is
     disabled, and only captured workday participants may be dispatched by the
     host
-allowedWritePaths: []
 verification:
   - command: npm
     args:
@@ -27,25 +26,29 @@ verification:
       - --project
       - .
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Small functions with coherent responsibilities
 access:
   readPaths:
     - .
   writeDirectories: []
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces: []
-documentation:
-  - README.md
-  - docs
-tests:
-  - tests
 relatedIds: []
 operationIds: []
 initialization:
   schemaVersion: 3
   componentId: task-intake
+patternIds:
+  - readable-typescript
+provides: []
+consumes: []
+coverageExclusions:
+  - path: docs/experiment-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/guidance-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/operations-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration
+  - path: docs/workday-qualification.json
+    reason: Immutable historical qualification evidence; preserved without migration

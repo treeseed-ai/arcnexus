@@ -28,7 +28,8 @@ export function runnerHash(runner: string): string {
     }
   };
   visit(dirname(runner));
-  visit(join(dirname(runner), '../schemas'));
+  const legacySchemas = join(dirname(runner), '../schemas');
+  if (existsSync(legacySchemas)) visit(legacySchemas);
   const compiledFixtures = join(dirname(runner), '../.fixture-build');
   if (existsSync(compiledFixtures)) visit(compiledFixtures);
   const fixtures = join(dirname(runner), '../fixtures/simulation');

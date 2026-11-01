@@ -8,10 +8,6 @@ objectives:
 constraints:
   - Never infer setup commands or broaden captured operation authority
   - Preserve caller cancellation and resource ownership checks
-allowedWritePaths:
-  - src/operations
-  - tests/operations
-  - docs/operations
 verification:
   - command: npm
     args:
@@ -36,8 +32,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Keep public contracts explicit and independently verified
 access:
   readPaths:
     - .
@@ -45,21 +39,43 @@ access:
     - src/operations
     - tests/operations
     - docs/operations
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Declared operation execution and results
   - Managed service lifecycle and functional probes
-documentation:
-  - docs/operations/steward-operations.md
-tests:
-  - tests/operations/operations.test.ts
-  - tests/operations/services.test.ts
 relatedIds:
   - workspace
   - steward
 parentId: cli-package
 operationIds:
   - operations-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/operations
+    - tests/operations
+    - docs/operations
+  publicModules:
+    - src/operations/operations.ts
+    - src/operations/probes.ts
+    - src/operations/process.ts
+    - src/operations/service-state.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/operations
+  documentation:
+    - docs/operations
+  tests:
+    - tests/operations
+  exclude: []
+provides:
+  - id: operation
+    version: "1"
+    kind: json-schema
+    path: src/operations/schemas/operation.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes: []

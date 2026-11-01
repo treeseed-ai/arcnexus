@@ -4,11 +4,7 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "enum": [
-        1,
-        2,
-        3
-      ]
+      "enum": [1, 2, 3]
     },
     "id": {
       "type": "string",
@@ -20,17 +16,10 @@
       "minLength": 1
     },
     "reasoning": {
-      "enum": [
-        "low",
-        "medium",
-        "high"
-      ]
+      "enum": ["low", "medium", "high"]
     },
     "webSearch": {
-      "enum": [
-        "live",
-        "disabled"
-      ]
+      "enum": ["live", "disabled"]
     },
     "timeoutSeconds": {
       "type": "number",
@@ -76,13 +65,7 @@
       "maximum": 9007199254740991
     }
   },
-  "required": [
-    "schemaVersion",
-    "id",
-    "model",
-    "reasoning",
-    "webSearch"
-  ],
+  "required": ["schemaVersion", "id", "model", "reasoning", "webSearch"],
   "additionalProperties": false,
   "allOf": [
     {

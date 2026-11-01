@@ -10,7 +10,7 @@
     "arcnexus": "dist/cli.js"
   },
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.fixtures.json",
+    "build": "tsc && node dist/architecture/build-schemas.js && tsc -p tsconfig.fixtures.json",
     "check": "tsc --emitDeclarationOnly && tsc --noEmit && tsc -p tsconfig.tests.json --noEmit && tsc -p tsconfig.fixtures.json --noEmit && tsc -p tsconfig.tooling.json",
     "test": "npm run build && npm run build:tests && node --test .test-build/*/*.test.js",
     "build:tests": "tsc -p tsconfig.tests.json",

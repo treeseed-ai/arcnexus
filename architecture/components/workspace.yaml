@@ -8,10 +8,6 @@ constraints:
   - No changes to source checkout or unrelated worktrees
   - Retain all existing cleanup safety guards
   - Do not weaken captured verification or edit architectural definitions
-allowedWritePaths:
-  - src/workspace
-  - tests/workspace
-  - docs/workspace
 verification:
   - command: npm
     args:
@@ -36,9 +32,6 @@ verification:
       - run
       - lint
 questions: []
-patterns:
-  - Evidence-backed completion
-  - Separate execution outcomes from workspace lifecycle metadata
 access:
   readPaths:
     - .
@@ -46,20 +39,48 @@ access:
     - src/workspace
     - tests/workspace
     - docs/workspace
-schemaVersion: 3
-repository: arcnexus
+schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - "createWorkspace/prepareWorkspace/cleanup: owned lifecycle"
-documentation:
-  - docs/workspace/cleanup.md
-  - docs/workspace/composed-workspaces.md
-  - docs/workspace/workspaces.md
-tests:
-  - tests/workspace/composed.test.ts
-  - tests/workspace/workspace.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - workspace-lint
+patternIds:
+  - readable-typescript
+ownership:
+  paths:
+    - src/workspace
+    - tests/workspace
+    - docs/workspace
+  publicModules:
+    - src/workspace/members.ts
+    - src/workspace/state.ts
+    - src/workspace/workspace.ts
+  directoryExceptions: []
+discovery:
+  source:
+    - src/workspace
+  documentation:
+    - docs/workspace
+  tests:
+    - tests/workspace
+  exclude: []
+provides:
+  - id: bindings
+    version: "1"
+    kind: json-schema
+    path: src/workspace/schemas/bindings.json
+    compatibility: Preserve supported historical versions and captured execution readers
+  - id: environment
+    version: "1"
+    kind: json-schema
+    path: src/workspace/schemas/environment.json
+    compatibility: Preserve supported historical versions and captured execution readers
+consumes:
+  - id: environment
+    version: "1"
+  - id: bindings
+    version: "1"

@@ -2,11 +2,7 @@
   "type": "object",
   "properties": {
     "status": {
-      "enum": [
-        "completed",
-        "blocked",
-        "failed"
-      ],
+      "enum": ["completed", "blocked", "failed"],
       "type": "string"
     },
     "summary": {
@@ -42,11 +38,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "summary",
-          "evidence",
-          "uncertainty"
-        ],
+        "required": ["summary", "evidence", "uncertainty"],
         "additionalProperties": false
       }
     },
@@ -56,22 +48,11 @@
         "type": "object",
         "properties": {
           "activity": {
-            "enum": [
-              "research",
-              "documentation",
-              "testing",
-              "implementation",
-              "review",
-              "release"
-            ],
+            "enum": ["research", "documentation", "testing", "implementation", "review", "release"],
             "type": "string"
           },
           "status": {
-            "enum": [
-              "completed",
-              "skipped",
-              "blocked"
-            ],
+            "enum": ["completed", "skipped", "blocked"],
             "type": "string"
           },
           "summary": {
@@ -86,12 +67,7 @@
             }
           }
         },
-        "required": [
-          "activity",
-          "status",
-          "summary",
-          "sources"
-        ],
+        "required": ["activity", "status", "summary", "sources"],
         "additionalProperties": false
       }
     },
@@ -114,11 +90,7 @@
               "minLength": 1
             }
           },
-          "required": [
-            "verificationIndex",
-            "exitCode",
-            "outputIncludes"
-          ],
+          "required": ["verificationIndex", "exitCode", "outputIncludes"],
           "additionalProperties": false
         },
         {
@@ -143,10 +115,7 @@
             "minLength": 1
           },
           "ownerId": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "request": {
             "type": "string",
@@ -222,10 +191,7 @@
                     "minLength": 1
                   }
                 },
-                "required": [
-                  "activity",
-                  "reason"
-                ]
+                "required": ["activity", "reason"]
               }
             },
             "items": {
@@ -241,13 +207,7 @@
                     "pattern": "^[a-zA-Z0-9_-]+$"
                   },
                   "status": {
-                    "enum": [
-                      "pending",
-                      "in_progress",
-                      "completed",
-                      "skipped",
-                      "blocked"
-                    ]
+                    "enum": ["pending", "in_progress", "completed", "skipped", "blocked"]
                   },
                   "explanation": {
                     "type": "string"
@@ -312,13 +272,7 @@
               }
             }
           },
-          "required": [
-            "approach",
-            "assumptions",
-            "activities",
-            "items",
-            "questions"
-          ]
+          "required": ["approach", "assumptions", "activities", "items", "questions"]
         }
       ]
     },
@@ -335,13 +289,7 @@
             "pattern": "^[a-zA-Z0-9_-]+$"
           },
           "status": {
-            "enum": [
-              "pending",
-              "in_progress",
-              "completed",
-              "skipped",
-              "blocked"
-            ]
+            "enum": ["pending", "in_progress", "completed", "skipped", "blocked"]
           },
           "explanation": {
             "type": "string",
@@ -355,12 +303,7 @@
             }
           }
         },
-        "required": [
-          "id",
-          "status",
-          "explanation",
-          "evidence"
-        ]
+        "required": ["id", "status", "explanation", "evidence"]
       }
     },
     "coordination": {
@@ -372,23 +315,14 @@
           "type": "object",
           "properties": {
             "action": {
-              "enum": [
-                "request",
-                "accept",
-                "reject",
-                "clarify",
-                "answer"
-              ]
+              "enum": ["request", "accept", "reject", "clarify", "answer"]
             },
             "contract": {
               "type": "string",
               "minLength": 1
             },
             "requestId": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "text": {
               "type": "string",
@@ -399,13 +333,7 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "action",
-            "contract",
-            "requestId",
-            "text",
-            "activityComplete"
-          ],
+          "required": ["action", "contract", "requestId", "text", "activityComplete"],
           "additionalProperties": false
         }
       ]
@@ -422,5 +350,6 @@
     "requests",
     "coordination"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/workday-agent-result-v1"
 }

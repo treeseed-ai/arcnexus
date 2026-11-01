@@ -23,6 +23,7 @@ const covers = (path: string, root: string) =>
 
 /** Checks project-declared ownership against the captured Git tree. */
 export class OwnershipValidator {
+  private readonly files = new Set<string>();
   private readonly graph = new Map<string, string[]>();
   constructor(
     private readonly repository: string,
@@ -33,6 +34,11 @@ export class OwnershipValidator {
     const files = git(this.repository, 'ls-tree', '-r', '--name-only', this.base)
       .trim()
       .split('\n');
+    files.forEach((file) => this.files.add(file));
+    if (Object.values(catalog.components).some((c) => c.schemaVersion === 4)) {
+      this.versionFour(catalog, files);
+      return;
+    }
     if (!files.some((p) => /^architecture\/ownership\.(json|ya?ml)$/.test(p))) return;
     const source = new ConfigurationReader().definition(
       this.repository,
@@ -47,6 +53,44 @@ export class OwnershipValidator {
     }
     this.assertAcyclic();
     return source;
+  }
+
+  private versionFour(catalog: Catalog, files: string[]): void {
+    const components = Object.values(catalog.components).filter(
+      (c) => c.type === 'platform' || c.repository === catalog.primaryRepository,
+    );
+    const owners = components
+      .filter((c) => c.ownership)
+      .map((c) => ({
+        component: c.id,
+        paths: c.ownership!.paths,
+        publicModules: c.ownership!.publicModules,
+        directoryExceptions: c.ownership!.directoryExceptions.map((e) => e.path),
+      }));
+    const exclusions = components
+      .filter((c) => c.type === 'platform')
+      .flatMap((c) => c.coverageExclusions ?? []);
+    exclusions.forEach((e) => e.path !== '.' && relativePath(e.path));
+    const policy: OwnershipPolicy = { schemaVersion: 1, maintainedPaths: ['.'], owners };
+    this.validateOwners(policy, catalog, files);
+    this.overlaps(owners);
+    for (const file of files.filter((p) => !exclusions.some((e) => covers(p, e.path)))) {
+      const owner = this.owner(file, policy);
+      if (/\.[cm]?[jt]sx?$/.test(file)) this.imports(file, owner, policy);
+    }
+    this.assertAcyclic();
+  }
+
+  private overlaps(owners: Owner[]): void {
+    for (const owner of owners)
+      for (const other of owners) {
+        if (owner === other) continue;
+        for (const path of owner.paths)
+          if (other.paths.some((p) => covers(path, p) || covers(p, path)))
+            throw new Error(
+              `Overlapping ownership: ${owner.component} / ${other.component}: ${path}`,
+            );
+      }
   }
 
   private owner(file: string, policy: OwnershipPolicy): Owner {
@@ -80,11 +124,16 @@ export class OwnershipValidator {
           throw new Error(`Writable ownership conflict: ${writable}`);
       }
     }
+    this.requireOwners(catalog, identities);
+    policy.maintainedPaths.filter((p) => p !== '.').forEach(relativePath);
+  }
+
+  private requireOwners(catalog: Catalog, identities: Set<string>): void {
     for (const component of Object.values(catalog.components)) {
+      if (catalog.primaryRepository && component.repository !== catalog.primaryRepository) continue;
       if (!['platform', 'package'].includes(component.type) && !identities.has(component.id))
         throw new Error(`Missing declared owner: ${component.id}`);
     }
-    policy.maintainedPaths.filter((p) => p !== '.').forEach(relativePath);
   }
 
   private imports(file: string, owner: Owner, policy: OwnershipPolicy): void {
@@ -99,9 +148,24 @@ export class OwnershipValidator {
 
   private target(file: string, specifier: string): string | undefined {
     if (!specifier.startsWith('.')) return;
-    const target = posix.normalize(posix.join(posix.dirname(file), specifier));
-    if (!target.startsWith('src/')) return;
-    return target.replace(/\.js$/, '.ts');
+    let target = posix.normalize(posix.join(posix.dirname(file), specifier));
+    relativePath(target);
+    if (target.startsWith('dist/')) target = 'src/' + target.slice(5);
+    const candidates = this.moduleCandidates(target);
+    return candidates.find((candidate) => this.files.has(candidate));
+  }
+
+  private moduleCandidates(target: string): string[] {
+    const extension = posix.extname(target);
+    const variants: Record<string, string[]> = {
+      '.js': ['.ts', '.tsx', '.js'],
+      '.mjs': ['.mts', '.mjs'],
+      '.cjs': ['.cts', '.cjs'],
+    };
+    if (variants[extension])
+      return variants[extension]!.map((suffix) => target.slice(0, -extension.length) + suffix);
+    if (!extension) return [target + '.ts', target + '.tsx', target + '/index.ts'];
+    return /\.[cm]?[jt]sx?$/.test(target) ? [target] : [];
   }
 
   private checkImport(

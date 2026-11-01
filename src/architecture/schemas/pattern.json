@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "applicability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "document": {
+      "type": "string",
+      "minLength": 1
+    },
+    "examples": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "operationIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "owner",
+    "purpose",
+    "applicability",
+    "document",
+    "examples",
+    "operationIds"
+  ],
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/pattern-v1"
+}

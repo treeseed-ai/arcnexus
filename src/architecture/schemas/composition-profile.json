@@ -4,10 +4,7 @@
   "type": "object",
   "properties": {
     "schemaVersion": {
-      "enum": [
-        1,
-        3
-      ]
+      "enum": [1, 3]
     },
     "id": {
       "type": "string",
@@ -29,11 +26,6 @@
       "uniqueItems": true
     }
   },
-  "required": [
-    "schemaVersion",
-    "id",
-    "platformId",
-    "packageIds"
-  ],
+  "required": ["schemaVersion", "id", "platformId", "packageIds"],
   "additionalProperties": false
 }

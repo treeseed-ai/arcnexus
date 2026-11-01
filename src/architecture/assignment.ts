@@ -131,7 +131,7 @@ class AssignmentResolver {
     private readonly id: string,
     private readonly options: AssignmentOptions,
   ) {
-    this.catalog = loadCatalog(repository, base);
+    this.catalog = loadCatalog(repository, base, options.bindings ?? loadBindings());
     this.context = ancestry(this.catalog, id);
     this.component = this.context.at(-1)!;
     this.env = environment(
@@ -176,6 +176,7 @@ class AssignmentResolver {
   }
 
   resolve(): ResolvedAssignment {
+    this.assertReferences();
     const { catalog, assignment, context, component, base, id, env } = this;
     const execution = this.execution();
     const data = {
@@ -202,6 +203,13 @@ class AssignmentResolver {
       pendingChecks: [...pendingChecks],
     };
     return { ...data, digest: digest(JSON.stringify(data)) };
+  }
+
+  private assertReferences(): void {
+    for (const component of this.context)
+      for (const contract of component.contractSnapshots ?? [])
+        if (!contract.artifact)
+          throw new InputError(`Missing repository binding for captured contract: ${contract.id}`);
   }
 
   private sources() {

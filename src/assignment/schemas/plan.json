@@ -31,10 +31,7 @@
             "minLength": 1
           }
         },
-        "required": [
-          "activity",
-          "reason"
-        ]
+        "required": ["activity", "reason"]
       }
     },
     "items": {
@@ -50,13 +47,7 @@
             "pattern": "^[a-zA-Z0-9_-]+$"
           },
           "status": {
-            "enum": [
-              "pending",
-              "in_progress",
-              "completed",
-              "skipped",
-              "blocked"
-            ]
+            "enum": ["pending", "in_progress", "completed", "skipped", "blocked"]
           },
           "explanation": {
             "type": "string"
@@ -122,11 +113,6 @@
       }
     }
   },
-  "required": [
-    "approach",
-    "assumptions",
-    "activities",
-    "items",
-    "questions"
-  ]
+  "required": ["approach", "assumptions", "activities", "items", "questions"],
+  "$id": "https://arcnexus.local/schemas/plan-v1"
 }

@@ -40,12 +40,7 @@
             "minLength": 1
           },
           "expectedOutcome": {
-            "enum": [
-              "ready_for_integration",
-              "blocked",
-              "research_completed",
-              "review_completed"
-            ]
+            "enum": ["ready_for_integration", "blocked", "research_completed", "review_completed"]
           },
           "bindings": {
             "type": "string",
@@ -87,11 +82,7 @@
                   }
                 }
               },
-              "required": [
-                "command",
-                "args",
-                "artifacts"
-              ],
+              "required": ["command", "args", "artifacts"],
               "additionalProperties": false
             }
           }
@@ -109,10 +100,7 @@
       }
     }
   },
-  "required": [
-    "schemaVersion",
-    "runner",
-    "cases"
-  ],
-  "additionalProperties": false
+  "required": ["schemaVersion", "runner", "cases"],
+  "additionalProperties": false,
+  "$id": "https://arcnexus.local/schemas/campaign-v1"
 }

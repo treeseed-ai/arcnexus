@@ -1,3 +1,7 @@
+import { repositoryRevisions, type RepositoryRevision } from './repository-revisions.js';
+import type { Bindings } from './bindings.js';
+import { ComponentV4Resolver, type ComponentV4Fields } from './component-v4.js';
+import { ArchitectureReferences } from './references.js';
 import { validateInitialization } from './initialization.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
@@ -14,9 +18,9 @@ import { DirectoryGrants } from './directory-grants.js';
 import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
-export interface Component {
+export interface Component extends ComponentV4Fields {
   initialization?: { schemaVersion: 3; componentId: string };
-  schemaVersion: 1 | 2 | 3;
+  schemaVersion: 1 | 2 | 3 | 4;
   operationIds?: string[];
   id: string;
   type: string;
@@ -74,6 +78,8 @@ export interface CompositionProfile {
   packageIds: string[];
 }
 export interface Catalog {
+  primaryRepository?: string;
+  repositoryRevisions?: Record<string, RepositoryRevision>;
   configurationSources: ConfigurationSource[];
   operations: Record<string, Operation>;
   compositions: Record<string, CompositionProfile>;
@@ -112,7 +118,11 @@ function read<T>(
   const source = new ConfigurationReader().revision(repository, base, path);
   sources.push(source);
   try {
-    return validateSchema<T>(schema, source.value);
+    const version = (source.value as { schemaVersion?: number }).schemaVersion;
+    return validateSchema<T>(
+      schema === 'component' && version === 4 ? 'component-v4' : schema,
+      source.value,
+    );
   } catch (error) {
     throw new InputError(`${path}: ${String(error)}`);
   }
@@ -130,9 +140,9 @@ export function ancestry(catalog: Catalog, id: string): Component[] {
   }
   return result;
 }
-export function loadCatalog(repository: string, base: string): Catalog {
+export function loadCatalog(repository: string, base: string, bindings?: Bindings): Catalog {
   try {
-    return new CatalogLoader(repository, base).load();
+    return new CatalogLoader(repository, base, bindings).load();
   } catch (error) {
     throw new InputError(String(error));
   }
@@ -151,6 +161,7 @@ class CatalogLoader {
   constructor(
     private readonly repository: string,
     private readonly base: string,
+    private readonly bindings?: Bindings,
   ) {
     this.paths = git(repository, 'ls-tree', '-r', '--name-only', base, '--', 'architecture')
       .split('\n')
@@ -167,13 +178,21 @@ class CatalogLoader {
     );
     this.catalog.configurationSources.push(source);
     const env = environment(source.value);
+    repositoryRevisions(this.catalog, env, this.repository, this.base, this.bindings);
+    new ComponentV4Resolver(this.catalog).resolve();
     if (!Object.keys(this.catalog.components).length) throw new InputError('No components defined');
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
     validateInitialization(this.catalog);
+    new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);
-    for (const component of Object.values(this.catalog.components)) grants.validate(component);
+    for (const component of Object.values(this.catalog.components))
+      if (
+        !this.catalog.primaryRepository ||
+        component.repository === this.catalog.primaryRepository
+      )
+        grants.validate(component);
     const ownership = new OwnershipValidator(this.repository, this.base).validate(this.catalog);
     if (ownership) this.catalog.configurationSources.push(ownership);
     return this.catalog;
@@ -315,7 +334,7 @@ class CatalogComponentValidator {
       throw new InputError(`Conflicting repository ownership: ${c.id}`);
     for (const a of ancestors.filter((a) => a.repository === c.repository)) {
       if (
-        a.schemaVersion === 3 &&
+        a.schemaVersion >= 3 &&
         ['platform', 'package'].includes(a.type) &&
         !a.allowedWritePaths.length &&
         !a.access.writeDirectories.length

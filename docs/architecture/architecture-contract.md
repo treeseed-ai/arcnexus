@@ -1,28 +1,26 @@
 # Architecture and assignment contract
 
-This is the increment-one contract delivered for #30. See [workflow checkpoints](../assignment/steward-workflow.md) for the next execution increment.
-Composed dependency workspaces follow separately.
-
 Architecture files use YAML, with legacy JSON accepted through the same reader.
-Version 1 and version 2 contracts remain supported. Built-in JSON Schemas are strict,
-versioned, and resolved locally. Unknown fields, unsupported versions, missing
-references, cyclic ancestry, invalid paths and contradictory ownership fail before
-inference. Historical reports remain evidence and are not migrated.
+Version 4 is described in [component-owned architecture](component-contracts-v4.md).
+Versions 1–3 remain supported. Unknown fields, unsupported versions, missing references,
+cyclic ancestry, invalid paths and contradictory ownership fail before inference.
+Historical reports remain evidence and are not migrated.
 
-Components live in `architecture/components/<id>.yaml`. Each declares its type,
-purpose, repository identity, path, objectives, constraints, questions, patterns,
-interfaces, documentation, tests, related components, exact writable scope,
-directory access policy, verification, role and execution profile. A platform owns
-packages; packages own gateways, libraries and foundations. Parent definitions are
-included completely, root to leaf. Related definitions add context, never authority.
-Parents constrain their descendants; cross-repository package ownership is explicit.
+Components live in `architecture/components/<id>.yaml`. A platform contains packages;
+packages contain foundations, gateways, libraries and releases. Version-four package
+identity and roots are inherited by children. Each leaf owns its paths, public modules
+and directory exceptions; ordinary file inventories are discovered at the revision.
+Patterns reference captured reusable standards, and provided/consumed contracts
+identify their accountable owner and exact version. These references add context,
+never execution authority. Parent definitions are included completely, root to leaf.
+
 Composition profiles select packages, not ownership parents. `--composition-profile`
 selects one for inspection/run; `--execution-profile` selects a declared worker
 profile. Selected composition must include the component's owning package.
 
 Roles in `architecture/roles/` describe responsibilities and activities. Execution
 profiles in `architecture/execution-profiles/` declare model, reasoning, research,
-overall/command timeouts and turn limits. Luna/medium is the default. There is no
+optional overall/command timeouts and turn limits. Missing limits remain unset. Luna/medium is the default. There is no
 automatic model fallback. Environment commands are executable/argument arrays;
 they never imply runtime installation or shell interpretation.
 
@@ -60,23 +58,14 @@ change assignments follow the [host-checked workflow](../assignment/steward-work
 
 ## Ownership and compatibility
 
-The CLI gateway and assignment orchestrator share `tests/assignment/steward.test.mjs`;
-changes to that shared acceptance surface require caller review. Runtime libraries
-retain their existing source locations. Directory sandbox grants may be broader
-than exact file scope; post-execution scope checks remain mandatory.
+Every covered tracked file has exactly one leaf owner. Platform coverage exclusions
+must explain historical, generated or vendored material. Root-file sandbox exceptions
+remain explicit; exact changed-path checks enforce the narrower ownership boundary.
 
-Existing unversioned project definitions must migrate to schema version 1, including
-environments, role/profile references, and component ownership fields. Old reports
-remain readable, but new runs do not silently accept legacy definitions.
-
-Validation uses [Ajv draft 2020-12](https://ajv.js.org/json-schema.html) in
-[strict mode](https://ajv.js.org/strict-mode.html), with no remote schema loading.
-
-Catalog maintenance is checked against the recursive source inventory: every `src/**/*.ts`
-module must have exactly one executable component owner. Workspace lifecycle owns
-`bindings.ts` and `members.ts` as well as preparation/cleanup. The bounded-context
-acceptance test is shared by assignment orchestration and Codex adaptation; changes
-to it require caller review. Qualification infrastructure belongs to the CLI package.
+Trusted runtime JSON Schemas live with their implementation owners. Build packaging
+generates a local registry; target definitions cannot replace the application's
+validators. Validation uses Ajv draft 2020-12 in strict mode without remote loading.
+Legacy configuration readers and historical report readers remain available.
 
 Static catalog validation checks each component's default operation/profile
 compatibility, declared disposable outputs, and HTTP service dependencies. Assignment
