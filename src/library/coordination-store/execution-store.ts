@@ -108,12 +108,14 @@ export class ExecutionStore {
 
   /** Selects ready work whose dependencies have verified delivery. */
   ready(runId: string): ExecutionAssignment[] {
-    return this.assignments(runId).filter(
-      (item) =>
-        item.status === 'ready' &&
-        ((Array.isArray(item.data.questions) && item.data.questions.length > 0) ||
-          item.dependencies.every((id) => this.satisfied(item, id))),
-    );
+    return this.assignments(runId)
+      .filter(
+        (item) =>
+          item.status === 'ready' &&
+          ((Array.isArray(item.data.questions) && item.data.questions.length > 0) ||
+            item.dependencies.every((id) => this.satisfied(item, id))),
+      )
+      .sort((a, b) => Number(a.data.readyOrder ?? 0) - Number(b.data.readyOrder ?? 0));
   }
 
   /** Captures continuation evidence without erasing earlier state. */

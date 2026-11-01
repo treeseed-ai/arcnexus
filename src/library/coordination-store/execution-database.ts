@@ -57,11 +57,30 @@ export class ExecutionDatabase {
 
   /** Creates or replaces an entity inside its caller's transaction. */
   put<T extends { id: string }>(kind: string, value: T): void {
+    if (kind === 'assignment')
+      this.readiness(value as unknown as import('./execution-types.js').ExecutionAssignment);
     this.db
       .prepare(
         'INSERT INTO entities VALUES(?,?,?) ON CONFLICT(kind,id) DO UPDATE SET data=excluded.data',
       )
       .run(kind, value.id, JSON.stringify(value));
+  }
+
+  /** Assigns a transactional FIFO position only when an assignment enters the ready queue. */
+  private readiness(value: import('./execution-types.js').ExecutionAssignment): void {
+    if (value.status !== 'ready') return;
+    const row = this.db
+      .prepare('SELECT data FROM entities WHERE kind=? AND id=?')
+      .get('assignment', value.id);
+    const previous = row ? JSON.parse(String(row.data)) : undefined;
+    if (previous?.status === 'ready') {
+      value.data.readyOrder = previous.data.readyOrder;
+      return;
+    }
+    const counter = this.all<{ id: string; value: number }>('ready-clock')[0];
+    const order = (counter?.value ?? 0) + 1;
+    this.put('ready-clock', { id: 'project', value: order });
+    value.data.readyOrder = order;
   }
 
   /** Returns ordered events after an exclusive cursor. */

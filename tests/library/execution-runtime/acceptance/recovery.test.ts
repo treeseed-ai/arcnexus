@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { ExecutionContext } from '../../../../dist/library/architecture/execution-context.js';
 import { ExecutionLease } from '../../../../dist/library/coordination-store/execution-store.js';
+import { StewardshipPolicy } from '../../../../dist/library/workday/workday.js';
 import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import { GeneralFixture } from '../support/general-fixture.js';
@@ -66,6 +67,24 @@ class RecoveryScenarios {
     assert.equal(host.store.run(workday.id).status, committed ? 'running' : 'needs_attention');
   }
 
+  /** Changing an early owner's inputs cannot repeatedly skip the rest of the rotation. */
+  rotation(t: TestContext): void {
+    const f = new GeneralFixture(t).fixture;
+    const context = new ExecutionContext().resolve(f.repo);
+    const host = new ProjectHost(f.state, context);
+    t.after(() => host.store.close());
+    host.control('start');
+    const run = host.store.runs()[0]!;
+    const policy = new StewardshipPolicy(context);
+    assert.equal(policy.next(run, [])?.owner, 'a');
+    run.data.lastSteward = 'a';
+    assert.equal(policy.next(run, [])?.owner, 'b');
+    run.data.lastSteward = 'b';
+    assert.equal(policy.next(run, [])?.owner, 'c');
+    run.data.lastSteward = 'c';
+    assert.equal(policy.next(run, [])?.owner, 'a');
+  }
+
   /** Reconciles already observed delivery while retaining uncertain engineering as interrupted. */
   recovery(t: TestContext): void {
     const f = new GeneralFixture(t).fixture;
@@ -114,5 +133,8 @@ test('host recovery retains uncertain reconciliation without replaying setup', (
 
 test('host recovery accepts a durably completed reconciliation checkpoint', (t) =>
   scenarios.reconciliation(t, true));
+
+test('stewardship rotation retains position when an earlier owner changes', (t) =>
+  scenarios.rotation(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

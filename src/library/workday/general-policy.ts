@@ -15,7 +15,9 @@ export class StewardshipPolicy {
     assignments: ExecutionAssignment[],
   ): { owner: string; fingerprint: string } | undefined {
     const seen = (run.data.seen ?? {}) as Record<string, string>;
-    for (const owner of run.owners) {
+    const start = run.owners.indexOf(String(run.data.lastSteward)) + 1;
+    const rotation = [...run.owners.slice(start), ...run.owners.slice(0, start)];
+    for (const owner of rotation) {
       if (
         assignments.some(
           (a) => a.owner === owner && ['ready', 'running', 'waiting'].includes(a.status),

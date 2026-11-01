@@ -50,6 +50,38 @@ class SchedulerScenarios {
     });
   }
 
+  /** A yielding assignment rejoins the FIFO tail across writable store reopening. */
+  async fairness(t: TestContext): Promise<void> {
+    const path = this.database(t);
+    let store = new ExecutionStore(path);
+    const run = store.createRun('workday', ['a', 'b', 'c'], 'Fair dispatch');
+    const first = store.enqueue(run.id, 'a', 'Many activations');
+    const second = store.enqueue(run.id, 'b', 'Ready inbox work');
+    await new Scheduler(store, async () => ({ kind: 'continue' })).step(run.id);
+    store.close();
+    store = new ExecutionStore(path);
+    t.after(() => store.close());
+    assert.deepEqual(
+      store.ready(run.id).map((a) => a.id),
+      [second.id, first.id],
+    );
+    const dependency = store.request(second.id, {
+      key: 'supplier',
+      owner: 'c',
+      objective: 'Supply evidence',
+      acceptance: ['Observed'],
+    });
+    store.complete(dependency.id, ['Observed evidence']);
+    assert.deepEqual(
+      store.ready(run.id).map((a) => a.id),
+      [first.id, second.id],
+    );
+    store.updateAssignment(first.id, 'ready', { retained: true });
+    assert.equal(store.ready(run.id)[0]!.id, first.id);
+    await new Scheduler(store, async () => ({ kind: 'continue' })).step(run.id);
+    assert.equal(store.ready(run.id)[0]!.id, second.id);
+  }
+
   /** Rejects cycles and duplicate-key mutations without disturbing unrelated ready work. */
   dependencies(t: TestContext): void {
     const store = new ExecutionStore(this.database(t));
@@ -89,5 +121,8 @@ for (const count of [3, 5])
 
 test('dependency identities, cycles and blocked owners preserve unrelated progress', (t) =>
   scenarios.dependencies(t));
+
+test('continuations and dependency wakeups preserve durable FIFO fairness', (t) =>
+  scenarios.fairness(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

@@ -283,6 +283,7 @@ export class ProjectHost {
   ): void {
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       seen,
+      lastSteward: owner,
       lastDispatch: 'stewardship',
       stewardshipReviews: {
         ...((run.data.stewardshipReviews ?? {}) as object),
