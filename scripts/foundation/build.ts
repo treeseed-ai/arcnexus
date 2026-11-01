@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 
 /** Builds a clean distribution and generated compatibility entry point. */
 class BuildApplication {
-  /** Executes this lifecycle through its configured collaborators and propagates failures. */
+  /** Rebuilds production output, packages trusted schemas and compiles executable fixtures. */
   async run(): Promise<void> {
     rmSync('dist', { recursive: true, force: true });
     this.compile([]);
@@ -19,7 +19,7 @@ class BuildApplication {
     this.compile(['-p', 'tsconfig.fixtures.json']);
   }
 
-  /** Handles compile within this component’s captured contract. */
+  /** Runs the pinned TypeScript compiler and fails the build on process or compilation errors. */
   private compile(args: string[]): void {
     const result = spawnSync(process.execPath, ['node_modules/typescript/bin/tsc', ...args], {
       stdio: 'inherit',
