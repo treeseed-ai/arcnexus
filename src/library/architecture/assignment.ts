@@ -14,6 +14,7 @@ import {
   scopePath,
   validateOperations,
   type Component,
+  type Catalog,
   type CompositionProfile,
   type ExecutionProfile,
   type Role,
@@ -95,6 +96,7 @@ export function resolveBase(repository: string, ref = 'HEAD'): { source: string;
 }
 
 export interface AssignmentOptions {
+  capturedCatalog?: Catalog;
   initializerModel?: string;
   value?: unknown;
   bindings?: Bindings;
@@ -147,7 +149,8 @@ class AssignmentResolver {
     private readonly id: string,
     private readonly options: AssignmentOptions,
   ) {
-    this.catalog = loadCatalog(repository, base, options.bindings ?? loadBindings());
+    this.catalog =
+      options.capturedCatalog ?? loadCatalog(repository, base, options.bindings ?? loadBindings());
     this.context = ancestry(this.catalog, id);
     this.component = this.context.at(-1)!;
     this.env = environment(

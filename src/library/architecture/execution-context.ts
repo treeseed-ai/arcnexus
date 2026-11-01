@@ -73,6 +73,7 @@ export class ExecutionContext {
     if (!context.owners.includes(owner)) throw new InputError('Owner is outside captured package');
     return resolveAssignment(context.source, context.base, owner, {
       value,
+      capturedCatalog: context.catalog,
       bindings: context.bindings,
       executionProfile: profile,
     });
