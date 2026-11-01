@@ -12,8 +12,9 @@ import { workflowFixture } from '../../testing/support/workflow-fixture.js';
 /** Reconstructs sessions between real SDK-boundary turns against a controlled executable. */
 class ContinuationScenarios {
   /** Ensures reopening neither reruns specification nor loses frozen evidence or thread continuity. */
-  async resume(t: TestContext): Promise<void> {
+  async resume(t: TestContext, missingThread = false): Promise<void> {
     const f = workflowFixture(t);
+    f.configure({ missingThread });
     this.prepareState(f.state);
     let record = createWorkspace(f.state, { project: f.repo });
     record.resolvedAssignment = resolveAssignment(f.repo, record.base, 'sample', {
@@ -37,6 +38,7 @@ class ContinuationScenarios {
       ) as RecordData;
     }
     this.assertCompleted(record, stages);
+    if (missingThread) assert.equal(record.threadId, 'replacement-thread');
   }
 
   /** Requires passing characterization before and after a refactor without fabricated specification edits. */
@@ -115,6 +117,9 @@ const scenarios = new ContinuationScenarios();
 
 test('built steward resumes persisted stages without resetting evidence', (t) =>
   scenarios.resume(t));
+
+test('a confirmed missing thread receives a fresh validated continuation', (t) =>
+  scenarios.resume(t, true));
 
 test('refactor retains passing characterization without changed specification', (t) =>
   scenarios.refactor(t));

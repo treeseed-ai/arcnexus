@@ -141,6 +141,8 @@ export class AssignmentExecution {
       base,
       bindings: this.context.bindings,
     });
+    record.executionRunId = assignment.runId;
+    record.assignmentId = assignment.id;
     record.environment = resolved.environment;
     record.resolvedAssignment = resolved;
     record.directionAccepted = true;

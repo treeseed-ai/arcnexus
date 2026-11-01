@@ -17,6 +17,9 @@ export class DirectionRecords {
     const resolved = this.authority(owner, objective, profile);
     const record: RecordData = {
       id: randomUUID(),
+      executionRunId: workspace.executionRunId,
+      assignmentId: workspace.assignmentId,
+      parentRecordId: workspace.id,
       source: workspace.source,
       workspace: workspace.workspace,
       branch: workspace.branch,

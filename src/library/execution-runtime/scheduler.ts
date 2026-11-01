@@ -27,8 +27,10 @@ export class Scheduler {
       this.commit(assignment.id, result ?? (await this.execute(assignment)));
     } catch (error) {
       const pendingOutcome = this.store.assignment(assignment.id).data.pendingOutcome;
-      this.store.fail(assignment.id, 'failed', String(error));
-      this.store.updateAssignment(assignment.id, 'failed', {
+      const status =
+        error instanceof Error && error.name === 'DependencyBlocked' ? 'blocked' : 'failed';
+      this.store.fail(assignment.id, status, String(error));
+      this.store.updateAssignment(assignment.id, status, {
         lastFailedOutcome: pendingOutcome ?? null,
         pendingOutcome: null,
       });

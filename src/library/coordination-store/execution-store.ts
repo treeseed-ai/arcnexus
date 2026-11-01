@@ -131,9 +131,11 @@ export class ExecutionStore {
 
   /** Delivers an entire fan-out atomically so invalid recipients cannot leave partial dispatch. */
   requests(from: string, requests: OwnerRequest[]): ExecutionAssignment[] {
-    return this.db.transaction('requests.delivered', { from, requests }, () =>
-      requests.map((request) => this.route(from, request)),
-    );
+    return this.db.transaction('requests.delivered', { from, requests }, () => {
+      const recipients = requests.map((request) => this.route(from, request));
+      this.wake(this.assignment(from).runId);
+      return recipients;
+    });
   }
 
   /** Commits replies and newly discovered dependencies as one recoverable activation outcome. */
@@ -188,8 +190,11 @@ export class ExecutionStore {
         this.reaches(a.id, sender.id, new Set()),
     );
     if (ancestor)
-      throw new Error(
-        `Blocking dependency cycle: repeated ancestor intent ${ancestor.id} -> ${sender.id}`,
+      throw Object.assign(
+        new Error(
+          `Blocking dependency cycle: repeated ancestor intent ${ancestor.id} -> ${sender.id}`,
+        ),
+        { name: 'DependencyBlocked' },
       );
   }
 
@@ -277,7 +282,7 @@ export class ExecutionStore {
     if (sender.runId !== recipient.runId)
       throw new Error('Cross-run dependency requires a new assignment');
     if (this.reaches(recipient.id, sender.id, new Set()))
-      throw new Error('Blocking dependency cycle');
+      throw Object.assign(new Error('Blocking dependency cycle'), { name: 'DependencyBlocked' });
     if (!sender.dependencies.includes(recipient.id)) sender.dependencies.push(recipient.id);
     sender.status = sender.dependencies.every((id) => this.satisfied(sender, id))
       ? 'ready'

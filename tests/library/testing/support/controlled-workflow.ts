@@ -26,6 +26,7 @@ export interface WorkflowOptions {
   sandboxFeedback?: boolean;
   documentationOnly?: boolean;
   refactor?: boolean;
+  missingThread?: boolean;
   guidanceExpansion?: boolean;
   dependencyMutation?: boolean;
 }
@@ -60,7 +61,7 @@ export class ControlledWorkflow {
     process.chdir(this.args[this.args.indexOf('--cd') + 1]!);
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
-    if (this.initialize(prompt)) return;
+    if (this.initialize(prompt) || this.missingThread()) return;
     const turn = this.capture(prompt);
     if (this.options.mode === turn.stage + '-timeout') {
       setInterval(() => {}, 1000);
@@ -69,6 +70,19 @@ export class ControlledWorkflow {
     this.execute(turn);
     if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
     this.emit(turn);
+  }
+
+  /** Simulates an explicit missing retained thread before any turn activity or side effect. */
+  private missingThread(): boolean {
+    if (
+      !this.options.missingThread ||
+      !this.args.includes('resume') ||
+      fs.existsSync(this.options.calls + '.lost')
+    )
+      return false;
+    fs.writeFileSync(this.options.calls + '.lost', 'missing retained thread');
+    console.log(JSON.stringify({ type: 'error', message: 'thread not found: workflow-thread' }));
+    return true;
   }
 
   /** Routes initialization prompts to the scripted intake responder before engineering. */
@@ -101,7 +115,11 @@ export class ControlledWorkflow {
     );
     const count = fs.readFileSync(this.options.calls, 'utf8').trim().split('\n').length;
     const thread_id =
-      this.options.mode === 'wrong-thread' && count > 1 ? 'wrong' : 'workflow-thread';
+      this.options.mode === 'wrong-thread' && count > 1
+        ? 'wrong'
+        : this.options.missingThread && fs.existsSync(this.options.calls + '.lost')
+          ? 'replacement-thread'
+          : 'workflow-thread';
     console.log(JSON.stringify({ type: 'thread.started', thread_id }));
     const result = {
       status: 'completed',

@@ -19,6 +19,22 @@ class RecoveryScenarios {
     new ExecutionLease(path).close();
   }
 
+  /** A clarified older task cannot steal the project halfway through another task's assignments. */
+  async taskOwnership(t: TestContext): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    const first = host.submit('Question requiring an answer');
+    host.store.updateRun(first.id, 'needs_input', { questions: ['Which scope?'] });
+    const second = host.submit('Research the supplier chain');
+    await host.tick();
+    assert.ok(host.store.assignments(second.id).length > 0);
+    host.answer(first.id, 'Use the declared scope');
+    await host.tick();
+    assert.ok(host.store.assignments(second.id).some((a) => a.data.recordId));
+    assert.equal(host.store.assignments(first.id).length, 0);
+  }
+
   /** Reconciles already observed delivery while retaining uncertain engineering as interrupted. */
   recovery(t: TestContext): void {
     const f = new GeneralFixture(t).fixture;
@@ -55,6 +71,9 @@ class RecoveryScenarios {
 const scenarios = new RecoveryScenarios();
 
 test('project execution has one process-lifetime lease', (t) => scenarios.lease(t));
+
+test('answered tasks wait for the current task to release project execution', (t) =>
+  scenarios.taskOwnership(t));
 
 test('host recovery commits known outcomes and retains uncertain operations', (t) =>
   scenarios.recovery(t));

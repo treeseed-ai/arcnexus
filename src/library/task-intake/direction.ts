@@ -40,6 +40,7 @@ export class Direction {
       prompt,
       profile,
     );
+    record.activationRole = owner ? 'stewardship' : 'director';
     return this.observe(record, async () => {
       const result = await runInitializerCodex(
         this.root,
@@ -69,12 +70,12 @@ export class Direction {
       objective,
       goal ? this.context.directorProfile : this.context.reviewerProfile,
     );
-    const prompt = `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nReturn ordinary agent-result with findings, activities, regression=null, requests=[], and plan=null, planUpdates=[].`;
+    record.activationRole = goal ? 'director-assessment' : 'verifier';
     await this.observe(record, async () => {
       const result = await runCodex(
         this.root,
         record,
-        prompt,
+        this.verificationPrompt(record, objective, evidence, goal),
         this.context.executable,
         this.model(record),
         this.signal,
@@ -85,6 +86,16 @@ export class Direction {
       return result;
     });
     return [join(this.root, 'runs', record.id, 'report.json')];
+  }
+
+  /** Separates acceptance evidence from worker claims in the independent verifier's instructions. */
+  private verificationPrompt(
+    record: RecordData,
+    objective: string,
+    evidence: unknown,
+    goal: boolean,
+  ): string {
+    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nReturn ordinary agent-result with findings, activities, regression=null, requests=[], and plan=null, planUpdates=[].`;
   }
 
   /** Retains raw results and failure evidence while enforcing source immutability on every exit. */

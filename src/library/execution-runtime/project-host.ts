@@ -137,7 +137,7 @@ export class ProjectHost {
 
   /** Selects queued tasks first and tracks automatic pauses independently of user intent. */
   private select(): ExecutionRun | undefined {
-    const task = this.store.runs().find((r) => r.mode === 'task' && r.status === 'running');
+    const task = this.selectTask();
     const workday = this.workday();
     if (task) {
       if (workday && ['running', 'idle'].includes(workday.status))
@@ -153,6 +153,15 @@ export class ProjectHost {
       });
     const latest = this.workday();
     return latest?.status === 'running' ? latest : undefined;
+  }
+
+  /** Keeps a task's project ownership across activations; answered clarifications rejoin the FIFO queue. */
+  private selectTask(): ExecutionRun | undefined {
+    const tasks = this.store.runs().filter((r) => r.mode === 'task' && r.status === 'running');
+    const task = tasks.find((r) => r.data.executionOwner === true) ?? tasks[0];
+    if (task && task.data.executionOwner !== true)
+      this.store.updateRun(task.id, 'running', { executionOwner: true });
+    return task;
   }
 
   /** Prepares context, advances ready assignments or invokes the mode-specific selection policy. */
@@ -182,6 +191,7 @@ export class ProjectHost {
       base: candidateRevision,
       bindings: this.context.bindings,
     });
+    record.executionRunId = run.id;
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       workspace: record,
       workspacePrepared: false,
@@ -306,14 +316,34 @@ export class ProjectHost {
   /** Completes pending control requests without allowing a worker result to overwrite user intent. */
   private settle(id: string): void {
     const run = this.store.run(id);
+    if (run.mode === 'task' && run.status !== 'running')
+      this.store.updateRun(id, run.status, { executionOwner: false });
     if (run.status === 'pausing') this.store.updateRun(id, 'paused');
     if (run.status === 'stopping') this.store.updateRun(id, 'stopped');
   }
 
   /** Resumes only retained safe work; uncertain running activations require explicit reconciliation. */
   private resume(run: ExecutionRun): void {
-    if (run.status === 'stopped')
+    if (['stopped', 'stopping'].includes(run.status))
       throw new Error('Stopped workday cannot resume; start a new workday');
+    if (run.status === 'needs_attention')
+      throw new Error('Resolve or stop the workday requiring attention before new dispatch');
+    try {
+      this.restoreCheckpoints(run);
+    } catch (error) {
+      this.store.updateRun(run.id, 'needs_attention', { error: String(error) });
+      throw error;
+    }
+    this.store.updateRun(run.id, 'running', {
+      seen: {},
+      pauseReason: null,
+      candidateRevision: this.latestCandidate(),
+      candidateRecord: this.latestDelivery()?.data.candidateRecord ?? run.data.candidateRecord,
+    });
+  }
+
+  /** Restores validated assignment boundaries and leaves uncertain operation evidence untouched. */
+  private restoreCheckpoints(run: ExecutionRun): void {
     for (const assignment of this.store.assignments(run.id)) {
       if (assignment.status !== 'interrupted') continue;
       const record = JSON.parse(
@@ -325,7 +355,6 @@ export class ProjectHost {
       validateContinuation(this.root, record);
       this.store.updateAssignment(assignment.id, 'ready');
     }
-    this.store.updateRun(run.id, 'running', { seen: {}, pauseReason: null });
   }
 
   /** Marks abandoned activations without replaying possibly completed operations. */
