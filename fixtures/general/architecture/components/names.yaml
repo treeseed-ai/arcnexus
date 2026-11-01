@@ -1,0 +1,27 @@
+{
+  'schemaVersion': 3,
+  'repository': 'greetings',
+  'role': 'engineer',
+  'executionProfile': 'luna',
+  'constraints':
+    [
+      'Never commit, publish or change architecture.',
+      'Request changes to another owner through the persisted inbox; do not edit another owner.',
+    ],
+  'questions': [],
+  'patterns': [],
+  'interfaces': [],
+  'relatedIds': [],
+  'operationIds': ['names-tests'],
+  'access': { 'readPaths': ['.'], 'writeDirectories': ['names'] },
+  'id': 'names',
+  'parentId': 'greetings',
+  'type': 'library',
+  'purpose': 'Own name trimming and display transformations; other owners must consume these APIs.',
+  'path': 'names',
+  'objectives': ['Maintain accurate documentation and observed coverage for the owned API'],
+  'documentation': ['names/README.md'],
+  'tests': ['names/test.mjs'],
+  'verification': [{ 'command': 'node', 'args': ['--test', 'names/test.mjs'] }],
+  'allowedWritePaths': ['names'],
+}

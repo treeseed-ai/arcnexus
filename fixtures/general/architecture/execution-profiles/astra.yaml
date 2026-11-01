@@ -1,0 +1,8 @@
+{
+  'schemaVersion': 3,
+  'id': 'astra',
+  'model': 'gpt-6-astra',
+  'reasoning': 'medium',
+  'webSearch': 'disabled',
+  'operationCategories': ['unit-test'],
+}

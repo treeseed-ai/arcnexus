@@ -1,0 +1,15 @@
+{
+  'schemaVersion': 3,
+  'id': 'cli-tests',
+  'purpose': 'Observe owned regression results',
+  'repository': 'greetings',
+  'cwd': '.',
+  'category': 'unit-test',
+  'activities': ['research', 'documentation', 'testing', 'implementation', 'review'],
+  'kind': 'command',
+  'command': 'node',
+  'args': ['--test', 'cli/test.mjs'],
+  'generatedDirectories': [],
+  'artifacts': [],
+  'probes': [],
+}

@@ -1,0 +1,6 @@
+{
+  'directorProfile': 'astra',
+  'reviewerProfile': 'astra',
+  'defaultPackage': 'greetings',
+  'verificationInputs': ['package.json'],
+}

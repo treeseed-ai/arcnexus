@@ -1,0 +1,27 @@
+{
+  'schemaVersion': 3,
+  'repository': 'greetings',
+  'role': 'engineer',
+  'executionProfile': 'luna',
+  'constraints':
+    [
+      'Never commit, publish or change architecture.',
+      'Request changes to another owner through the persisted inbox; do not edit another owner.',
+    ],
+  'questions': [],
+  'patterns': [],
+  'interfaces': [],
+  'relatedIds': ['service'],
+  'operationIds': ['cli-tests'],
+  'access': { 'readPaths': ['.'], 'writeDirectories': ['cli'] },
+  'id': 'cli',
+  'parentId': 'greetings',
+  'type': 'gateway',
+  'purpose': 'Own command argument parsing and rendered CLI output. Delegate greeting construction to service.',
+  'path': 'cli',
+  'objectives': ['Maintain accurate documentation and observed coverage for the owned API'],
+  'documentation': ['cli/README.md'],
+  'tests': ['cli/test.mjs'],
+  'verification': [{ 'command': 'node', 'args': ['--test', 'cli/test.mjs'] }],
+  'allowedWritePaths': ['cli'],
+}

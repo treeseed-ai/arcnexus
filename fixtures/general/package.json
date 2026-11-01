@@ -1,0 +1,8 @@
+{
+  "name": "arcnexus-general-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test cli/test.mjs service/test.mjs names/test.mjs"
+  }
+}

@@ -1,120 +1,100 @@
-# Run one component steward
+# Execute agents
 
-`arcnexus run <component-id> "<objective>" --project <repository>` creates a fresh
-managed worktree and prepares its environment. Optional flags: `--base`, `--issue`,
-`--model`, `--initializer-model`, `--timeout-seconds`, `--max-attempts`, and `--codex-path`. Workspace rules and cleanup are
-in [workspaces.md](../../library/workspace/workspaces.md). Default model: `gpt-6-luna`; reasoning: medium;
-execution limits are optional and unset by default. Explicit caller limits remain enforced.
+Run commands from the target repository or a directory within its selected package:
 
-Commit a definition at `architecture/components/<id>.yaml`:
-
-```yaml
-schemaVersion: 3
-repository: identity
-role: systems-engineer
-executionProfile: luna
-interfaces: []
-documentation:
-  - README.md
-tests:
-  - tests
-relatedIds: []
-questions: []
-patterns: []
-id: identity
-type: library
-purpose: Session expiration semantics
-path: src
-objectives:
-  - Predictable expiration boundaries
-constraints:
-  - No network access needed
-allowedWritePaths:
-  - src
-  - tests
-  - README.md
-access:
-  readPaths:
-    - .
-  writeDirectories:
-    - .
-verification:
-  - command: npm
-    args:
-      - test
+```sh
+arcnexus workday start
+arcnexus workday pause
+arcnexus workday resume
+arcnexus workday stop
+arcnexus workday status
+arcnexus task run "<prompt>"
 ```
 
-Commit matching role and execution profile definitions as in the
-[identity fixture](../../fixtures/identity/architecture). `parentId` is optional;
-`questions` and `patterns` are required arrays and carry architectural context.
-All parents are loaded in root-to-leaf order. IDs use letters, digits, underscore and
-hyphen. Library, gateway and foundation responsibilities can execute. Paths are explicit relative files
-or directories, not globs. Definitions and verification commands are captured before
-setup/agent execution; changing them cannot authorize new work in that execution.
+Workday controls take no arguments or options. Task execution takes exactly one
+prompt. The runtime discovers the canonical Git repository and deepest containing
+package. Equally applicable packages require a declared default; ambiguity is an
+input error. Linked worktrees share project execution ownership.
 
-After mandatory read-only initialization, the steward follows
-[host-checked activities](../../library/assignment/steward-workflow.md): planning, specification
-and regression tests, implementation, then read-only review in the same worker thread.
-Research/review assignments use planning plus one read-only execution turn and can succeed without edits. The caller owns Git commits, issues, PRs and integration. The runtime
-never embeds ArcNexus repository policy in generic target prompts. Read target
-instructions normally; report conflicts rather than claiming unperformed work.
+## Captured project configuration
 
-The TypeScript [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk) drives the local
-CLI (`codex` on PATH, or `--codex-path`). Sign into that CLI beforehand. Existing
-Codex authentication is reused without copying secrets. The Linux `setsid` utility isolates the CLI process group for cancellation.
-A POSIX launcher inserts
-`--ignore-user-config`; the executable must support it. Explicit configuration uses
-an explicit component permission profile, approval never, network disabled for local agent commands, and live hosted web search
-enabled. User config and inherited API-key/provider variables are not passed.
-Target `.codex/config.toml` files are rejected in phase one. Managed host restrictions
-still apply. Setup commands run on the host and are a separate trusted boundary.
+Commit component definitions, their containing package, role/profile declarations,
+environment setup and trusted verification commands. Declare
+`architecture/execution.yaml` with `directorProfile`, `reviewerProfile`, an optional
+`defaultPackage`, and any additional `verificationInputs`. The
+[general fixture](../../../fixtures/general/README.md) supplies a complete example.
+Models belong to profiles, rather than scheduling code. ArcNexus uses Luna engineering
+and Astra director/reviewer profiles.
 
-Baseline verification must pass before activation. The agent returns JSON with
-`status` (`completed`, `blocked`, `failed`), `summary`, `blockers`, findings,
-activity outcomes, regression checkpoint, review findings and owner requests.
-Runtime checks actual changes and reruns captured commands; agent claims alone do
-not establish success. Unchanged change assignments, changed HEAD/branch, out-of-scope edits, escaping
-symlinks, malformed results, blocked work, and failed checks exit nonzero. Scope
-inspection is detection, not complete OS isolation. Changed tests/instructions are
-flagged for human review; they cannot redefine the accepted objective.
+Local executable bindings are discovered at `arcnexus/bindings.yaml` inside the Git
+common directory (`.git/arcnexus/bindings.yaml` in an ordinary checkout). Bindings are
+machine configuration, outside committed source authority; their identity is retained
+in execution evidence. Reuse existing Codex authentication. No manifest, proposal ID,
+model flag or executable flag is needed for normal execution.
 
-The external run directory retains `report.json`, `report.md`, `events.jsonl`, command
-logs, `changes.patch`, and base64 snapshots of untracked files in `new-files.json`.
-Reports include context, objective, configuration, usage when available, verification,
-changed paths/kinds, and failures. Reports and logs may contain private project data;
-keep the state directory private. Cancellation preserves partial evidence. A hard kill
-leaves an incomplete record, with explicit manual recovery as documented for workspaces.
+New runs require a clean source checkout. Captured architecture and acceptance remain
+stable throughout the run. New owners and expanded authority require architectural
+decisions. Candidate edits cannot grant themselves permissions or weaken active checks.
+See [filesystem access](../../library/architecture/component-access.md) and
+[workspace preparation](../../library/workspace/workspaces.md).
 
-`completed` means observed in-scope changes passed the captured checks; caller review
-and independent acceptance are still required before integration. No auto-commit,
-merge, force cleanup, or automatic resume is performed.
+## Workday and task behavior
 
-## Separate index and working-tree evidence
+Workdays use component purposes, objectives, questions, relevant history and inboxes.
+A complete unchanged pass becomes idle. Relevant inbox, candidate or dependency
+changes wake affected stewards; `resume` on an idle workday requests another pass.
+There is one accountable owner per assignment and no fixed owner count. Container
+context is inherited without manufacturing assignments for containers.
 
-Scope checks inspect staged changes against the captured base and unstaged changes
-against the index independently, plus untracked files. Restoring a working file
-does not hide its staged edit. Both views are checked before and after verification;
-staged symlinks are rejected even if the working file was restored to a regular file.
-In-scope index-only changes count as changes, not `no_changes`.
+Tasks use a director to interpret the goal and choose starting owners. Workers can
+request other eligible owners themselves. Dependencies resume at the required accepted
+or verified-delivery milestone; acknowledgment alone cannot establish delivery. Tasks
+queue FIFO and suppress self-directed activations while they own project execution.
 
-`report.json` retains `stagedChanges` and `unstagedChanges` separately. The existing
-`changes` list is their path union plus untracked files (one entry per path); use
-the separate arrays when a path has different change kinds in each view.
-`staged.patch` captures base-to-index; `unstaged.patch` captures index-to-working-tree.
-`changes.patch` remains the net base-to-working-tree patch for compatibility.
-Evidence capture does not stage, unstage or reset the candidate.
+A task safely pauses an active workday, uses the latest verified candidate, then
+returns control unless the user explicitly paused/stopped the workday or integrity
+requires attention. A manually paused workday stays paused. Terminal clarification
+is interactive; without a terminal, questions remain in a `needs_input` outcome.
+SIGINT cancels the attached task and preserves its evidence.
 
-See [the execution contract](../../library/steward/execution-contract.md) for objectives, research,
-verification handoff and exact prompt/configuration evidence.
+`start` is idempotent and does not resume a paused workday. `pause` returns `pausing`
+while real work reaches a safe checkpoint; it has no hidden deadline. `stop` cancels
+promptly and preserves candidate changes. A stopped workday cannot resume. A new
+workday may reuse compatible verified deliveries without silently restarting old
+partial assignments. `status` reports lifecycle, active work, queues, inboxes,
+blockers, verified progress and candidate location.
 
-Every definition must declare [component filesystem access](../../library/architecture/component-access.md);
-whole-worktree access is allowed only when explicitly declared as `.`.
+## Verification, continuation and evidence
 
-Use `--max-attempts <positive-integer>` only when a caller wants an explicit attempt ceiling.
-See [progress and limits](../../library/assignment/progress.md) for corrective work and loop guards.
+The runtime retains plans, threads, regression evidence, dependencies and pending
+operations across activations. Research, review, documentation, behavioral changes
+and behavior-preserving refactors use their applicable workflows. Behavioral work
+requires actual specification changes and observed expected-failing regression
+before implementation. Captured host checks and independent read-only verification
+must support acceptance; task completion also requires goal-level assessment.
 
-Workflow evidence lives in `activities.jsonl` and `turns/<n>/`. Implementation
-attempts are counted separately from activity turns. See the workflow reference
-for planned engineering stages and finding-driven corrective work.
-[Workdays](../../library/workday/workdays.md) retain per-assignment accounting and captured optional
-limits; handoffs do not reset counters. Neither mode imposes an implicit turn ceiling.
+Each assignment has an isolated workspace. Verified deliveries accumulate through
+checked reconciliation. Conflicts retain both versions and block promotion. Reports
+separate worker claims, observed host checks and independent assessments. Worker
+completion alone is not verified delivery, and delivery alone is not task completion.
+
+Evidence includes structured reports, ordered events, raw harness observations,
+command logs, retained diffs and candidate references. Staged, unstaged and untracked
+changes are inspected separately; restoring a working file cannot hide a staged edit.
+The host does not stage, integrate or publish a candidate on the caller's behalf.
+
+Host loss stops managed subprocesses and retains interrupted work. Recovery validates
+checkpoints and never automatically replays an operation whose completion is uncertain.
+A missing model thread may be replaced with a recorded continuation from captured
+context after validation. See the [general execution contract](../../library/execution-runtime/execution.md)
+and [qualification record](../../plans/general-agent-execution-qualification.md) for
+current evidence and remaining limitations.
+
+Exit codes are `0` for verified completion/control success, `1` for blocked or
+unsuccessful execution, `2` for invalid input/preflight, and `130` for cancellation.
+General execution rejects obsolete time/turn/call/attempt budgets. Cancellation,
+transport safeguards, progress detection and test watchdogs remain active.
+
+Legacy explicit execution commands remain migration adapters for historical scenarios.
+Use the normal commands above for new work. Validation, test selection and retained
+report inspection remain supported; historical reports do not gain new authority.

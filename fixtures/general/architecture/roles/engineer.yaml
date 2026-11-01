@@ -1,0 +1,7 @@
+{
+  'schemaVersion': 1,
+  'id': 'engineer',
+  'purpose': 'Own bounded changes and verify actual results',
+  'responsibilities': ['Respect ownership', 'Retain regression evidence'],
+  'activities': ['research', 'documentation', 'testing', 'implementation', 'review'],
+}

@@ -1,0 +1,15 @@
+{
+  'schemaVersion': 3,
+  'id': 'names-tests',
+  'purpose': 'Observe owned regression results',
+  'repository': 'greetings',
+  'cwd': '.',
+  'category': 'unit-test',
+  'activities': ['research', 'documentation', 'testing', 'implementation', 'review'],
+  'kind': 'command',
+  'command': 'node',
+  'args': ['--test', 'names/test.mjs'],
+  'generatedDirectories': [],
+  'artifacts': [],
+  'probes': [],
+}

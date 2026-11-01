@@ -1,0 +1,34 @@
+{
+  'schemaVersion': 3,
+  'repository': 'greetings',
+  'role': 'engineer',
+  'executionProfile': 'luna',
+  'constraints':
+    [
+      'Never commit, publish or change architecture.',
+      'Request changes to another owner through the persisted inbox; do not edit another owner.',
+    ],
+  'questions': [],
+  'patterns': [],
+  'interfaces': [],
+  'relatedIds': [],
+  'operationIds': [],
+  'access': { 'readPaths': ['.'], 'writeDirectories': [] },
+  'id': 'greetings',
+  'type': 'package',
+  'purpose': 'A small greeting program with strict separation of name, service and CLI contracts',
+  'path': '.',
+  'objectives': ['Preserve default greetings while adding explicitly requested features'],
+  'documentation': [],
+  'tests': [],
+  'verification': [{ 'command': 'npm', 'args': ['test'] }],
+  'allowedWritePaths': [],
+  'members':
+    {
+      'foundations': [],
+      'dependencies': [],
+      'gateways': ['cli'],
+      'libraries': ['service', 'names'],
+      'releases': [],
+    },
+}
