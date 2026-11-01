@@ -76,6 +76,7 @@ export class ExecutionReports {
       'stewardshipReviews',
       'architectureProposal',
       'error',
+      'integrityError',
       'pauseReason',
       'authorityBase',
       'candidateRevision',

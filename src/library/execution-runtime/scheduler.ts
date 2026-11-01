@@ -34,6 +34,7 @@ export class Scheduler {
         lastFailedOutcome: pendingOutcome ?? null,
         pendingOutcome: null,
       });
+      if (error instanceof Error && error.name === 'CandidateIntegrityError') throw error;
     } finally {
       this.active = false;
     }

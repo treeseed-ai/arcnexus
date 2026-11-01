@@ -193,8 +193,11 @@ export class Direction {
 
   /** Ensures read-only inference and operations did not modify candidate source. */
   private unchanged(record: RecordData, before: string): void {
-    if (candidateDigest(record) !== before)
-      throw new Error('Read-only direction changed candidate');
+    if (candidateDigest(record) !== before) {
+      record.status = 'failed';
+      record.error = 'Read-only direction changed candidate';
+      throw Object.assign(new Error(String(record.error)), { name: 'CandidateIntegrityError' });
+    }
   }
 
   /** Reads the model from the captured profile instead of hardcoding a provider role. */

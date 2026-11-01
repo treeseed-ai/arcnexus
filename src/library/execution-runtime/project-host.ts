@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import type { ProjectExecution } from '../architecture/execution-context.js';
 import type { ActivationResult, ExecutionRun } from '../coordination-store/execution-types.js';
 import { ExecutionStore } from '../coordination-store/execution-store.js';
-import { createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
+import { RunWorkspace } from './run-workspace.js';
 import type { RecordData } from '../workspace/state.js';
 import { Direction, VerificationIssue } from '../task-intake/direction.js';
 import { ProgressObserver } from '../report/progress.js';
@@ -21,6 +21,8 @@ export class ProjectHost {
   readonly store: ExecutionStore;
 
   readonly reports: ExecutionReports;
+
+  private readonly workspaces: RunWorkspace;
 
   private busy = false;
 
@@ -35,6 +37,7 @@ export class ProjectHost {
     mkdirSync(join(root, 'workspaces'), { recursive: true, mode: 0o700 });
     this.store = new ExecutionStore(join(root, 'projects', context.key, 'execution.sqlite'));
     this.reports = new ExecutionReports(join(root, 'projects', context.key), this.store);
+    this.workspaces = new RunWorkspace(root, context, this.store);
     this.recover();
   }
 
@@ -99,15 +102,25 @@ export class ProjectHost {
     try {
       await this.advance(run, this.active.controller.signal);
     } catch (error) {
-      const current = this.store.run(run.id);
-      if (!['cancelled', 'stopping', 'stopped'].includes(current.status))
-        this.store.updateRun(run.id, 'needs_attention', { error: String(error) });
+      this.failure(run.id, error);
     } finally {
       this.settle(run.id);
       this.reports.save(run.id);
       this.active = undefined;
       this.busy = false;
     }
+  }
+
+  /** Quarantines integrity failures across mode handoffs while retaining ordinary task failure isolation. */
+  private failure(id: string, error: unknown): void {
+    const current = this.store.run(id);
+    if (!['cancelled', 'stopping', 'stopped'].includes(current.status))
+      this.store.updateRun(id, 'needs_attention', { error: String(error) });
+    if (!(error instanceof Error) || error.name !== 'CandidateIntegrityError') return;
+    this.store.updateRun(id, this.store.run(id).status, { integrityError: String(error) });
+    const workday = this.workday();
+    if (workday && workday.status !== 'stopped')
+      this.store.updateRun(workday.id, 'needs_attention', { integrityError: String(error) });
   }
 
   /** Projects current lifecycle and accountable assignments for the option-free status command. */
@@ -175,7 +188,7 @@ export class ProjectHost {
 
   /** Prepares context, advances ready assignments or invokes the mode-specific selection policy. */
   private async advance(run: ExecutionRun, signal: AbortSignal): Promise<void> {
-    if (!run.data.workspace) await this.prepare(run, signal);
+    if (!run.data.workspace) await this.workspaces.prepare(run, signal);
     run = this.store.run(run.id);
     if (run.data.workspacePrepared !== true)
       throw new Error('Workspace preparation was interrupted; inspect retained command evidence');
@@ -191,32 +204,10 @@ export class ProjectHost {
     else await this.finishTask(run, signal);
   }
 
-  /** Creates the read-only planning workspace from the current verified candidate. */
-  private async prepare(run: ExecutionRun, signal: AbortSignal): Promise<void> {
-    const candidateRevision = this.latestCandidate();
-    const record = createWorkspace(this.root, {
-      project: this.context.source,
-      authorityBase: this.context.base,
-      base: candidateRevision,
-      bindings: this.context.bindings,
-    });
-    record.executionRunId = run.id;
-    this.store.updateRun(run.id, this.store.run(run.id).status, {
-      workspace: record,
-      workspacePrepared: false,
-    });
-    await prepareWorkspace(this.root, record, signal);
-    this.store.updateRun(run.id, this.store.run(run.id).status, {
-      workspace: record,
-      workspacePrepared: true,
-      candidateRevision,
-    });
-  }
-
   /** Runs task direction and retains interactive questions before any owner activation. */
   private async direct(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     const result = await new Direction(this.root, this.context, signal).propose(
-      (run.data.candidateRecord ?? run.data.workspace) as RecordData,
+      await this.workspaces.policy(run, signal),
       this.directionPrompt(run),
     );
     if (signal.aborted) return;
@@ -274,10 +265,7 @@ export class ProjectHost {
     }
     const { owner, fingerprint } = selected;
     const component = this.context.catalog.components[owner]!;
-    const workspace = {
-      ...((run.data.candidateRecord ?? run.data.workspace) as RecordData),
-      executionRunId: run.id,
-    };
+    const workspace = await this.workspaces.policy(run, signal);
     const result = await new Direction(this.root, this.context, signal).propose(
       workspace,
       JSON.stringify({
@@ -325,7 +313,7 @@ export class ProjectHost {
         true,
         signal,
       );
-    const record = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
+    const record = await this.workspaces.policy(run, signal);
     try {
       const evidence = await new Direction(this.root, this.context, signal).verify(
         record,
@@ -349,7 +337,7 @@ export class ProjectHost {
     signal: AbortSignal,
   ): Promise<void> {
     this.observeGoalFailure(run, feedback);
-    const record = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
+    const record = await this.workspaces.policy(run, signal);
     const result = await new Direction(this.root, this.context, signal).reconsider(
       record,
       run.objective,
@@ -382,7 +370,7 @@ export class ProjectHost {
 
   /** Records repeated equivalent goal failures using retained progress evidence rather than a retry allowance. */
   private observeGoalFailure(run: ExecutionRun, feedback: unknown): void {
-    const record = run.data.workspace as RecordData;
+    const record = this.store.run(run.id).data.workspace as RecordData;
     new ProgressObserver(this.root, record).failed(
       { activity: 'goal-assessment' },
       JSON.stringify(feedback),
@@ -404,6 +392,10 @@ export class ProjectHost {
   private resume(run: ExecutionRun): void {
     if (['stopped', 'stopping'].includes(run.status))
       throw new Error('Stopped workday cannot resume; start a new workday');
+    if (run.data.integrityError)
+      throw new Error(
+        'Candidate integrity requires attention; stop before starting validated work',
+      );
     if (run.status === 'needs_attention')
       throw new Error('Resolve or stop the workday requiring attention before new dispatch');
     try {
