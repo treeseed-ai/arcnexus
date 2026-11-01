@@ -106,6 +106,14 @@ specify accepted intent or verified delivery as their required milestone. An inb
 reply must match its captured sender/recipient identities. A clarification does not
 restart engineering or mark the original assignment complete.
 
+Requests may narrow the recipient assignment with an explicit work kind, change
+type and writable paths. Null values inherit the originating work kind/change type
+and the recipient owner’s declared scope; an empty writable list is read-only.
+These fields can only narrow captured recipient authority. A request for an actual
+artifact uses the delivered milestone; accepted is reserved for dependencies that
+need only an agreed intent. Independent delivery verification is automatic and
+does not require a worker to invent a reviewer-owner assignment.
+
 Captured verification inputs remain stable even when an assignment edits tests or
 check configuration. `verificationInputs` in `architecture/execution.yaml` declares
 additional trusted source paths used by project checks; the host also captures the
