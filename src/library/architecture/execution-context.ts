@@ -83,18 +83,38 @@ export class ExecutionContext {
   private defaults(source: string, base: string) {
     const value = new ConfigurationReader().definition(source, base, 'architecture/execution')
       .value as Record<string, unknown>;
+    this.validateDefaults(value);
     if (typeof value.directorProfile !== 'string' || typeof value.reviewerProfile !== 'string')
       throw new InputError(
         'architecture/execution.yaml must declare directorProfile and reviewerProfile',
       );
-    if (value.verificationInputs !== undefined && !Array.isArray(value.verificationInputs))
-      throw new InputError('verificationInputs must be an array of captured source paths');
     return {
       verificationInputs: ((value.verificationInputs ?? []) as string[]).map(scopePath),
       directorProfile: value.directorProfile,
       reviewerProfile: value.reviewerProfile,
       defaultPackage: typeof value.defaultPackage === 'string' ? value.defaultPackage : undefined,
     };
+  }
+
+  /** Rejects unsupported settings, including obsolete work budgets, instead of silently ignoring them. */
+  private validateDefaults(value: Record<string, unknown>): void {
+    const allowed = ['directorProfile', 'reviewerProfile', 'defaultPackage', 'verificationInputs'];
+    for (const key of Object.keys(value))
+      if (!allowed.includes(key))
+        throw new InputError(
+          `Unsupported execution setting: ${key}; remove obsolete work budgets and unknown keys`,
+        );
+    if (
+      value.defaultPackage !== undefined &&
+      (typeof value.defaultPackage !== 'string' || !value.defaultPackage.trim())
+    )
+      throw new InputError('defaultPackage must be a nonempty declared package ID');
+    const inputs = value.verificationInputs;
+    if (
+      inputs !== undefined &&
+      (!Array.isArray(inputs) || inputs.some((path) => typeof path !== 'string' || !path.trim()))
+    )
+      throw new InputError('verificationInputs must be an array of captured source paths');
   }
 
   /** Selects the deepest containing package; equal candidates require an explicit default. */

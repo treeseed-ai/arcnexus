@@ -85,6 +85,22 @@ class RecoveryScenarios {
     assert.equal(policy.next(run, [])?.owner, 'a');
   }
 
+  /** Obsolete executable settings fail preflight instead of silently changing scheduling semantics. */
+  defaults(t: TestContext): void {
+    const f = new GeneralFixture(t).fixture;
+    const path = join(f.repo, 'architecture/execution.yaml');
+    const original = readFileSync(path, 'utf8');
+    writeFileSync(path, original + 'maxTurns: 5\n');
+    f.commit();
+    assert.throws(
+      () => new ExecutionContext().resolve(f.repo),
+      /Unsupported execution setting: maxTurns/,
+    );
+    writeFileSync(path, original.replace('defaultPackage: package', 'defaultPackage: 42'));
+    f.commit();
+    assert.throws(() => new ExecutionContext().resolve(f.repo), /defaultPackage must be/);
+  }
+
   /** Reconciles already observed delivery while retaining uncertain engineering as interrupted. */
   recovery(t: TestContext): void {
     const f = new GeneralFixture(t).fixture;
@@ -136,5 +152,7 @@ test('host recovery accepts a durably completed reconciliation checkpoint', (t) 
 
 test('stewardship rotation retains position when an earlier owner changes', (t) =>
   scenarios.rotation(t));
+
+test('obsolete and malformed execution defaults fail preflight', (t) => scenarios.defaults(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });
