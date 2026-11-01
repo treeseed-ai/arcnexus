@@ -178,3 +178,10 @@ An inbox or verified-delivery transition that makes work relevant to an idle
 workday atomically wakes that run. Idle ticks without changed input remain quiet.
 Incoming work cannot override a user pause, a stop, an interruption or an attention
 state; those lifecycle decisions continue to require their normal control flow.
+
+Read-only stewardship preserves captured read authority and existing writable
+locations as read-only inputs. A declared future-write directory that does not yet
+exist grants no additional read access and is not created for policy inference.
+Explicit read declarations must still resolve, and symlink/path violations remain
+invalid. This permits every eligible owner to participate in stewardship before
+its first test or documentation directory has been created.
