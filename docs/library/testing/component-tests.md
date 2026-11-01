@@ -66,3 +66,9 @@ The npm compatibility entry point prints retained command output before its JSON
 summary so CI failures include the actual diagnostics. The public `--json` CLI keeps
 stdout machine-readable. Selection reports distinguish unchanged, modified, and
 added source suites; only profiles belonging to selected suites are prepared.
+
+JSON results include a bounded excerpt from the latest command, with a truncation
+flag and the complete retained log reference. Declared operations therefore deliver
+actual compiler/test diagnostics to the steward without requiring access to the
+private report directory. A caller-configured timeout is a failed execution; explicit
+cancellation remains exit 130.

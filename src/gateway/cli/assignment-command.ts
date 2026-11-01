@@ -17,7 +17,11 @@ export class AssignmentCommand {
     if (!values.project || positionals.length !== 1)
       throw new InputError('validate requires --project');
     const { source, base } = resolveBase(values.project, values.base);
-    const catalog = loadCatalog(source, base, loadBindings(values.bindings));
+    const catalog = loadCatalog(
+      source,
+      base,
+      values.bindings ? loadBindings(values.bindings) : undefined,
+    );
     console.log(JSON.stringify({ base, ...catalogView(catalog), status: 'valid' }));
     return;
   }

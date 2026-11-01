@@ -129,8 +129,10 @@ export class ComponentV4Resolver {
         const { sha256 } = this.artifacts!.read(path);
         component.inventory.push({ path, kind, sha256 });
       }
+      component.discovery[kind] = roots;
       if (kind !== 'source') component[kind] = roots;
     }
+    component.discovery.exclude = excluded;
   }
 
   private covers(root: string, path: string): boolean {

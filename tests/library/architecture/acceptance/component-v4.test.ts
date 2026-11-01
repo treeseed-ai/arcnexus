@@ -265,6 +265,7 @@ class ComponentV4Tests {
     const component = JSON.parse(result.stdout).context.at(-1);
     assert.equal(component.repository, 'sample');
     assert.deepEqual(component.allowedWritePaths, ['package/src']);
+    assert.deepEqual(component.discovery.source, ['package/src']);
     assert.equal(component.inventory[0].path, 'package/src/value.ts');
     assert.match(component.inventory[0].sha256, /^[a-f0-9]{64}$/);
   }

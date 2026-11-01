@@ -106,4 +106,6 @@ consumes:
     version: "1"
   - id: test-profile
     version: "1"
+  - id: candidate-changes
+    version: "1"
 testProfile: node

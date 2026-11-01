@@ -71,3 +71,10 @@ Static catalog validation checks each component's default operation/profile
 compatibility, declared disposable outputs, and HTTP service dependencies. Assignment
 resolution repeats these checks for explicit profile overrides and narrowed operation
 sets; an HTTP operation cannot retain a service outside its effective authority.
+
+`validate` reports static catalog validity together with the derived owner index,
+effective package repositories and roots, exact write scopes, directory grants and
+exceptions, captured file inventories, referenced standards/contracts, and coverage
+exclusions. It identifies checks requiring a prepared environment. Legacy write
+scope is labeled separately when no component-owned ownership declaration exists.
+Discovery roots, like permissions, resolve to repository-relative paths before use.

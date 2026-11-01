@@ -5,7 +5,7 @@ import {
   type Bindings,
 } from '../architecture/bindings.js';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadCatalog } from '../architecture/components.js';
 import { InputError } from '../architecture/config.js';
@@ -24,6 +24,8 @@ export interface TestSelection {
 }
 export interface TestExecution {
   schemaVersion: 1;
+  output: string | null;
+  outputTruncated: boolean;
   selection: TestSelection;
   status: 'running' | 'passed' | 'failed' | 'cancelled';
   exitCode: number;
@@ -97,8 +99,9 @@ export class ComponentTesting {
       result.status = 'passed';
       result.exitCode = 0;
     } catch (error) {
-      result.status = signal.aborted ? 'cancelled' : 'failed';
-      result.exitCode = signal.aborted ? 130 : 1;
+      const cancelled = signal.aborted && signal.reason?.name !== 'TimeoutError';
+      result.status = cancelled ? 'cancelled' : 'failed';
+      result.exitCode = cancelled ? 130 : 1;
       result.error = String(error);
     }
     this.save(result);
@@ -110,9 +113,11 @@ export class ComponentTesting {
     mkdirSync(evidence, { recursive: true, mode: 0o700 });
     const result: TestExecution = {
       schemaVersion: 1,
-      selection,
       status: 'running',
       exitCode: 1,
+      output: null,
+      outputTruncated: false,
+      selection,
       evidence,
       commands: [],
       productionBuild: productionBuilt ? 'caller-prepared' : 'service-prepared',
@@ -167,8 +172,16 @@ export class ComponentTesting {
       if (commandResult) result.commands.push(commandResult);
       throw error;
     } finally {
+      this.captureOutput(result, log);
       this.save(result);
     }
+  }
+
+  private captureOutput(result: TestExecution, log: string): void {
+    if (!existsSync(log)) return;
+    const output = readFileSync(log);
+    result.output = output.subarray(0, 16384).toString('utf8');
+    result.outputTruncated = output.length > 16384;
   }
 
   private save(result: TestExecution): void {

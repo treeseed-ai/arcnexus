@@ -38,6 +38,8 @@ access:
   writeDirectories:
     - src/library/change-inspection
     - architecture/components
+    - tests/library/change-inspection
+    - docs/library/change-inspection
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -48,12 +50,15 @@ questions: []
 parentId: cli-package
 operationIds:
   - change-inspection-lint
+  - change-inspection-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
     - src/library/change-inspection
     - architecture/components/change-inspection.yaml
+    - tests/library/change-inspection
+    - docs/library/change-inspection
   publicModules:
     - src/library/change-inspection/changes.ts
   directoryExceptions:
@@ -63,8 +68,19 @@ ownership:
 discovery:
   source:
     - src/library/change-inspection
-  documentation: []
-  tests: []
+  documentation:
+    - docs/library/change-inspection
+  tests:
+    - tests/library/change-inspection
   exclude: []
-provides: []
-consumes: []
+provides:
+  - id: candidate-changes
+    version: "1"
+    kind: typescript
+    path: src/library/change-inspection/changes.ts
+    compatibility: Preserve path/change-kind evidence and exact scope and symlink
+      rejection semantics
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node

@@ -104,6 +104,7 @@ class SharedTestingTests {
     assert.equal(evidence.status, 'failed');
     assert.equal(evidence.commands[0].exitCode, 2);
     assert.match(readFileSync(evidence.commands[0].log, 'utf8'), /TS2322/);
+    assert.match(evidence.output, /TS2322/);
   }
 
   capturesMandatorySelection(t: TestContext): void {
@@ -145,6 +146,16 @@ class SharedTestingTests {
     assert.equal(existsSync(join(report.evidence, 'result.json')), true);
   }
 
+  explicitTimeoutIsFailure(t: TestContext): void {
+    const fixture = new ComponentTestFixture(t);
+    fixture.put('build.cjs', 'setInterval(()=>{},1000)');
+    const result = fixture.run('run', '--timeout-seconds', '0.05');
+    assert.equal(result.status, 1, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.status, 'failed');
+    assert.match(report.error, /timed out/);
+  }
+
   rejectsUnsupportedProfile(t: TestContext): void {
     const f = new ComponentTestFixture(t);
     f.profile({ adapter: 'python' });
@@ -164,6 +175,8 @@ class SharedTestingTests {
 }
 
 const suite = new SharedTestingTests();
+test('an explicitly configured test timeout is failure rather than caller cancellation', (t) =>
+  suite.explicitTimeoutIsFailure(t));
 test('npm compatibility runner prints retained test output for CI diagnosis', (t) =>
   suite.printsNpmEvidence(t));
 test('test runner prepares only profiles selected by intersecting filters', (t) =>

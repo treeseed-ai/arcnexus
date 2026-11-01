@@ -1,0 +1,32 @@
+schemaVersion: 3
+id: change-inspection-tests
+purpose: Run shared component suites for change-inspection
+kind: command
+repository: arcnexus
+cwd: .
+category: cli-check
+activities:
+  - research
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - dist/cli.js
+  - test
+  - run
+  - change-inspection
+  - --project
+  - .
+  - --json
+generatedDirectories:
+  - dist
+  - .fixture-build
+  - .test-build
+  - .tool-build
+artifacts: []
+probes:
+  - command: node
+    args:
+      - -e
+      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['-e','process.exit(0)']).status!==0)process.exit(1)

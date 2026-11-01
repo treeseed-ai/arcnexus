@@ -132,7 +132,10 @@ class CliApplication {
     const timeout = seconds ?? this.seconds;
     if (timeout !== undefined)
       this.timer = setTimeout(
-        () => this.controller.abort(new Error('Operation timed out')),
+        () =>
+          this.controller.abort(
+            Object.assign(new Error('Operation timed out'), { name: 'TimeoutError' }),
+          ),
         timeout * 1000,
       );
   }

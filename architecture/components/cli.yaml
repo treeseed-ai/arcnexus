@@ -39,6 +39,7 @@ access:
     - src/gateway/cli
     - docs/gateway/cli
     - architecture/components
+    - tests/gateway/cli
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -53,6 +54,7 @@ questions: []
 parentId: cli-package
 operationIds:
   - cli-lint
+  - cli-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -60,6 +62,7 @@ ownership:
     - src/gateway/cli
     - docs/gateway/cli
     - architecture/components/cli.yaml
+    - tests/gateway/cli
   publicModules:
     - src/gateway/cli/cli.ts
   directoryExceptions:
@@ -71,7 +74,11 @@ discovery:
     - src/gateway/cli
   documentation:
     - docs/gateway/cli
-  tests: []
+  tests:
+    - tests/gateway/cli
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node
