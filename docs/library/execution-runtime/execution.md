@@ -165,3 +165,11 @@ neither acceptance nor delivery. Only assignments blocked by the resumed depende
 are released from that propagated block. Other independent failures remain blocked.
 This allows an accepted request to be clarified and a rejected cycle proposal to be
 restructured without inventing delivery or silently waiving the goal.
+
+Recovery includes read-only policy activations as well as engineering assignments.
+An unfinished director, stewardship or goal-assessment record is retained as an
+interrupted activation. Its run cannot resume dispatch while operation completion
+or the policy checkpoint remains uncertain. A completed policy record does not
+block recovery; the host still validates the candidate and engineering checkpoints.
+Stopping retains the uncertainty and evidence with the old workday. Starting a new
+run uses only a compatible verified candidate, never unfinished policy state.
