@@ -174,3 +174,20 @@ The testing library supplies the reusable multi-owner controlled harness used by
 runtime and prompt-campaign acceptance. Sharing that fixture preserves identical
 SDK, dependency and verification behavior across both entry points; individual
 component suites retain their own scenarios and assertions.
+
+## General fixture and normal campaign example
+
+The bundled `general` fixture is a complete package with three executable owners:
+CLI argument handling, greeting construction and name normalization. Its committed
+configuration selects engineering and independent direction/review profiles, declares
+owner and assembled-package checks, and uses no execution budgets. Materialize its
+compiled payload into a clean Git repository, commit it, and provide only local
+executable bindings. The normal commands then discover everything from that package.
+
+`experiments/general-live.yaml` is the prompt-only live campaign example. It starts
+with the CLI owner and requires service and names to be discovered through persisted
+requests. Each supplier is accepted against its own API contract; downstream caller
+regressions are not prerequisites for supplier delivery. Real independent verification
+and final goal assessment determine completion. The fixture and campaign replace the
+fixed two-participant example for new qualification work; older fixture files remain
+historical characterization inputs while their scenarios are migrated.
