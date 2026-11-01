@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: coordination-store-lint
 purpose: Read-only lint feedback for coordination-store
 kind: command
@@ -16,7 +16,6 @@ args:
   - node_modules/eslint/bin/eslint.js
   - src/coordination-store
   - tests/coordination-store
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

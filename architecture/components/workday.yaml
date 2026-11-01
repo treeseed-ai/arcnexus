@@ -44,7 +44,7 @@ access:
     - src/workday
     - tests/workday
     - docs/workday
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

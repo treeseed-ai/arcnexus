@@ -111,3 +111,14 @@ export function minimumLimit(...values: Array<number | undefined>): number | und
   const configured = values.filter((value): value is number => value !== undefined);
   return configured.length ? Math.min(...configured) : undefined;
 }
+
+export function capturedCommandTimeout(record: {
+  resolvedAssignment?: unknown;
+  preparationCommandTimeoutSeconds?: unknown;
+}): number | undefined {
+  const resolved = record.resolvedAssignment as
+    { executionProfile?: { commandTimeoutSeconds?: number } } | undefined;
+  const limit =
+    record.preparationCommandTimeoutSeconds ?? resolved?.executionProfile?.commandTimeoutSeconds;
+  return typeof limit === 'number' ? milliseconds(limit) : undefined;
+}

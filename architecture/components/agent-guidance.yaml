@@ -1,14 +1,11 @@
 id: agent-guidance
 type: library
-purpose: Maintain coherent development instructions and bundled skills under
-  architectural direction
+purpose: Maintain coherent development instructions and bundled skills under architectural direction
 path: .agents/skills
 objectives:
-  - Maintain coherent development instructions and bundled skills under
-    architectural direction
+  - Maintain coherent development instructions and bundled skills under architectural direction
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand
-    permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - docs/agent-guidance
@@ -41,7 +38,7 @@ access:
     - docs/agent-guidance
     - .agents/skills
     - .
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: agent-guidance
 executionProfile: luna

@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: guidance-tests
 purpose: Run the captured guidance validator tests
 kind: command
@@ -13,7 +13,6 @@ command: npm
 args:
   - run
   - test:guidance-validation
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes:

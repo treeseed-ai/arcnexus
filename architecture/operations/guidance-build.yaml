@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: guidance-build
 purpose: Run the captured guidance validator build
 kind: command
@@ -13,7 +13,6 @@ command: npm
 args:
   - run
   - build
-timeoutSeconds: 120
 generatedDirectories:
   - dist
 artifacts: []

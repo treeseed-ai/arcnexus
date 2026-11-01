@@ -7,10 +7,10 @@ objectives:
 constraints:
   - Human architectural authority is final
   - Candidate changes cannot redefine active acceptance
-  - No automatic commits, integration or publishing; model delegation is disabled, and only captured
-    workday participants may be dispatched by the host
-allowedWritePaths:
-  - .
+  - No automatic commits, integration or publishing; model delegation is
+    disabled, and only captured workday participants may be dispatched by the
+    host
+allowedWritePaths: []
 verification:
   - command: npm
     args:
@@ -33,9 +33,8 @@ patterns:
 access:
   readPaths:
     - .
-  writeDirectories:
-    - .
-schemaVersion: 2
+  writeDirectories: []
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

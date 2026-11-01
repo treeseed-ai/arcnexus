@@ -50,7 +50,7 @@ access:
     - architecture
     - docs/plans
     - .
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

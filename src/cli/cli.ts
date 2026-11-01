@@ -101,6 +101,7 @@ class CliApplication {
   private cancelled = false;
   private readonly cancel = () => {
     this.cancelled = true;
+    if (this.record) this.record.cancellation = 'requested';
     this.controller.abort(new Error('Cancelled'));
   };
 

@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: report-tests
 purpose: Run focused report acceptance tests
 kind: command
@@ -14,7 +14,6 @@ command: npm
 args:
   - run
   - test:report
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes:

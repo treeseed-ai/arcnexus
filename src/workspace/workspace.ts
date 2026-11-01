@@ -1,3 +1,4 @@
+import { capturedCommandTimeout } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, realpathSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -124,6 +125,7 @@ async function prepareCommand(
     record.commands.push(
       await execute(targetCommand(record, command), record.workspace, log, signal, {
         env: targetEnvironment(record),
+        timeoutMs: capturedCommandTimeout(record),
       }),
     );
   } catch (error) {

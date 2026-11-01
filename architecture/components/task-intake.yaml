@@ -6,9 +6,9 @@ objectives:
   - Interpret requests and identify accountable existing owners
   - Report missing responsibilities and architectural questions precisely
 constraints:
-  - Intake runtime is introduced in increment three; this definition does not
-    claim it is delivered
   - Never silently broaden a captured assignment or grant write authority
+  - Initializer activation is source-read-only and cannot recursively initialize
+    or apply architecture proposals
 allowedWritePaths:
   - src/task-intake
   - tests/task-intake
@@ -17,25 +17,14 @@ verification:
   - command: npm
     args:
       - run
-      - check
-  - command: npm
-    args:
-      - test
-  - command: node
-    args:
-      - dist/cli.js
-      - guidance
-      - validate
-      - --project
-      - .
-  - command: npm
-    args:
-      - run
-      - format:check
+      - test:task-intake
   - command: npm
     args:
       - run
       - lint
+      - --
+      - src/task-intake
+      - tests/task-intake
 questions: []
 patterns:
   - Keep public contracts explicit and independently verified
@@ -46,17 +35,20 @@ access:
     - src/task-intake
     - tests/task-intake
     - docs/task-intake
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna
 interfaces:
   - Planned initialization result and task proposal contract
-documentation: []
-tests: []
+documentation:
+  - docs/task-intake
+tests:
+  - tests/task-intake
 relatedIds:
   - architecture-maintenance
   - assignment
   - workday
 parentId: cli-package
-operationIds: []
+operationIds:
+  - task-intake-lint

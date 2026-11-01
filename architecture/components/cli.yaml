@@ -3,8 +3,7 @@ type: gateway
 purpose: Expose predictable command-line execution settings and lifecycle operations
 path: src/cli
 objectives:
-  - Use affordable Luna-sized stewards by default while respecting explicit
-    model selection
+  - Use affordable Luna-sized stewards by default while respecting explicit model selection
 constraints:
   - Do not change sandbox permissions or verification requirements
   - Caller owns commits and integration
@@ -44,7 +43,7 @@ access:
   writeDirectories:
     - src/cli
     - docs/cli
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

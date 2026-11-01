@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 purpose: Exercise a managed local HTTP service
 repository: http-sample
 cwd: .
@@ -8,7 +8,6 @@ activities:
   - testing
   - implementation
   - review
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

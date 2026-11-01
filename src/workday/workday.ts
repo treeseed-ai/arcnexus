@@ -1,5 +1,5 @@
 import { initializeExecution, type InitializationEvidence } from '../task-intake/initializer.js';
-import { milliseconds } from '../architecture/config.js';
+import { milliseconds, minimumLimit } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -82,7 +82,7 @@ export class WorkdayRunner {
       issue,
       bindings: input.requester.resolved.bindings,
     });
-    state.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? 'live';
+    this.preparationPolicy();
     state.directory = join(state.root, 'workdays', state.workspace.id);
     mkdirSync(state.directory, { recursive: true, mode: 0o700 });
     writeFileSync(join(state.directory, 'input.json'), JSON.stringify(input, null, 2) + '\n', {
@@ -99,6 +99,16 @@ export class WorkdayRunner {
     };
     save(state.root, state.workspace);
     await prepareWorkspace(state.root, state.workspace, state.signal);
+  }
+
+  private preparationPolicy(): void {
+    const state = this.state,
+      input = state.input;
+    state.workspace.preparationCommandTimeoutSeconds = minimumLimit(
+      input.requester.resolved.executionProfile.commandTimeoutSeconds,
+      input.recipient.resolved.executionProfile.commandTimeoutSeconds,
+    );
+    state.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? 'live';
   }
 
   private initializeStore(): void {

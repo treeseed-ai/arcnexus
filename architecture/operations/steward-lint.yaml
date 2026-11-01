@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: steward-lint
 purpose: Read-only lint feedback for steward
 kind: command
@@ -16,7 +16,6 @@ args:
   - node_modules/eslint/bin/eslint.js
   - src/steward
   - tests/steward
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

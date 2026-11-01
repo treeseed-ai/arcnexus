@@ -44,7 +44,7 @@ access:
     - src/coordination-store
     - tests/coordination-store
     - docs/coordination-store
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

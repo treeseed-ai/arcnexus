@@ -3,8 +3,7 @@ type: library
 purpose: Inspect candidate edits and retain complete review evidence
 path: src/change-inspection
 objectives:
-  - Detect all staged, unstaged and untracked changes without losing candidate
-    state
+  - Detect all staged, unstaged and untracked changes without losing candidate state
 constraints:
   - Do not change sandbox permissions or verification requirements
   - Caller owns commits and integration
@@ -42,7 +41,7 @@ access:
     - .
   writeDirectories:
     - src/change-inspection
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

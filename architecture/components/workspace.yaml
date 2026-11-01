@@ -46,7 +46,7 @@ access:
     - src/workspace
     - tests/workspace
     - docs/workspace
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

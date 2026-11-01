@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: guidance-validation
 purpose: Check tracked skill metadata and instruction readability
 kind: command
@@ -17,7 +17,6 @@ args:
   - validate
   - --project
   - .
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes:
