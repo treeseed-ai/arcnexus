@@ -123,8 +123,12 @@ three-owner greeting package. Evidence is under `general-live-v1`, task
 `prompt.txt` requires a real opt-in shout feature through CLI → service → names,
 with all three owners making actual documentation, regression and implementation
 changes. It uses the real Codex executable, Astra direction/review and Luna
-engineering. This is not the controlled simulation executable. It is running;
-no delivery or qualification pass is claimed yet. The host captured its runner
+engineering. This is not the controlled simulation executable. It reached `needs_input` after a real CLI specification turn made documentation
+and failing-regression edits but reported a checklist item complete before its
+prerequisite. The host withheld completion; issue 94 records the missing safe
+correction path and ambiguous legacy coordination instructions. The director then
+asked for checkpoint facts already retained by the host; issue 95 records that
+evidence-projection gap. No delivery or qualification pass is claimed. The host captured its runner
 before the next development build.
 
 ## Remaining qualification and implementation work
