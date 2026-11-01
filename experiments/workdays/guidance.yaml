@@ -17,12 +17,13 @@ dependency:
   from: agent-guidance
   to: guidance-validation
   contract: skill-references
-  delivery: Verified optional references policy in the candidate checker, not a publication
+  delivery: Verified optional references policy in the candidate checker, not a
+    publication
 acceptance:
   - id: combined-references
     command: node
     args:
-      - ../../dist/experiments/checks/guidance-references.js
+      - ../../dist/library/experiments/checks/guidance-references.js
       - --combined
     artifacts:
-      - ../../dist/experiments/checks/guidance-references.js
+      - ../../dist/library/experiments/checks/guidance-references.js

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcnexus.local/schemas/test-profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "adapter", "outputRoot", "preparation"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "adapter": { "const": "node" },
+    "outputRoot": { "type": "string", "minLength": 1 },
+    "preparation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "args", "purpose"],
+        "properties": {
+          "command": { "type": "string", "minLength": 1 },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "purpose": { "enum": ["production", "tests"] }
+        }
+      }
+    }
+  }
+}

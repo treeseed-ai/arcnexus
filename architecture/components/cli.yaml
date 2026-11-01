@@ -1,7 +1,7 @@
 id: cli
 type: gateway
 purpose: Expose predictable command-line execution settings and lifecycle operations
-path: src/cli
+path: src/gateway/cli
 objectives:
   - Use affordable Luna-sized stewards by default while respecting explicit
     model selection
@@ -36,8 +36,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/cli
-    - docs/cli
+    - src/gateway/cli
+    - docs/gateway/cli
+    - architecture/components
+    - tests/gateway/cli
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -52,21 +54,31 @@ questions: []
 parentId: cli-package
 operationIds:
   - cli-lint
+  - cli-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/cli
-    - docs/cli
+    - src/gateway/cli
+    - docs/gateway/cli
+    - architecture/components/cli.yaml
+    - tests/gateway/cli
   publicModules:
-    - src/cli/cli.ts
-  directoryExceptions: []
+    - src/gateway/cli/cli.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/cli
+    - src/gateway/cli
   documentation:
-    - docs/cli
-  tests: []
+    - docs/gateway/cli
+  tests:
+    - tests/gateway/cli
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node

@@ -11,28 +11,29 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
           - "{report}"
           - change
         artifacts:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
   - id: report-corrective-repair
     base: 0c2d68e9377f7512dda4de70094c176a52e0b395
     component: report
     expectedOutcome: ready_for_integration
     maxAttempts: 2
-    faultInjection: One-time external acceptance harness replaces the implemented Operations heading;
-      unchanged check must fail then pass after Luna edits real code.
+    faultInjection: One-time external acceptance harness replaces the implemented
+      Operations heading; unchanged check must fail then pass after Luna edits
+      real code.
     project: arc
     assignment: assignments/report-corrective-repair.yaml
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
           - "{report}"
           - repair
         artifacts:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
   - id: treeseed-command
     base: 6d5676317eab400c1e473bb2e0a89f575973c296
     component: artifact-diagnostics
@@ -42,11 +43,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
           - "{report}"
           - tree
         artifacts:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
   - id: local-http
     base: 5ecf737fada6bb22737011ffa85689a0a11fc5cc
     component: http
@@ -56,11 +57,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
           - "{report}"
           - http
         artifacts:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
   - id: prior-evidence-research
     base: 0c2d68e9377f7512dda4de70094c176a52e0b395
     component: report
@@ -70,10 +71,10 @@ cases:
     acceptance:
       - command: node
         args:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
           - "{report}"
           - history
         artifacts:
-          - ../dist/experiments/checks/check-run.js
+          - ../dist/library/experiments/checks/check-run.js
     priorEvidenceIds:
       - prior-findings

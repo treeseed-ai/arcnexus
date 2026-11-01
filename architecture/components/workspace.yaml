@@ -1,7 +1,7 @@
 id: workspace
 type: library
 purpose: Prepare and clean workspaces while preserving execution evidence
-path: src/workspace
+path: src/library/workspace
 objectives:
   - Preserve original run evidence across workspace lifecycle operations
 constraints:
@@ -36,9 +36,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/workspace
-    - tests/workspace
-    - docs/workspace
+    - src/library/workspace
+    - tests/library/workspace
+    - docs/library/workspace
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -48,39 +49,47 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - workspace-lint
+  - workspace-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/workspace
-    - tests/workspace
-    - docs/workspace
+    - src/library/workspace
+    - tests/library/workspace
+    - docs/library/workspace
+    - architecture/components/workspace.yaml
   publicModules:
-    - src/workspace/members.ts
-    - src/workspace/state.ts
-    - src/workspace/workspace.ts
-  directoryExceptions: []
+    - src/library/workspace/members.ts
+    - src/library/workspace/state.ts
+    - src/library/workspace/workspace.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/workspace
+    - src/library/workspace
   documentation:
-    - docs/workspace
+    - docs/library/workspace
   tests:
-    - tests/workspace
+    - tests/library/workspace
   exclude: []
 provides:
   - id: bindings
     version: "1"
     kind: json-schema
-    path: src/workspace/schemas/bindings.json
+    path: src/library/workspace/schemas/bindings.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: environment
     version: "1"
     kind: json-schema
-    path: src/workspace/schemas/environment.json
+    path: src/library/workspace/schemas/environment.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: environment
     version: "1"
   - id: bindings
     version: "1"
+  - id: test-profile
+    version: "1"
+testProfile: node

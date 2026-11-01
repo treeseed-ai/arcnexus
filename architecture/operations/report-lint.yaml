@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/report
-  - tests/report
+  - src/library/report
+  - tests/library/report
 generatedDirectories: []
 artifacts: []
 probes: []

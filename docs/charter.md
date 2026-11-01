@@ -130,7 +130,7 @@ the arrangement with two Luna workers before scaling the number of stewards.
 
 - Phase two uses a verified change in the shared candidate as its delivery milestone.
   Threads continue only within the same live workday; process interruption ends the
-  workday without automatic recovery. See [workdays](workday/workdays.md).
+  workday without automatic recovery. See [workdays](library/workday/workdays.md).
 - Later: which architectural decisions may stewards accept themselves, and which
   require the human or an explicitly authorized parent steward?
 

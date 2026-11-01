@@ -1,7 +1,7 @@
 id: change-inspection
 type: library
 purpose: Inspect candidate edits and retain complete review evidence
-path: src/change-inspection
+path: src/library/change-inspection
 objectives:
   - Detect all staged, unstaged and untracked changes without losing candidate
     state
@@ -36,7 +36,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/change-inspection
+    - src/library/change-inspection
+    - architecture/components
+    - tests/library/change-inspection
+    - docs/library/change-inspection
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -47,19 +50,37 @@ questions: []
 parentId: cli-package
 operationIds:
   - change-inspection-lint
+  - change-inspection-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/change-inspection
+    - src/library/change-inspection
+    - architecture/components/change-inspection.yaml
+    - tests/library/change-inspection
+    - docs/library/change-inspection
   publicModules:
-    - src/change-inspection/changes.ts
-  directoryExceptions: []
+    - src/library/change-inspection/changes.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/change-inspection
-  documentation: []
-  tests: []
+    - src/library/change-inspection
+  documentation:
+    - docs/library/change-inspection
+  tests:
+    - tests/library/change-inspection
   exclude: []
-provides: []
-consumes: []
+provides:
+  - id: candidate-changes
+    version: "1"
+    kind: typescript
+    path: src/library/change-inspection/changes.ts
+    compatibility: Preserve path/change-kind evidence and exact scope and symlink
+      rejection semantics
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node

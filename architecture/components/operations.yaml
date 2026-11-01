@@ -1,7 +1,7 @@
 id: operations
 type: library
 purpose: Execute declared commands and supervise local services and probes
-path: src/operations
+path: src/library/operations
 objectives:
   - Execute captured engineering operations and preserve their evidence
   - Stop managed subprocesses and services when their execution scope ends
@@ -36,9 +36,10 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/operations
-    - tests/operations
-    - docs/operations
+    - src/library/operations
+    - tests/library/operations
+    - docs/library/operations
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -51,31 +52,39 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - operations-lint
+  - operations-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/operations
-    - tests/operations
-    - docs/operations
+    - src/library/operations
+    - tests/library/operations
+    - docs/library/operations
+    - architecture/components/operations.yaml
   publicModules:
-    - src/operations/operations.ts
-    - src/operations/probes.ts
-    - src/operations/process.ts
-    - src/operations/service-state.ts
-  directoryExceptions: []
+    - src/library/operations/operations.ts
+    - src/library/operations/probes.ts
+    - src/library/operations/process.ts
+    - src/library/operations/service-state.ts
+  directoryExceptions:
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/operations
+    - src/library/operations
   documentation:
-    - docs/operations
+    - docs/library/operations
   tests:
-    - tests/operations
+    - tests/library/operations
   exclude: []
 provides:
   - id: operation
     version: "1"
     kind: json-schema
-    path: src/operations/schemas/operation.json
+    path: src/library/operations/schemas/operation.json
     compatibility: Preserve supported historical versions and captured execution readers
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
+testProfile: node

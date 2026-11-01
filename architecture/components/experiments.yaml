@@ -1,7 +1,7 @@
 id: experiments
 type: library
 purpose: Resolve and execute repeatable experiments with honestly labeled evidence
-path: src/experiments
+path: src/library/experiments
 objectives:
   - Resolve and execute repeatable experiments with honestly labeled evidence
 constraints:
@@ -33,14 +33,15 @@ access:
   readPaths:
     - .
   writeDirectories:
-    - src/experiments
-    - tests/experiments
-    - docs/experiments
+    - src/library/experiments
+    - tests/library/experiments
+    - docs/library/experiments
     - experiments
     - qualification
     - fixtures
-    - scripts
     - docs/acceptance
+    - scripts
+    - architecture/components
 schemaVersion: 4
 role: systems-engineer
 executionProfile: luna
@@ -49,51 +50,64 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - experiments-lint
+  - experiments-tests
 patternIds:
   - readable-typescript
 ownership:
   paths:
-    - src/experiments
-    - tests/experiments
-    - docs/experiments
+    - src/library/experiments
+    - tests/library/experiments
+    - docs/library/experiments
     - experiments
     - qualification
     - fixtures
-    - scripts
     - docs/acceptance
+    - scripts/check-permissions.mjs
+    - scripts/check-report.mjs
+    - scripts/check-sample.mjs
+    - scripts/live-sample.mjs
+    - scripts/qualification
+    - scripts/qualify.mjs
+    - architecture/components/experiments.yaml
   publicModules:
-    - src/experiments/experiment-config.ts
-    - src/experiments/experiments.ts
-  directoryExceptions: []
+    - src/library/experiments/experiment-config.ts
+    - src/library/experiments/experiments.ts
+  directoryExceptions:
+    - path: scripts
+      reason: Historical compatibility launchers are exact owned paths; other owners
+        maintain their grouped script directories
+    - path: architecture/components
+      reason: Directory-only sandbox grants; only this component definition is
+        writable under captured exact-path checks
 discovery:
   source:
-    - src/experiments
+    - src/library/experiments
   documentation:
-    - docs/experiments
+    - docs/library/experiments
     - docs/acceptance
   tests:
-    - tests/experiments
+    - tests/library/experiments
   exclude: []
 provides:
   - id: campaign
     version: "1"
     kind: json-schema
-    path: src/experiments/schemas/campaign.json
+    path: src/library/experiments/schemas/campaign.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: experiment-bindings
     version: "1"
     kind: json-schema
-    path: src/experiments/schemas/experiment-bindings.json
+    path: src/library/experiments/schemas/experiment-bindings.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: experiment-v2
     version: "1"
     kind: json-schema
-    path: src/experiments/schemas/experiment-v2.json
+    path: src/library/experiments/schemas/experiment-v2.json
     compatibility: Preserve supported historical versions and captured execution readers
   - id: experiment
     version: "1"
     kind: json-schema
-    path: src/experiments/schemas/experiment.json
+    path: src/library/experiments/schemas/experiment.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: experiment
@@ -104,3 +118,6 @@ consumes:
     version: "1"
   - id: campaign
     version: "1"
+  - id: test-profile
+    version: "1"
+testProfile: node

@@ -1,23 +1,29 @@
 schemaVersion: 3
 id: report-tests
-purpose: Run focused report acceptance tests
+purpose: Run shared component suites for report
 kind: command
 repository: arcnexus
 cwd: .
-category: unit-test
+category: cli-check
 activities:
   - research
   - testing
   - implementation
   - review
-command: npm
+command: node
 args:
+  - dist/cli.js
+  - test
   - run
-  - test:report
+  - report
+  - --project
+  - .
+  - --json
 generatedDirectories:
   - dist
   - .fixture-build
   - .test-build
+  - .tool-build
 artifacts: []
 probes:
   - command: node

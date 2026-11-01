@@ -16,6 +16,7 @@ args:
 generatedDirectories:
   - dist
   - .fixture-build
+  - .tool-build
 artifacts: []
 probes:
   - command: node

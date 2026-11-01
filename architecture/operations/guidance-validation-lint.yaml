@@ -14,8 +14,8 @@ activities:
 command: node
 args:
   - node_modules/eslint/bin/eslint.js
-  - src/guidance-validation
-  - tests/guidance-validation
+  - src/library/guidance-validation
+  - tests/library/guidance-validation
 generatedDirectories: []
 artifacts: []
 probes: []
