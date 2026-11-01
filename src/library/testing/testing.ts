@@ -5,7 +5,7 @@ import {
   type Bindings,
 } from '../architecture/bindings.js';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadCatalog } from '../architecture/components.js';
 import { InputError } from '../architecture/config.js';
@@ -23,6 +23,7 @@ export interface TestSelection {
   profiles: TestProfile[];
 }
 export interface TestExecution {
+  schemaVersion: 1;
   selection: TestSelection;
   status: 'running' | 'passed' | 'failed' | 'cancelled';
   exitCode: number;
@@ -71,7 +72,9 @@ export class ComponentTesting {
       revision,
       inference: false,
       suites: selected,
-      profiles: [...profiles.values()],
+      profiles: [...profiles.values()].filter((profile) =>
+        selected.some((suite) => suite.profile === profile.id),
+      ),
     };
   }
 
@@ -106,6 +109,7 @@ export class ComponentTesting {
     const evidence = join(stateRoot(), 'test-runs', randomUUID());
     mkdirSync(evidence, { recursive: true, mode: 0o700 });
     const result: TestExecution = {
+      schemaVersion: 1,
       selection,
       status: 'running',
       exitCode: 1,
@@ -168,8 +172,13 @@ export class ComponentTesting {
   }
 
   private save(result: TestExecution): void {
-    writeFileSync(join(result.evidence, 'result.json'), JSON.stringify(result, null, 2) + '\n', {
-      mode: 0o600,
-    });
+    writeFileSync(
+      join(result.evidence, 'result.json.tmp'),
+      JSON.stringify(result, null, 2) + '\n',
+      {
+        mode: 0o600,
+      },
+    );
+    renameSync(join(result.evidence, 'result.json.tmp'), join(result.evidence, 'result.json'));
   }
 }

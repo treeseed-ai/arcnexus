@@ -61,3 +61,8 @@ changes to captured mandatory suites; newly discovered suites may add coverage.
 Captured frozen regression contents remain separately enforced. The test CLI also
 accepts an explicit `--timeout-seconds` through shared cancellation; omitting it
 leaves execution unbounded and cancellable.
+
+The npm compatibility entry point prints retained command output before its JSON
+summary so CI failures include the actual diagnostics. The public `--json` CLI keeps
+stdout machine-readable. Selection reports distinguish unchanged, modified, and
+added source suites; only profiles belonging to selected suites are prepared.

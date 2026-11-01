@@ -11,7 +11,7 @@ export class OwnerRetrieval {
   select(request: string): RetrievedOwner[] {
     const tokens = words(request);
     const scores = this.catalog
-      .filter((c) => ['gateway', 'library', 'foundation'].includes(c.type))
+      .filter((c) => ['gateway', 'library', 'foundation', 'release'].includes(c.type))
       .map((c) => this.score(c, tokens))
       .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
     const selected = scores.filter((c) => c.score > 0).slice(0, 12);

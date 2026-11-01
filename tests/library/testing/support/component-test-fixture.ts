@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
@@ -128,6 +128,41 @@ export class ComponentTestFixture {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
+  }
+
+  unusedProfile(): void {
+    const path = 'architecture/components/sample.yaml';
+    const sample = JSON.parse(readFileSync(join(this.repo, path), 'utf8'));
+    sample.ownership.paths = ['tests/unit', 'tests/regression'];
+    sample.discovery.tests = sample.ownership.paths;
+    sample.access.writeDirectories = sample.ownership.paths;
+    this.put(path, sample);
+    this.put('architecture/components/other.yaml', {
+      ...sample,
+      id: 'other',
+      testProfile: 'other',
+      ownership: { paths: ['tests/other'], publicModules: [], directoryExceptions: [] },
+      discovery: { ...sample.discovery, tests: ['tests/other'] },
+      access: { readPaths: ['.'], writeDirectories: ['tests/other'] },
+    });
+    this.otherProfile();
+    this.commit();
+  }
+
+  private otherProfile(): void {
+    this.put('architecture/test-profiles/other.yaml', {
+      schemaVersion: 1,
+      id: 'other',
+      adapter: 'node',
+      outputRoot: '.test-build',
+      preparation: [
+        { command: process.execPath, args: ['-e', 'process.exit(9)'], purpose: 'tests' },
+      ],
+    });
+    this.put(
+      'tests/other/unit/other.test.ts',
+      "function registerSuite(value) {}\nregisterSuite({component:'other',level:'unit',tags:['slow']});",
+    );
   }
 
   assignment(): any {

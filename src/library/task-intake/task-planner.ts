@@ -70,7 +70,8 @@ export class TaskPlanner {
     const catalog = loadCatalog(selection.source, selection.base);
     const shortlist = new OwnerRetrieval(Object.values(catalog.components)).select(text);
     const owner = Object.values(catalog.components).find(
-      (c) => c.verification.length && ['library', 'gateway', 'foundation'].includes(c.type),
+      (c) =>
+        c.verification.length && ['library', 'gateway', 'foundation', 'release'].includes(c.type),
     );
     if (!owner) throw new InputError('Task planning requires an executable catalog owner');
     const captured = this.capture(selection, owner.id, text, bindings, input.initializerModel);

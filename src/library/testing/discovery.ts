@@ -14,6 +14,7 @@ export interface TestFilters {
 }
 export interface DiscoveredSuite extends SuiteMetadata {
   source: string;
+  profile: string;
   compiled: string;
   category: string;
   sha256: string;
@@ -72,6 +73,7 @@ export class TestDiscovery {
     const captured = component.inventory?.find((file) => file.path === source);
     return {
       ...metadata,
+      profile: component.testProfile!,
       state: !captured ? 'added' : captured.sha256 === sha256 ? 'unchanged' : 'modified',
       source,
       category,

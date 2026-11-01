@@ -45,9 +45,10 @@ approved objective; do not weaken a check merely to make the candidate pass.
 
 ## Ownership and code quality
 
-Use the declared owner directories: `src/<component-id>`, `tests/<component-id>`,
-and `docs/<component-id>`. Consult `architecture/ownership.yaml` before changing
-shared tooling or root files. Broad read access does not authorize writes. Import
+Use the declared gateway/library owner directories beneath `src`, `tests`, and
+`docs`. Foundation owns shared build standards, release owns delivery workflows,
+and the testing library owns reusable test infrastructure. Read the component YAML
+definitions and their derived ownership before changing shared tooling or root files. Broad read access does not authorize writes. Import
 another owner's implementation through its declared public modules; request an
 owner change when the task requires private implementation changes.
 
@@ -63,7 +64,9 @@ lint fixes must stay within captured writable scope. Repository-wide
 `npm run format` and `npm run lint:fix` are for callers authorized to edit all
 affected files; use explicit owned paths for a bounded assignment. Final verification
 includes `npm run format:check`, `npm run lint`, type checking, ownership and guidance
-validation, and the relevant built-program tests. Host checks never reformat source.
+validation, and the relevant built-program tests. Use `arcnexus test inspect/run`
+for component selection; Node suites declare literal owner, level and tag metadata.
+Host checks never reformat source.
 See [code quality](docs/foundation/quality.md) for the executable contract.
 
 ## Development and release

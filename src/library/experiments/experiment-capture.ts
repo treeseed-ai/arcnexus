@@ -105,13 +105,7 @@ export class ExperimentCapture {
     let codexPath = input.codexPath;
     if (input.evidenceMode === 'simulation') {
       codexPath = join(directory, 'simulated-codex');
-      const module = pathToFileURL(
-        join(
-          dirname(input.runner),
-          'experiments',
-          c.workday ? 'workday-simulation.js' : 'simulation-codex.js',
-        ),
-      ).href;
+      const module = this.simulationModule(input.runner, Boolean(c.workday));
       writeFileSync(
         codexPath,
         `#!/usr/bin/env node\nprocess.argv.splice(2,0,${JSON.stringify(c.scenario)});import(${JSON.stringify(module)});\n`,
@@ -120,6 +114,16 @@ export class ExperimentCapture {
     }
     return codexPath;
   }
+  private simulationModule(runner: string, workday: boolean): string {
+    const name = workday ? 'workday-simulation.js' : 'simulation-codex.js';
+    const candidates = ['library/experiments', 'experiments'].map((directory) =>
+      join(dirname(runner), directory, name),
+    );
+    const module = candidates.find(existsSync);
+    if (!module) throw new InputError('Supervising build has no compatible simulation executable');
+    return pathToFileURL(module).href;
+  }
+
   private workday(
     c: ExperimentCase,
     directory: string,

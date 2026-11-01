@@ -11,7 +11,7 @@ export interface TaskAuthoritySnapshot {
 }
 export class TaskAuthority {
   capture(executable: string): TaskAuthoritySnapshot {
-    const path = fileURLToPath(new URL('../cli.js', import.meta.url));
+    const path = fileURLToPath(new URL('../../cli.js', import.meta.url));
     const command = this.executable(executable);
     return {
       executable: command,

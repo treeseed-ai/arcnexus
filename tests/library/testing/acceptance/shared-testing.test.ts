@@ -51,14 +51,59 @@ class SharedTestingTests {
     assert.equal(existsSync(join(evidence.evidence, 'result.json')), true);
   }
 
+  preparesSelectedProfilesOnly(t: TestContext): void {
+    const fixture = new ComponentTestFixture(t);
+    fixture.unusedProfile();
+    const result = fixture.run('run', '--tag', 'fast');
+    assert.equal(result.status, 0, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.deepEqual(
+      report.selection.profiles.map((profile: any) => profile.id),
+      ['node'],
+    );
+    assert.equal(report.commands.length, 2);
+  }
+
+  printsNpmEvidence(t: TestContext): void {
+    const fixture = new ComponentTestFixture(t);
+    const result = spawnSync(
+      process.execPath,
+      [resolve('dist/library/testing/npm-tests.js'), 'sample'],
+      {
+        cwd: fixture.repo,
+        encoding: 'utf8',
+        env: { ...process.env, ARCNEXUS_STATE_DIR: fixture.state },
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /# pass 2/);
+    assert.equal(JSON.parse(result.stdout.trim().split('\n').at(-1)!).status, 'passed');
+  }
+
   retainsBuildFailure(t: TestContext): void {
     const f = new ComponentTestFixture(t);
-    f.put('build.cjs', 'process.exit(9)');
+    f.put('tests/support/invalid.ts', 'const value: string = 42;');
+    f.profile({
+      preparation: [
+        {
+          command: process.execPath,
+          args: [
+            resolve('node_modules/typescript/bin/tsc'),
+            '--noEmit',
+            '--skipLibCheck',
+            'tests/support/invalid.ts',
+          ],
+          purpose: 'tests',
+        },
+      ],
+    });
+    f.commit();
     const result = f.run('run');
     assert.equal(result.status, 1, result.stderr);
     const evidence = JSON.parse(result.stdout);
     assert.equal(evidence.status, 'failed');
-    assert.equal(evidence.commands[0].exitCode, 9);
+    assert.equal(evidence.commands[0].exitCode, 2);
+    assert.match(readFileSync(evidence.commands[0].log, 'utf8'), /TS2322/);
   }
 
   capturesMandatorySelection(t: TestContext): void {
@@ -119,6 +164,10 @@ class SharedTestingTests {
 }
 
 const suite = new SharedTestingTests();
+test('npm compatibility runner prints retained test output for CI diagnosis', (t) =>
+  suite.printsNpmEvidence(t));
+test('test runner prepares only profiles selected by intersecting filters', (t) =>
+  suite.preparesSelectedProfilesOnly(t));
 test('assignment inspection captures mandatory suite identities and profile hashes', (t) =>
   suite.capturesMandatorySelection(t));
 test('test cancellation stops preparation and retains evidence', (t) =>

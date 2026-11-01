@@ -245,6 +245,19 @@ class ComponentV4Fixture {
 }
 
 class ComponentV4Tests {
+  reportsDerivedOwnership(t: TestContext): void {
+    const fixture = new ComponentV4Fixture(t);
+    const result = fixture.run('validate');
+    assert.equal(result.status, 0, result.stderr);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.owners.sample.repository, 'sample');
+    assert.deepEqual(report.owners.sample.ownedPaths, ['package/src']);
+    assert.ok(
+      report.owners.sample.inventory.some((file: any) => file.path === 'package/src/value.ts'),
+    );
+    assert.ok(report.coverageExclusions.some((entry: any) => entry.path === 'architecture'));
+  }
+
   resolvesPackageAndDiscoversFiles(t: TestContext): void {
     const f = new ComponentV4Fixture(t);
     const result = f.run('inspect', 'sample', 'Inspect responsibility', '--json');
@@ -422,6 +435,8 @@ class ComponentV4Tests {
 }
 
 const suite = new ComponentV4Tests();
+test('catalog validation exposes derived ownership and captured inventories', (t) =>
+  suite.reportsDerivedOwnership(t));
 test('v4 derives repository and scope and discovers captured files', (t) =>
   suite.resolvesPackageAndDiscoversFiles(t));
 test('v4 detects files outside every ownership root', (t) => suite.rejectsUnownedTrackedFiles(t));

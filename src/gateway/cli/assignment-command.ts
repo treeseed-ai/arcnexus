@@ -1,3 +1,4 @@
+import { catalogView } from '../../library/architecture/catalog-view.js';
 import type { CliValues } from './arguments.js';
 import { InputError } from '../../library/architecture/config.js';
 import { resolveAssignment, resolveBase } from '../../library/architecture/assignment.js';
@@ -16,10 +17,8 @@ export class AssignmentCommand {
     if (!values.project || positionals.length !== 1)
       throw new InputError('validate requires --project');
     const { source, base } = resolveBase(values.project, values.base);
-    const catalog = loadCatalog(source, base);
-    console.log(
-      JSON.stringify({ base, components: Object.keys(catalog.components), status: 'valid' }),
-    );
+    const catalog = loadCatalog(source, base, loadBindings(values.bindings));
+    console.log(JSON.stringify({ base, ...catalogView(catalog), status: 'valid' }));
     return;
   }
 
