@@ -10,7 +10,7 @@ import type {
 } from '../architecture/initialization.js';
 import { candidateDigest } from '../change-inspection/changes.js';
 import { saveMarkdown } from '../report/report.js';
-import { observe } from '../report/timeline.js';
+import { observe, observeExecution } from '../report/timeline.js';
 import { runInitializerCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
 export interface InitializationEvidence {
@@ -60,6 +60,7 @@ class Initializer {
   private readonly child: RecordData;
   private readonly evidence: InitializationEvidence;
   private readonly started = Date.now();
+  private readonly unsubscribe: () => void;
   constructor(private readonly input: InitializeInput) {
     this.snapshot = input.resolved.initialization;
     this.child = this.createRecord();
@@ -74,6 +75,9 @@ class Initializer {
       durationMs: 0,
     };
     input.record.initialization = this.evidence;
+    this.unsubscribe = observeExecution(input.root, this.child.id, (event) =>
+      observe(input.root, input.record, 'initialization.event', event),
+    );
   }
   async run(): Promise<void> {
     const before = candidateDigest(this.input.record);
@@ -120,6 +124,7 @@ class Initializer {
     delete record.workday;
     delete record.timelineSequence;
     delete record.initialization;
+    delete record.executionLimits;
     mkdirSync(join(this.input.root, 'runs', record.id), { mode: 0o700 });
     save(this.input.root, record);
     return record;
@@ -221,10 +226,15 @@ class Initializer {
       );
   }
   private publish(phase: string): void {
+    if (phase === 'started') {
+      this.input.record.stage = 'initialization';
+      this.input.record.status = 'initializing';
+    }
     observe(this.input.root, this.input.record, 'initialization.' + phase, this.evidence);
     save(this.input.root, this.input.record);
   }
   private finish(): void {
+    this.unsubscribe();
     this.evidence.durationMs = Date.now() - this.started;
     this.evidence.threadId = this.child.threadId;
     this.evidence.usage = this.child.attemptReportedUsage ?? null;

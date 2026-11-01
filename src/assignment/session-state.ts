@@ -69,6 +69,22 @@ export class SessionState {
     this.hostChecks = materializeChecks(resolved, join(this.dir, 'acceptance'));
     this.planned = resolved.executionProfile.schemaVersion >= 2;
     this.initialize();
+    this.captureLimits();
+  }
+  private captureLimits(): void {
+    const profile = this.resolved.executionProfile;
+    const { root, record, maxAttempts } = this.options;
+    record.executionLimits = {
+      timeoutSeconds: profile.timeoutSeconds ?? null,
+      commandTimeoutSeconds: profile.commandTimeoutSeconds ?? null,
+      maxTurns: profile.maxTurns ?? null,
+      maxCorrectiveTurns: profile.maxCorrectiveTurns ?? null,
+      maxOperationCalls: profile.maxOperationCalls ?? null,
+      maxChecklistCalls: profile.maxChecklistCalls ?? null,
+      maxAttempts: maxAttempts ?? null,
+    };
+    observe(root, record, 'execution.limits', record.executionLimits);
+    save(root, record);
   }
   private assignmentScope(): string[] {
     const { assignment, documentationOnly, resolved, component } = this;

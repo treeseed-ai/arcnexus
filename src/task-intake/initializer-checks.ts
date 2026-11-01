@@ -1,3 +1,4 @@
+import { prepareCapabilities } from '../operations/probes.js';
 import { join } from 'node:path';
 import { targetCommand } from '../architecture/bindings.js';
 import { milliseconds } from '../architecture/config.js';
@@ -16,6 +17,8 @@ export class InitializerChecks {
   ) {}
   async verify(signal: AbortSignal): Promise<void> {
     const before = candidateDigest(this.record);
+    await prepareCapabilities(this.root, this.record, signal);
+    this.unchanged(before);
     for (const command of this.snapshot.context.at(-1)!.verification) {
       observe(this.root, this.record, 'initializer.check.started', command);
       try {

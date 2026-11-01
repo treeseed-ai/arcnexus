@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
@@ -7,7 +7,7 @@ import { targetEnvironment, toolDirectories } from '../architecture/bindings.js'
 import { preparePermissions, type AccessPolicy } from '../architecture/permissions.js';
 import type { Plan } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
-import { execute } from '../operations/process.js';
+import { execute, git } from '../operations/process.js';
 import { processStart } from '../operations/service-state.js';
 import type { Member } from '../workspace/members.js';
 import { save, type RecordData } from '../workspace/state.js';
@@ -210,9 +210,27 @@ export class CodexConfiguration {
     save(root, record);
   }
 
+  private rejectTargetConfiguration(): void {
+    const { record } = this.input;
+    const paths = git(
+      record.workspace,
+      'ls-files',
+      '--cached',
+      '--others',
+      '--exclude-standard',
+      '-z',
+    ).split('\0');
+    if (
+      existsSync(join(record.workspace, '.codex/config.toml')) ||
+      paths.some((path) => path === '.codex/config.toml' || path.endsWith('/.codex/config.toml'))
+    )
+      throw new Error('Target Codex configuration is unsupported');
+  }
+
   async preflight(): Promise<void> {
     const { root, record } = this.input;
     try {
+      this.rejectTargetConfiguration();
       record.sandboxPreflight = { ...(await this.probe()), status: 'passed' };
     } catch (error) {
       record.sandboxPreflight = {

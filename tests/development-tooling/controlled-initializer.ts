@@ -33,6 +33,7 @@ export class ControlledInitializer {
     return result;
   }
   private proposal(result: any, mode: string): void {
+    if (mode === 'proposal-workday') this.workday(result);
     if (mode === 'proposal-research') {
       result.selectedOwners = [{ id: 'sample', reason: 'Source behavior owner' }];
       result.assignments = [
@@ -46,6 +47,32 @@ export class ControlledInitializer {
         },
       ];
     }
+  }
+  private workday(result: any): void {
+    result.selectedOwners = ['sample', 'dependency'].map((id) => ({
+      id,
+      reason: 'Captured fixture owner',
+    }));
+    result.assignments = ['sample', 'dependency'].map((ownerId) => ({
+      ownerId,
+      objective:
+        ownerId === 'sample'
+          ? 'Consume verified dependency contract'
+          : 'Deliver dependency contract',
+      kind: 'change',
+      changeType: 'behavior',
+      acceptanceCriteria: ['Independent acceptance passes'],
+      allowedWritePaths:
+        ownerId === 'sample'
+          ? ['source.txt', 'docs', 'tests']
+          : ['dependency.txt', 'dependency-docs', 'dependency-tests'],
+    }));
+    result.dependency = {
+      from: 'sample',
+      to: 'dependency',
+      contract: 'sample-contract',
+      delivery: 'Verified dependency contract in this candidate',
+    };
   }
   private missing() {
     return {

@@ -16,18 +16,23 @@ export function progressView(
     loopWarnings: progress?.warnings ?? [],
     cancellation:
       record.status === 'cancelled' ? 'cancelled' : (record.cancellation ?? 'not requested'),
-    checklist: {
-      revision: plan?.version ?? null,
-      total: plan?.items.length ?? null,
-      completed: plan?.items.filter((i) => i.status === 'completed').length ?? null,
-      remaining:
-        plan?.items.filter((i) => !['completed', 'skipped'].includes(i.status)).map((i) => i.id) ??
-        [],
-      indicator: plan?.items.length ? 'checklist' : 'indeterminate',
-      basis: 'agent claims; host checks reported separately',
-    },
+    checklist: checklistProgress(plan),
     hostChecks: plan?.hostChecks ?? null,
-    limits: executionLimits(profile),
+    limits: executionLimits(
+      (record.executionLimits as Record<string, unknown> | undefined) ?? profile,
+    ),
+  };
+}
+function checklistProgress(plan?: Plan) {
+  return {
+    revision: plan?.version ?? null,
+    total: plan?.items.length ?? null,
+    completed: plan?.items.filter((i) => i.status === 'completed').length ?? null,
+    remaining:
+      plan?.items.filter((i) => !['completed', 'skipped'].includes(i.status)).map((i) => i.id) ??
+      [],
+    indicator: plan?.items.length ? 'checklist' : 'indeterminate',
+    basis: 'agent claims; host checks reported separately',
   };
 }
 function executionLimits(profile?: Record<string, unknown>) {

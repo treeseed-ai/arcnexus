@@ -122,6 +122,11 @@ export class WorkdayRunner {
       },
       [state.input.requester.resolved.componentId, state.input.recipient.resolved.componentId],
     );
+    this.unsubscribe.push(
+      observeExecution(state.root, state.workspace.id, (event) =>
+        state.store.commit('workspace.' + event.type, { event }),
+      ),
+    );
   }
 
   private createRecord(participant: WorkdayParticipant): RecordData {
@@ -257,6 +262,9 @@ export class WorkdayRunner {
 
   private async initializeOwners(initialization?: InitializationEvidence): Promise<void> {
     const state = this.state;
+    state.status = 'initializing';
+    state.activeOwner = state.input.requester.resolved.initialization.componentId;
+    state.persist('initialization.started', { reused: !!initialization });
     if (initialization) {
       if (
         initialization.authorityHash !== state.input.digest ||

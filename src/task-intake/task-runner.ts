@@ -1,3 +1,4 @@
+import { TaskAuthority } from './task-authority.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { digest, resolveAssignment, type ResolvedAssignment } from '../architecture/assignment.js';
@@ -5,7 +6,6 @@ import { loadBindings } from '../architecture/bindings.js';
 import { InputError } from '../architecture/config.js';
 import { runSteward } from '../assignment/steward.js';
 import { captureChanges } from '../change-inspection/changes.js';
-import { runnerHash } from '../experiments/experiments.js';
 import { git } from '../operations/process.js';
 import { saveMarkdown } from '../report/report.js';
 import { WorkdayRunner } from '../workday/workday.js';
@@ -44,10 +44,8 @@ export class TaskRunner {
       git(proposal.source, 'status', '--porcelain').trim()
     )
       throw new InputError('Source changed; create a new task plan');
-    if (
-      digest(readFileSync(proposal.request.path)) !== proposal.request.hash ||
-      runnerHash(proposal.supervisingBuild.path) !== proposal.supervisingBuild.hash
-    )
+    new TaskAuthority().verify(proposal);
+    if (digest(readFileSync(proposal.request.path)) !== proposal.request.hash)
       throw new InputError('Request or supervising build changed; create a new task plan');
     const assignments =
       proposal.execution.kind === 'run'

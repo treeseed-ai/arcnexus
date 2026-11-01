@@ -1,6 +1,6 @@
+import { TaskAuthority, type TaskAuthoritySnapshot } from './task-authority.js';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import {
   digest,
   resolveAssignment,
@@ -10,7 +10,6 @@ import {
 import { loadBindings, type Bindings } from '../architecture/bindings.js';
 import { loadCatalog } from '../architecture/components.js';
 import { InputError } from '../architecture/config.js';
-import { runnerHash } from '../experiments/experiments.js';
 import { git } from '../operations/process.js';
 import { saveMarkdown } from '../report/report.js';
 import { save, type RecordData } from '../workspace/state.js';
@@ -29,6 +28,7 @@ export interface TaskPlanInput {
 }
 export class TaskPlanner {
   private sourceHead = '';
+  private authority!: TaskAuthoritySnapshot;
   constructor(
     private root: string,
     private signal: AbortSignal,
@@ -42,7 +42,7 @@ export class TaskPlanner {
         record,
         resolved: captured,
         owners: [],
-        executable: input.executable,
+        executable: this.authority.executable,
         signal: this.signal,
         proposal: { request: text, shortlist: shortlist.map((c) => c.id) },
       });
@@ -58,6 +58,7 @@ export class TaskPlanner {
   }
   private prepare(input: TaskPlanInput) {
     const selection = resolveBase(input.project, input.base);
+    this.authority = new TaskAuthority().capture(input.executable);
     this.sourceHead = git(selection.source, 'rev-parse', 'HEAD').trim();
     const text = readFileSync(input.input, 'utf8');
     if (!text.trim()) throw new InputError('Task request is empty');
@@ -76,7 +77,22 @@ export class TaskPlanner {
     });
     record.resolvedAssignment = captured;
     record.objective = text;
+    this.captureInput(record, input, text, shortlist);
     return { text, bindings, shortlist, owner, captured, record };
+  }
+  private captureInput(
+    record: RecordData,
+    input: TaskPlanInput,
+    text: string,
+    shortlist: TaskProposal['shortlist'],
+  ): void {
+    record.taskInput = {
+      request: { path: resolve(input.input), text, sha256: digest(text) },
+      authority: this.authority,
+      sourceHead: this.sourceHead,
+      shortlist,
+    };
+    save(this.root, record);
   }
   private capture(
     selection: { source: string; base: string },
@@ -107,6 +123,7 @@ export class TaskPlanner {
     owner: string,
     text: string,
   ): void {
+    new TaskAuthority().verify(this.authority);
     const current = this.capture(
       resolveBase(input.project, captured.base),
       owner,
@@ -136,6 +153,7 @@ export class TaskPlanner {
       input.initializerModel,
     ).resolve(result);
     record.status = result.status;
+    record.stage = 'proposal';
     return new ProposalStore(this.root).save({
       ...this.identity(record, input, text),
       shortlist,
@@ -154,13 +172,8 @@ export class TaskPlanner {
       sourceHead: this.sourceHead,
       request: { path: resolve(input.input), text, hash: digest(text) },
       bindingsPath: input.bindings ? resolve(input.bindings) : undefined,
-      executable: input.executable,
-      supervisingBuild: this.supervisingBuild(),
+      ...this.authority,
     };
-  }
-  private supervisingBuild() {
-    const path = fileURLToPath(new URL('../cli.js', import.meta.url));
-    return { path, hash: runnerHash(path) };
   }
   private finish(record: RecordData): void {
     record.finishedAt = new Date().toISOString();

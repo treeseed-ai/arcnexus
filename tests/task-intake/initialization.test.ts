@@ -36,6 +36,40 @@ class InitializationTests {
     assert.equal(record.initialization.model, 'gpt-6-astra');
     assert.equal(record.resolvedAssignment.executionProfile.model, 'gpt-6-luna');
   }
+  declaredReadOnlyContainer(t: TestContext): void {
+    const fixture = workflowFixture(t);
+    this.declarePlatform(fixture);
+    const result = fixture.run();
+    assert.equal(result.status, 0, result.stderr);
+    const record = JSON.parse(result.stdout);
+    assert.equal(record.initialization.provenance, 'declared-component');
+    assert.equal(record.initialization.componentId, 'sample');
+    assert.equal(record.initialization.turns, 1);
+  }
+  private declarePlatform(fixture: ReturnType<typeof workflowFixture>): void {
+    writeFileSync(
+      join(fixture.repo, 'architecture/components/platform.yaml'),
+      JSON.stringify({
+        ...fixture.component,
+        schemaVersion: 3,
+        id: 'platform',
+        type: 'platform',
+        path: '.',
+        allowedWritePaths: [],
+        access: { readPaths: ['.'], writeDirectories: [] },
+        initialization: { schemaVersion: 3, componentId: 'sample' },
+      }),
+    );
+    writeFileSync(
+      join(fixture.repo, 'architecture/components/sample.json'),
+      JSON.stringify({
+        ...fixture.component,
+        schemaVersion: 3,
+        parentId: 'platform',
+      }),
+    );
+    fixture.commit();
+  }
   missingDeclaration(t: TestContext): void {
     const fixture = workflowFixture(t);
     writeFileSync(
@@ -70,3 +104,6 @@ for (const mode of ['write', 'widen', 'question'])
     suite.refusesInvalidInitialization(t, mode),
   );
 test('initializer model override is independent of the worker', (t) => suite.modelOverride(t));
+
+test('declared initializer works beneath a version-three containment-only platform', (t) =>
+  suite.declaredReadOnlyContainer(t));
