@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { existsSync, lstatSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { relativePath } from '../architecture/config.js';
@@ -104,4 +105,51 @@ function captureNewFiles(workspace: string, observed: Change[]): Record<string, 
     } catch {}
   }
   return added;
+}
+
+/** Source/test bytes can distinguish actions; prose and checklist claims cannot. */
+export function materialCandidate(record: RecordData): string {
+  const context = record.context as Array<{ documentation?: string[] }> | undefined;
+  const documentation = context?.at(-1)?.documentation ?? [];
+  const selected = changes(record).filter(
+    (change) =>
+      !/\.(md|mdx|rst)$/i.test(change.path) &&
+      !documentation.some((path) => change.path === path || change.path.startsWith(path + '/')),
+  );
+  checkScope(
+    record.workspace,
+    selected,
+    selected.map((change) => change.path),
+  );
+  return JSON.stringify(
+    selected.map((change) => ({
+      ...change,
+      bytes: existsSync(join(record.workspace, change.path))
+        ? readFileSync(join(record.workspace, change.path)).toString('base64')
+        : null,
+    })),
+  );
+}
+
+export function candidateDigest(record: RecordData): string {
+  const observed = changes(record);
+  checkScope(
+    record.workspace,
+    observed,
+    observed.map((c) => c.path),
+  );
+  return createHash('sha256')
+    .update(
+      JSON.stringify({
+        index: git(record.workspace, 'diff', '--cached', '--binary', record.base, '--'),
+        working: git(record.workspace, 'diff', '--binary', '--'),
+        files: observed.map((c) => ({
+          path: c.path,
+          bytes: existsSync(join(record.workspace, c.path))
+            ? readFileSync(join(record.workspace, c.path)).toString('base64')
+            : null,
+        })),
+      }),
+    )
+    .digest('hex');
 }

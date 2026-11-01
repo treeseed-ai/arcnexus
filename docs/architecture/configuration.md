@@ -1,7 +1,7 @@
 # Configuration documents
 
-Pre-phase-three increment 1 introduces YAML configuration with legacy JSON support.
-This contract is being implemented under issue #63; historical execution evidence
+Pre-phase-three increment 1 delivered YAML configuration with legacy JSON support
+under issue #63; historical execution evidence
 remains JSON and is never migrated in place.
 
 Components, roles, execution and composition profiles, environment declarations,
@@ -35,3 +35,9 @@ Increment 2 migrates maintained tests/tooling to TypeScript, formats code, enfor
 Increment 3 adds mandatory component-led initialization and task proposals, removes
 implicit execution limits, and retains cancellation and observable loop guards.
 These are delivery intentions, not claims of currently available commands.
+
+Version-three platform/package nodes may declare empty write paths and directory
+grants to express containment without execution authority. These empty container
+policies do not act as a deny-all ceiling for independently authorized leaf owners.
+Explicit nonempty ancestor permission ceilings remain enforced, as does legacy
+version-one/two permission inheritance. Container nodes cannot execute assignments.

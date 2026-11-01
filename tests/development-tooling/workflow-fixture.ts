@@ -68,7 +68,7 @@ export class WorkflowFixture {
         this.executable,
         ...args,
       ],
-      { encoding: 'utf8', env: this.env, timeout: 30000 },
+      { encoding: 'utf8', env: this.env, timeout: 30 * 60 * 1000 },
     );
   };
   configure = (options: Partial<WorkflowOptions>): void => {

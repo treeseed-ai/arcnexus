@@ -1,3 +1,4 @@
+import { SessionProgress } from './session-progress.js';
 import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
 import { completePlan } from './plan.js';
@@ -55,7 +56,7 @@ export class SessionWorkflow {
       'specification',
       this.state.documentationOnly
         ? 'Make actual file edits now in the assigned documentation/skill scope. Update the documentation itself, preserving applicable existing content; a prose-only description in your response does not satisfy this checkpoint. Do not edit implementation or tests. Set regression=null and explain why behavioral testing is skipped.'
-        : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
+        : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. For a completed behavioral specification, regression must not be null. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. Prefer the matching declared host operation to observe the test output before submitting its expectation. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
     );
     if (!this.state.specificationFinished) await this.verification.specification(spec);
   }
@@ -63,7 +64,11 @@ export class SessionWorkflow {
   private async change(): Promise<void> {
     await this.specification();
     let feedback = '';
-    for (let attempt = 1; attempt <= this.state.options.maxAttempts; attempt++) {
+    for (
+      let attempt = 1;
+      this.state.options.maxAttempts === undefined || attempt <= this.state.options.maxAttempts;
+      attempt++
+    ) {
       await this.implement(attempt, feedback);
       const failed = await this.checkImplementation(attempt);
       if (failed !== undefined) {
@@ -116,7 +121,7 @@ export class SessionWorkflow {
       const feedback = `Command ${JSON.stringify({ command: failed.command, args: failed.args })}; exit code ${failed.exitCode}; ${logExcerpt(failed.log)}`;
       this.markAttempt({ status: 'failed', feedback });
       this.state.journal('implementation', 'failed', { attempt, feedback });
-      return feedback;
+      return new SessionProgress(this.state).failure('implementation-checkpoint', feedback);
     }
   }
 
@@ -131,7 +136,7 @@ export class SessionWorkflow {
       throw new Error(`Review requires repair: ${review.reviewFindings.join('; ')}`);
     const feedback = review.reviewFindings.join('\n');
     this.markAttempt({ status: 'failed', feedback });
-    return feedback;
+    return new SessionProgress(this.state).failure('review-checkpoint', feedback);
   }
 
   private markAttempt(detail: Record<string, unknown>): void {
@@ -145,7 +150,7 @@ export class SessionWorkflow {
     const { record, signal, control } = this.state.options;
     if (control && error instanceof Error && error.name === 'WorkdayBlocked')
       record.status = 'blocked';
-    if (!['blocked', 'no_changes'].includes(record.status))
+    if (!['blocked', 'no_changes', 'needs_attention'].includes(record.status))
       record.status =
         signal.aborted && String(signal.reason) === 'Error: Cancelled' ? 'cancelled' : 'failed';
     const latest = (record.attempts as Array<Record<string, unknown>>).at(-1);

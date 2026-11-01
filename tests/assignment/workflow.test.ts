@@ -57,9 +57,9 @@ class WorkflowTests {
       [10, 10, 10, 10],
     );
   }
-  defaultFailureStopsAndFailedCorrectionExhaustsTwoAttempts_5(t: TestContext) {
+  explicitFailureStopsAndFailedCorrectionExhaustsTwoAttempts_5(t: TestContext) {
     for (const [mode, args, turns] of [
-      ['repair', [], 2],
+      ['repair', ['--max-attempts', '1'], 2],
       ['exhaust', ['--max-attempts', '2'], 3],
     ] as Array<[string, string[], number]>) {
       const f = workflowFixture(t, mode),
@@ -76,7 +76,7 @@ class WorkflowTests {
   }
   aWeakenedCurrentTestCannotReplaceFrozenAcceptance_7(t: TestContext) {
     const f = workflowFixture(t, 'weak-test'),
-      r = f.run();
+      r = f.run('--max-attempts', '1');
     assert.equal(r.status, 1);
     assert.match(r.stderr, /Command failed/);
   }
@@ -164,8 +164,8 @@ for (const mode of [
   test(`host rejects ${mode}`, (t: any) => suite.scenario_3(t, mode));
 test('genuine repair is opt-in and preserves frozen tests and cumulative usage', (t: any) =>
   suite.genuineRepairIsOptInAndPreservesFrozenTestsAndCumulativeUsage_4(t));
-test('default failure stops and failed correction exhausts two attempts', (t: any) =>
-  suite.defaultFailureStopsAndFailedCorrectionExhaustsTwoAttempts_5(t));
+test('explicit attempt limits stop failed implementation and correction', (t: any) =>
+  suite.explicitFailureStopsAndFailedCorrectionExhaustsTwoAttempts_5(t));
 test('review can request one corrective pass within five turns', (t: any) =>
   suite.reviewCanRequestOneCorrectivePassWithinFiveTurns_6(t));
 test('a weakened current test cannot replace frozen acceptance', (t: any) =>

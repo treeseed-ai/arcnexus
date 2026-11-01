@@ -21,6 +21,15 @@ detailed implementation plan.
 | 4. Expanded governance | Planned: deepen inherited patterns, contract validation and conformance checks based on actual use. |
 | 5. Multi-project operation | Planned: prove one real package relationship before broad composition and release coordination. |
 
+Pre-phase-three preparation adds YAML catalogs, mirrored owner directories, compact
+TypeScript and integrated linting (#63/#64, integrated). Initialization, inspectable
+task proposals and progress-driven execution (#65) are qualified by three live Luna
+demonstrations, including a self-discovered corrective repair. See the
+[pre-phase-three evidence](acceptance/pre-phase-three.md) and PR #70 for integration.
+React should display those same application services: configuration, ownership,
+proposals, execution progress and verified evidence. Automatic architectural acceptance,
+dynamic teams, advanced budgeting and crash recovery remain later work.
+
 Later architect decisions refine the historical sequence:
 
 - Application-managed worktrees and environment setup moved into phase one; they

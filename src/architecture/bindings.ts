@@ -5,6 +5,8 @@ import { InputError, type Command } from './config.js';
 import { ConfigurationReader } from './configuration.js';
 import { validateSchema } from './schema.js';
 export interface Bindings {
+  taskAcceptance?: Record<string, import('./assignment.js').HostCheck[]>;
+  taskRefresh?: Record<string, Command[]>;
   schemaVersion: 1;
   repositories: Record<string, string>;
   tools: Record<string, string>;

@@ -1,3 +1,4 @@
+import { ControlledInitializer } from './controlled-initializer.js';
 import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -21,6 +22,15 @@ export async function run(options: ScenarioOptions): Promise<void> {
   process.chdir(args[args.indexOf('--cd') + 1]!);
   let prompt = '';
   for await (const chunk of process.stdin) prompt += chunk;
+  if (
+    new ControlledInitializer().respond(
+      prompt,
+      args,
+      options.calls,
+      prompt.includes('Task proposal request:') ? 'proposal-workday' : 'ready',
+    )
+  )
+    return;
   new ControlledWorkday(options, args, prompt).execute();
 }
 
@@ -238,7 +248,7 @@ class ControlledWorkday {
   private coordination(action: string, complete = false) {
     return {
       action,
-      contract: 'sample-contract',
+      contract: this.options.mode === 'foreign-contract' ? 'another-contract' : 'sample-contract',
       requestId:
         action === 'request'
           ? null

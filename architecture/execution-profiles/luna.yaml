@@ -1,12 +1,8 @@
-schemaVersion: 2
+schemaVersion: 3
 id: luna
 model: gpt-6-luna
 reasoning: medium
 webSearch: live
-timeoutSeconds: 900
-commandTimeoutSeconds: 120
-maxTurns: 4
-maxCorrectiveTurns: 2
 operationCategories:
   - build
   - unit-test
@@ -14,4 +10,3 @@ operationCategories:
   - cli-check
   - http-check
   - lint
-maxOperationCalls: 24

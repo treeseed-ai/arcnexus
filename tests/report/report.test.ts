@@ -6,7 +6,82 @@ import { test } from 'node:test';
 import { markdownReport as typedMarkdownReport } from '../../dist/report/report.js';
 import { workflowFixture } from '../development-tooling/workflow-fixture.js';
 const markdownReport: (record: any) => string = typedMarkdownReport;
+function readableInitializationRecord(): any {
+  return {
+    ...record,
+    stage: 'implementation',
+    currentOperation: 'typecheck',
+    initialization: {
+      componentId: 'task-intake',
+      model: 'gpt-6-luna',
+      result: {
+        status: 'ready',
+        summary: 'Route [label](url), *emphasis*, and _emphasis_.',
+        selectedOwners: [{ id: 'report', reason: 'Owns [report](url), *reports*, and _reports_.' }],
+        questions: ['Should the summary include rejected owners?'],
+      },
+    },
+  };
+}
+function initializationSection(report: string): string {
+  const section = report.split('## Initialization\n\n')[1]?.split('\n\n## Execution progress')[0];
+  assert.ok(section, 'initialization section is present');
+  return section;
+}
+function assertReadableInitialization(section: string): void {
+  assert.ok(
+    section.includes('Component: task-intake'),
+    'initialization component is rendered as a labeled line',
+  );
+  assert.ok(
+    section.includes('Model: gpt-6-luna'),
+    'initializer model is rendered as a labeled line',
+  );
+  assert.ok(
+    section.includes('Routing outcome: ready'),
+    'routing outcome is rendered as a labeled line',
+  );
+  assert.ok(
+    section.includes(
+      'Summary: Route &#91;label&#93;&#40;url&#41;, &#42;emphasis&#42;, and &#95;emphasis&#95;.',
+    ),
+    'summary is rendered as a labeled line',
+  );
+  assertInitializationLists(section);
+}
+function assertInitializationLists(section: string): void {
+  assert.ok(
+    section.includes(
+      'report — Owns &#91;report&#93;&#40;url&#41;, &#42;reports&#42;, and &#95;reports&#95;.',
+    ),
+    'selected owner reason remains visible',
+  );
+  assert.ok(
+    section.includes('Should the summary include rejected owners?'),
+    'outstanding questions remain visible',
+  );
+  assert.doesNotMatch(
+    section,
+    /^\s*\{/u,
+    'readable summary does not serialize the raw JSON object',
+  );
+}
 class ReportTests {
+  initializationSummaryIsReadableAndPreservesExecutionProgress_10() {
+    const report = markdownReport(readableInitializationRecord());
+    assertReadableInitialization(initializationSection(report));
+    assert.ok(
+      report.includes('Stage: "implementation"; Current command: "typecheck"'),
+      'execution progress remains visible',
+    );
+    const historical = initializationSection(markdownReport(record));
+    assert.match(
+      historical ?? '',
+      /unavailable/u,
+      'missing historical initialization evidence is explicit',
+    );
+  }
+
   changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence_1() {
     const changes = Object.freeze([
       Object.freeze({ path: 'z.txt', kind: '?' }),
@@ -169,6 +244,8 @@ const section = (report: any) => report.split('## Changed files\n\n')[1]?.split(
 
 test('changed files are sorted independently of input and preserve captured evidence', () =>
   suite.changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence_1());
+test('INITIALIZATION_SUMMARY_READABLE', () =>
+  suite.initializationSummaryIsReadableAndPreservesExecutionProgress_10());
 
 test('absent and empty changes have an explicit empty section', () =>
   suite.absentAndEmptyChangesHaveAnExplicitEmptySection_2());

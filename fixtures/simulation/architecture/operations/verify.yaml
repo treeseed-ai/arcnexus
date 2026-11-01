@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: verify
 repository: sample
 purpose: Exercise fixture verification
@@ -13,7 +13,6 @@ activities:
 command: node
 args:
   - verify.mjs
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

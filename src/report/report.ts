@@ -1,3 +1,4 @@
+import { progressMarkdown } from './progress-view.js';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { planMarkdown, type Plan } from '../assignment/plan.js';
@@ -44,7 +45,7 @@ class CoordinationEvidence {
       | undefined;
     this.planned = this.resolved?.assignment?.kind
       ? (this.resolved.assignment.kind === 'change' ? 3 : 1) +
-        (this.resolved.executionProfile?.schemaVersion === 2 ? 1 : 0)
+        ((this.resolved.executionProfile?.schemaVersion ?? 1) >= 2 ? 1 : 0)
       : undefined;
     this.activities = Array.isArray(record.activities)
       ? (record.activities as Array<{ activity?: string; detail?: { log?: string } }>)
@@ -207,7 +208,7 @@ export function markdownReport(record: RecordData): string {
     typeof record.outcome === 'string' && record.outcome.length > 0
       ? record.outcome
       : 'No workflow outcome recorded.';
-  return `# ArcNexus execution ${record.id}\n\nStatus: ${record.status}\n\nEvidence mode: ${String(record.evidenceMode ?? 'unavailable (historical)')}\n\nObjective: ${String(record.objective ?? 'Prepare environment')}\n\nWorkspace: ${record.workspace}\n\nBase: ${record.base}\n\n${record.error ? `Failure: ${record.error}\n\n` : ''}Commands recorded: ${record.commands.length}\n\n## Outcome\n\n${outcome}\n\n## Activities\n\n${activityLines(record)}\n\n${new CoordinationEvidence(record).render()}${record.plan ? planMarkdown(record.plan as Plan) + '\n' : ''}## Changed files\n\n${changedFiles(record)}\n\n## Operations\n\n${operationLines(record)}\n\n## Managed services\n\n${serviceLines(record)}\n\nSee report.json, events.jsonl, changes.patch and command logs for evidence.\n`;
+  return `# ArcNexus execution ${record.id}\n\nStatus: ${record.status}\n\nEvidence mode: ${String(record.evidenceMode ?? 'unavailable (historical)')}\n\nObjective: ${String(record.objective ?? 'Prepare environment')}\n\nWorkspace: ${record.workspace}\n\nBase: ${record.base}\n\n${record.error ? `Failure: ${record.error}\n\n` : ''}Commands recorded: ${record.commands.length}\n\n## Outcome\n\n${outcome}\n\n## Activities\n\n${activityLines(record)}\n\n${progressMarkdown(record)}${new CoordinationEvidence(record).render()}${record.plan ? planMarkdown(record.plan as Plan) + '\n' : ''}## Changed files\n\n${changedFiles(record)}\n\n## Operations\n\n${operationLines(record)}\n\n## Managed services\n\n${serviceLines(record)}\n\nSee report.json, events.jsonl, changes.patch and command logs for evidence.\n`;
 }
 export function saveMarkdown(root: string, record: RecordData): void {
   writeFileSync(join(root, 'runs', record.id, 'report.md'), markdownReport(record), {

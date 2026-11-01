@@ -16,7 +16,7 @@ import {
 } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
 import { covered } from '../architecture/components.js';
-import { InputError, type Command } from '../architecture/config.js';
+import { milliseconds, InputError, type Command } from '../architecture/config.js';
 import { changes, checkScope } from '../change-inspection/changes.js';
 import { operationEnvironment } from '../operations/operations.js';
 import { execute, git, type CommandResult } from '../operations/process.js';
@@ -34,7 +34,7 @@ export interface SessionOptions {
   model: string;
   executable: string;
   signal: AbortSignal;
-  maxAttempts: number;
+  maxAttempts?: number;
   control?: SessionControl;
   session: StewardSession;
 }
@@ -57,7 +57,8 @@ export class SessionState {
     const { root, record, maxAttempts } = options;
     const resolved = record.resolvedAssignment as ResolvedAssignment | undefined;
     if (!resolved) throw new InputError('A captured assignment is required');
-    if (maxAttempts !== 1 && maxAttempts !== 2) throw new InputError('Invalid maximum attempts');
+    if (maxAttempts !== undefined && (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1))
+      throw new InputError('Invalid maximum attempts');
     this.resolved = resolved;
     this.component = resolved.context.at(-1)!;
     this.assignment = resolved.assignment;
@@ -66,8 +67,24 @@ export class SessionState {
     this.validate();
     this.dir = join(root, 'runs', record.id);
     this.hostChecks = materializeChecks(resolved, join(this.dir, 'acceptance'));
-    this.planned = resolved.executionProfile.schemaVersion === 2;
+    this.planned = resolved.executionProfile.schemaVersion >= 2;
     this.initialize();
+    this.captureLimits();
+  }
+  private captureLimits(): void {
+    const profile = this.resolved.executionProfile;
+    const { root, record, maxAttempts } = this.options;
+    record.executionLimits = {
+      timeoutSeconds: profile.timeoutSeconds ?? null,
+      commandTimeoutSeconds: profile.commandTimeoutSeconds ?? null,
+      maxTurns: profile.maxTurns ?? null,
+      maxCorrectiveTurns: profile.maxCorrectiveTurns ?? null,
+      maxOperationCalls: profile.maxOperationCalls ?? null,
+      maxChecklistCalls: profile.maxChecklistCalls ?? null,
+      maxAttempts: maxAttempts ?? null,
+    };
+    observe(root, record, 'execution.limits', record.executionLimits);
+    save(root, record);
   }
   private assignmentScope(): string[] {
     const { assignment, documentationOnly, resolved, component } = this;
@@ -155,7 +172,7 @@ export class SessionState {
         join(this.dir, `command-${this.options.record.commands.length}.log`),
         this.options.signal,
         {
-          timeoutMs: this.resolved.executionProfile.commandTimeoutSeconds * 1000,
+          timeoutMs: milliseconds(this.resolved.executionProfile.commandTimeoutSeconds),
           env: operationEnvironment(this.options.record),
         },
       );

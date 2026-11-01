@@ -102,3 +102,24 @@ function validateWorkspace(v: Environment): void {
     }
   }
 }
+
+/** Only explicitly selected limits constrain work; undefined means unconfigured. */
+export function milliseconds(seconds?: number): number | undefined {
+  return seconds === undefined ? undefined : seconds * 1000;
+}
+export function minimumLimit(...values: Array<number | undefined>): number | undefined {
+  const configured = values.filter((value): value is number => value !== undefined);
+  return configured.length ? Math.min(...configured) : undefined;
+}
+
+export function capturedCommandTimeout(record: {
+  [key: string]: unknown;
+  resolvedAssignment?: unknown;
+  preparationCommandTimeoutSeconds?: unknown;
+}): number | undefined {
+  const resolved = record.resolvedAssignment as
+    { executionProfile?: { commandTimeoutSeconds?: number } } | undefined;
+  const limit =
+    record.preparationCommandTimeoutSeconds ?? resolved?.executionProfile?.commandTimeoutSeconds;
+  return typeof limit === 'number' ? milliseconds(limit) : undefined;
+}

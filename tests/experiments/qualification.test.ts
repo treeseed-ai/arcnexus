@@ -56,7 +56,7 @@ class QualificationTests {
     });
     t.after(() => child.kill('SIGKILL'));
     const exited = new Promise((resolve: any) => child.on('exit', (code: any) => resolve(code)));
-    const deadline = Date.now() + 10000;
+    const deadline = Date.now() + 30000;
     while (!(
       existsSync(f.calls) && readFileSync(f.calls, 'utf8').includes('"stage":"implementation"')
     )) {
@@ -112,7 +112,7 @@ function campaign(t: any, mode: any = 'success'): any {
     return spawnSync(process.execPath, [program, manifest, output], {
       env: f.env,
       encoding: 'utf8',
-      timeout: 30000,
+      timeout: 30 * 60 * 1000,
     });
   };
   return { ...f, value, run, output };

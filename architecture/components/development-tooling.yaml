@@ -57,7 +57,7 @@ access:
     - docs/development-tooling
     - .github
     - .
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

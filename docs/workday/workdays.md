@@ -1,5 +1,12 @@
 # Two-owner workdays
 
+Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+and [initialization](../task-intake/initialization.md). Initialization precedes worker
+inference. There are no implicit execution or corrective quotas; the numeric limits
+below describe earlier defaults or explicitly captured legacy configurations. Planned
+stages and host checkpoints remain required, and repeated failures require diagnosis.
+
+
 Phase two introduces a deterministic workday: one requester, one authorized recipient,
 one shared candidate worktree and sequential Luna execution. The runtime captures authority and verifies each handoff before dispatch.
 
@@ -44,10 +51,10 @@ regression evidence, attempt/operation counters, consumed active time, authority
 and candidate evidence. Standalone execution uses the same session engine. A checkpoint
 is inspection evidence, not authorization to recover a process or reset a budget.
 
-The runtime routes one dependency request, permits at most two clarification
-rounds, and parks/restores unfinished requester changes. Acceptance is distinct from
-verified delivery. Each assignment retains 900 seconds of cumulative active execution;
-the workday has a 2,400-second wall-clock deadline. Cancellation/interruption retains
+The runtime routes one dependency request and parks/restores unfinished requester
+changes. Clarification is governed by observable loop guards, not a default round
+quota. Acceptance is distinct from verified delivery. Assignment active time and
+workday wall-clock time remain observable; neither has an implicit deadline. Cancellation/interruption retains
 partial evidence and stops dispatch. No resume command or background activation exists.
 
 ## Routed execution
@@ -69,9 +76,9 @@ are bounded to 16 KiB. A request may not replace the captured recipient objectiv
 checks. Accept commits intent only; delivery is created by the host after verification.
 
 The recipient decides during its read-only planning turn. Clarification and replies
-are read-only and cannot activate a third owner. One dependency and two clarification
-rounds are permitted. The six workday coordination/continuation turns are additional
-to existing engineering turns; every turn is counted once. Attempts, operation calls,
+are read-only and cannot activate a third owner. One dependency is permitted; clarification
+and coordination have no default turn quota. Every turn is counted once, with
+explicit caller limits enforced when present. Attempts, operation calls,
 plans and frozen tests persist. Incomplete activities continue in the same thread and
 attempt; a completed specification still passes the expected-red gate. A review that
 yields must inspect the assembled candidate again when it resumes.
@@ -130,3 +137,14 @@ turn start. Host acceptance entries are read-only and cannot be completed by a m
 A plan revision introduced during a turn can update its new items through `plan.update`;
 the final result uses only the IDs advertised for that turn. Host validation still
 checks every update against the current accepted plan and requires completion evidence.
+
+The model-facing coordination schema constrains `contract` to the captured value.
+It is an exact authority identifier, even when intake initially supplies descriptive
+text. Stewards must not paraphrase it. The host still validates incoming values
+independently; a controlled or incompatible executable cannot bypass authority by
+ignoring the response schema.
+
+Each turn repeats the authoritative assignment objective and explicitly numbered
+acceptance criteria after inbox context. Plan criterion indices refer only to this
+captured assignment list. An incoming request's acceptance text is supplemental;
+it cannot waive implementation, replace ownership, or reduce required acceptance.

@@ -11,6 +11,13 @@ class HandoffsTests {
     assert.equal(r.status, 0, r.stderr + '\n' + r.stdout);
     const w = JSON.parse(r.stdout);
     assert.equal(w.status, 'completed');
+    assert.equal(w.initialization.turns, 1);
+    assert.equal(
+      readFileSync(f.calls + '.initialization', 'utf8')
+        .trim()
+        .split('\n').length,
+      1,
+    );
     assert.equal(w.assignments.length, 2);
     assert.ok(w.messages.some((m: any) => m.payload.decision === 'delivered'));
     const calls = readFileSync(f.calls, 'utf8')
@@ -44,8 +51,9 @@ class HandoffsTests {
     assert.notEqual(w.status, 'completed');
     assert.match(
       w.error,
-      /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination/i,
+      /owner|Nested|budget|requesting|Other-owner|Command failed|blocked|Coordination|NeedsAttention/i,
     );
+    if (mode === 'exhaust-clarification') assert.equal(w.status, 'needs_attention');
     if (mode === 'unknown-owner')
       assert.match(
         readFileSync(join(f.state, 'workdays', w.workspaceId, 'report.md'), 'utf8'),
@@ -88,6 +96,7 @@ class HandoffsTests {
       .trim()
       .split('\n')
       .map((line: string) => JSON.parse(line));
+    this.contracts(calls);
     assert.deepEqual(
       calls.find((c: any) => c.owner === 'sample' && c.stage === 'planning').coordinationSchema
         .anyOf[1].properties.action.enum,
@@ -109,6 +118,12 @@ class HandoffsTests {
       { type: 'null' },
     );
   }
+  private contracts(calls: any[]): void {
+    for (const call of calls) {
+      const schema = call.coordinationSchema.anyOf?.[1];
+      if (schema) assert.deepEqual(schema.properties.contract.enum, ['sample-contract']);
+    }
+  }
 }
 const suite = new HandoffsTests();
 
@@ -127,6 +142,7 @@ test('rejected owner request ends workday with retained requester changes', (t: 
   suite.rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges_2(t));
 for (const mode of [
   'unknown-owner',
+  'foreign-contract',
   'unsolicited-answer',
   'duplicate',
   'exhaust-clarification',

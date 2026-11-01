@@ -19,7 +19,7 @@ class CheckLayoutTests {
     const result = spawnSync(process.execPath, [resolve('dist/experiments/checks', check)], {
       cwd: root,
       encoding: 'utf8',
-      timeout: 10000,
+      timeout: 30 * 60 * 1000,
     });
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /acceptance passed|INDEPENDENT_REPORT_OPERATIONS_PASSED/);

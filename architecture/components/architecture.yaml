@@ -1,7 +1,7 @@
 id: architecture
 type: library
-purpose: Resolve architectural definitions and immutable assignment inputs;
-  execution is owned by the assignment component
+purpose: Resolve architectural definitions and immutable assignment inputs; execution is owned
+  by the assignment component
 path: src/architecture
 objectives:
   - Make actual execution outcomes easy to inspect
@@ -47,7 +47,7 @@ access:
     - tests/architecture
     - docs/architecture
     - schemas
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

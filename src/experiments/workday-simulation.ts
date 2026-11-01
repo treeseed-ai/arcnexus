@@ -1,3 +1,4 @@
+import { SimulationInitializer } from './simulation-initializer.js';
 import { createHash } from 'node:crypto';
 import { writeFileSync } from 'node:fs';
 import { ConfigurationReader } from '../architecture/configuration.js';
@@ -25,6 +26,7 @@ class WorkdaySimulation {
     this.prepare();
     let prompt = '';
     for await (const chunk of process.stdin) prompt += chunk;
+    if (new SimulationInitializer().respond(prompt)) return;
     this.owner = prompt.includes('active component identity gateway as') ? 'gateway' : 'identity';
     this.stage = prompt.match(/Activity turn: ([a-z-]+)/)?.[1];
     this.delivered = prompt.includes('Verified owner delivery');

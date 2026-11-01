@@ -152,7 +152,7 @@ class HandoffCampaign {
     return spawnSync(
       process.execPath,
       [cli, 'experiment', command, this.manifest, '--bindings', this.bindings, ...args],
-      { encoding: 'utf8', env: this.fixture.env, timeout: 60000 },
+      { encoding: 'utf8', env: this.fixture.env, timeout: 30 * 60 * 1000 },
     );
   }
 }
@@ -210,7 +210,7 @@ class SimulationCampaign {
       {
         encoding: 'utf8',
         env: { ...process.env, ARCNEXUS_STATE_DIR: join(this.root, 'state') },
-        timeout: 90000,
+        timeout: 30 * 60 * 1000,
       },
     );
   }

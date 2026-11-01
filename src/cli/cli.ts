@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { TaskCommand } from './task-command.js';
 import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -18,7 +19,7 @@ import { lock, save, stateRoot, type RecordData } from '../workspace/state.js';
 import { cleanup, createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
 
 const help = `ArcNexus
-  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <1|2>]
+  run <component-id> <objective> --project <repository> [--model <model>] [--codex-path <executable>] [--max-attempts <count>]
   workday run <manifest> --project <repository> [--base <ref>] [--issue <number>] [--codex-path <executable>]
   workday inspect <manifest> --project <repository> [--base <ref>] [--bindings <file>] [--json]
   workday status <workday-id> [--json]
@@ -29,35 +30,41 @@ const help = `ArcNexus
   validate --project <repository> [--base <ref>]
   inspect <component-id> <objective> --project <repository> [--kind change|research|review] [--json]
   run/inspect: --assignment <file> replaces objective
+  task plan --input <text-file> --project <repository> [--initializer-model <model>]
+  task inspect <proposal-id> [--json]
+  task run <proposal-id>
   prepare --project <repository>
   status <workspace-id> [--json]\n  follow <workspace-id> [--json] [--after <sequence>]\n  cleanup <workspace-id>
 Composed workspaces: prepare/run/inspect --bindings <file>
 Shared run/prepare options: --base <ref> --issue <number> --timeout-seconds <seconds>
 `;
+const cliOptions = {
+  mode: { type: 'string' },
+  output: { type: 'string' },
+  bindings: { type: 'string' },
+  after: { type: 'string' },
+  'composition-profile': { type: 'string' },
+  'execution-profile': { type: 'string' },
+  assignment: { type: 'string' },
+  kind: { type: 'string' },
+  json: { type: 'boolean' },
+  project: { type: 'string' },
+  input: { type: 'string' },
+  model: { type: 'string' },
+  'initializer-model': { type: 'string' },
+  'codex-path': { type: 'string' },
+  'max-attempts': { type: 'string' },
+  base: { type: 'string' },
+  issue: { type: 'string' },
+  'timeout-seconds': { type: 'string' },
+  help: { type: 'boolean' },
+  version: { type: 'boolean' },
+} as const;
 function argumentsForCommand() {
   try {
     return parseArgs({
       allowPositionals: true,
-      options: {
-        mode: { type: 'string' },
-        output: { type: 'string' },
-        bindings: { type: 'string' },
-        after: { type: 'string' },
-        'composition-profile': { type: 'string' },
-        'execution-profile': { type: 'string' },
-        assignment: { type: 'string' },
-        kind: { type: 'string' },
-        json: { type: 'boolean' },
-        project: { type: 'string' },
-        model: { type: 'string' },
-        'codex-path': { type: 'string' },
-        'max-attempts': { type: 'string' },
-        base: { type: 'string' },
-        issue: { type: 'string' },
-        'timeout-seconds': { type: 'string' },
-        help: { type: 'boolean' },
-        version: { type: 'boolean' },
-      },
+      options: cliOptions,
     });
   } catch (error) {
     throw new InputError(String(error));
@@ -85,7 +92,7 @@ class CliApplication {
   private values: ReturnType<typeof argumentsForCommand>['values'] = {};
   private positionals: string[] = [];
   private command = '';
-  private seconds = 900;
+  private seconds?: number;
   private record?: RecordData;
   private root?: string;
   private unlock?: () => void;
@@ -94,6 +101,7 @@ class CliApplication {
   private cancelled = false;
   private readonly cancel = () => {
     this.cancelled = true;
+    if (this.record) this.record.cancellation = 'requested';
     this.controller.abort(new Error('Cancelled'));
   };
 
@@ -123,6 +131,8 @@ class CliApplication {
 
   private async dispatch(): Promise<void> {
     switch (this.command) {
+      case 'task':
+        return new TaskCommand(this.positionals, this.values, this.controller.signal).run();
       case 'workday':
         return this.workday();
       case 'experiment':
@@ -143,13 +153,19 @@ class CliApplication {
       return;
     }
     const root = this.acquire();
-    this.timer = setTimeout(
-      () => this.controller.abort(new Error('Operation timed out')),
-      (input.resolved?.executionProfile.timeoutSeconds ?? this.seconds) * 1000,
-    );
+    this.startTimer(input.resolved?.executionProfile.timeoutSeconds);
     if (this.command === 'cleanup')
       console.log(JSON.stringify(cleanup(root, this.positionals[1]!)));
     else await this.execute(input, root);
+  }
+
+  private startTimer(seconds?: number): void {
+    const timeout = seconds ?? this.seconds;
+    if (timeout !== undefined)
+      this.timer = setTimeout(
+        () => this.controller.abort(new Error('Operation timed out')),
+        timeout * 1000,
+      );
   }
 
   private acquire(): string {
@@ -172,12 +188,21 @@ class CliApplication {
     const { values, positionals } = this;
     if (
       !values.project ||
-      Object.keys(values).some((k) => !['project', 'base', 'bindings', 'json'].includes(k))
+      Object.keys(values).some(
+        (k) => !['project', 'base', 'bindings', 'json', 'initializer-model'].includes(k),
+      )
     )
       throw new InputError('workday inspect requires --project');
     console.log(
       JSON.stringify(
-        resolveWorkday(positionals[2]!, values.project, values.base, values.bindings),
+        resolveWorkday(
+          positionals[2]!,
+          values.project,
+          values.base,
+          values.bindings,
+          {},
+          values['initializer-model'],
+        ),
         null,
         values.json ? undefined : 2,
       ),
@@ -190,12 +215,20 @@ class CliApplication {
     if (
       !values.project ||
       Object.keys(values).some(
-        (k) => !['project', 'base', 'bindings', 'issue', 'codex-path'].includes(k),
+        (k) =>
+          !['project', 'base', 'bindings', 'issue', 'codex-path', 'initializer-model'].includes(k),
       ) ||
       (values.issue !== undefined && !/^[1-9]\d*$/.test(values.issue))
     )
       throw new InputError('Invalid workday run arguments');
-    const input = resolveWorkday(positionals[2]!, values.project, values.base, values.bindings);
+    const input = resolveWorkday(
+      positionals[2]!,
+      values.project,
+      values.base,
+      values.bindings,
+      {},
+      values['initializer-model'],
+    );
     const root = this.acquire();
     const { WorkdayRunner } = await import('../workday/workday.js');
     const result = await new WorkdayRunner(
@@ -294,9 +327,11 @@ class CliApplication {
       throw new InputError(help);
     if (
       values['max-attempts'] !== undefined &&
-      (command !== 'run' || !/^[12]$/.test(values['max-attempts']))
+      (command !== 'run' ||
+        !/^[1-9]\d*$/.test(values['max-attempts']) ||
+        !Number.isSafeInteger(Number(values['max-attempts'])))
     )
-      throw new InputError('--max-attempts is run-only and accepts 1 or 2');
+      throw new InputError('--max-attempts is run-only and requires a positive integer');
     if (command === 'prepare' && (!values.project || positionals.length !== 1))
       throw new InputError('prepare requires --project');
     if (
@@ -315,7 +350,9 @@ class CliApplication {
     const { values } = this;
     if (values.issue && !/^[1-9]\d*$/.test(values.issue))
       throw new InputError('Invalid issue number');
-    const seconds = (this.seconds = Number(values['timeout-seconds'] ?? 900));
+    const seconds = (this.seconds =
+      values['timeout-seconds'] === undefined ? undefined : Number(values['timeout-seconds']));
+    if (seconds === undefined) return;
     if (!Number.isFinite(seconds) || seconds <= 0 || seconds > 2_147_483)
       throw new InputError('Invalid timeout');
   }
@@ -364,6 +401,7 @@ class CliApplication {
           compositionProfile: values['composition-profile'],
           executionProfile: values['execution-profile'],
           model: values.model,
+          initializerModel: values['initializer-model'],
           timeoutSeconds: values['timeout-seconds'] === undefined ? undefined : this.seconds,
         })
       : undefined;
@@ -394,7 +432,9 @@ class CliApplication {
         resolved!.executionProfile.model,
         values['codex-path'] ?? 'codex',
         this.controller.signal,
-        Number(values['max-attempts'] ?? 1),
+        values['max-attempts'] === undefined
+          ? resolved!.executionProfile.maxAttempts
+          : Number(values['max-attempts']),
       );
     else await prepareWorkspace(root, record, this.controller.signal);
   }
@@ -403,7 +443,7 @@ class CliApplication {
     if (this.record) {
       this.record.status = this.cancelled
         ? 'cancelled'
-        : ['blocked', 'no_changes'].includes(this.record.status)
+        : ['blocked', 'no_changes', 'needs_attention'].includes(this.record.status)
           ? this.record.status
           : 'failed';
       this.record.error = String(error);

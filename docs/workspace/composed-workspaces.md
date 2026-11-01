@@ -3,7 +3,7 @@
 Increment three (#32) adds one writable primary repository and explicitly pinned,
 read-only dependency worktrees. Existing single-repository environments remain valid.
 
-`architecture/environment.json` may declare `workspace` with a `primary` identity
+`architecture/environment.yaml` may declare `workspace` with a `primary` identity
 (`id`, canonical HTTPS `repository`) and ordered `dependencies`. Each dependency
 provides `id`, `repository`, full immutable `commit`, repository-relative `path`,
 `prerequisites`, `setup`, and `generatedDirectories`. Dependency locations must be

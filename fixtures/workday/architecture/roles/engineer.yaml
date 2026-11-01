@@ -1,4 +1,4 @@
-schemaVersion: 1
+schemaVersion: 3
 id: engineer
 purpose: Bounded simulation
 responsibilities:

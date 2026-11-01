@@ -13,7 +13,9 @@ export class ControlledPlanning {
       this.checkExecutionPrompt(turn);
       turn.result.planUpdates = [this.update()];
       if (this.options.mode === 'bridge-update') await this.bridgeUpdate(turn);
-      if (this.options.operations) await this.operation(turn);
+      if (this.options.parallelOperations) await this.parallelOperations(turn);
+      else if (this.options.operations)
+        for (let i = 0; i < (this.options.operationRepeats ?? 1); i++) await this.operation(turn);
     }
   }
   private strictSchema(schema: any): void {
@@ -104,25 +106,59 @@ export class ControlledPlanning {
         });
     appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
   }
+  private async parallelOperations(turn: WorkflowTurn): Promise<void> {
+    const replies = await this.withClient(turn, (client) =>
+      Promise.all(
+        [0, 1].map(() =>
+          this.request(client, {
+            name: 'operations.run',
+            arguments: { id: 'test' },
+          }),
+        ),
+      ),
+    );
+    for (const reply of replies)
+      appendFileSync(this.options.operations!, JSON.stringify(reply) + '\n');
+  }
   private async service(client: Client) {
-    const started = await client.callTool({ name: 'services.start', arguments: { id: 'test' } });
+    const started = await this.request(client, {
+      name: 'services.start',
+      arguments: { id: 'test' },
+    });
     if (started.isError) throw new Error(JSON.stringify(started));
     if (this.options.holdService)
       await new Promise(() => {
         setInterval(() => {}, 1000);
       });
-    const reply = await client.callTool({
+    const reply = await this.request(client, {
       name: 'operations.run',
       arguments: { id: 'http-check' },
     });
     if (reply.isError) throw new Error(JSON.stringify(reply));
-    await client.callTool({ name: 'services.logs', arguments: { id: 'test' } });
-    await client.callTool({ name: 'services.status', arguments: { id: 'test' } });
+    await this.request(client, { name: 'services.logs', arguments: { id: 'test' } });
+    await this.request(client, { name: 'services.status', arguments: { id: 'test' } });
     if (this.options.delayedServiceExit) await new Promise((resolve) => setTimeout(resolve, 800));
     return reply;
   }
   private async call(turn: WorkflowTurn, name: string, args: Record<string, unknown>) {
-    return this.withClient(turn, (client) => client.callTool({ name, arguments: args }));
+    return this.withClient(turn, (client) => this.request(client, { name, arguments: args }));
+  }
+  private async request(
+    client: Client,
+    params: { name: string; arguments: Record<string, unknown> },
+  ): Promise<any> {
+    let reply: any = await client.callTool(params);
+    while (!reply.isError) {
+      const result = JSON.parse(reply.content[0].text);
+      if (result.status !== 'pending') break;
+      if (this.options.operations)
+        appendFileSync(this.options.operations + '.pending', result.requestId + '\n');
+      reply = await client.callTool({
+        name: 'execution.wait',
+        arguments: { requestId: result.requestId },
+      });
+    }
+    return reply;
   }
   private async withClient<T>(
     turn: WorkflowTurn,

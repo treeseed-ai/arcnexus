@@ -1,5 +1,12 @@
 # Observable single-steward workflow
 
+Current version-three execution policy is defined in [progress and limits](../assignment/progress.md)
+and [initialization](../task-intake/initialization.md). Initialization precedes worker
+inference. There are no implicit execution or corrective quotas; the numeric limits
+below describe earlier defaults or explicitly captured legacy configurations. Planned
+stages and host checkpoints remain required, and repeated failures require diagnosis.
+
+
 Increment two (#31) implements this contract. One Luna thread performs bounded
 work. Activities are research, documentation, testing, implementation, review and
 release/handoff; they are not separate agents. The host records transitions in
@@ -7,7 +14,7 @@ release/handoff; they are not separate agents. The host records transitions in
 
 ## Assignment planning
 
-Version-2 execution profiles first run a source-read-only planning turn. The host
+Version-2/3 execution profiles first run a source-read-only planning turn. The host
 validates and retains the plan and checklist; `plan.update` records progress or a
 reasoned revision during execution. Final `planUpdates` are also accepted. Agent
 completion claims remain separate from mandatory host acceptance. See
@@ -33,12 +40,14 @@ only declared documentation paths may change and project verification still runs
 All other changes default to `changeType: "behavior"`. Missing documentation or
 regression scope is a preflight error for behavior work.
 
-Version 1: one implementation attempt and at most three turns. Version 2 adds
-one planning turn, giving four normal or six corrective turns. `--max-attempts 2`
-allows one corrective implementation turn plus review, at most five total turns.
-Specification failures stop; scope/identity violations, invalid output, cancellation
-and timeout never authorize correction. A failed host check or actionable review
-can use the remaining corrective attempt. All turns share the original timeout.
+Version 1 preserves the engineering stages without a planning turn. Versions 2/3
+add planning. No version acquires implicit turn or corrective-attempt limits when
+its fields are absent. `--max-attempts 2` explicitly allows one corrective
+implementation; other positive ceilings are also supported. Specification failures
+stop; scope/identity violations, invalid output, cancellation and explicit timeout
+never authorize correction. Failed host checks or actionable review findings can
+produce a concrete repair objective, subject to captured limits and loop guards.
+All turns retain the same thread and any caller-selected overall deadline.
 
 The regression check is selected from the immutable component command list. The
 agent cannot introduce arbitrary host commands. An expected diagnostic is evidence

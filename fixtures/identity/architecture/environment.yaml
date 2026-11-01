@@ -10,4 +10,4 @@ setup:
       - --no-fund
 generatedDirectories:
   - node_modules
-schemaVersion: 1
+schemaVersion: 3

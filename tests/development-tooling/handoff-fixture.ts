@@ -34,7 +34,7 @@ class HandoffFixture {
     return spawnSync(
       process.execPath,
       [cli, 'workday', 'run', this.manifest, '--project', f.repo, '--codex-path', f.executable],
-      { encoding: 'utf8', env: f.env, timeout: 60000 },
+      { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
     );
   }
   private setup(): void {

@@ -3,14 +3,14 @@
 Inspect without preparation or inference:
 
 ```sh
-node dist/cli.js experiment inspect experiments/operations.json --bindings /absolute/local-bindings.json --json
+node dist/cli.js experiment inspect experiments/operations.yaml --bindings /absolute/local-bindings.json --json
 ```
 
 Execute once, with an explicit evidence mode:
 
 ```sh
-node dist/cli.js experiment run experiments/operations.json --bindings /absolute/local-bindings.json --mode live --output /absolute/new-campaign
-node dist/cli.js experiment run experiments/simulation.json --bindings /absolute/simulation-bindings.json --mode simulation
+node dist/cli.js experiment run experiments/operations.yaml --bindings /absolute/local-bindings.json --mode live --output /absolute/new-campaign
+node dist/cli.js experiment run experiments/simulation.yaml --bindings /absolute/simulation-bindings.json --mode simulation
 ```
 
 A missing mode is an input error. Inspection reports mode as unselected; it never
@@ -48,7 +48,7 @@ A changed supervisor invalidates the campaign and prevents further executions.
 
 ## Simulation and live evidence
 
-`experiments/simulation.json` uses only the bundled `single-steward-v1` fixture
+`experiments/simulation.yaml` uses only the bundled `single-steward-v1` fixture
 contract and fixed success, repair, boundary and failure scenarios. The caller
 copies `fixtures/simulation` into an independent Git repository, commits it and
 provides that immutable commit in bindings. The application does not initialize,
@@ -69,8 +69,8 @@ owner requests. Unexpected failures remain failures, not accepted simulations.
 
 Cases run once in order. Ordinary failures retain evidence and later cases still
 run; cancellation stops the active CLI and subsequent cases. Independent supervisors
-stop managed processes on parent loss. Each assignment retains its overall budget;
-post-run checks remain bounded to 120 seconds, with bounded logs. A hard interruption
+stop managed processes on parent loss. Assignments retain any explicitly captured execution limits;
+post-run checks have no implicit timeout and retain bounded logs. A hard interruption
 leaves an incomplete campaign; no resume, automatic retry or model escalation occurs.
 
 Campaign JSON and Markdown retain mode, revisions, hashes, case reports, usage,
@@ -109,12 +109,13 @@ Version-2 experiment manifests may select `workday` (a manifest path) instead of
 single `component`/`assignment`. Their expected outcome is `completed` or `blocked`.
 The resolver captures both participant envelopes and combined checks before the first
 case. Execution delegates to `workday run`; it does not implement another scheduler.
-Workday limits remain 900 active seconds per owner and 2,400 wall-clock seconds.
+Workdays preserve explicitly configured limits; absent limits remain unset.
+Each executable case initializes once through its existing runtime entry point.
 
 The fixed `handoff` simulation scenario requires the exact bundled `fixtures/workday`
 contract. It uses two scripted threads and real host checks. Live cases omit `scenario`
 and use Luna/medium. Both retain explicit mode labels in campaign and workday evidence.
-`experiments/workday-fixture.json` is the live contract example; the corresponding
+`experiments/workday-fixture.yaml` is the live contract example; the corresponding
 simulation manifest demonstrates the same runtime without inference. Local bindings
 supply pinned repositories, the supervising build, executable paths and issue metadata.
 
@@ -136,3 +137,7 @@ fixed build and guidance-test operations. The steward obtains regression feedbac
 through the verified host route; direct sandbox output is not substituted for the
 host's expected-red evidence. Tool bindings and operation definitions are captured
 before each workday, alongside the unchanged references policy.
+
+An omitted experiment-case attempt limit leaves the runtime limit unset. Only an
+explicit `maxAttempts` is forwarded to the worker; experiment wrappers must not
+introduce an implicit single-attempt quota.

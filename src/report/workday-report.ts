@@ -142,7 +142,7 @@ class WorkdayMarkdown {
   }
   private timing(): string {
     const report = this.report;
-    return `\n\n## Timing and usage\n\nElapsed: ${report.elapsedMs} ms. Coordination allowance used: ${report.coordinationTurns}/6. Clarification rounds: ${report.clarificationRounds}/2.\n\n${text(JSON.stringify(workdayMetrics(report)))}\n\nSupplied prompt sizes are not the complete effective Codex context. Agent findings and checklist completion remain claims; host checks below supply verification.\n\n## Inbox and delivery\n\n`;
+    return `\n\n## Timing and usage\n\nElapsed: ${report.elapsedMs} ms. Coordination allowance used: ${report.coordinationTurns}; configured limit: ${text((report.budgets as { coordinationTurns?: number } | undefined)?.coordinationTurns ?? 'not configured')}. Clarification rounds: ${report.clarificationRounds}; guarded by observed progress.\n\n${text(JSON.stringify(workdayMetrics(report)))}\n\nSupplied prompt sizes are not the complete effective Codex context. Agent findings and checklist completion remain claims; host checks below supply verification.\n\n## Inbox and delivery\n\n`;
   }
   private inbox(): string {
     const report = this.report;

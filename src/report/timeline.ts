@@ -1,3 +1,4 @@
+import { progressView } from './progress-view.js';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -81,18 +82,14 @@ function parseTimeline(text: string): ReturnType<typeof readTimeline> {
 export function readStatus(root: string, id: string) {
   if (!/^[a-zA-Z0-9_-]+$/.test(id)) throw new InputError('Invalid workspace ID');
   const directory = join(root, 'runs', id);
-  let record: RecordData;
-  try {
-    record = JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8')) as RecordData;
-  } catch {
-    throw new InputError('Workspace report unavailable');
-  }
+  const record = loadRecord(directory);
   const timeline = readTimeline(directory),
     last = timeline.events.at(-1);
   const elapsedMs = record.elapsedMs ?? Math.max(0, Date.now() - Date.parse(record.startedAt));
   return {
     id: record.id,
     status: record.status,
+    progress: progressView(record, timeline.events),
     activity: record.stage,
     operation: record.currentOperation,
     plan: record.plan,
@@ -107,6 +104,13 @@ export function readStatus(root: string, id: string) {
     record,
     events: timeline.events,
   };
+}
+function loadRecord(directory: string): RecordData {
+  try {
+    return JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8')) as RecordData;
+  } catch {
+    throw new InputError('Workspace report unavailable');
+  }
 }
 export async function viewExecution(
   root: string,
@@ -160,6 +164,6 @@ function printStatus(
   console.log(
     json
       ? JSON.stringify(status)
-      : `${id}: ${status.status}\nActivity: ${String(status.activity ?? 'unavailable')}\nElapsed: ${status.elapsedMs}ms\n${JSON.stringify(status.plan ?? 'No plan recorded', null, 2)}\n${status.timeline.problem ?? ''}`,
+      : `${id}: ${status.status}\nActivity: ${String(status.activity ?? 'unavailable')}\nElapsed: ${status.elapsedMs}ms\n${JSON.stringify(status.progress, null, 2)}\n${status.timeline.problem ?? ''}`,
   );
 }

@@ -1,9 +1,10 @@
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execute } from '../operations/process.js';
 import type { RecordData } from '../workspace/state.js';
 
 interface Source {
@@ -14,7 +15,7 @@ interface Source {
   unavailable?: string;
 }
 const sha256 = (value: Buffer | string) => createHash('sha256').update(value).digest('hex');
-const instructionOptions = { timeout: 30_000, maxBuffer: 32 * 1024 * 1024 };
+const instructionOptions = { maxBuffer: 32 * 1024 * 1024 };
 function instructionProvenance(record: RecordData, env: Record<string, string>): Source[] {
   return [...trackedInstructions(record), userInstruction(env)];
 }
@@ -104,19 +105,28 @@ function sdkVersion(): string {
   }
   return 'unavailable';
 }
-function cliVersion(executable: string, env: Record<string, string>) {
-  const result = spawnSync(executable, ['--version'], {
-    env,
-    encoding: 'utf8',
-    timeout: 1500,
-    maxBuffer: 4096,
-  });
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim().slice(0, 2048);
-  return result.error || result.status !== 0
-    ? { available: false, output, unavailable: result.error?.message ?? `exit ${result.status}` }
-    : { available: true, output };
+async function cliVersion(
+  executable: string,
+  env: Record<string, string>,
+  record: RecordData,
+  log: string,
+  signal: AbortSignal,
+) {
+  try {
+    await execute({ command: executable, args: ['--version'] }, record.workspace, log, signal, {
+      env,
+    });
+    return { available: true, output: readFileSync(log, 'utf8').trim().slice(0, 2048) };
+  } catch (error) {
+    signal.throwIfAborted();
+    return {
+      available: false,
+      unavailable: String(error),
+      output: existsSync(log) ? readFileSync(log, 'utf8').slice(0, 2048) : '',
+    };
+  }
 }
-export function persistExecutionEvidence(
+export async function persistExecutionEvidence(
   root: string,
   record: RecordData,
   prompt: string,
@@ -124,13 +134,21 @@ export function persistExecutionEvidence(
   settings: Record<string, unknown>,
   schema: unknown,
   env: Record<string, string>,
-): void {
+  signal: AbortSignal,
+): Promise<void> {
   const dir = join(root, 'runs', record.id);
   writeFileSync(join(dir, 'prompt.txt'), prompt, { mode: 0o600 });
   writeFileSync(join(dir, 'response-schema.json'), JSON.stringify(schema, null, 2) + '\n', {
     mode: 0o600,
   });
-  const manifest = executionManifest(record, executable, settings, env);
+  const version = await cliVersion(
+    executable,
+    env,
+    record,
+    join(dir, `cli-version-${Number(record.turns && (record.turns as unknown[]).length)}.log`),
+    signal,
+  );
+  const manifest = executionManifest(record, settings, env, version);
   writeFileSync(join(dir, 'execution.json'), JSON.stringify(manifest, null, 2) + '\n', {
     mode: 0o600,
   });
@@ -138,9 +156,9 @@ export function persistExecutionEvidence(
 
 function executionManifest(
   record: RecordData,
-  executable: string,
   settings: Record<string, unknown>,
   env: Record<string, string>,
+  version: unknown,
 ) {
   const manifest = {
     settings,
@@ -150,7 +168,7 @@ function executionManifest(
       nestedDelegation: settings.nestedDelegation,
     },
     sdk: { version: sdkVersion() },
-    cliVersion: cliVersion(executable, env),
+    cliVersion: version,
     instructionProvenance: instructionProvenance(record, env),
     provenanceScope:
       'Available source hashes, not a complete effective Codex context or tool inventory',

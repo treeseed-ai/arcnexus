@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: development-tooling-lint
 purpose: Read-only lint feedback for development-tooling
 kind: command
@@ -17,7 +17,6 @@ args:
   - tests/development-tooling
   - src/cli.ts
   - eslint.config.ts
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

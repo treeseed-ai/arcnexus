@@ -5,8 +5,7 @@ path: src/experiments
 objectives:
   - Resolve and execute repeatable experiments with honestly labeled evidence
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand
-    permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - src/experiments
@@ -51,7 +50,7 @@ access:
     - qualification
     - fixtures
     - scripts
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

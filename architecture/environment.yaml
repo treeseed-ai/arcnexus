@@ -24,7 +24,7 @@ generatedDirectories:
   - dist
   - .test-build
   - .fixture-build
-schemaVersion: 1
+schemaVersion: 3
 workspace:
   primary:
     id: arcnexus

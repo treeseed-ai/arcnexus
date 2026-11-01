@@ -3,11 +3,9 @@ type: library
 purpose: Validate guidance metadata and inventory instructions without semantic approval
 path: src/guidance-validation
 objectives:
-  - Validate guidance metadata and inventory instructions without semantic
-    approval
+  - Validate guidance metadata and inventory instructions without semantic approval
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand
-    permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - src/guidance-validation
@@ -48,7 +46,7 @@ access:
     - src/guidance-validation
     - tests/guidance-validation
     - docs/guidance-validation
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

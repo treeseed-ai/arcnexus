@@ -83,10 +83,8 @@
             }
           },
           "maxAttempts": {
-            "enum": [
-              1,
-              2
-            ]
+            "type": "integer",
+            "minimum": 1
           },
           "faultInjection": {
             "type": "string",

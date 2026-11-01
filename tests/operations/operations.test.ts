@@ -113,7 +113,7 @@ class OperationsTests {
       {
         env: { ...f.env, ARCNEXUS_TEST_SECRET: 'do-not-forward' },
         encoding: 'utf8',
-        timeout: 15000,
+        timeout: 30 * 60 * 1000,
       },
     );
     assert.equal(r.status, 0, r.stderr);

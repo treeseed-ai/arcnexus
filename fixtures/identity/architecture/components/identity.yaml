@@ -20,7 +20,7 @@ access:
     - .
   writeDirectories:
     - .
-schemaVersion: 2
+schemaVersion: 3
 repository: identity
 role: systems-engineer
 executionProfile: luna

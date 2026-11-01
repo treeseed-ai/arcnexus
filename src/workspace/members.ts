@@ -1,3 +1,4 @@
+import { capturedCommandTimeout } from '../architecture/config.js';
 import { createHash } from 'node:crypto';
 import {
   existsSync,
@@ -214,7 +215,7 @@ async function prepareMemberCommand(
         member.workspace,
         join(root, 'runs', record.id, `command-${record.commands.length}.log`),
         signal,
-        { env: targetEnvironment(record) },
+        { env: targetEnvironment(record), timeoutMs: capturedCommandTimeout(record) },
       ),
     );
   } catch (error) {

@@ -1,3 +1,4 @@
+import { validateInitialization } from './initialization.js';
 import type { Operation } from '../operations/operations.js';
 import { git } from '../operations/process.js';
 import {
@@ -14,7 +15,8 @@ import { OwnershipValidator } from './ownership.js';
 import { validateAccess, type AccessPolicy } from './permissions.js';
 import { validateSchema } from './schema.js';
 export interface Component {
-  schemaVersion: 1 | 2;
+  initialization?: { schemaVersion: 3; componentId: string };
+  schemaVersion: 1 | 2 | 3;
   operationIds?: string[];
   id: string;
   type: string;
@@ -44,27 +46,29 @@ export interface Component {
   };
 }
 export interface Role {
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
   id: string;
   purpose: string;
   responsibilities: string[];
   activities: string[];
 }
 export interface ExecutionProfile {
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   id: string;
   model: string;
   reasoning: 'low' | 'medium' | 'high';
   webSearch: 'live' | 'disabled';
-  timeoutSeconds: number;
-  commandTimeoutSeconds: number;
+  timeoutSeconds?: number;
+  commandTimeoutSeconds?: number;
   operationCategories?: string[];
   maxOperationCalls?: number;
-  maxTurns: 3 | 4;
-  maxCorrectiveTurns: 2;
+  maxTurns?: number;
+  maxCorrectiveTurns?: number;
+  maxChecklistCalls?: number;
+  maxAttempts?: number;
 }
 export interface CompositionProfile {
-  schemaVersion: 1;
+  schemaVersion: 1 | 3;
   id: string;
   platformId: string;
   packageIds: string[];
@@ -86,7 +90,7 @@ export function validateOperations(
   env: Environment,
 ): void {
   for (const op of operations) {
-    if (profile.schemaVersion !== 2 || !profile.operationCategories?.includes(op.category))
+    if (profile.schemaVersion < 2 || !profile.operationCategories?.includes(op.category))
       throw new InputError('Operation category not permitted by execution profile: ' + op.id);
     for (const path of op.generatedDirectories)
       if (!env.generatedDirectories.includes(path))
@@ -166,6 +170,7 @@ class CatalogLoader {
     if (!Object.keys(this.catalog.components).length) throw new InputError('No components defined');
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
+    validateInitialization(this.catalog);
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);
     for (const component of Object.values(this.catalog.components)) grants.validate(component);
@@ -309,6 +314,13 @@ class CatalogComponentValidator {
     if (parent && c.type !== 'package' && c.repository !== parent.repository)
       throw new InputError(`Conflicting repository ownership: ${c.id}`);
     for (const a of ancestors.filter((a) => a.repository === c.repository)) {
+      if (
+        a.schemaVersion === 3 &&
+        ['platform', 'package'].includes(a.type) &&
+        !a.allowedWritePaths.length &&
+        !a.access.writeDirectories.length
+      )
+        continue;
       if (
         c.allowedWritePaths.some((p) => !covered(p, a.allowedWritePaths)) ||
         c.access.writeDirectories.some((p) => !covered(p, a.access.writeDirectories))

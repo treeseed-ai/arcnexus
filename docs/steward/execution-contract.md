@@ -4,7 +4,7 @@ The CLI objective is the assignment. `--issue` supplies branch metadata; ArcNexu
 neither fetches issue text nor infers acceptance criteria from the issue number.
 For example: `arcnexus run cli "Default to gpt-6-luna; preserve explicit --model overrides; test SDK arguments and report settings" --project /path/to/repository --issue 20`.
 
-`architecture/environment.json` is the committed host preparation recipe. It
+`architecture/environment.yaml` is the committed host preparation recipe. It
 contains ordered executable/argument-array `prerequisites`, ordered `setup`, and
 `generatedDirectories` that must be ignored and disposable. It is captured from
 the selected base before the candidate exists. Host setup and verification are

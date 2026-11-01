@@ -1,18 +1,20 @@
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { ResolvedAssignment } from '../architecture/assignment.js';
+import { milliseconds } from '../architecture/config.js';
 import { targetEnvironment, toolDirectories } from '../architecture/bindings.js';
 import { preparePermissions, type AccessPolicy } from '../architecture/permissions.js';
 import type { Plan } from '../assignment/plan.js';
 import type { OperationBridge } from '../operations/operations.js';
-import { execute } from '../operations/process.js';
+import { execute, git } from '../operations/process.js';
 import { processStart } from '../operations/service-state.js';
 import type { Member } from '../workspace/members.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { persistExecutionEvidence } from './evidence.js';
 
 export interface CodexInput {
+  responseContract?: 'initializer-result';
   root: string;
   record: RecordData;
   prompt: string;
@@ -51,16 +53,20 @@ export class CodexConfiguration {
   }
 
   private resultSchema() {
+    if (this.input.responseContract)
+      return JSON.parse(
+        readFileSync(new URL('../../schemas/initializer-result.json', import.meta.url), 'utf8'),
+      );
     const schema = JSON.parse(
       readFileSync(new URL('../../schemas/agent-result.json', import.meta.url), 'utf8'),
     );
-    if (this.profile?.schemaVersion === 2) schema.required = Object.keys(schema.properties);
+    if ((this.profile?.schemaVersion ?? 1) >= 2) schema.required = Object.keys(schema.properties);
     else {
       delete schema.properties.plan;
       delete schema.properties.planUpdates;
     }
     const plan = this.input.record.plan as Plan | undefined;
-    if (this.profile?.schemaVersion === 2 && plan)
+    if ((this.profile?.schemaVersion ?? 1) >= 2 && plan)
       schema.properties.planUpdates.items.properties.id.enum = plan.items.map((item) => item.id);
     if (this.input.record.workdayId) {
       schema.properties.coordination = this.coordinationSchema();
@@ -78,7 +84,7 @@ export class CodexConfiguration {
           type: 'object',
           properties: {
             action: { enum: this.coordinationActions },
-            contract: { type: 'string' },
+            contract: { type: 'string', enum: [this.input.record.coordinationContract] },
             requestId: { type: ['string', 'null'] },
             text: { type: 'string' },
             activityComplete: { type: 'boolean' },
@@ -174,14 +180,14 @@ export class CodexConfiguration {
       webSearch: this.profile?.webSearch ?? 'live',
       nestedDelegation: false,
       managedTools:
-        this.profile?.schemaVersion === 2
+        (this.profile?.schemaVersion ?? 1) >= 2
           ? ['plan.update', ...(this.input.operations?.tools.map((t) => t.name) ?? [])]
           : [],
       executable: this.env.ARCNEXUS_CODEX_EXECUTABLE!,
     };
   }
 
-  capture(): void {
+  async capture(): Promise<void> {
     appendFileSync(join(this.dir, 'events.jsonl'), '', { mode: 0o600 });
     writeFileSync(
       this.launcher,
@@ -189,7 +195,7 @@ export class CodexConfiguration {
       { mode: 0o700 },
     );
     const { root, record, prompt } = this.input;
-    persistExecutionEvidence(
+    await persistExecutionEvidence(
       root,
       record,
       prompt,
@@ -197,15 +203,34 @@ export class CodexConfiguration {
       this.settings,
       this.schema,
       this.env,
+      this.input.signal,
     );
     record.settings = this.settings;
     record.attemptReportedUsage = undefined;
     save(root, record);
   }
 
+  private rejectTargetConfiguration(): void {
+    const { record } = this.input;
+    const paths = git(
+      record.workspace,
+      'ls-files',
+      '--cached',
+      '--others',
+      '--exclude-standard',
+      '-z',
+    ).split('\0');
+    if (
+      existsSync(join(record.workspace, '.codex/config.toml')) ||
+      paths.some((path) => path === '.codex/config.toml' || path.endsWith('/.codex/config.toml'))
+    )
+      throw new Error('Target Codex configuration is unsupported');
+  }
+
   async preflight(): Promise<void> {
     const { root, record } = this.input;
     try {
+      this.rejectTargetConfiguration();
       record.sandboxPreflight = { ...(await this.probe()), status: 'passed' };
     } catch (error) {
       record.sandboxPreflight = {
@@ -241,7 +266,10 @@ export class CodexConfiguration {
       record.workspace,
       join(this.dir, `sandbox-preflight-${turn}.log`),
       signal,
-      { env: { ...this.env, CODEX_HOME: home }, timeoutMs: 5000 },
+      {
+        env: { ...this.env, CODEX_HOME: home },
+        timeoutMs: milliseconds(this.profile?.commandTimeoutSeconds),
+      },
     );
   }
 }

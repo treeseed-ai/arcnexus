@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: change-inspection-lint
 purpose: Read-only lint feedback for change-inspection
 kind: command
@@ -15,7 +15,6 @@ command: node
 args:
   - node_modules/eslint/bin/eslint.js
   - src/change-inspection
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

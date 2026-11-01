@@ -71,9 +71,10 @@ export class WorkspaceCleanup {
 
   private resources(): void {
     const { root, id, record } = this;
-    if (['preparing', 'running'].includes(record.status))
+    if (['preparing', 'initializing', 'running'].includes(record.status))
       throw new Error('Workspace operation is active or incomplete; inspect before cleanup');
     assertServicesStopped(root, id);
+    this.initializerResources();
     if (!record.workday) return;
     const workday = record.workday as { assignments: string[]; parking: string; active?: boolean };
     if (workday.active) throw new Error('Workday is active or interrupted; inspect before cleanup');
@@ -83,6 +84,14 @@ export class WorkspaceCleanup {
       if (!['none', 'restored'].includes(parking.status))
         throw new Error('Workday parking/restoration is unresolved');
     }
+  }
+
+  private initializerResources(): void {
+    const initialization = this.record.initialization as { runId?: string } | undefined;
+    if (!initialization?.runId) return;
+    if (!/^[a-f0-9-]{36}$/.test(initialization.runId))
+      throw new Error('Initializer resource identity is invalid');
+    assertServicesStopped(this.root, initialization.runId);
   }
 
   private identity() {

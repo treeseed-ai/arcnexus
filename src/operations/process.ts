@@ -6,7 +6,6 @@ import type { Command } from '../architecture/config.js';
 export function git(cwd: string, ...args: string[]): string {
   const result = spawnSync('git', ['-C', cwd, ...args], {
     encoding: 'utf8',
-    timeout: 30_000,
     maxBuffer: 32 * 1024 * 1024,
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
   });
@@ -84,10 +83,11 @@ class DirectCommand {
       });
       this.child.stdout!.on('data', (chunk) => this.capture(chunk, this.stdout));
       this.child.stderr!.on('data', (chunk) => this.capture(chunk, this.stderr));
-      this.timer = setTimeout(
-        () => this.terminate(new Error('Command timed out')),
-        this.options.timeoutMs ?? 120_000,
-      );
+      if (this.options.timeoutMs !== undefined)
+        this.timer = setTimeout(
+          () => this.terminate(new Error('Command timed out')),
+          this.options.timeoutMs,
+        );
       this.signal.addEventListener('abort', this.abort, { once: true });
       if (this.signal.aborted) this.abort();
       this.child.on('error', (error) => {

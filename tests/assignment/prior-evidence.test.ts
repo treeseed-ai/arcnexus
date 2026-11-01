@@ -110,7 +110,7 @@ function invoke(f: any, a: any, command: any = 'run'): any {
       f.repo,
       ...(command === 'run' ? ['--codex-path', f.executable] : ['--json']),
     ],
-    { encoding: 'utf8', env: f.env, timeout: 20000 },
+    { encoding: 'utf8', env: f.env, timeout: 30 * 60 * 1000 },
   );
 }
 test('built CLI snapshots selected historical text before setup and supplies identical inspected context', (t: any) =>

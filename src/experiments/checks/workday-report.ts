@@ -15,7 +15,11 @@ class WorkdayReportAcceptance {
   }
   private assignment(value: any): void {
     assert.equal(value.status, 'completed');
-    assert.ok(value.activeMs <= 900000);
+    const seconds =
+      value.executionLimits?.timeoutSeconds ??
+      value.resolvedAssignment?.executionProfile?.timeoutSeconds;
+    if (seconds !== undefined)
+      assert.ok(value.activeMs <= seconds * 1000, 'Explicit active-time limit exceeded');
     assert.equal(value.callerInterventions.length, 0);
     assert.ok(value.turns.every((turn: any) => turn.threadId === value.threadId));
     assert.ok(

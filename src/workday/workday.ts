@@ -1,3 +1,5 @@
+import { initializeExecution, type InitializationEvidence } from '../task-intake/initializer.js';
+import { milliseconds, minimumLimit } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -31,17 +33,24 @@ export class WorkdayRunner {
     this.routing = new WorkdayRouting(this.state);
   }
 
-  async run(input: WorkdayInput, issue?: string) {
+  async run(input: WorkdayInput, issue?: string, initialization?: InitializationEvidence) {
     this.validate(input);
     this.state.input = input;
     const timeout = new AbortController();
-    const timer = setTimeout(() => timeout.abort(new Error('Workday deadline exhausted')), 2400000);
+    const timer =
+      input.timeoutSeconds === undefined
+        ? undefined
+        : setTimeout(
+            () => timeout.abort(new Error('Workday deadline exhausted')),
+            milliseconds(input.timeoutSeconds),
+          );
     this.state.signal = AbortSignal.any([this.state.parentSignal, timeout.signal]);
     try {
       await this.initialize(issue);
       for (const participant of [input.requester, input.recipient]) this.createOwner(participant);
       this.captureAssignments();
       await this.baselines();
+      await this.initializeOwners(initialization);
       await this.execute();
       await this.verifyOwners();
       await this.combinedAcceptance();
@@ -58,9 +67,7 @@ export class WorkdayRunner {
   private validate(input: WorkdayInput): void {
     const { digest: hash, ...captured } = input;
     if (
-      [input.requester, input.recipient].some(
-        (p) => p.resolved.executionProfile.schemaVersion !== 2,
-      )
+      [input.requester, input.recipient].some((p) => p.resolved.executionProfile.schemaVersion < 2)
     )
       throw new InputError('Workday execution requires planned version-2 profiles');
     if (digest(JSON.stringify(captured)) !== hash) throw new InputError('Captured workday changed');
@@ -75,7 +82,7 @@ export class WorkdayRunner {
       issue,
       bindings: input.requester.resolved.bindings,
     });
-    state.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? 'live';
+    this.preparationPolicy();
     state.directory = join(state.root, 'workdays', state.workspace.id);
     mkdirSync(state.directory, { recursive: true, mode: 0o700 });
     writeFileSync(join(state.directory, 'input.json'), JSON.stringify(input, null, 2) + '\n', {
@@ -94,6 +101,16 @@ export class WorkdayRunner {
     await prepareWorkspace(state.root, state.workspace, state.signal);
   }
 
+  private preparationPolicy(): void {
+    const state = this.state,
+      input = state.input;
+    state.workspace.preparationCommandTimeoutSeconds = minimumLimit(
+      input.requester.resolved.executionProfile.commandTimeoutSeconds,
+      input.recipient.resolved.executionProfile.commandTimeoutSeconds,
+    );
+    state.workspace.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE ?? 'live';
+  }
+
   private initializeStore(): void {
     const state = this.state;
     state.store = new WorkdayStore(join(state.directory, 'workday.sqlite'), true);
@@ -104,6 +121,11 @@ export class WorkdayRunner {
         host: { pid: process.pid, start: processStart(process.pid) },
       },
       [state.input.requester.resolved.componentId, state.input.recipient.resolved.componentId],
+    );
+    this.unsubscribe.push(
+      observeExecution(state.root, state.workspace.id, (event) =>
+        state.store.commit('workspace.' + event.type, { event }),
+      ),
     );
   }
 
@@ -118,6 +140,7 @@ export class WorkdayRunner {
       context: participant.resolved.context,
       objective: participant.resolved.assignment.objective,
       workdayId: this.state.workspace.id,
+      coordinationContract: this.state.input.dependency.contract,
     };
     delete record.timelineSequence;
     delete record.workday;
@@ -130,7 +153,7 @@ export class WorkdayRunner {
       record = this.createRecord(participant);
     const budget = new ActiveBudget(
       state.signal,
-      Math.min(900, participant.resolved.executionProfile.timeoutSeconds) * 1000,
+      milliseconds(participant.resolved.executionProfile.timeoutSeconds),
     );
     const owner = new Owner(participant, record, budget);
     const control = this.control(owner);
@@ -153,6 +176,7 @@ export class WorkdayRunner {
   private control(owner: Owner): SessionControl {
     return {
       prepared: true,
+      initialized: true,
       context: '',
       inspect: () =>
         assertOwner(owner.record, owner.participant.resolved.allowedWritePaths, owner.foreign),
@@ -172,15 +196,20 @@ export class WorkdayRunner {
 
   private chargeTurn(owner: Owner, kind: 'coordination' | 'engineering'): void {
     if (kind === 'coordination') {
-      if (++this.state.coordinationTurns > 6) throw new Error('Coordination turn budget exhausted');
-    } else if (
-      ++owner.engineering >
-      Math.min(
-        owner.participant.resolved.executionProfile.maxTurns,
-        owner.participant.resolved.assignment.kind === 'change' ? 4 : 2,
-      ) +
-        (owner.participant.maxAttempts === 2 ? 2 : 0)
-    )
+      this.state.coordinationTurns++;
+      const limit = this.state.input.maxCoordinationTurns;
+      if (limit !== undefined && this.state.coordinationTurns > limit)
+        throw new Error('Coordination turn budget exhausted');
+      return;
+    }
+    owner.engineering++;
+    const profile = owner.participant.resolved.executionProfile;
+    const limit =
+      profile.maxTurns === undefined
+        ? undefined
+        : profile.maxTurns +
+          (owner.participant.maxAttempts === 1 ? 0 : (profile.maxCorrectiveTurns ?? 0));
+    if (limit !== undefined && owner.engineering > limit)
       throw new Error('Engineering turn budget exhausted');
   }
 
@@ -230,6 +259,32 @@ export class WorkdayRunner {
         await this.state.command(owner, command, 'baseline');
       owner.budget.pause();
     }
+  }
+
+  private async initializeOwners(initialization?: InitializationEvidence): Promise<void> {
+    const state = this.state;
+    state.status = 'initializing';
+    state.activeOwner = state.input.requester.resolved.initialization.componentId;
+    state.persist('initialization.started', { reused: !!initialization });
+    if (initialization) {
+      if (
+        initialization.authorityHash !== state.input.digest ||
+        initialization.result?.status !== 'ready'
+      )
+        throw new InputError('Accepted initialization does not match workday authority');
+      state.workspace.initialization = initialization;
+    } else
+      await initializeExecution({
+        root: state.root,
+        record: state.workspace,
+        resolved: state.input.requester.resolved,
+        owners: state.owners.map((owner) => owner.participant.resolved.componentId),
+        executable: state.executable,
+        signal: state.signal,
+        envelope: state.input,
+      });
+    for (const owner of state.owners) owner.record.initialization = state.workspace.initialization;
+    state.persist('initialization.completed', { evidence: state.workspace.initialization });
   }
 
   private async execute(): Promise<void> {
@@ -287,14 +342,18 @@ export class WorkdayRunner {
 
   private failure(error: unknown): void {
     this.state.error = String(error);
-    this.state.status = this.state.parentSignal.aborted
-      ? 'cancelled'
-      : (error instanceof Error && error.name === 'WorkdayBlocked') ||
-          this.state.owners.some((o) => o.record.status === 'blocked')
-        ? 'blocked'
-        : /budget|deadline/i.test(String(error))
-          ? 'budget_exhausted'
-          : 'failed';
+    this.state.status =
+      error instanceof Error && error.name === 'NeedsAttention'
+        ? 'needs_attention'
+        : this.state.parentSignal.aborted
+          ? 'cancelled'
+          : (error instanceof Error && error.name === 'WorkdayBlocked') ||
+              this.state.workspace?.status === 'blocked' ||
+              this.state.owners.some((o) => o.record.status === 'blocked')
+            ? 'blocked'
+            : /budget|deadline/i.test(String(error))
+              ? 'budget_exhausted'
+              : 'failed';
   }
 
   private finalize(): void {
@@ -376,6 +435,7 @@ export class WorkdayRunner {
       snapshot = state.store.snapshot();
     return {
       schemaVersion: 1,
+      initialization: state.workspace.initialization,
       ...state.state(),
       exitCode: this.exitCode(),
       assignments: snapshot.assignments.map((a) => a.data as RecordData),

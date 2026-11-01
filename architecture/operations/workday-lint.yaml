@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: workday-lint
 purpose: Read-only lint feedback for workday
 kind: command
@@ -16,7 +16,6 @@ args:
   - node_modules/eslint/bin/eslint.js
   - src/workday
   - tests/workday
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []

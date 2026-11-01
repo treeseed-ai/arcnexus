@@ -58,6 +58,7 @@ owners:
       - src/architecture/components.ts
       - src/architecture/config.ts
       - src/architecture/configuration.ts
+      - src/architecture/initialization.ts
       - src/architecture/permissions.ts
       - src/architecture/schema.ts
     directoryExceptions: []
@@ -156,6 +157,7 @@ owners:
     publicModules:
       - src/report/report.ts
       - src/report/timeline.ts
+      - src/report/progress.ts
       - src/report/workday-report.ts
     directoryExceptions: []
   - component: steward
@@ -172,7 +174,9 @@ owners:
       - src/task-intake
       - tests/task-intake
       - docs/task-intake
-    publicModules: []
+    publicModules:
+      - src/task-intake/initializer.ts
+      - src/task-intake/tasks.ts
     directoryExceptions: []
   - component: workday
     paths:

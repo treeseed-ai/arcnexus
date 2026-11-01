@@ -4,18 +4,20 @@ Plans/timeline (#41), declared operations (#42), managed local services/probes
 (#45), and selected history/live qualification (#48) are available. Their retained
 qualification evidence is linked below.
 
-Version-2 definitions select a source-read-only assignment planning turn before
+Version-2/3 definitions select a source-read-only assignment planning turn before
 execution. Plans have stable checklist IDs, activity, acceptance criteria, expected
 evidence, dependencies and questions. Execution records completed items as agent
 claims with evidence; host acceptance is separate. Plan changes cannot widen scope,
 waive a checkpoint or authorize publication. Invalid plans stop without retry.
 
-Normal changes use four turns; opt-in correction allows six. Research/review use
-two. Version-1 definitions retain their existing three/five/one-turn behavior.
-All turns share one thread and the original 900-second budget.
+After a separate mandatory initializer, normal changes plan four worker turns;
+research/review plan two. Version-1 profiles retain their workflow without a planning
+turn. Corrective work requires recorded findings and a concrete repair objective.
+Worker turns share one thread and any explicitly captured limits; no default
+turn, attempt or execution-time ceiling applies.
 
 `arcnexus status <workspace-id> [--json]` reads current lifecycle, activity,
-checklist, elapsed budget and evidence completeness without taking the execution lock.
+checklist, elapsed time, configured limits and evidence completeness without taking the execution lock.
 `arcnexus follow <workspace-id> [--json] [--after <sequence>]` replays and follows
 the timestamped timeline. It exits at finalization; interrupting the viewer never
 cancels the worker. Missing historical timelines and incomplete trailing records
@@ -38,7 +40,7 @@ this contract.
 ## Declared finite operations (#42)
 
 Version-2 components explicitly list `operationIds`. Definitions under
-`architecture/operations/<id>.json` declare repository, cwd, fixed command/args,
+`architecture/operations/<id>.yaml` declare repository, cwd, fixed command/args,
 category, activities, timeoutSeconds (at most 120), generatedDirectories, artifacts,
 and prerequisite probes. Version-2 execution profiles permit categories and bound
 `maxOperationCalls` (default 24). Assignments may select a subset using operationIds.
@@ -123,10 +125,10 @@ and record interventions. Successful candidates still require caller review and
 normal repository integration; a model's checked checklist is not acceptance.
 
 Create a fresh campaign input directory with
-The committed `experiments/operations.json` supplies case definitions. Provide local
+The committed `experiments/operations.yaml` supplies case definitions. Provide local
 project/tool/revision bindings and run `node dist/cli.js experiment inspect
-experiments/operations.json --bindings /absolute/bindings.json --json`, then
-`node dist/cli.js experiment run experiments/operations.json --bindings
+experiments/operations.yaml --bindings /absolute/bindings.json --json`, then
+`node dist/cli.js experiment run experiments/operations.yaml --bindings
 /absolute/bindings.json --mode live --output /absolute/new-campaign`.
 See [experiment bindings](../experiments/experiments.md) for the complete contract.
 The runner must remain unchanged and outside all candidates throughout the campaign.
@@ -153,3 +155,25 @@ means no source edits; it does not prohibit declared test or service operations.
 The steward must perform its selected permitted work and update the checklist in
 that turn, or report a precise blocker. Activity names are not promises of additional
 model turns. Incomplete checklist claims fail rather than silently adding a turn.
+
+## Required host operation route
+
+ArcNexus configures its MCP bridge as required: model execution must not silently
+start without the declared host-operation tools. Required startup and tool ceilings
+remain 24 hours; cancellation still stops managed work. Codex documents the
+[required-server and optional startup behavior](https://learn.chatgpt.com/docs/extend/mcp).
+
+Worker prompts identify the `arcnexus` server, operation IDs and tool arguments.
+Use `operations.run` for a declared operation rather than copying its command into
+the sandbox shell. The host route can build declared generated outputs while source
+write authority remains narrow. If tools are deferred, discover the ArcNexus tools
+before concluding they are unavailable. Shell failure is not host-operation failure.
+A completed behavioral specification must still return its proposed regression
+checkpoint; uncertainty about local execution never makes `regression: null` valid.
+
+Finite operation requests are authorized and counted when received, then queued in
+arrival order. Multiple valid requests do not authorize concurrent subprocesses:
+the host executes one at a time with distinct request identities and logs. A normal
+test failure remains feedback; cancellation, bridge loss, or a fatal authority/scope
+failure stops active work and prevents queued work from starting. Pending callers
+receive their own completed result through `execution.wait`.

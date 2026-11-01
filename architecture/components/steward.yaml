@@ -3,8 +3,7 @@ type: library
 purpose: Adapt the Codex harness with explicit execution permissions and evidence
 path: src/steward
 objectives:
-  - Research and implement bounded objectives with independently verified
-    evidence
+  - Research and implement bounded objectives with independently verified evidence
 constraints:
   - Caller owns commits and integration
   - Do not edit architecture or weaken host verification
@@ -39,8 +38,7 @@ verification:
 patterns:
   - Document intent, test observable behavior, implement
   - Verify actual SDK executable arguments and report settings
-  - Context acceptance is shared with assignment/steward ownership; caller
-    reviews changes
+  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
 access:
   readPaths:
     - .
@@ -48,7 +46,7 @@ access:
     - src/steward
     - tests/steward
     - docs/steward
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

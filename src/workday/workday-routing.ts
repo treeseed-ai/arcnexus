@@ -1,3 +1,4 @@
+import { ProgressObserver } from '../report/progress.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { digest } from '../architecture/assignment.js';
@@ -155,7 +156,12 @@ export class WorkdayRouting {
 
   private async clarify(c: CoordinationResult) {
     const [requester, recipient] = this.state.owners as [Owner, Owner];
-    if (++this.state.clarificationRounds > 2) throw blocked('Clarification round budget exhausted');
+    this.state.clarificationRounds++;
+    const warning = new ProgressObserver(this.state.root, recipient.record).failed(
+      { activity: 'clarification' },
+      'No verified delivery or accepted contract after clarification',
+      'waiting-for-owner',
+    );
     this.state.persist('response.clarification', { round: this.state.clarificationRounds }, [
       this.state.message(
         recipient,
@@ -173,7 +179,8 @@ export class WorkdayRouting {
     return {
       again: true,
       feedback:
-        'Evaluate the clarification and accept with a plan, reject, or request the remaining bounded clarification.',
+        'Evaluate the clarification and accept with a plan, reject, or ask a different concrete question. ' +
+        (warning ?? ''),
     };
   }
 

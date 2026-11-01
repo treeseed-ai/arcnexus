@@ -7,7 +7,7 @@ export class ActiveBudget {
   readonly signal: AbortSignal;
   constructor(
     parent: AbortSignal,
-    readonly limitMs = 900000,
+    readonly limitMs?: number,
   ) {
     this.signal = AbortSignal.any([parent, this.controller.signal]);
   }
@@ -17,12 +17,14 @@ export class ActiveBudget {
   start() {
     if (this.since !== undefined) return;
     this.signal.throwIfAborted();
-    if (this.used >= this.limitMs) throw new Error('Assignment active-time budget exhausted');
+    if (this.limitMs !== undefined && this.used >= this.limitMs)
+      throw new Error('Assignment active-time budget exhausted');
     this.since = Date.now();
-    this.timer = setTimeout(
-      () => this.controller.abort(new Error('Assignment active-time budget exhausted')),
-      this.limitMs - this.used,
-    );
+    if (this.limitMs !== undefined)
+      this.timer = setTimeout(
+        () => this.controller.abort(new Error('Assignment active-time budget exhausted')),
+        this.limitMs - this.used,
+      );
   }
   pause() {
     if (this.since !== undefined) this.used += Date.now() - this.since;

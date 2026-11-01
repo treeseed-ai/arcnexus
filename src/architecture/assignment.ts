@@ -1,3 +1,4 @@
+import { captureInitialization, type InitializationSnapshot } from './initialization.js';
 import { isUtf8 } from 'node:buffer';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
@@ -37,7 +38,7 @@ export interface EvidenceSnapshot extends PriorEvidence {
 }
 export interface Assignment {
   priorEvidence?: PriorEvidence[];
-  schemaVersion: 1 | 2;
+  schemaVersion: 1 | 2 | 3;
   operationIds?: string[];
   objective: string;
   kind: 'change' | 'research' | 'review';
@@ -48,6 +49,7 @@ export interface Assignment {
   hostChecks: HostCheck[];
 }
 export interface ResolvedAssignment {
+  initialization: InitializationSnapshot;
   configurationSources?: import('./configuration.js').ConfigurationSource[];
   schemaVersion: 1;
   priorEvidence: EvidenceSnapshot[];
@@ -85,6 +87,7 @@ export function resolveBase(repository: string, ref = 'HEAD'): { source: string;
   }
 }
 export interface AssignmentOptions {
+  initializerModel?: string;
   value?: unknown;
   bindings?: Bindings;
   objective?: string;
@@ -177,6 +180,7 @@ class AssignmentResolver {
     const execution = this.execution();
     const data = {
       configurationSources: this.sources(),
+      initialization: captureInitialization(catalog, component, this.options.initializerModel),
       schemaVersion: 1 as const,
       priorEvidence: capturePriorEvidence(assignment),
       operations: execution.operations,

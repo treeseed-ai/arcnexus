@@ -1,3 +1,4 @@
+import { initializeExecution, type InitializationEvidence } from '../task-intake/initializer.js';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { prepareCapabilities } from '../operations/probes.js';
@@ -26,6 +27,7 @@ export interface StewardCheckpoint {
   usage: unknown;
 }
 export interface SessionControl {
+  initialized?: boolean;
   prepared: boolean;
   context: string;
   inspect: () => void;
@@ -50,8 +52,9 @@ export class StewardSession {
     private readonly model: string,
     private readonly executable: string,
     private readonly signal: AbortSignal,
-    private readonly maxAttempts = 1,
+    private readonly maxAttempts?: number,
     private readonly control?: SessionControl,
+    private readonly initialization?: InitializationEvidence,
   ) {}
   async run(): Promise<void> {
     const { root, record, id, objective, model, executable, signal, maxAttempts, control } = this;
@@ -68,9 +71,27 @@ export class StewardSession {
       session: this,
     });
     await this.prepare();
+    if (this.initialization) this.acceptInitialization();
+    if (!control?.initialized && !this.initialization)
+      await initializeExecution({
+        root,
+        record,
+        resolved: this.state.resolved,
+        owners: [id],
+        executable,
+        signal,
+      });
     this.verification = new SessionVerification(this.state);
     this.turns = new SessionTurn(this.state, this.verification);
     await new SessionWorkflow(this.state, this.turns, this.verification).run();
+  }
+  private acceptInitialization(): void {
+    if (
+      this.initialization!.authorityHash !== this.state!.resolved.digest ||
+      this.initialization!.result?.status !== 'ready'
+    )
+      throw new Error('Accepted initialization does not match assignment authority');
+    this.record.initialization = this.initialization;
   }
   async controlTurn(instructions: string): Promise<AgentResult> {
     if (!this.turns) throw new Error('Session not active');
@@ -104,7 +125,8 @@ export async function runSteward(
   model: string,
   executable: string,
   signal: AbortSignal,
-  maxAttempts = 1,
+  maxAttempts?: number,
+  initialization?: InitializationEvidence,
 ): Promise<void> {
   await new StewardSession(
     root,
@@ -115,5 +137,7 @@ export async function runSteward(
     executable,
     signal,
     maxAttempts,
+    undefined,
+    initialization,
   ).run();
 }

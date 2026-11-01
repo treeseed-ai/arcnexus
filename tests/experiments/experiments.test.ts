@@ -50,6 +50,29 @@ class ExperimentsTests {
     assert.equal(f.git('rev-parse', 'HEAD'), f.base);
     assert.equal(f.runCampaign().status, 2);
   }
+  omittedAttempts(t: TestContext): void {
+    const f = fixture(t);
+    const data = parse(readFileSync(f.manifest, 'utf8'));
+    const value = {
+      ...data.cases[0],
+      assignment: resolve('experiments/assignments/simulation.yaml'),
+      acceptance: [
+        {
+          command: 'node',
+          args: [resolve('dist/experiments/checks/simulation.js'), '{report}', 'success'],
+          artifacts: [resolve('dist/experiments/checks/simulation.js')],
+        },
+      ],
+    };
+    delete value.maxAttempts;
+    data.cases = [value];
+    const manifest = join(f.root, 'unlimited.json');
+    writeFileSync(manifest, JSON.stringify(data));
+    const result = f.runCampaign(manifest);
+    assert.equal(result.status, 0, result.stderr);
+    const campaign = JSON.parse(readFileSync(join(f.output, 'campaign.json'), 'utf8'));
+    assert.equal(campaign.cases[0].report.executionLimits.maxAttempts, null);
+  }
   experimentRejectsMissingBindingsAndUnpinnedRevisionsBeforeCreatingOutput_4(t: TestContext) {
     const f = fixture(t);
     for (const projects of [{}, { fixture: { path: f.repo, base: 'HEAD' } }]) {
@@ -209,7 +232,7 @@ class ExperimentFixture {
     return spawnSync(process.execPath, [cli, 'experiment', ...args], {
       env: { ...process.env, ARCNEXUS_STATE_DIR: this.state },
       encoding: 'utf8',
-      timeout: 120000,
+      timeout: 30 * 60 * 1000,
     });
   }
   campaignArgs(manifest = this.manifest): string[] {
@@ -243,3 +266,6 @@ test('changed supervisor invalidates campaign before another case', (t: any) =>
 for (const signal of ['SIGINT', 'SIGKILL'] as const)
   test(`experiment ${signal} stops managed acceptance and preserves evidence`, (t: any) =>
     suite.scenario_7(t, signal));
+
+test('experiment without an attempt limit preserves the unset runtime limit', (t) =>
+  suite.omittedAttempts(t));

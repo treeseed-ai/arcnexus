@@ -1,3 +1,4 @@
+import { milliseconds } from '../architecture/config.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { realpathSync } from 'node:fs';
@@ -6,7 +7,7 @@ import type { ResolvedAssignment } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
 import type { Command } from '../architecture/config.js';
 import { observe } from '../report/timeline.js';
-import { openBridge } from '../steward/bridge.js';
+import { openBridge, protocolTimeoutSeconds } from '../steward/bridge.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { assertIdentity, assertOutputs } from '../workspace/workspace.js';
 import { operationEnvironment, type Operation } from './operations.js';
@@ -18,7 +19,7 @@ export async function prepareCapabilities(
   signal: AbortSignal,
 ): Promise<void> {
   const resolved = record.resolvedAssignment as ResolvedAssignment;
-  if (resolved.executionProfile.schemaVersion !== 2) return;
+  if (resolved.executionProfile.schemaVersion < 2) return;
   await new CapabilityProbes(root, record, signal, resolved).run();
 }
 
@@ -81,7 +82,7 @@ class CapabilityProbes {
       signal,
       {
         env: operationEnvironment(record),
-        timeoutMs: resolved.executionProfile.commandTimeoutSeconds * 1000,
+        timeoutMs: milliseconds(resolved.executionProfile.commandTimeoutSeconds),
       },
     );
   }
@@ -130,10 +131,10 @@ class BridgeProbe {
     this.signal.throwIfAborted();
     await this.client.connect(
       new StdioClientTransport({ command: config.command, args: config.args }),
-      { timeout: 5000 },
+      { timeout: protocolTimeoutSeconds * 1000 },
     );
     const result = await this.client.callTool({ name: 'probe', arguments: {} }, undefined, {
-      timeout: 5000,
+      timeout: protocolTimeoutSeconds * 1000,
     });
     this.signal.throwIfAborted();
     if (result.isError) throw new Error('Bridge functional probe failed');

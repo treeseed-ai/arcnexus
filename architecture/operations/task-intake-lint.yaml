@@ -1,0 +1,21 @@
+schemaVersion: 3
+id: task-intake-lint
+purpose: Read-only lint feedback for task intake implementation and tests
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/task-intake
+  - tests/task-intake
+generatedDirectories: []
+artifacts: []
+probes: []

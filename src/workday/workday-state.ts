@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { digest } from '../architecture/assignment.js';
 import { targetCommand } from '../architecture/bindings.js';
-import { type Command } from '../architecture/config.js';
+import { milliseconds, type Command } from '../architecture/config.js';
 import { candidateDigest } from '../assignment/checkpoints.js';
 import { StewardSession } from '../assignment/steward.js';
 import { WorkdayStore, type Message } from '../coordination-store/workday-store.js';
@@ -67,7 +67,13 @@ export class WorkdayContext {
       clarificationRounds: this.clarificationRounds,
       routingMs: this.routingMs,
       parking: { status: this.parking.status, path: this.parking.path },
-      budgets: { workdaySeconds: 2400, assignmentSeconds: 900 },
+      budgets: {
+        workdaySeconds: this.input.timeoutSeconds ?? null,
+        coordinationTurns: this.input.maxCoordinationTurns ?? null,
+        assignmentSeconds: this.owners.map(
+          (owner) => owner.participant.resolved.executionProfile.timeoutSeconds ?? null,
+        ),
+      },
       inputHash: this.input.digest,
       evidenceMode: this.workspace.evidenceMode,
     };
@@ -157,10 +163,7 @@ export class WorkdayContext {
       log,
       owner.budget.signal,
       {
-        timeoutMs: Math.min(
-          120000,
-          owner.participant.resolved.executionProfile.commandTimeoutSeconds * 1000,
-        ),
+        timeoutMs: milliseconds(owner.participant.resolved.executionProfile.commandTimeoutSeconds),
         env: operationEnvironment(owner.record),
       },
     );
@@ -185,6 +188,6 @@ export class WorkdayContext {
     };
   }
   context(owner: Owner): string {
-    return `Workday participant: ${owner.participant.resolved.componentId}. Exactly two captured owners; no delegation. Contract: ${this.input.dependency.contract}. Required delivery: ${this.input.dependency.delivery}. ${owner === this.owners[0] ? 'If the captured objective needs the recipient, return status=blocked, one precise requests entry, and coordination action=request, requestId=null.' : 'During planning decide accept, reject, or one precise clarification. Acceptance must include a valid plan and activityComplete=true; it is not delivery.'} Coordination includes action, contract, requestId, text and activityComplete. Set coordination=null on ordinary turns. A partial activity sets activityComplete=false and will continue after verified delivery. Do not invent messages or acceptance checks. No new owner or contract may be selected.`;
+    return `Workday participant: ${owner.participant.resolved.componentId}. Exactly two captured owners; no delegation. Contract: ${this.input.dependency.contract}. Required delivery: ${this.input.dependency.delivery}. ${owner === this.owners[0] ? 'If the captured objective needs the recipient, return status=blocked, one precise requests entry, and coordination action=request, requestId=null.' : 'During planning decide accept, reject, or one precise clarification. Acceptance must include a valid plan and activityComplete=true; it is not delivery.'} Coordination includes action, contract, requestId, text and activityComplete. Copy the captured contract value exactly, without paraphrasing; it is an authority identifier. Set coordination=null on ordinary turns. A partial activity sets activityComplete=false and will continue after verified delivery. Do not invent messages or acceptance checks. No new owner or contract may be selected.`;
   }
 }

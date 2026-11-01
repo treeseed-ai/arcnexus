@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- Initialize component-led tasks and report progress without implicit execution quotas (#65).
+
 ### Changed
 
 - Compile class-based TypeScript tests and enforce compact owner-scoped code quality (#64).

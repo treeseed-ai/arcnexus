@@ -45,7 +45,7 @@ access:
     - src/operations
     - tests/operations
     - docs/operations
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

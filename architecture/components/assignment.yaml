@@ -37,8 +37,7 @@ questions: []
 patterns:
   - Evidence-backed completion
   - Small functions with coherent responsibilities
-  - Context acceptance is shared with assignment/steward ownership; caller
-    reviews changes
+  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
 access:
   readPaths:
     - .
@@ -46,7 +45,7 @@ access:
     - src/assignment
     - tests/assignment
     - docs/assignment
-schemaVersion: 2
+schemaVersion: 3
 repository: arcnexus
 role: systems-engineer
 executionProfile: luna

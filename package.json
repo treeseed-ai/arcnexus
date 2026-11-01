@@ -28,7 +28,8 @@
     "test:report": "npm run build && npm run build:tests && node --test .test-build/report/*.test.js",
     "test:steward": "npm run build && npm run build:tests && node --test .test-build/steward/*.test.js",
     "test:workday": "npm run build && npm run build:tests && node --test .test-build/workday/*.test.js",
-    "test:workspace": "npm run build && npm run build:tests && node --test .test-build/workspace/*.test.js"
+    "test:workspace": "npm run build && npm run build:tests && node --test .test-build/workspace/*.test.js",
+    "test:task-intake": "npm run build && npm run build:tests && node --test .test-build/task-intake/*.test.js"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

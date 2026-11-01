@@ -1,4 +1,4 @@
-schemaVersion: 2
+schemaVersion: 3
 id: experiments-lint
 purpose: Read-only lint feedback for experiments
 kind: command
@@ -20,7 +20,6 @@ args:
   - scripts
   - experiments/checks
   - qualification
-timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []
 probes: []
