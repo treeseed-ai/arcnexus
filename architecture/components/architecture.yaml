@@ -1,7 +1,7 @@
 id: architecture
 type: library
-purpose: Resolve architectural definitions and immutable assignment inputs; execution is owned by
-  the assignment component
+purpose: Resolve architectural definitions and immutable assignment inputs;
+  execution is owned by the assignment component
 path: src/architecture
 objectives:
   - Make actual execution outcomes easy to inspect
@@ -27,6 +27,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -51,10 +59,11 @@ documentation:
   - docs/architecture/component-access.md
   - docs/architecture/configuration.md
 tests:
-  - tests/architecture/architecture.test.mjs
-  - tests/architecture/catalog-ownership.test.mjs
-  - tests/architecture/permissions.test.mjs
+  - tests/architecture/architecture.test.ts
+  - tests/architecture/catalog-ownership.test.ts
+  - tests/architecture/permissions.test.ts
 relatedIds:
   - assignment
 parentId: cli-package
-operationIds: []
+operationIds:
+  - architecture-lint

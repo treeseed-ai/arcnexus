@@ -10,10 +10,10 @@ activities:
   - testing
   - implementation
   - review
-command: node
+command: npm
 args:
-  - --test
-  - tests/report/report.test.mjs
+  - run
+  - test:report
 timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []

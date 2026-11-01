@@ -11,11 +11,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
           - "{report}"
           - change
         artifacts:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
   - id: report-corrective-repair
     base: 0c2d68e9377f7512dda4de70094c176a52e0b395
     component: report
@@ -28,11 +28,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
           - "{report}"
           - repair
         artifacts:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
   - id: treeseed-command
     base: 6d5676317eab400c1e473bb2e0a89f575973c296
     component: artifact-diagnostics
@@ -42,11 +42,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
           - "{report}"
           - tree
         artifacts:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
   - id: local-http
     base: 5ecf737fada6bb22737011ffa85689a0a11fc5cc
     component: http
@@ -56,11 +56,11 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
           - "{report}"
           - http
         artifacts:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
   - id: prior-evidence-research
     base: 0c2d68e9377f7512dda4de70094c176a52e0b395
     component: report
@@ -70,10 +70,10 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
           - "{report}"
           - history
         artifacts:
-          - checks/check-run.mjs
+          - ../dist/experiments/checks/check-run.js
     priorEvidenceIds:
       - prior-findings

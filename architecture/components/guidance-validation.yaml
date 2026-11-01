@@ -3,9 +3,11 @@ type: library
 purpose: Validate guidance metadata and inventory instructions without semantic approval
 path: src/guidance-validation
 objectives:
-  - Validate guidance metadata and inventory instructions without semantic approval
+  - Validate guidance metadata and inventory instructions without semantic
+    approval
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - src/guidance-validation
@@ -16,10 +18,10 @@ verification:
     args:
       - run
       - build
-  - command: node
+  - command: npm
     args:
-      - --test
-      - tests/guidance-validation/guidance.test.mjs
+      - run
+      - test:guidance-validation
   - command: node
     args:
       - dist/cli.js
@@ -27,6 +29,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -46,9 +56,10 @@ interfaces: []
 documentation:
   - docs/guidance-validation/guidance-validation.md
 tests:
-  - tests/guidance-validation/guidance.test.mjs
+  - tests/guidance-validation/guidance.test.ts
 relatedIds: []
 parentId: cli-package
 operationIds:
   - guidance-build
   - guidance-tests
+  - guidance-validation-lint

@@ -27,6 +27,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Keep public contracts explicit and independently verified
@@ -47,10 +55,11 @@ interfaces:
 documentation:
   - docs/operations/steward-operations.md
 tests:
-  - tests/operations/operations.test.mjs
-  - tests/operations/services.test.mjs
+  - tests/operations/operations.test.ts
+  - tests/operations/services.test.ts
 relatedIds:
   - workspace
   - steward
 parentId: cli-package
-operationIds: []
+operationIds:
+  - operations-lint

@@ -18,6 +18,12 @@ maintainedPaths:
   - tsconfig.json
   - .github
   - .gitignore
+  - eslint.config.ts
+  - .prettierrc.yaml
+  - .prettierignore
+  - tsconfig.tests.json
+  - tsconfig.fixtures.json
+  - tsconfig.tooling.json
 owners:
   - component: agent-guidance
     paths:
@@ -96,6 +102,12 @@ owners:
       - .github
       - .gitignore
       - src/cli.ts
+      - eslint.config.ts
+      - .prettierrc.yaml
+      - .prettierignore
+      - tsconfig.tests.json
+      - tsconfig.fixtures.json
+      - tsconfig.tooling.json
     publicModules: []
     directoryExceptions:
       - .

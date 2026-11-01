@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "fixtures",
+    "outDir": ".fixture-build",
+    "declaration": false
+  },
+  "include": ["fixtures/**/*.mts"]
+}

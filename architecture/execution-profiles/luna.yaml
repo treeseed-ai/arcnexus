@@ -13,4 +13,5 @@ operationCategories:
   - integration-test
   - cli-check
   - http-check
+  - lint
 maxOperationCalls: 24

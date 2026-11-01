@@ -1,0 +1,147 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, isAbsolute, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import type { Assignment, HostCheck } from '../architecture/assignment.js';
+import { InputError } from '../architecture/config.js';
+import type { WorkdayParticipant } from '../workday/workday-config.js';
+import type { ExperimentCase, ExperimentInput } from './experiment-config.js';
+import { hash } from './experiment-hash.js';
+import type { Campaign } from './experiments.js';
+export interface PreparedCase extends ExperimentCase {
+  directory: string;
+  assignmentPath: string;
+  workdayPath?: string;
+  codexPath?: string;
+}
+export class ExperimentCapture {
+  constructor(
+    private campaign: Campaign,
+    private output: string,
+  ) {}
+  prepare(input: ExperimentInput): PreparedCase[] {
+    return input.cases.map((c) => this.prepareCase(c, input));
+  }
+  private snapshot(path: string, directory: string, input: ExperimentInput): string {
+    if (!isAbsolute(path) || !Object.hasOwn(input.files, path))
+      throw new InputError('Missing captured artifact: ' + path);
+    const bytes = Buffer.from(input.files[path]!, 'base64'),
+      destination = join(directory, 'files', path.slice(1));
+    mkdirSync(dirname(destination), { recursive: true, mode: 0o700 });
+    if (existsSync(destination)) {
+      if (hash(readFileSync(destination)) !== hash(bytes))
+        throw new Error('Conflicting artifact snapshots');
+    } else writeFileSync(destination, bytes, { mode: 0o500 });
+    this.campaign.snapshots.push({
+      path,
+      snapshot: destination,
+      sha256: hash(bytes),
+    });
+    return destination;
+  }
+  private captureCommand(command: HostCheck, directory: string, input: ExperimentInput): HostCheck {
+    const paths = new Map(
+      command.artifacts.map((path) => [path, this.snapshot(path, directory, input)]),
+    );
+    return {
+      ...command,
+      command: paths.get(command.command) ?? command.command,
+      args: command.args.map(
+        (arg) =>
+          paths.get(arg) ?? (arg === '{faultMarker}' ? join(directory, 'fault-marker.json') : arg),
+      ),
+      artifacts: [...paths.values()],
+    };
+  }
+  private prepareCase(c: ExperimentCase, input: ExperimentInput): PreparedCase {
+    const directory = join(this.output, c.id);
+    mkdirSync(directory, { mode: 0o700 });
+    const path = this.assignment(c.assignment, 'assignment', directory, input);
+    const codexPath = this.codex(c, directory, input);
+    const workdayPath = this.workday(c, directory, input);
+    return {
+      ...c,
+      directory,
+      assignmentPath: path,
+      workdayPath,
+      codexPath,
+      bindings: c.bindings ? this.snapshot(c.bindings, directory, input) : undefined,
+      acceptance: c.acceptance.map((check) => this.captureCommand(check, directory, input)),
+    };
+  }
+  private assignment(
+    value: Assignment,
+    name: string,
+    directory: string,
+    input: ExperimentInput,
+  ): string {
+    const assignment = structuredClone(value);
+    if (assignment.priorEvidence)
+      assignment.priorEvidence = assignment.priorEvidence.map((ref) => ({
+        ...ref,
+        path: this.snapshot(ref.path, directory, input),
+      }));
+    assignment.hostChecks = assignment.hostChecks.map((check) =>
+      this.captureCommand(check, directory, input),
+    );
+    const path = join(directory, name + '.json');
+    writeFileSync(path, JSON.stringify(assignment), { mode: 0o400 });
+    return path;
+  }
+  private participant(
+    owner: WorkdayParticipant,
+    name: string,
+    directory: string,
+    input: ExperimentInput,
+  ) {
+    const file = this.assignment(owner.resolved.assignment, name, directory, input);
+    return {
+      component: owner.resolved.componentId,
+      assignment: file,
+      maxAttempts: owner.maxAttempts,
+      refresh: owner.refresh,
+    };
+  }
+  private codex(c: ExperimentCase, directory: string, input: ExperimentInput): string | undefined {
+    let codexPath = input.codexPath;
+    if (input.evidenceMode === 'simulation') {
+      codexPath = join(directory, 'simulated-codex');
+      const module = pathToFileURL(
+        join(
+          dirname(input.runner),
+          'experiments',
+          c.workday ? 'workday-simulation.js' : 'simulation-codex.js',
+        ),
+      ).href;
+      writeFileSync(
+        codexPath,
+        `#!/usr/bin/env node\nprocess.argv.splice(2,0,${JSON.stringify(c.scenario)});import(${JSON.stringify(module)});\n`,
+        { mode: 0o700 },
+      );
+    }
+    return codexPath;
+  }
+  private workday(
+    c: ExperimentCase,
+    directory: string,
+    input: ExperimentInput,
+  ): string | undefined {
+    let workdayPath: string | undefined;
+    if (c.workday) {
+      workdayPath = join(directory, 'workday.json');
+      writeFileSync(
+        workdayPath,
+        JSON.stringify({
+          schemaVersion: 1,
+          requester: this.participant(c.workday.requester, 'requester', directory, input),
+          recipient: this.participant(c.workday.recipient, 'recipient', directory, input),
+          dependency: c.workday.dependency,
+          acceptance: c.workday.acceptance.map((check) =>
+            this.captureCommand(check, directory, input),
+          ),
+        }),
+        { mode: 0o400 },
+      );
+    }
+    return workdayPath;
+  }
+}

@@ -1,18 +1,18 @@
-import { ConfigurationReader } from "../architecture/configuration.js";
-import { readFileSync, statSync } from "node:fs";
-import { dirname, resolve, isAbsolute } from "node:path";
-import { validateSchema } from "../architecture/schema.js";
+import { readFileSync, statSync } from 'node:fs';
+import { dirname, isAbsolute, resolve } from 'node:path';
 import {
+  digest,
   resolveAssignment,
   resolveBase,
-  digest,
   type Assignment,
-  type ResolvedAssignment,
   type HostCheck,
-} from "../architecture/assignment.js";
-import { loadBindings } from "../architecture/bindings.js";
-import { commands, InputError, type Command } from "../architecture/config.js";
-import { covered } from "../architecture/components.js";
+  type ResolvedAssignment,
+} from '../architecture/assignment.js';
+import { loadBindings } from '../architecture/bindings.js';
+import { covered } from '../architecture/components.js';
+import { commands, InputError, type Command } from '../architecture/config.js';
+import { ConfigurationReader, type ConfigurationSource } from '../architecture/configuration.js';
+import { validateSchema } from '../architecture/schema.js';
 interface Participant {
   component: string;
   assignment: string;
@@ -38,9 +38,9 @@ export interface WorkdayInput {
   base: string;
   requester: WorkdayParticipant;
   recipient: WorkdayParticipant;
-  dependency: Definition["dependency"];
+  dependency: Definition['dependency'];
   acceptance: HostCheck[];
-  artifacts: ResolvedAssignment["artifacts"];
+  artifacts: ResolvedAssignment['artifacts'];
   digest: string;
 }
 export function resolveWorkday(
@@ -51,58 +51,91 @@ export function resolveWorkday(
   tools: Record<string, string> = {},
 ): WorkdayInput {
   try {
-    const configurationSources = [new ConfigurationReader().file(path)];
-    const definition = validateSchema<Definition>(
-        "workday",
-        configurationSources[0]!.value,
-      ),
-      selection = resolveBase(project, base),
-      bindings = loadBindings(bindingsPath);
-    if (bindings.configurationSource) configurationSources.push(bindings.configurationSource);
-    const checks = (checks: HostCheck[], directory: string) =>
-      checks.map((c) => ({
-        ...c,
-        command: tools[c.command] ?? bindings?.tools[c.command] ?? c.command,
-        artifacts: c.artifacts.map((p) => resolve(directory, p)),
-        args: c.args.map((a) =>
-          c.artifacts.includes(a) ? resolve(directory, a) : a,
-        ),
-      }));
-    const participant = (p: Participant): WorkdayParticipant => {
-      const file = resolve(dirname(path), p.assignment);
-      const source = new ConfigurationReader().file(file);
-      configurationSources.push(source);
-      const value = validateSchema<Assignment>(
-          "assignment",
-          structuredClone(source.value),
-        );
-      value.hostChecks = checks(value.hostChecks, dirname(file));
-      value.priorEvidence = value.priorEvidence?.map((ref) => ({
-        ...ref,
-        path: resolve(dirname(file), ref.path),
-      }));
-      const resolved = resolveAssignment(
-        selection.source,
-        selection.base,
-        p.component,
-        { value, bindings },
-      );
-      commands(p.refresh);
-      if (
-        resolved.executionProfile.model !== "gpt-6-luna" ||
-        resolved.executionProfile.reasoning !== "medium"
-      )
-        throw new InputError("Workdays require Luna/medium profiles");
-      return { resolved, maxAttempts: p.maxAttempts ?? 1, refresh: p.refresh };
+    return new WorkdayResolver(path, project, base, bindingsPath, tools).resolve();
+  } catch (error) {
+    throw new InputError(String(error));
+  }
+}
+
+class WorkdayResolver {
+  private sources: ConfigurationSource[];
+  private definition: Definition;
+  private selection: ReturnType<typeof resolveBase>;
+  private bindings: ReturnType<typeof loadBindings>;
+  constructor(
+    private path: string,
+    project: string,
+    base: string | undefined,
+    bindingsPath: string | undefined,
+    private tools: Record<string, string>,
+  ) {
+    this.sources = [new ConfigurationReader().file(path)];
+    this.definition = validateSchema<Definition>('workday', this.sources[0]!.value);
+    this.selection = resolveBase(project, base);
+    this.bindings = loadBindings(bindingsPath);
+    if (this.bindings.configurationSource) this.sources.push(this.bindings.configurationSource);
+  }
+  resolve(): WorkdayInput {
+    const requester = this.participant(this.definition.requester);
+    const recipient = this.participant(this.definition.recipient);
+    this.validateOwners(requester, recipient);
+    const acceptance = this.checks(this.definition.acceptance, dirname(this.path));
+    const data = {
+      configurationSources: this.sources,
+      schemaVersion: 1 as const,
+      ...this.selection,
+      requester,
+      recipient,
+      dependency: this.definition.dependency,
+      acceptance,
+      artifacts: this.artifacts(acceptance),
     };
-    const requester = participant(definition.requester),
-      recipient = participant(definition.recipient);
+    return { ...data, digest: digest(JSON.stringify(data)) };
+  }
+  private checks(checks: HostCheck[], directory: string): HostCheck[] {
+    return checks.map((check) => ({
+      ...check,
+      command: this.tools[check.command] ?? this.bindings.tools[check.command] ?? check.command,
+      artifacts: check.artifacts.map((path) => resolve(directory, path)),
+      args: check.args.map((arg) =>
+        check.artifacts.includes(arg) ? resolve(directory, arg) : arg,
+      ),
+    }));
+  }
+  private participant(participant: Participant): WorkdayParticipant {
+    const file = resolve(dirname(this.path), participant.assignment);
+    const source = new ConfigurationReader().file(file);
+    this.sources.push(source);
+    const value = validateSchema<Assignment>('assignment', structuredClone(source.value));
+    value.hostChecks = this.checks(value.hostChecks, dirname(file));
+    value.priorEvidence = value.priorEvidence?.map((ref) => ({
+      ...ref,
+      path: resolve(dirname(file), ref.path),
+    }));
+    const resolved = resolveAssignment(
+      this.selection.source,
+      this.selection.base,
+      participant.component,
+      {
+        value,
+        bindings: this.bindings,
+      },
+    );
+    commands(participant.refresh);
+    if (
+      resolved.executionProfile.model !== 'gpt-6-luna' ||
+      resolved.executionProfile.reasoning !== 'medium'
+    )
+      throw new InputError('Workdays require Luna/medium profiles');
+    return { resolved, maxAttempts: participant.maxAttempts ?? 1, refresh: participant.refresh };
+  }
+  private validateOwners(requester: WorkdayParticipant, recipient: WorkdayParticipant): void {
     if (
       requester.resolved.componentId === recipient.resolved.componentId ||
-      definition.dependency.from !== requester.resolved.componentId ||
-      definition.dependency.to !== recipient.resolved.componentId
+      this.definition.dependency.from !== requester.resolved.componentId ||
+      this.definition.dependency.to !== recipient.resolved.componentId
     )
-      throw new InputError("Invalid two-owner dependency edge");
+      throw new InputError('Invalid two-owner dependency edge');
     const a = requester.resolved.context.at(-1)!,
       b = recipient.resolved.context.at(-1)!;
     if (
@@ -110,51 +143,31 @@ export function resolveWorkday(
       (requester.resolved.environment.workspace &&
         a.repository !== requester.resolved.environment.workspace.primary.id)
     )
-      throw new InputError(
-        "Both owners must belong to the same primary repository",
-      );
+      throw new InputError('Both owners must belong to the same primary repository');
     if (
       requester.resolved.allowedWritePaths.some(
-        (p) =>
-          covered(p, recipient.resolved.allowedWritePaths) ||
-          recipient.resolved.allowedWritePaths.some((q) => covered(q, [p])),
+        (path) =>
+          covered(path, recipient.resolved.allowedWritePaths) ||
+          recipient.resolved.allowedWritePaths.some((other) => covered(other, [path])),
       )
     )
-      throw new InputError("Workday owner writable scopes overlap");
-    const acceptance = checks(definition.acceptance, dirname(path)),
-      artifacts: ResolvedAssignment["artifacts"] = [],
+      throw new InputError('Workday owner writable scopes overlap');
+  }
+  private artifacts(checks: HostCheck[]): ResolvedAssignment['artifacts'] {
+    const artifacts: ResolvedAssignment['artifacts'] = [],
       ids = new Set<string>();
-    for (const c of acceptance) {
-      commands([c]);
-      if (!isAbsolute(c.command) || ids.has(c.id))
-        throw new InputError(
-          "Independent checks require absolute executable and unique identity",
-        );
-      ids.add(c.id);
-      for (const p of c.artifacts) {
-        if (!statSync(p).isFile())
-          throw new InputError("Expected acceptance artifact");
-        const bytes = readFileSync(p);
-        if (!artifacts.some((a) => a.path === p))
-          artifacts.push({
-            path: p,
-            content: bytes.toString("base64"),
-            sha256: digest(bytes),
-          });
+    for (const check of checks) {
+      commands([check]);
+      if (!isAbsolute(check.command) || ids.has(check.id))
+        throw new InputError('Independent checks require absolute executable and unique identity');
+      ids.add(check.id);
+      for (const path of check.artifacts) {
+        if (!statSync(path).isFile()) throw new InputError('Expected acceptance artifact');
+        const bytes = readFileSync(path);
+        if (!artifacts.some((artifact) => artifact.path === path))
+          artifacts.push({ path, content: bytes.toString('base64'), sha256: digest(bytes) });
       }
     }
-    const data = {
-      configurationSources,
-      schemaVersion: 1 as const,
-      ...selection,
-      requester,
-      recipient,
-      dependency: definition.dependency,
-      acceptance,
-      artifacts,
-    };
-    return { ...data, digest: digest(JSON.stringify(data)) };
-  } catch (error) {
-    throw new InputError(String(error));
+    return artifacts;
   }
 }

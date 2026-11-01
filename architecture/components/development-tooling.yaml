@@ -17,6 +17,12 @@ allowedWritePaths:
   - .github
   - .gitignore
   - src/cli.ts
+  - eslint.config.ts
+  - .prettierrc.yaml
+  - .prettierignore
+  - tsconfig.tests.json
+  - tsconfig.fixtures.json
+  - tsconfig.tooling.json
 verification:
   - command: npm
     args:
@@ -32,6 +38,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Keep public contracts explicit and independently verified
@@ -42,7 +56,6 @@ access:
     - tests/development-tooling
     - docs/development-tooling
     - .github
-    - .gitignore
     - .
 schemaVersion: 2
 repository: arcnexus
@@ -54,12 +67,13 @@ interfaces:
 documentation:
   - docs/development-tooling/ci.md
 tests:
-  - tests/development-tooling/catalog-fixture.mjs
-  - tests/development-tooling/handoff-fixture.mjs
-  - tests/development-tooling/operations-fixture.mjs
-  - tests/development-tooling/workflow-fixture.mjs
+  - tests/development-tooling/catalog-fixture.ts
+  - tests/development-tooling/handoff-fixture.ts
+  - tests/development-tooling/operations-fixture.ts
+  - tests/development-tooling/workflow-fixture.ts
 relatedIds:
   - cli
   - architecture
 parentId: cli-package
-operationIds: []
+operationIds:
+  - development-tooling-lint

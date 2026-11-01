@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.test-build/
+context/
+package-lock.json
+fixtures/**/package-lock.json
+docs/acceptance/
+docs/plans/
+docs/*qualification.json
+qualification/tree-artifact-expected.json
+
+.fixture-build/

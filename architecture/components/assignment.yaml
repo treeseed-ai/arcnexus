@@ -25,11 +25,20 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
   - Small functions with coherent responsibilities
-  - Context acceptance is shared with assignment/steward ownership; caller reviews changes
+  - Context acceptance is shared with assignment/steward ownership; caller
+    reviews changes
 access:
   readPaths:
     - .
@@ -47,15 +56,16 @@ documentation:
   - docs/assignment/corrective-attempts.md
   - docs/assignment/steward-workflow.md
 tests:
-  - tests/assignment/attempts.test.mjs
-  - tests/assignment/planning.test.mjs
-  - tests/assignment/prior-evidence.test.mjs
-  - tests/assignment/steward.test.mjs
-  - tests/assignment/workflow.test.mjs
+  - tests/assignment/attempts.test.ts
+  - tests/assignment/planning.test.ts
+  - tests/assignment/prior-evidence.test.ts
+  - tests/assignment/steward.test.ts
+  - tests/assignment/workflow.test.ts
 relatedIds:
   - steward
   - workspace
   - change-inspection
   - report
 parentId: cli-package
-operationIds: []
+operationIds:
+  - assignment-lint

@@ -25,6 +25,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -45,13 +53,14 @@ interfaces:
 documentation:
   - docs/workday/workdays.md
 tests:
-  - tests/workday/handoffs.test.mjs
-  - tests/workday/parking.test.mjs
-  - tests/workday/workday-interruption.test.mjs
-  - tests/workday/workdays.test.mjs
+  - tests/workday/handoffs.test.ts
+  - tests/workday/parking.test.ts
+  - tests/workday/workday-interruption.test.ts
+  - tests/workday/workdays.test.ts
 relatedIds:
   - assignment
   - workspace
   - report
 parentId: cli-package
-operationIds: []
+operationIds:
+  - workday-lint

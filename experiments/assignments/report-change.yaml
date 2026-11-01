@@ -31,9 +31,9 @@ hostChecks:
   - id: report-operations
     command: node
     args:
-      - ../checks/report-operations.mjs
+      - ../../dist/experiments/checks/report-operations.js
     artifacts:
-      - ../checks/report-operations.mjs
+      - ../../dist/experiments/checks/report-operations.js
 allowedWritePaths:
   - src/report/report.ts
   - tests/report/report.test.mjs

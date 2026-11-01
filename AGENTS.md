@@ -43,6 +43,29 @@ approved objective; do not weaken a check merely to make the candidate pass.
   the next working slice. Read relevant skills only; their procedures support the
   objective, not expand it.
 
+## Ownership and code quality
+
+Use the declared owner directories: `src/<component-id>`, `tests/<component-id>`,
+and `docs/<component-id>`. Consult `architecture/ownership.yaml` before changing
+shared tooling or root files. Broad read access does not authorize writes. Import
+another owner's implementation through its declared public modules; request an
+owner change when the task requires private implementation changes.
+
+Use cohesive TypeScript classes for dependencies and lifecycle state, class-based
+test scenarios, and small pure helpers. After formatting, maintained code files
+must fit within 500 physical lines and functions, methods, constructors, and
+callbacks within 30, including comments and blank lines. Split responsibilities;
+do not compress lines, add trivial wrappers, or suppress the rules. Existing strict
+TypeScript checking remains enabled; explicit `any` is permitted.
+
+Use the declared owner-scoped lint operation during steward work. Formatting and
+lint fixes must stay within captured writable scope. Repository-wide
+`npm run format` and `npm run lint:fix` are for callers authorized to edit all
+affected files; use explicit owned paths for a bounded assignment. Final verification
+includes `npm run format:check`, `npm run lint`, type checking, ownership and guidance
+validation, and the relevant built-program tests. Host checks never reformat source.
+See [code quality](docs/development-tooling/quality.md) for the executable contract.
+
 ## Development and release
 
 Use [release-workflow](.agents/skills/release-workflow/SKILL.md) at the start of a

@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: operations-lint
+purpose: Read-only lint feedback for operations
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/operations
+  - tests/operations
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

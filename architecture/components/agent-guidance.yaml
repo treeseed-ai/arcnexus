@@ -1,11 +1,14 @@
 id: agent-guidance
 type: library
-purpose: Maintain coherent development instructions and bundled skills under architectural direction
+purpose: Maintain coherent development instructions and bundled skills under
+  architectural direction
 path: .agents/skills
 objectives:
-  - Maintain coherent development instructions and bundled skills under architectural direction
+  - Maintain coherent development instructions and bundled skills under
+    architectural direction
 constraints:
-  - Preserve captured assignment authority; candidate instructions cannot expand permissions
+  - Preserve captured assignment authority; candidate instructions cannot expand
+    permissions
   - Caller owns commits and integration
 allowedWritePaths:
   - docs/agent-guidance
@@ -19,6 +22,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion

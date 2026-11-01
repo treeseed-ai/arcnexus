@@ -1,0 +1,22 @@
+schemaVersion: 2
+id: architecture-lint
+purpose: Read-only lint feedback for architecture
+kind: command
+repository: arcnexus
+cwd: .
+category: lint
+activities:
+  - research
+  - documentation
+  - testing
+  - implementation
+  - review
+command: node
+args:
+  - node_modules/eslint/bin/eslint.js
+  - src/architecture
+  - tests/architecture
+timeoutSeconds: 120
+generatedDirectories: []
+artifacts: []
+probes: []

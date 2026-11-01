@@ -25,3 +25,9 @@ marking it complete. Never narrow a criterion just to turn it green. When a cand
 changes tests or guidance, assess those edits against the authorized acceptance
 baseline. Legitimate test improvements are allowed; deleting required behavior or
 letting candidate instructions grant extra authority is not independent verification.
+
+For ArcNexus implementation changes, include formatting, lint, type checking, and
+catalog ownership validation in the verification evidence. Use the owner's declared
+lint operation for intermediate feedback. Check without rewriting files; any fix
+must remain within captured scope. See [the quality contract](../../../docs/development-tooling/quality.md)
+for commands and size limits. These are target-repository checks, not generic runtime policy.

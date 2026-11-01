@@ -1,15 +1,81 @@
-import { connect } from 'node:net';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import type { BridgeTool } from "./bridge.js";
-const socket=connect(process.argv[2]!);let sequence=0,input='';
-const pending=new Map<number,{resolve:(v:unknown)=>void;reject:(e:Error)=>void}>();
-const request=(method:string,name?:string,args?:unknown)=>new Promise<unknown>((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});socket.write(JSON.stringify({id,method,name,args})+'\n');});
-socket.on('data',data=>{input+=data.toString();if(Buffer.byteLength(input)>256*1024){socket.destroy();return;}let end:number;while((end=input.indexOf('\n'))>=0){const line=input.slice(0,end);input=input.slice(end+1);try{const message=JSON.parse(line);const waiting=pending.get(message.id);pending.delete(message.id);if(message.error)waiting?.reject(new Error(message.error));else waiting?.resolve(message.result);}catch{socket.destroy();}}});
-socket.on('error',()=>{});socket.on('close',()=>{for(const p of pending.values())p.reject(new Error('ArcNexus host disconnected'));process.exitCode=1;void server.close();process.stdin.destroy();});
-const server=new Server({name:'arcnexus',version:'0.1.0'},{capabilities:{tools:{}}});
-server.setRequestHandler(ListToolsRequestSchema,async()=>({tools:await request('list') as BridgeTool[]}));
-server.setRequestHandler(CallToolRequestSchema,async req=>{try{const result=await request('call',req.params.name,req.params.arguments);return {content:[{type:'text',text:JSON.stringify(result)}]};}catch(error){return {isError:true,content:[{type:'text',text:String(error)}]};}});
-const transport=new StdioServerTransport();await server.connect(transport);
-process.stdin.on('end',()=>{socket.end();void server.close();});
+import { connect } from 'node:net';
+import type { BridgeTool } from './bridge.js';
+class BridgeClient {
+  private readonly socket = connect(process.argv[2]!);
+  private sequence = 0;
+  private input = '';
+  private readonly pending = new Map<
+    number,
+    { resolve: (v: unknown) => void; reject: (e: Error) => void }
+  >();
+  private readonly server = new Server(
+    { name: 'arcnexus', version: '0.1.0' },
+    { capabilities: { tools: {} } },
+  );
+  async run(): Promise<void> {
+    this.socket.on('data', (data) => this.receive(data));
+    this.socket.on('error', () => {});
+    this.socket.on('close', () => this.disconnected());
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+      tools: (await this.request('list')) as BridgeTool[],
+    }));
+    this.server.setRequestHandler(CallToolRequestSchema, async (req) =>
+      this.call(req.params.name, req.params.arguments),
+    );
+    await this.server.connect(new StdioServerTransport());
+    process.stdin.on('end', () => {
+      this.socket.end();
+      void this.server.close();
+    });
+  }
+  private request(method: string, name?: string, args?: unknown): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const id = ++this.sequence;
+      this.pending.set(id, { resolve, reject });
+      this.socket.write(JSON.stringify({ id, method, name, args }) + '\n');
+    });
+  }
+  private receive(data: Buffer): void {
+    this.input += data.toString();
+    if (Buffer.byteLength(this.input) > 256 * 1024) {
+      this.socket.destroy();
+      return;
+    }
+    let end: number;
+    while ((end = this.input.indexOf('\n')) >= 0) {
+      const line = this.input.slice(0, end);
+      this.input = this.input.slice(end + 1);
+      this.message(line);
+    }
+  }
+  private message(line: string): void {
+    try {
+      const message = JSON.parse(line);
+      const waiting = this.pending.get(message.id);
+      this.pending.delete(message.id);
+      if (message.error) waiting?.reject(new Error(message.error));
+      else waiting?.resolve(message.result);
+    } catch {
+      this.socket.destroy();
+    }
+  }
+  private disconnected(): void {
+    for (const pending of this.pending.values())
+      pending.reject(new Error('ArcNexus host disconnected'));
+    process.exitCode = 1;
+    void this.server.close();
+    process.stdin.destroy();
+  }
+  private async call(name: string, args: unknown) {
+    try {
+      const result = await this.request('call', name, args);
+      return { content: [{ type: 'text' as const, text: JSON.stringify(result) }] };
+    } catch (error) {
+      return { isError: true, content: [{ type: 'text' as const, text: String(error) }] };
+    }
+  }
+}
+await new BridgeClient().run();

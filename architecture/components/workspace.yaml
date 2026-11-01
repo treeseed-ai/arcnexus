@@ -27,6 +27,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Evidence-backed completion
@@ -49,8 +57,9 @@ documentation:
   - docs/workspace/composed-workspaces.md
   - docs/workspace/workspaces.md
 tests:
-  - tests/workspace/composed.test.mjs
-  - tests/workspace/workspace.test.mjs
+  - tests/workspace/composed.test.ts
+  - tests/workspace/workspace.test.ts
 relatedIds: []
 parentId: cli-package
-operationIds: []
+operationIds:
+  - workspace-lint

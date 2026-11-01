@@ -6,7 +6,8 @@ objectives:
   - Interpret requests and identify accountable existing owners
   - Report missing responsibilities and architectural questions precisely
 constraints:
-  - Intake runtime is introduced in increment three; this definition does not claim it is delivered
+  - Intake runtime is introduced in increment three; this definition does not
+    claim it is delivered
   - Never silently broaden a captured assignment or grant write authority
 allowedWritePaths:
   - src/task-intake
@@ -27,6 +28,14 @@ verification:
       - validate
       - --project
       - .
+  - command: npm
+    args:
+      - run
+      - format:check
+  - command: npm
+    args:
+      - run
+      - lint
 questions: []
 patterns:
   - Keep public contracts explicit and independently verified

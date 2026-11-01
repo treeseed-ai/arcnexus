@@ -17,14 +17,10 @@ export class ActiveBudget {
   start() {
     if (this.since !== undefined) return;
     this.signal.throwIfAborted();
-    if (this.used >= this.limitMs)
-      throw new Error("Assignment active-time budget exhausted");
+    if (this.used >= this.limitMs) throw new Error('Assignment active-time budget exhausted');
     this.since = Date.now();
     this.timer = setTimeout(
-      () =>
-        this.controller.abort(
-          new Error("Assignment active-time budget exhausted"),
-        ),
+      () => this.controller.abort(new Error('Assignment active-time budget exhausted')),
       this.limitMs - this.used,
     );
   }

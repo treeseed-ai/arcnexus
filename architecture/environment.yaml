@@ -22,6 +22,8 @@ setup:
 generatedDirectories:
   - node_modules
   - dist
+  - .test-build
+  - .fixture-build
 schemaVersion: 1
 workspace:
   primary:
