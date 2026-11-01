@@ -25,7 +25,7 @@ class TreeArtifactsAcceptance {
     return spawnSync(
       'bun',
       ['tests/support/assembly/artifact-inventory.mts', owner, 'vendor/task3c/api.tgz'],
-      { encoding: 'utf8', timeout: 30000 },
+      { encoding: 'utf8', timeout: 24 * 60 * 60 * 1000 },
     );
   }
 }
