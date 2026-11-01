@@ -3,6 +3,7 @@ import { ExecutionLease } from '../coordination-store/execution-store.js';
 import { createServer, type Socket } from 'node:net';
 import { chmodSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { ProjectExecution } from '../architecture/execution-context.js';
 import { processStart } from '../operations/service-state.js';
 import { ProjectHost } from './project-host.js';
@@ -33,7 +34,13 @@ class HostServer {
       chmodSync(this.socket, 0o600);
       writeFileSync(
         join(this.root, 'projects', this.context.key, 'host.json'),
-        JSON.stringify({ pid: process.pid, start: processStart(process.pid) }),
+        JSON.stringify({
+          pid: process.pid,
+          start: processStart(process.pid),
+          runner: JSON.parse(
+            readFileSync(fileURLToPath(new URL('../../../runner.json', import.meta.url)), 'utf8'),
+          ),
+        }),
         { mode: 0o600 },
       );
     });

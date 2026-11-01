@@ -7,7 +7,7 @@ import { connect } from 'node:net';
 import { existsSync, mkdirSync, openSync, closeSync, realpathSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { fileURLToPath } from 'node:url';
+import { RunnerSnapshot } from './runner-snapshot.js';
 import { setTimeout as delay } from 'node:timers/promises';
 import { ExecutionContext, type ProjectExecution } from '../architecture/execution-context.js';
 import { stateRoot } from '../workspace/state.js';
@@ -87,10 +87,16 @@ export class HostClient {
   private launch(): void {
     const context = join(this.directory, 'context-' + randomUUID() + '.json');
     writeFileSync(context, JSON.stringify(this.context), { mode: 0o600 });
+    const runner = new RunnerSnapshot().capture(this.root);
     const log = openSync(join(this.directory, 'host.log'), 'a', 0o600);
     const child = spawn(
       process.execPath,
-      [fileURLToPath(new URL('./host-main.js', import.meta.url)), this.root, context, this.socket],
+      [
+        join(runner.directory, 'dist/library/execution-runtime/host-main.js'),
+        this.root,
+        context,
+        this.socket,
+      ],
       { detached: true, stdio: ['ignore', log, log] },
     );
     closeSync(log);
