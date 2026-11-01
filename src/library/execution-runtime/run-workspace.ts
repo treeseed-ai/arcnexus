@@ -33,6 +33,10 @@ export class RunWorkspace {
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       workspace: record,
       workspacePrepared: false,
+      initialCandidateRevision: run.data.initialCandidateRevision ?? revision,
+      initialCandidateSourceRun: run.data.initialCandidateRevision
+        ? run.data.initialCandidateSourceRun
+        : (latest?.id ?? null),
       previousPolicyWorkspaces: [
         ...((run.data.previousPolicyWorkspaces ?? []) as unknown[]),
         ...(run.data.workspace ? [(run.data.workspace as RecordData).id] : []),

@@ -79,6 +79,7 @@ export class Direction {
     objective: string,
     evidence: unknown,
     goal = false,
+    hostEvidence?: unknown,
   ): Promise<string[]> {
     const record = new DirectionRecords(this.root, this.context).create(
       workspace,
@@ -87,6 +88,7 @@ export class Direction {
       goal ? this.context.directorProfile : this.context.reviewerProfile,
     );
     record.activationRole = goal ? 'director-assessment' : 'verifier';
+    record.hostExecutionEvidence = hostEvidence;
     record.acceptanceCriteria = new VerificationAssessment().criteria(objective, evidence, goal);
     if (goal) delete record.assignmentId;
     const captured = new VerificationEvidence(
@@ -122,7 +124,7 @@ export class Direction {
     evidence: unknown,
     goal: boolean,
   ): string {
-    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Read verification.evidence artifact=manifest and its paged artifacts for complete host-captured scope and changes; Git metadata access is unnecessary. Read all relevant pages through complete=true. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nCaptured acceptance criteria: ${JSON.stringify(record.acceptanceCriteria)}\nReturn verification-result. Assess every zero-based criterion index exactly once, with verdict=verified only when observed evidence supports it. Missing evidence requires verdict=gap and explicit deficiencies. Never substitute worker claims for observed evidence.`;
+    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Read verification.evidence artifact=manifest and its paged artifacts for complete host-captured scope and changes; Git metadata access is unnecessary. Read all relevant pages through complete=true. The execution artifact contains host-owned request chronology, candidate provenance and delivery associations; use it to verify discovery/delegation requirements without relying on worker descriptions. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nCaptured acceptance criteria: ${JSON.stringify(record.acceptanceCriteria)}\nReturn verification-result. Assess every zero-based criterion index exactly once, with verdict=verified only when observed evidence supports it. Missing evidence requires verdict=gap and explicit deficiencies. Never substitute worker claims for observed evidence.`;
   }
 
   /** Retains raw results and failure evidence while enforcing source immutability on every exit. */

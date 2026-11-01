@@ -1,4 +1,4 @@
-import { ExecutionReports } from '../report/report.js';
+import { ExecutionEvidence, ExecutionReports } from '../report/report.js';
 import { StewardshipPolicy } from '../workday/workday.js';
 import { git } from '../operations/process.js';
 import { InputError } from '../architecture/config.js';
@@ -314,6 +314,7 @@ export class ProjectHost {
         run.objective,
         assignments,
         true,
+        new ExecutionEvidence(this.root, this.store).capture(run.id),
       );
       if (!signal.aborted) this.store.updateRun(run.id, 'completed', { goalEvidence: evidence });
     } catch (error) {

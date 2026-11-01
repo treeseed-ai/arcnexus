@@ -1,3 +1,4 @@
+import { ExecutionEvidence } from '../report/report.js';
 import { candidateDigest } from '../change-inspection/changes.js';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -278,6 +279,8 @@ export class AssignmentExecution {
       assignment.owner,
       assignment.objective,
       { criteria: assignment.acceptance, commands: record.commands, worker: record.agent },
+      false,
+      new ExecutionEvidence(this.root, this.store).capture(assignment.runId),
     );
     const revision = this.snapshots.capture(record.workspace, record.base);
     return {

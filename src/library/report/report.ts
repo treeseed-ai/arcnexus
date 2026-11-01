@@ -260,6 +260,8 @@ function serviceLines(record: RecordData): string {
   return serviceLines;
 }
 
+export { ExecutionEvidence } from './execution-evidence.js';
+
 export { ExecutionReports } from './execution-report.js';
 
 export function markdownReport(record: RecordData): string {

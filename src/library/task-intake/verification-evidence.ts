@@ -28,6 +28,7 @@ export class VerificationEvidence {
     const directory = join(root, 'runs', record.id);
     this.add('patch', readFileSync(join(directory, 'changes.patch'), 'utf8'), 'git-binary-patch');
     this.addFiles(JSON.parse(readFileSync(join(directory, 'new-files.json'), 'utf8')));
+    this.execution(record);
     const manifest = {
       baseline,
       candidateDigest: this.candidate,
@@ -43,6 +44,15 @@ export class VerificationEvidence {
       throw Object.assign(new Error('Candidate changed during evidence capture'), {
         name: 'CandidateIntegrityError',
       });
+  }
+
+  /** Pins current-run host observations without accepting a foreign task as execution evidence. */
+  private execution(record: RecordData): void {
+    const evidence = record.hostExecutionEvidence as { run?: { id?: string } } | undefined;
+    if (!evidence) return;
+    if (!record.executionRunId || evidence.run?.id !== record.executionRunId)
+      throw new Error('Host execution evidence belongs to a different run');
+    this.add('execution', JSON.stringify(evidence, null, 2), 'json');
   }
 
   /** Extends the declared operations with a fixed read-only artifact capability. */

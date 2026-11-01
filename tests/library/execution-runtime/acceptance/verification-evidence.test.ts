@@ -53,6 +53,24 @@ class VerificationEvidenceScenarios {
     );
   }
 
+  /** A caller cannot attach another run's host facts to an otherwise valid current candidate. */
+  async foreignRun(t: TestContext): Promise<void> {
+    const { f, context, record } = await this.fixture(t, false);
+    record.executionRunId = 'current-run';
+    await assert.rejects(
+      () =>
+        new Direction(f.state, context, new AbortController().signal).verify(
+          record,
+          'a',
+          'READ_HOST_EVIDENCE',
+          { criteria: ['Observed'] },
+          false,
+          { run: { id: 'foreign-run' } },
+        ),
+      /different run/,
+    );
+  }
+
   /** Creates real isolated candidate changes, optionally materializing them as a clean accumulated snapshot. */
   private async fixture(t: TestContext, goal: boolean) {
     const f = new GeneralFixture(t).fixture;
@@ -87,5 +105,8 @@ for (const goal of [false, true])
   );
 
 test('verification artifact access rejects arbitrary host paths', (t) => scenarios.forbidden(t));
+
+test('verification rejects host evidence attached from a foreign run', (t) =>
+  scenarios.foreignRun(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });
