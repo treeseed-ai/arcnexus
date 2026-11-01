@@ -87,3 +87,10 @@ the starting selection establish dynamic activation. They do not expose private
 reasoning or prove an explicitly required API inspection; use actual tool observations
 for the latter. Do not add a separate retrieval ceremony when the relevant owner
 catalog was already present in captured activation context.
+
+A completed, scope-checked expected-regression mismatch is correctable at the
+specification checkpoint (#105). Preserve the plan, thread, specification edits
+and observed command, and return its exact diagnostic for another specification
+activation. Implementation remains unavailable until literal expected-failure
+matching succeeds. Repeated equivalent mismatches require progress diagnosis;
+transport, cancellation, authority and uncertain-operation failures remain unsafe.
