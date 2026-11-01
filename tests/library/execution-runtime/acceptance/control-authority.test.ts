@@ -51,6 +51,8 @@ class ControlAuthorityScenarios {
     assert.throws(() => reopened.control('resume'), /authority|attention/i);
     const retained = reopened.store.run(run.id);
     assert.equal(retained.status, 'needs_attention');
+    const projected = reopened.status().workday?.data as Record<string, unknown>;
+    assert.match(String(projected.authorityError), /authority/);
     assert.equal(retained.data.authorityBase, run.data.authorityBase);
     assert.equal(retained.data.candidateRevision, run.data.candidateRevision);
     assert.equal(existsSync(f.calls), false);

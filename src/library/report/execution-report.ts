@@ -79,6 +79,8 @@ export class ExecutionReports {
       'integrityError',
       'pauseReason',
       'authorityBase',
+      'authorityError',
+      'executionIdentity',
       'candidateRevision',
       'verifiedEvidence',
       'goalEvidence',
