@@ -81,7 +81,7 @@ class WorkspaceTests {
     const r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
     const record = JSON.parse(r.stdout);
-    for (const name of ['../.env', 'valuable.txt']) {
+    for (const name of ['.env', 'valuable.txt']) {
       writeFileSync(join(record.workspace, name), 'keep');
       assert.equal(f.run('cleanup', record.id).status, 1);
       assert.equal(readFileSync(join(record.workspace, name), 'utf8'), 'keep');
@@ -382,7 +382,7 @@ function fixture(t: any, setup: any = []): any {
   git('init', '-b', 'main');
   git('config', 'user.email', 'test@example.invalid');
   git('config', 'user.name', 'Test');
-  writeFileSync(join(repo, '../.gitignore'), 'generated/\n.env\n');
+  writeFileSync(join(repo, '.gitignore'), 'generated/\n.env\n');
   writeFileSync(join(repo, 'source.txt'), 'original\n');
   writeEnvironment(repo, setup);
   git('add', '.');

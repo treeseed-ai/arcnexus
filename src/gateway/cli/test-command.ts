@@ -1,3 +1,4 @@
+import { loadBindings } from '../../library/architecture/bindings.js';
 import { InputError } from '../../library/architecture/config.js';
 import { ComponentTesting } from '../../library/testing/testing.js';
 
@@ -18,13 +19,24 @@ export class TestCommand {
       typeof this.values.project !== 'string'
     )
       throw new InputError('Expected test inspect|run [component-id] --project <repository>');
+    if (
+      Object.keys(this.values).some(
+        (key) =>
+          !['project', 'json', 'level', 'category', 'timeout-seconds', 'bindings'].includes(key),
+      )
+    )
+      throw new InputError('Unsupported test command option');
     const service = new ComponentTesting();
-    const selection = service.inspect(this.values.project, {
-      component: this.positionals[2],
-      level: this.values.level as string | undefined,
-      category: this.values.category as string | undefined,
-      tags: this.tags,
-    });
+    const selection = service.inspect(
+      this.values.project,
+      {
+        component: this.positionals[2],
+        level: this.values.level as string | undefined,
+        category: this.values.category as string | undefined,
+        tags: this.tags,
+      },
+      loadBindings(this.values.bindings as string | undefined),
+    );
     const result = action === 'run' ? await service.run(selection, this.signal) : selection;
     console.log(JSON.stringify(result, null, this.values.json ? undefined : 2));
     if ('exitCode' in result) process.exitCode = result.exitCode;

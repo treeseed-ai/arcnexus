@@ -1,18 +1,24 @@
 schemaVersion: 3
 id: guidance-tests
-purpose: Run the captured guidance validator tests
+purpose: Run shared component suites for guidance-validation
 kind: command
 repository: arcnexus
 cwd: .
-category: unit-test
+category: cli-check
 activities:
+  - research
   - testing
   - implementation
   - review
-command: npm
+command: node
 args:
+  - dist/cli.js
+  - test
   - run
-  - test:guidance-validation
+  - guidance-validation
+  - --project
+  - .
+  - --json
 generatedDirectories:
   - dist
   - .fixture-build
@@ -23,4 +29,4 @@ probes:
   - command: node
     args:
       - -e
-      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['--version']).status!==0)process.exit(1)
+      - console.log(process.version);if(require('child_process').spawnSync(process.execPath,['-e','process.exit(0)']).status!==0)process.exit(1)

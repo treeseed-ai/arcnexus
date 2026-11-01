@@ -75,5 +75,7 @@ discovery:
     - tests/library/guidance-validation
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

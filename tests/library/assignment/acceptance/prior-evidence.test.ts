@@ -48,7 +48,7 @@ class PriorEvidenceTests {
   scenario_2(t: TestContext, mode: any) {
     const f = operationFixture(t),
       a = assignment(f);
-    if (mode === 'missing') a.value.priorEvidence[0].path += '../.missing';
+    if (mode === 'missing') a.value.priorEvidence[0].path += '.missing';
     if (mode === 'oversized') writeFileSync(a.history, 'x'.repeat(65537));
     if (mode === 'non-text') writeFileSync(a.history, Buffer.from([255, 0]));
     if (mode === 'duplicate') a.value.priorEvidence.push(a.value.priorEvidence[0]);

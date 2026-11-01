@@ -24,9 +24,9 @@ class ChangedFilesAcceptance {
       pathToFileURL(
         join(
           resolve(target),
-          existsSync(join(resolve(target), 'dist/library/report/report.js'))
-            ? 'dist/library/report/report.js'
-            : 'dist/report.js',
+          ['dist/library/report/report.js', 'dist/report/report.js', 'dist/report.js'].find(
+            (path) => existsSync(join(resolve(target), path)),
+          ) ?? 'dist/report.js',
         ),
       ).href
     );

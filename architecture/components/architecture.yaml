@@ -50,6 +50,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - architecture-lint
+  - architecture-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -116,5 +117,7 @@ provides:
     kind: json-schema
     path: src/library/architecture/schemas/role.json
     compatibility: Preserve supported historical versions and captured execution readers
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

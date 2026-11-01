@@ -1,8 +1,9 @@
-import { ConfigurationReader } from '../architecture/configuration.js';
+import { type ConfigurationSource, ConfigurationReader } from '../architecture/configuration.js';
 import { commands, relativePath, type Command } from '../architecture/config.js';
 import { validateSchema } from '../architecture/schema.js';
 
 export interface TestProfile {
+  configuration: ConfigurationSource;
   schemaVersion: 1;
   id: string;
   adapter: 'node';
@@ -22,5 +23,5 @@ export function loadTestProfile(project: string, revision: string, id: string): 
   if (profile.id !== id) throw new Error(`Test profile identity mismatch: ${id}`);
   relativePath(profile.outputRoot);
   commands(profile.preparation.map(({ command, args }) => ({ command, args })));
-  return profile;
+  return { ...profile, configuration: source };
 }

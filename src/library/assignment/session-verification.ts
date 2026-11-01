@@ -1,3 +1,4 @@
+import { assertCapturedTests } from '../testing/captured-tests.js';
 import { SessionProgress } from './session-progress.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -90,7 +91,9 @@ export class SessionVerification {
       this.state.options.record.outcome = 'no_changes';
       throw new Error('Candidate has no changes');
     }
+    assertCapturedTests(this.state.component, this.state.options.record.workspace);
     for (const c of this.state.component.verification) await this.state.command(c, 'verification');
+    assertCapturedTests(this.state.component, this.state.options.record.workspace);
     this.state.safe();
     if (this.state.regression)
       await withFrozenTests(this.state.options.record, this.state.frozen, async () => {

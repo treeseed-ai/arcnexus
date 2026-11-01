@@ -35,9 +35,9 @@ class SummaryAcceptance {
       pathToFileURL(
         join(
           workspace,
-          existsSync(join(workspace, 'dist/library/report/report.js'))
-            ? 'dist/library/report/report.js'
-            : 'dist/report.js',
+          ['dist/library/report/report.js', 'dist/report/report.js', 'dist/report.js'].find(
+            (path) => existsSync(join(workspace, path)),
+          ) ?? 'dist/report.js',
         ),
       ).href
     );

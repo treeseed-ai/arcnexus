@@ -106,7 +106,7 @@ function defineParticipants(f: any): void {
     hostChecks: [],
   };
   for (const name of ['requester', 'recipient'])
-    writeFileSync(join(f.root, name + '../.json'), JSON.stringify(assignment));
+    writeFileSync(join(f.root, name + '.json'), JSON.stringify(assignment));
 }
 test('built workday inspect captures two disjoint owners without state or inference', (t: any) =>
   suite.builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference_1(t));

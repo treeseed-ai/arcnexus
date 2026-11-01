@@ -148,7 +148,7 @@ class ExperimentsTests {
   private async copySupervisor(f: ExperimentFixture): Promise<string> {
     const { symlinkSync } = await import('node:fs');
     const runner = join(f.root, 'supervisor');
-    for (const name of ['dist', 'schemas', '../.fixture-build', 'fixtures/simulation'])
+    for (const name of ['dist', 'schemas', '.fixture-build', 'fixtures/simulation'])
       if (existsSync(name)) cpSync(name, join(runner, name), { recursive: true });
     for (const name of ['package.json', 'package-lock.json']) cpSync(name, join(runner, name));
     symlinkSync(resolve('node_modules'), join(runner, 'node_modules'), 'dir');

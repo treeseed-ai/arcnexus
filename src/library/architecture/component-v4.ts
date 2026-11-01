@@ -9,6 +9,7 @@ const scopePath = (path: string) => (path === '.' ? path : relativePath(path));
 
 export interface ComponentV4Fields {
   testProfile?: string;
+  capturedTests?: import('../testing/captured-tests.js').CapturedTest[];
   provides?: ContractDefinition[];
   consumes?: Array<{ id: string; version: string }>;
   patternSnapshots?: Array<{ id: string; artifacts: ReferenceArtifact[] }>;
@@ -128,7 +129,7 @@ export class ComponentV4Resolver {
         const { sha256 } = this.artifacts!.read(path);
         component.inventory.push({ path, kind, sha256 });
       }
-      if (kind !== 'source') component[kind] = paths;
+      if (kind !== 'source') component[kind] = roots;
     }
   }
 

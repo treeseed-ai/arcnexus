@@ -59,6 +59,7 @@ export class ComponentTestFixture {
       ownership: { paths: ['tests'], publicModules: [], directoryExceptions: [] },
       access: { readPaths: ['.'], writeDirectories: ['tests'] },
       testProfile: 'node',
+      verification: [{ command: process.execPath, args: ['-e', 'process.exit(0)'] }],
       discovery: { source: [], documentation: [], tests: ['tests'], exclude: [] },
     });
     this.put('architecture/environment.yaml', {
@@ -127,6 +128,24 @@ export class ComponentTestFixture {
     const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout.trim();
+  }
+
+  assignment(): any {
+    const result = spawnSync(
+      process.execPath,
+      [
+        resolve('dist/cli.js'),
+        'inspect',
+        'sample',
+        'Improve tests',
+        '--project',
+        this.repo,
+        '--json',
+      ],
+      { encoding: 'utf8' },
+    );
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
   }
 
   run(...args: string[]) {

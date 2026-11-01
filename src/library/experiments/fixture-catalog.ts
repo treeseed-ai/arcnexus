@@ -6,10 +6,15 @@ export type FixtureKind = 'identity' | 'http' | 'simulation' | 'workday';
 export class FixtureCatalog {
   files(kind: FixtureKind): Record<string, string> {
     const output: Record<string, string> = {};
-    const compiled = fileURLToPath(new URL(`../../.fixture-build/${kind}`, import.meta.url));
+    const compiled = fileURLToPath(new URL(`../../../.fixture-build/${kind}`, import.meta.url));
     if (!existsSync(compiled))
       throw new InputError('Compiled fixture unavailable; run npm run build');
-    this.read(fileURLToPath(new URL(`../../fixtures/${kind}`, import.meta.url)), '', output, true);
+    this.read(
+      fileURLToPath(new URL(`../../../fixtures/${kind}`, import.meta.url)),
+      '',
+      output,
+      true,
+    );
     this.read(compiled, '', output, false);
     return output;
   }

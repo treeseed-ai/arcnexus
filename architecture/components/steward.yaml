@@ -51,6 +51,7 @@ questions: []
 parentId: cli-package
 operationIds:
   - steward-lint
+  - steward-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -79,5 +80,7 @@ consumes:
   - id: agent-result
     version: "1"
   - id: initializer-result
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

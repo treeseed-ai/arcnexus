@@ -50,6 +50,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - workday-lint
+  - workday-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -89,5 +90,7 @@ consumes:
   - id: workday
     version: "1"
   - id: workday-agent-result
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

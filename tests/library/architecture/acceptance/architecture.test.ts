@@ -19,10 +19,10 @@ class ArchitectureTests {
   builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes_1(t: TestContext) {
     const f = fixture(t);
     for (const path of ['components/sample', 'environment']) {
-      const source = join(f.repo, 'architecture', path + '../.json');
+      const source = join(f.repo, 'architecture', path + '.json');
       const value = JSON.parse(String(readFileSync(source, 'utf8')));
-      renameSync(source, source.replace('../.json', '../.yaml'));
-      writeFileSync(source.replace('../.json', '../.yaml'), stringify(value));
+      renameSync(source, source.replace('.json', '.yaml'));
+      writeFileSync(source.replace('.json', '.yaml'), stringify(value));
     }
     f.commit();
     const r = f.run('inspect', 'sample', 'Improve behavior', '--json');
@@ -103,7 +103,7 @@ class ArchitectureTests {
     const before = JSON.parse(f.run('inspect', 'sample', 'Check hashes', '--json').stdout);
     rmSync(file);
     writeFileSync(
-      file.replace('../.json', '../.yaml'),
+      file.replace('.json', '.yaml'),
       '# readable definition\n' + stringify(f.component),
     );
     f.commit();

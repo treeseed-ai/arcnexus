@@ -18,9 +18,10 @@ class ReportFaultInjection {
     process.exitCode = result.status ?? 1;
   }
   private inject(): void {
-    const path = existsSync('src/library/report/report.ts')
-        ? 'src/library/report/report.ts'
-        : 'src/report.ts',
+    const path =
+        ['src/library/report/report.ts', 'src/report/report.ts', 'src/report.ts'].find(
+          existsSync,
+        ) ?? 'src/report.ts',
       before = readFileSync(path, 'utf8');
     if (!before.includes('## Operations'))
       throw new Error('Fault injection requires implemented Operations heading');

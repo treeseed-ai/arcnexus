@@ -48,10 +48,16 @@ const cliOptions = {
 } as const;
 export function argumentsForCommand() {
   try {
-    return parseArgs({
+    const parsed = parseArgs({
       allowPositionals: true,
       options: cliOptions,
     });
+    if (
+      parsed.positionals[0] !== 'test' &&
+      (parsed.values.level || parsed.values.category || parsed.values.tag)
+    )
+      throw new InputError('Test filters require the test command');
+    return parsed;
   } catch (error) {
     throw new InputError(String(error));
   }

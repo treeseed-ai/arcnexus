@@ -31,7 +31,7 @@ class CheckLayoutTests {
   }
 }
 const suite = new CheckLayoutTests();
-for (const layout of ['dist', 'dist/report'])
+for (const layout of ['dist', 'dist/report', 'dist/library/report'])
   for (const check of ['check-report.js', 'check-report-summary.js', 'report-operations.js'])
     test(`independent ${check} supports ${layout} target layout`, (t) =>
       suite.report(t, layout, check));

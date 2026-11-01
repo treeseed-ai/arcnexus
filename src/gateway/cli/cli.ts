@@ -1,19 +1,18 @@
+import { AssignmentCommand } from './assignment-command.js';
+import { ObservationCommand } from './observation-command.js';
 import { GuidanceCommand } from './guidance-command.js';
 import { ExperimentCommand } from './experiment-command.js';
 import { WorkdayCommand } from './workday-command.js';
 import { TestCommand } from './test-command.js';
 import { TaskCommand } from './task-command.js';
 import { argumentsForCommand, help, type CliValues } from './arguments.js';
-import { resolveAssignment, resolveBase } from '../../library/architecture/assignment.js';
-import { loadBindings } from '../../library/architecture/bindings.js';
-import { loadCatalog } from '../../library/architecture/components.js';
 import { InputError } from '../../library/architecture/config.js';
 import { runSteward } from '../../library/assignment/steward.js';
 import { captureChanges } from '../../library/change-inspection/changes.js';
 import { saveMarkdown } from '../../library/report/report.js';
-import { observe, viewExecution } from '../../library/report/timeline.js';
+import { observe } from '../../library/report/timeline.js';
 import { lock, save, stateRoot, type RecordData } from '../../library/workspace/state.js';
-import { cleanup, createWorkspace, prepareWorkspace } from '../../library/workspace/workspace.js';
+import { WorkspaceCommand } from './workspace-command.js';
 
 function finalize(root: string, record: RecordData): void {
   record.outcome ??= record.status;
@@ -80,6 +79,8 @@ class CliApplication {
   private async dispatch(): Promise<void> {
     switch (this.command) {
       case 'test':
+        this.validateExecution();
+        this.startTimer();
         return new TestCommand(
           this.positionals,
           this.values,
@@ -102,9 +103,16 @@ class CliApplication {
 
   private async assignmentCommand(): Promise<void> {
     this.validateCommand();
-    if (this.command === 'validate') return this.catalog();
-    if (this.command === 'status' || this.command === 'follow') return this.viewer();
-    const input = this.assignment();
+    const assignment = new AssignmentCommand(this.positionals, this.values, this.command);
+    if (this.command === 'validate') return assignment.catalog();
+    if (this.command === 'status' || this.command === 'follow')
+      return new ObservationCommand(
+        this.positionals,
+        this.values,
+        this.command,
+        this.controller.signal,
+      ).run();
+    const input = assignment.resolve();
     if (this.command === 'inspect') {
       console.log(
         this.values.json
@@ -116,7 +124,7 @@ class CliApplication {
     const root = this.acquire();
     this.startTimer(input.resolved?.executionProfile.timeoutSeconds);
     if (this.command === 'cleanup')
-      console.log(JSON.stringify(cleanup(root, this.positionals[1]!)));
+      new WorkspaceCommand(this.values).cleanup(root, this.positionals[1]!);
     else await this.execute(input, root);
   }
 
@@ -175,69 +183,14 @@ class CliApplication {
       throw new InputError('Invalid timeout');
   }
 
-  private catalog(): void {
-    const { values, positionals } = this;
-    if (!values.project || positionals.length !== 1)
-      throw new InputError('validate requires --project');
-    const { source, base } = resolveBase(values.project, values.base);
-    const catalog = loadCatalog(source, base);
-    console.log(
-      JSON.stringify({ base, components: Object.keys(catalog.components), status: 'valid' }),
-    );
-    return;
-  }
-
-  private async viewer(): Promise<void> {
-    const { values, positionals, command } = this;
-    if (positionals.length !== 2 || (values.after !== undefined && !/^[0-9]+$/.test(values.after)))
-      throw new InputError('Invalid viewer arguments');
-    const after = Number(values.after ?? 0);
-    if (!Number.isSafeInteger(after)) throw new InputError('Invalid sequence');
-    await viewExecution(
-      stateRoot(),
-      positionals[1]!,
-      command === 'follow',
-      !!values.json,
-      after,
-      this.controller.signal,
-    );
-    return;
-  }
-
-  private assignment() {
-    const { values, positionals, command } = this;
-    const bindings = loadBindings(values.bindings);
-    const selection = ['run', 'inspect'].includes(command!)
-      ? resolveBase(values.project!, values.base)
-      : undefined;
-    const resolved = selection
-      ? resolveAssignment(selection.source, selection.base, positionals[1]!, {
-          objective: positionals[2],
-          bindings,
-          file: values.assignment,
-          kind: values.kind,
-          compositionProfile: values['composition-profile'],
-          executionProfile: values['execution-profile'],
-          model: values.model,
-          initializerModel: values['initializer-model'],
-          timeoutSeconds: values['timeout-seconds'] === undefined ? undefined : this.seconds,
-        })
-      : undefined;
-    return { bindings, selection, resolved };
-  }
-
   private async execute(
-    input: ReturnType<CliApplication['assignment']>,
+    input: ReturnType<AssignmentCommand['resolve']>,
     root: string,
   ): Promise<void> {
     const { values, positionals, command } = this;
-    const { bindings, selection, resolved } = input;
-    const record = (this.record = createWorkspace(root, {
-      project: values.project!,
-      base: selection?.base ?? values.base,
-      issue: values.issue,
-      bindings,
-    }));
+    const { resolved } = input;
+    const workspace = new WorkspaceCommand(values);
+    const record = (this.record = workspace.create(root, input));
     if (resolved) record.resolvedAssignment = resolved;
     if (['simulation', 'live'].includes(process.env.ARCNEXUS_EXPERIMENT_MODE ?? ''))
       record.evidenceMode = process.env.ARCNEXUS_EXPERIMENT_MODE;
@@ -254,7 +207,7 @@ class CliApplication {
           ? resolved!.executionProfile.maxAttempts
           : Number(values['max-attempts']),
       );
-    else await prepareWorkspace(root, record, this.controller.signal);
+    else await workspace.prepare(root, record, this.controller.signal);
   }
 
   private failure(error: unknown): void {

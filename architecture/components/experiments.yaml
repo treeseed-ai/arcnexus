@@ -50,6 +50,7 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - experiments-lint
+  - experiments-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -116,5 +117,7 @@ consumes:
   - id: experiment-bindings
     version: "1"
   - id: campaign
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

@@ -225,7 +225,7 @@ const suite = new ServicesTests();
 
 function fixture(t: any, mode: any = 'success'): any {
   const f = operationFixture(t);
-  writeFileSync(join(f.repo, 'server.mjs'), readFileSync('../.fixture-build/http/server.mjs'));
+  writeFileSync(join(f.repo, 'server.mjs'), readFileSync('.fixture-build/http/server.mjs'));
   const path = join(f.repo, 'architecture/operations/test.json'),
     op = JSON.parse(String(readFileSync(path)));
   Object.assign(op, {

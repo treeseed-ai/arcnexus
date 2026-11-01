@@ -1,7 +1,7 @@
 id: foundation
 type: foundation
 purpose: Maintain package runtimes, TypeScript, build and shared programming standards
-path: tests/foundation
+path: .
 objectives:
   - Keep builds and deterministic tests reproducible
   - Maintain formatting, linting, CI and shared test infrastructure
@@ -52,6 +52,7 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - foundation-lint
+  - foundation-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -90,5 +91,7 @@ discovery:
     - tests/foundation
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

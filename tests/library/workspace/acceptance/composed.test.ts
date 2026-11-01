@@ -170,7 +170,7 @@ function composed(t: any): any {
   const f = workflowFixture(t),
     { dependency, dg } = createDependency(f.root);
   f.git('remote', 'add', 'origin', 'https://example.invalid/primary.git');
-  writeFileSync(join(f.repo, '../.gitignore'), 'packages/\n');
+  writeFileSync(join(f.repo, '.gitignore'), 'packages/\n');
   const environment = workspaceEnvironment(dg('rev-parse', 'HEAD'));
   const bindings = writeBindings(f.root, dependency);
   const commit = () => {
@@ -200,7 +200,7 @@ function createDependency(root: string) {
   dg('config', 'user.email', 'test@example.invalid');
   dg('remote', 'add', 'origin', 'https://example.invalid/dependency.git');
   writeFileSync(join(dependency, 'source.txt'), 'dependency');
-  writeFileSync(join(dependency, '../.gitignore'), 'generated/\nunknown/\n');
+  writeFileSync(join(dependency, '.gitignore'), 'generated/\nunknown/\n');
   dg('add', '.');
   dg('commit', '-m', 'dependency');
   return { dependency, dg };

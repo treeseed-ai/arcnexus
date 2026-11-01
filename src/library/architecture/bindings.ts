@@ -34,13 +34,12 @@ export function loadBindings(path?: string): Bindings {
     throw new InputError(String(error));
   }
 }
-export function targetEnvironment(record: RecordData): NodeJS.ProcessEnv {
-  const bindings = record.bindings as Bindings | undefined;
+export function bindingEnvironment(bindings?: Bindings): NodeJS.ProcessEnv {
   const directories = bindings ? [...new Set(Object.values(bindings.tools).map(dirname))] : [];
   return { ...process.env, PATH: [...directories, process.env.PATH ?? ''].join(delimiter) };
 }
-export function targetCommand(record: RecordData, command: Command): Command {
-  const bindings = record.bindings as Bindings | undefined;
+
+export function boundCommand(bindings: Bindings | undefined, command: Command): Command {
   return {
     ...command,
     command:
@@ -48,6 +47,14 @@ export function targetCommand(record: RecordData, command: Command): Command {
         ? bindings.tools[command.command]!
         : command.command,
   };
+}
+
+export function targetEnvironment(record: RecordData): NodeJS.ProcessEnv {
+  return bindingEnvironment(record.bindings as Bindings | undefined);
+}
+
+export function targetCommand(record: RecordData, command: Command): Command {
+  return boundCommand(record.bindings as Bindings | undefined, command);
 }
 
 export function toolDirectories(record: RecordData): string[] {

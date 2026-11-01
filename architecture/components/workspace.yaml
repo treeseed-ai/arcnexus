@@ -49,6 +49,7 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - workspace-lint
+  - workspace-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -88,5 +89,7 @@ consumes:
   - id: environment
     version: "1"
   - id: bindings
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

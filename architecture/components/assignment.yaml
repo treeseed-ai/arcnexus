@@ -51,6 +51,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - assignment-lint
+  - assignment-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -102,5 +103,7 @@ consumes:
   - id: plan
     version: "1"
   - id: plan-updates
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

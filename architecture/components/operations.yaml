@@ -52,6 +52,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - operations-lint
+  - operations-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -83,5 +84,7 @@ provides:
     kind: json-schema
     path: src/library/operations/schemas/operation.json
     compatibility: Preserve supported historical versions and captured execution readers
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

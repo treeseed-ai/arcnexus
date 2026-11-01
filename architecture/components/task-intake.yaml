@@ -42,6 +42,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - task-intake-lint
+  - task-intake-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -73,5 +74,7 @@ provides:
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
   - id: initializer-result
+    version: "1"
+  - id: test-profile
     version: "1"
 testProfile: node

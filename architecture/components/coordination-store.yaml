@@ -50,6 +50,7 @@ relatedIds:
 parentId: cli-package
 operationIds:
   - coordination-store-lint
+  - coordination-store-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -73,5 +74,7 @@ discovery:
     - tests/library/coordination-store
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

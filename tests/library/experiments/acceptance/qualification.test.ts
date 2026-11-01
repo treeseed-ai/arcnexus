@@ -75,7 +75,7 @@ class QualificationTests {
     const f = workflowFixture(t),
       script = join(f.root, 'report check.mjs');
     writeFileSync(script, readFileSync('dist/library/experiments/checks/check-report-summary.js'));
-    mkdirSync(join(f.repo, 'dist/report'), { recursive: true });
+    mkdirSync(join(f.repo, 'dist/library/report'), { recursive: true });
     writeFileSync(
       join(f.repo, 'dist/library/report/report.js'),
       "export function markdownReport(){return 'fixture without outcome'}",

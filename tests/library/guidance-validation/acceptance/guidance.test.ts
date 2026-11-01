@@ -34,7 +34,7 @@ class GuidanceTests {
       const r = f.run('--json');
       assert.equal(r.status, 1, r.stderr);
       const data = JSON.parse(r.stdout);
-      assert.equal(data.diagnostics[0].path, '../.agents/skills/example/SKILL.md');
+      assert.equal(data.diagnostics[0].path, '.agents/skills/example/SKILL.md');
       assert.ok(data.diagnostics[0].code);
       assert.doesNotMatch(r.stderr, /Traceback/);
     }
@@ -100,7 +100,7 @@ class GuidanceTests {
   untrackedInvalidSkillDoesNotInvalidateTrackedSkills_7(t: TestContext) {
     const f = fixture(t);
     f.skill();
-    f.write('../.agents/skills/local/SKILL.md', 'invalid', false);
+    f.write('.agents/skills/local/SKILL.md', 'invalid', false);
     assert.equal(f.run().status, 0);
   }
   changedLineWhitespaceRemainsASeparateExecutableGitGate_8(t: TestContext) {
@@ -118,7 +118,7 @@ class GuidanceTests {
   }
   guidanceRejectsNonGitProjectsAndInvalidInvocationWithExit2_9(t: TestContext) {
     const f = fixture(t);
-    rmSync(join(f.repo, '../.git'), { recursive: true });
+    rmSync(join(f.repo, '.git'), { recursive: true });
     assert.equal(f.run().status, 2);
     assert.equal(
       spawnSync(process.execPath, [cli, 'guidance', 'validate'], { encoding: 'utf8' }).status,
@@ -129,7 +129,7 @@ class GuidanceTests {
     const f = fixture(t);
     f.skill();
     f.write('nested/AGENTS.md', 'Readable');
-    f.write('../.agents/skills/example/SKILL.md', 'invalid', false);
+    f.write('.agents/skills/example/SKILL.md', 'invalid', false);
     rmSync(join(f.repo, 'nested/AGENTS.md'));
     const r = f.run('--json');
     assert.equal(r.status, 1);
@@ -159,7 +159,7 @@ function fixture(t: any): any {
     if (track) git('add', path);
   };
   const skill = (text: any = valid, track: any = true) =>
-    write('../.agents/skills/example/SKILL.md', text, track);
+    write('.agents/skills/example/SKILL.md', text, track);
   const run = (...args: any) =>
     spawnSync(process.execPath, [cli, 'guidance', 'validate', '--project', repo, ...args], {
       encoding: 'utf8',

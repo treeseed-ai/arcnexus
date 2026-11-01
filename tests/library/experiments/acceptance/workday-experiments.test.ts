@@ -85,7 +85,7 @@ class WorkdayExperimentsTests {
     );
     assert.equal(r.status, 0, r.stderr);
     const owner = JSON.parse(r.stdout).context.find((c: any) => c.id === 'agent-guidance');
-    assert.ok(owner.access.writeDirectories.includes('../.agents/skills'));
+    assert.ok(owner.access.writeDirectories.includes('.agents/skills'));
   }
 }
 class HandoffCampaign {

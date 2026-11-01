@@ -19,7 +19,7 @@ class TaskTests {
     const result = this.command(f, 'run', proposal.id);
     assert.equal(result.status, stale ? 2 : 0, result.stderr);
     assert.equal(
-      readFileSync(f.calls + '../.initialization', 'utf8')
+      readFileSync(f.calls + '.initialization', 'utf8')
         .trim()
         .split('\n').length,
       1,

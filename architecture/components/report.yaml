@@ -80,5 +80,7 @@ discovery:
     - tests/library/report
   exclude: []
 provides: []
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node

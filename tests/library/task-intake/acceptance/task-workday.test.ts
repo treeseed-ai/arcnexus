@@ -25,7 +25,7 @@ class TaskWorkdayTests {
     assert.equal(report.status, 'completed');
     assert.equal(report.assignments.length, 2);
     assert.equal(
-      readFileSync(f.calls + '../.initialization', 'utf8')
+      readFileSync(f.calls + '.initialization', 'utf8')
         .trim()
         .split('\n').length,
       1,

@@ -20,7 +20,7 @@ Errors identify the source document and include parser locations when available.
 
 Implementation, tests and documentation are grouped by component identity beneath
 `src/`, `tests/` and `docs/`. Each maintained file has one accountable owner.
-Shared tooling has an explicit development-tooling owner; generated build output
+Foundation owns build standards, release owns delivery workflows, and the testing library owns shared test infrastructure; generated build output
 does not grant authority over source. Cross-owner imports use declared public
 entry points. TreeSeed is not reorganized by this migration.
 

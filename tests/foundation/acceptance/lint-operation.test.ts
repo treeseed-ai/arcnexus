@@ -30,7 +30,7 @@ class LintOperationTests {
       resolve('node_modules/eslint/bin/eslint.js'),
       '--no-config-lookup',
       '--ext',
-      '../../library/testing/support/.txt',
+      '.txt',
       '--rule',
       'no-restricted-syntax: [error, "Identifier[name=before]"]',
       'source.txt',

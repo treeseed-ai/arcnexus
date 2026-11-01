@@ -7,7 +7,8 @@ class SummaryFaultInjection {
   private marker = new URL('./fault-injection.json', import.meta.url);
   private path = join(
     process.cwd(),
-    existsSync('src/library/report/report.ts') ? 'src/library/report/report.ts' : 'src/report.ts',
+    ['src/library/report/report.ts', 'src/report/report.ts', 'src/report.ts'].find(existsSync) ??
+      'src/report.ts',
   );
   async run(): Promise<void> {
     if (!existsSync(this.marker)) this.inject();

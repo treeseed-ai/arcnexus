@@ -11,7 +11,7 @@ class CatalogOwnershipTests {
       .map((f: any) => parse(readFileSync('architecture/components/' + f, 'utf8')))
       .filter((c: any) => !['platform', 'package'].includes(c.type));
     const owners = components.map((component: any) => this.inspectOwner(component.id));
-    const files = readdirSync('src', { recursive: true }).filter((p: any) => p.endsWith('../.ts'));
+    const files = readdirSync('src', { recursive: true }).filter((p: any) => p.endsWith('.ts'));
     for (const name of files) {
       const path = 'src/' + name;
       assert.equal(

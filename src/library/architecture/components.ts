@@ -1,3 +1,4 @@
+import { captureComponentTests } from '../testing/captured-tests.js';
 import { repositoryRevisions, type RepositoryRevision } from './repository-revisions.js';
 import type { Bindings } from './bindings.js';
 import { ComponentV4Resolver, type ComponentV4Fields } from './component-v4.js';
@@ -184,6 +185,7 @@ class CatalogLoader {
     const validator = new CatalogComponentValidator(this.catalog, env);
     for (const component of Object.values(this.catalog.components)) validator.validate(component);
     validateInitialization(this.catalog);
+    captureComponentTests(this.catalog, this.repository, this.base);
     new ArchitectureReferences(this.repository, this.base, this.catalog).resolve();
     for (const path of this.files('composition-profiles')) this.composition(path);
     const grants = new DirectoryGrants(this.repository, this.base);

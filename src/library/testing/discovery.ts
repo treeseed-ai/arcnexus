@@ -17,6 +17,7 @@ export interface DiscoveredSuite extends SuiteMetadata {
   compiled: string;
   category: string;
   sha256: string;
+  state: 'unchanged' | 'modified' | 'added';
 }
 
 /** Discovers current checkout suites within captured, owner-declared test roots. */
@@ -25,17 +26,19 @@ export class TestDiscovery {
 
   discover(component: Component, outputRoot: string): DiscoveredSuite[] {
     const paths = new Set<string>();
-    for (const root of component.discovery?.tests ?? []) this.walk(root, paths);
+    const excluded = component.discovery?.exclude ?? [];
+    for (const root of component.discovery?.tests ?? []) this.walk(root, paths, excluded);
     return [...paths].sort().map((path) => this.suite(component, path, outputRoot));
   }
 
-  private walk(path: string, paths: Set<string>): void {
+  private walk(path: string, paths: Set<string>, excluded: string[]): void {
+    if (excluded.some((root) => path === root || path.startsWith(root + '/'))) return;
     const absolute = this.safe(path);
     const stat = lstatSync(absolute, { throwIfNoEntry: false });
     if (!stat) return;
     if (stat.isDirectory()) {
       for (const child of readdirSync(absolute)) {
-        if (child !== 'support') this.walk(join(path, child), paths);
+        if (child !== 'support') this.walk(join(path, child), paths, excluded);
       }
     } else if (stat.isFile() && path.endsWith('.test.ts')) paths.add(path);
   }
@@ -65,12 +68,15 @@ export class TestDiscovery {
       throw new InputError(`Suite directory and level disagree: ${source}`);
     if (!source.startsWith('tests/'))
       throw new InputError(`Unsupported test source root: ${source}`);
+    const sha256 = createHash('sha256').update(text).digest('hex');
+    const captured = component.inventory?.find((file) => file.path === source);
     return {
       ...metadata,
+      state: !captured ? 'added' : captured.sha256 === sha256 ? 'unchanged' : 'modified',
       source,
       category,
       compiled: join(outputRoot, source.slice('tests/'.length).replace(/\.ts$/, '.js')),
-      sha256: createHash('sha256').update(text).digest('hex'),
+      sha256,
     };
   }
 }

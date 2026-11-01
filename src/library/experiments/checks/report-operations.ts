@@ -51,9 +51,9 @@ class OperationReportAcceptance {
     const { markdownReport } = await import(
       pathToFileURL(
         resolve(
-          existsSync('dist/library/report/report.js')
-            ? 'dist/library/report/report.js'
-            : 'dist/report.js',
+          ['dist/library/report/report.js', 'dist/report/report.js', 'dist/report.js'].find(
+            existsSync,
+          ) ?? 'dist/report.js',
         ),
       ).href
     );

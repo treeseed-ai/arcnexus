@@ -52,8 +52,8 @@ class StewardTests {
   }
   targetCodexConfigurationIsRejectedBeforeActivation_5(t: TestContext) {
     const f = workflowFixture(t);
-    mkdirSync(join(f.repo, '../.codex'));
-    writeFileSync(join(f.repo, '../.codex/config.toml'), 'model="unwanted"');
+    mkdirSync(join(f.repo, '.codex'));
+    writeFileSync(join(f.repo, '.codex/config.toml'), 'model="unwanted"');
     f.commit();
     const r = f.run();
     assert.equal(r.status, 2);

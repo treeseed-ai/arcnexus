@@ -52,6 +52,7 @@ relatedIds: []
 parentId: cli-package
 operationIds:
   - testing-lint
+  - testing-tests
 patternIds:
   - readable-typescript
 ownership:
@@ -75,6 +76,7 @@ ownership:
     - tests/library/testing/support/operations-fixture.ts
     - tests/library/testing/support/test-process.ts
     - tests/library/testing/support/workflow-fixture.ts
+    - src/library/testing/captured-tests.ts
   directoryExceptions:
     - path: architecture/components
       reason: Directory-only sandbox grants; only this component definition is
@@ -93,5 +95,7 @@ provides:
     kind: json-schema
     path: src/library/testing/schemas/test-profile.json
     compatibility: Node profile version 1 uses fixed commands and literal suite metadata
-consumes: []
+consumes:
+  - id: test-profile
+    version: "1"
 testProfile: node
