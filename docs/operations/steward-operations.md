@@ -170,3 +170,10 @@ write authority remains narrow. If tools are deferred, discover the ArcNexus too
 before concluding they are unavailable. Shell failure is not host-operation failure.
 A completed behavioral specification must still return its proposed regression
 checkpoint; uncertainty about local execution never makes `regression: null` valid.
+
+Finite operation requests are authorized and counted when received, then queued in
+arrival order. Multiple valid requests do not authorize concurrent subprocesses:
+the host executes one at a time with distinct request identities and logs. A normal
+test failure remains feedback; cancellation, bridge loss, or a fatal authority/scope
+failure stops active work and prevents queued work from starting. Pending callers
+receive their own completed result through `execution.wait`.
