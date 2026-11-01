@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
@@ -44,14 +45,17 @@ class CapturedCatalogScenario {
     const directory = join(root, 'tools');
     mkdirSync(directory);
     const program = join(directory, 'git');
+    const previous = process.env.PATH;
     writeFileSync(
       program,
-      `#!/usr/bin/node\nconst fs=require('node:fs'),cp=require('node:child_process');
+      `#!${process.execPath}\nconst fs=require('node:fs'),cp=require('node:child_process');
 fs.appendFileSync(${JSON.stringify(log)},JSON.stringify(process.argv.slice(2))+'\\n');
-const r=cp.spawnSync('/usr/bin/git',process.argv.slice(2),{stdio:'inherit'});process.exit(r.status??1);\n`,
+const r=cp.spawnSync('git',process.argv.slice(2),{stdio:'inherit',env:{...process.env,PATH:${JSON.stringify(process.env.PATH)}}});process.exit(r.status??1);\n`,
     );
     chmodSync(program, 0o755);
-    const previous = process.env.PATH;
+    const probe = spawnSync(program, ['--version'], { encoding: 'utf8' });
+    assert.equal(probe.status, 0, probe.error?.message ?? probe.stderr);
+    writeFileSync(log, '');
     process.env.PATH = directory + ':' + previous;
     return () => {
       process.env.PATH = previous;
