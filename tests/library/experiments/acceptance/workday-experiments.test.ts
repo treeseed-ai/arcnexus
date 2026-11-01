@@ -68,9 +68,9 @@ class WorkdayExperimentsTests {
         process.cwd(),
         '--json',
       ],
-      { encoding: 'utf8' },
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
     );
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, String(r.error ?? r.stderr));
     assert.deepEqual(
       JSON.parse(r.stdout)
         .operations.map((o: any) => o.id)
