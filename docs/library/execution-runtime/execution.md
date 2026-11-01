@@ -57,7 +57,12 @@ stable for regression references. Container checks apply to the assembled candid
 and cannot be omitted because the selected owner’s own checks passed. Behavioral changes retain
 expected-red regression evidence; other assignment kinds use appropriate workflows.
 A separate read-only verifier assesses acceptance against observed evidence. Task
-completion additionally requires director assessment. Missing proof remains explicit.
+completion additionally requires director assessment. If that assessment identifies
+missing goal coverage after deliveries, return its findings to the director for
+additional bounded assignments against the current verified candidate. Preserve
+earlier deliveries and the original goal; no completed checklist waives the missing
+criteria. Unresolved blocked work also receives director diagnosis, with required
+clarification/architectural decisions retained explicitly. Missing proof remains explicit.
 
 ## Lifecycle
 
