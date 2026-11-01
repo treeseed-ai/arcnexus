@@ -159,8 +159,27 @@ creates fresh assignments and explicitly treats its prior unsafe task as retaine
 historical evidence. ArcNexus self-development v8 uses clean detached `source-v8`
 at `5021ca5`; `live-v8-invocation.json`, `live-workday-v8-start.json` and
 `live-task-v8.log` retain its ordinary CLI invocations and progress. Both use the
-application's immutable supervising-runner capture. They are running; neither is
-a verified delivery yet.
+application's immutable supervising-runner capture. Neither produced a verified delivery. The greeting task reached all three owners,
+then required input after a forbidden release-activity claim and an unsafe blocked
+checkpoint (issues 97 and 98). ArcNexus v8 failed its captured baseline tests before
+engineering; its original reports and baseline remain retained.
+
+The integrated deterministic run at `5021ca5` completed **394/400**, with evidence
+in `/tmp/arcnexus-78-full-suite-v16.log` and retained test run
+`f06e06f5-56d1-4e45-a229-91ce9f06d922`. The inspection-buffer failures are resolved.
+Six other cases failed: two simulation campaign assertions, campaign startup before
+cancellation, two workday startup markers, and a verification-timeout stage assertion.
+The concurrent captured-source baseline also failed simulation and startup cases.
+Issue 99 tracks diagnosis; no integrated pass is claimed.
+
+For qualification interruption tests, distinguish process exit/preparation failure
+from a missing readiness marker and retain the actual diagnostic. Startup watchdogs
+bound test execution only; they must allow the intended boundary to be reached before
+measuring cancellation or host-loss behavior. Timeout-specific tests must establish
+which operation actually timed out. Campaign assertions must include retained case
+errors rather than discard those errors behind a list of failed statuses. Keep the
+existing behavioral acceptance and child-stop checks intact while correcting these
+observation gaps.
 
 ## Remaining qualification and implementation work
 
