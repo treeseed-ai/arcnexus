@@ -181,6 +181,30 @@ errors rather than discard those errors behind a list of failed statuses. Keep t
 existing behavioral acceptance and child-stop checks intact while correcting these
 observation gaps.
 
+Issues 97 and 98 now pass **12/12** focused built-program tests in
+`/tmp/arcnexus-97-98-green-final.log`, including role-authority rejection, unsafe
+transport rejection, real blocked-response continuation and accepted-versus-delivered
+context. Issue 99 passes **8/8** focused tests in `/tmp/arcnexus-99-green.log`.
+The retained standalone campaign at
+`/tmp/arcnexus-78-experiment-diagnosis-UpJ3PZ/campaign` produced the expected three
+passes and deliberately failing case; its focused success does not replace the
+failed integrated run.
+
+The real workday `d57830f1-e9e7-4290-84d4-75dc914ae131` considered four owners, then
+required attention because a read-only activation treated the valid future write
+directory `tests/library/change-inspection` as a required existing read path. Issue
+100 fixes that conversion while retaining path validation. Its permission and
+production policy tests pass **9/9** in `/tmp/arcnexus-100-green.log`. Strict typing,
+formatting, full lint, ownership and guidance validation have passed after the
+follow-up method-length correction. The next integrated run is
+`/tmp/arcnexus-78-full-suite-v17.log`, built at `47047ed`; its result is pending.
+
+Real greeting attempt three is task `d163a69d-1fcf-4747-a394-1cbf9a73d868`, started
+with supervisor `1be0ff6` and retained in `general-live-v1/task-v3.log`,
+`prompt-v3.txt` and `invocation-v3.json`. It again discovered all three owners and
+is still executing. Earlier unfinished changes were not imported. No verified
+qualification gate is claimed from this attempt yet.
+
 ## Remaining qualification and implementation work
 
 All six live gates remain unqualified: three-owner verified task delivery;
