@@ -84,7 +84,7 @@ export class CodexConfiguration {
           type: 'object',
           properties: {
             action: { enum: this.coordinationActions },
-            contract: { type: 'string' },
+            contract: { type: 'string', enum: [this.input.record.coordinationContract] },
             requestId: { type: ['string', 'null'] },
             text: { type: 'string' },
             activityComplete: { type: 'boolean' },

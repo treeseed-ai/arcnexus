@@ -49,7 +49,11 @@ export class TaskPlanner {
       this.unchanged(captured, input, owner.id, text);
       return this.proposal(record, input, text, shortlist, bindings);
     } catch (error) {
-      record.status = this.signal.aborted ? 'cancelled' : 'failed';
+      record.status = this.signal.aborted
+        ? 'cancelled'
+        : record.status === 'needs_attention'
+          ? 'needs_attention'
+          : 'failed';
       record.error = String(error);
       throw error;
     } finally {

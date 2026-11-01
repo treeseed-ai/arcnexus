@@ -88,6 +88,8 @@ class ContextTests {
     const prompt = calls(f).find((c: any) => c.stage === 'specification').prompt;
     assert.match(prompt, /actual edit to at least one.*documentation/);
     assert.match(prompt, /host rejects this checkpoint if either kind of change is missing/);
+    assert.match(prompt, /Do not substitute a sandbox shell command/);
+    assert.match(prompt, /regression must not be null/);
   }
   documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI_7(t: TestContext) {
     const f = workflowFixture(t),

@@ -13,7 +13,10 @@ command: npm
 args:
   - run
   - test:guidance-validation
-generatedDirectories: []
+generatedDirectories:
+  - dist
+  - .fixture-build
+  - .test-build
 artifacts: []
 probes:
   - command: node

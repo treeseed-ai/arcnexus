@@ -248,7 +248,7 @@ class ControlledWorkday {
   private coordination(action: string, complete = false) {
     return {
       action,
-      contract: 'sample-contract',
+      contract: this.options.mode === 'foreign-contract' ? 'another-contract' : 'sample-contract',
       requestId:
         action === 'request'
           ? null

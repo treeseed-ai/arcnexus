@@ -140,6 +140,7 @@ export class WorkdayRunner {
       context: participant.resolved.context,
       objective: participant.resolved.assignment.objective,
       workdayId: this.state.workspace.id,
+      coordinationContract: this.state.input.dependency.contract,
     };
     delete record.timelineSequence;
     delete record.workday;

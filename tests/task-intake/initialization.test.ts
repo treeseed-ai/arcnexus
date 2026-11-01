@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js';
@@ -27,6 +27,23 @@ class InitializationTests {
     const record = JSON.parse(result.stdout);
     assert.ok(record.initialization);
     assert.match(result.stderr, /initializer|initialization/i);
+  }
+  loopNeedsAttention(t: TestContext): void {
+    const fixture = workflowFixture(t);
+    fixture.configure({ initializerMode: 'loop' });
+    const result = fixture.run();
+    assert.equal(result.status, 1, result.stderr);
+    const record = JSON.parse(result.stdout);
+    assert.equal(record.status, 'needs_attention');
+    assert.equal(existsSync(fixture.calls), false);
+    const child = JSON.parse(
+      readFileSync(join(fixture.state, 'runs', record.initialization.runId, 'report.json'), 'utf8'),
+    );
+    assert.equal(child.status, 'needs_attention');
+    assert.match(
+      readFileSync(join(fixture.state, 'runs', child.id, 'events.jsonl'), 'utf8'),
+      /Tool unavailable/,
+    );
   }
   modelOverride(t: TestContext): void {
     const fixture = workflowFixture(t);
@@ -107,3 +124,6 @@ test('initializer model override is independent of the worker', (t) => suite.mod
 
 test('declared initializer works beneath a version-three containment-only platform', (t) =>
   suite.declaredReadOnlyContainer(t));
+
+test('initializer loop retains needs_attention without dispatching a worker', (t) =>
+  suite.loopNeedsAttention(t));

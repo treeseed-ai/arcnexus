@@ -96,6 +96,7 @@ class HandoffsTests {
       .trim()
       .split('\n')
       .map((line: string) => JSON.parse(line));
+    this.contracts(calls);
     assert.deepEqual(
       calls.find((c: any) => c.owner === 'sample' && c.stage === 'planning').coordinationSchema
         .anyOf[1].properties.action.enum,
@@ -117,6 +118,12 @@ class HandoffsTests {
       { type: 'null' },
     );
   }
+  private contracts(calls: any[]): void {
+    for (const call of calls) {
+      const schema = call.coordinationSchema.anyOf?.[1];
+      if (schema) assert.deepEqual(schema.properties.contract.enum, ['sample-contract']);
+    }
+  }
 }
 const suite = new HandoffsTests();
 
@@ -135,6 +142,7 @@ test('rejected owner request ends workday with retained requester changes', (t: 
   suite.rejectedOwnerRequestEndsWorkdayWithRetainedRequesterChanges_2(t));
 for (const mode of [
   'unknown-owner',
+  'foreign-contract',
   'unsolicited-answer',
   'duplicate',
   'exhaust-clarification',

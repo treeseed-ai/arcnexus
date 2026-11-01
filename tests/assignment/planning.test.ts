@@ -68,6 +68,7 @@ class PlanningTests {
     const config = (bridge.config.mcp_servers as any).arcnexus;
     const client = new Client({ name: 'acceptance', version: '1' }, { capabilities: {} });
     try {
+      assert.equal(config.required, true);
       assert.ok(config.startup_timeout_sec >= 86400);
       assert.ok(config.tool_timeout_sec >= 86400);
       await client.connect(

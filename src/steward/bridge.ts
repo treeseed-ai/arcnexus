@@ -76,8 +76,10 @@ class HostBridge {
 
   configuration(): Record<string, unknown> {
     return {
+      mcp_optional_startup_grace_ms: 0,
       mcp_servers: {
         arcnexus: {
+          required: true,
           default_tools_approval_mode: 'approve',
           command: process.execPath,
           args: [fileURLToPath(new URL('./bridge-client.js', import.meta.url)), this.path],

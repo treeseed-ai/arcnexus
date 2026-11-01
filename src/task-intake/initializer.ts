@@ -98,12 +98,19 @@ class Initializer {
         throw new Error('Initialization requires caller input: ' + result.summary);
       }
     } catch (error) {
-      this.child.error = String(error);
-      if (this.child.status !== 'completed') this.child.status = 'failed';
+      this.fail(error);
       throw error;
     } finally {
       this.finish();
     }
+  }
+  private fail(error: unknown): void {
+    this.child.error = String(error);
+    if (error instanceof Error && error.name === 'NeedsAttention') {
+      this.child.status = 'needs_attention';
+      this.input.record.status = 'needs_attention';
+      this.input.record.outcome = 'needs_attention';
+    } else if (this.child.status !== 'completed') this.child.status = 'failed';
   }
   private createRecord(): RecordData {
     const record: RecordData = {

@@ -8,7 +8,7 @@ export class ControlledInitializer {
     ) as string[];
     appendFileSync(calls + '.initialization', JSON.stringify({ owners, args }) + '\n');
     if (mode === 'write') writeFileSync('source.txt', 'initializer mutation');
-    this.result(this.response(owners, mode));
+    this.result(this.response(owners, mode), mode);
     return true;
   }
   private response(owners: string[], mode: string): unknown {
@@ -89,12 +89,13 @@ export class ControlledInitializer {
       questions: [],
     };
   }
-  private result(result: unknown): void {
+  private result(result: unknown, mode: string): void {
     this.emit({
       type: 'thread.started',
       thread_id:
         'initializer-' + createHash('sha256').update(process.cwd()).digest('hex').slice(0, 12),
     });
+    if (mode === 'loop') this.failedCommands();
     this.emit({
       type: 'item.completed',
       item: { id: 'initializer-result', type: 'agent_message', text: JSON.stringify(result) },
@@ -103,6 +104,20 @@ export class ControlledInitializer {
       type: 'turn.completed',
       usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 },
     });
+  }
+  private failedCommands(): void {
+    for (let index = 0; index < 4; index++)
+      this.emit({
+        type: 'item.completed',
+        item: {
+          id: String(index),
+          type: 'command_execution',
+          command: 'missing-tool',
+          aggregated_output: 'Tool unavailable',
+          exit_code: 1,
+          status: 'failed',
+        },
+      });
   }
   private emit(value: unknown): void {
     console.log(JSON.stringify(value));

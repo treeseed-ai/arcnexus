@@ -14,7 +14,10 @@ command: npm
 args:
   - run
   - test:report
-generatedDirectories: []
+generatedDirectories:
+  - dist
+  - .fixture-build
+  - .test-build
 artifacts: []
 probes:
   - command: node
