@@ -155,3 +155,18 @@ means no source edits; it does not prohibit declared test or service operations.
 The steward must perform its selected permitted work and update the checklist in
 that turn, or report a precise blocker. Activity names are not promises of additional
 model turns. Incomplete checklist claims fail rather than silently adding a turn.
+
+## Required host operation route
+
+ArcNexus configures its MCP bridge as required: model execution must not silently
+start without the declared host-operation tools. Required startup and tool ceilings
+remain 24 hours; cancellation still stops managed work. Codex documents the
+[required-server and optional startup behavior](https://learn.chatgpt.com/docs/extend/mcp).
+
+Worker prompts identify the `arcnexus` server, operation IDs and tool arguments.
+Use `operations.run` for a declared operation rather than copying its command into
+the sandbox shell. The host route can build declared generated outputs while source
+write authority remains narrow. If tools are deferred, discover the ArcNexus tools
+before concluding they are unavailable. Shell failure is not host-operation failure.
+A completed behavioral specification must still return its proposed regression
+checkpoint; uncertainty about local execution never makes `regression: null` valid.
