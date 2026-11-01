@@ -1,3 +1,4 @@
+# Operation feedback
 
 Pending host operations return an initial progress reference promptly.
 `execution.wait` then waits for that same operation to finish, under the configured

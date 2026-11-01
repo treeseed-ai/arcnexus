@@ -31,8 +31,9 @@ source permissions explicit. Run `npm run format:check`, `npm run lint`, and
 The version-three catalog has no default execution deadlines or turn/call/attempt
 quotas. Explicit limits remain supported; cancellation and observable loop guards
 remain enforced. [Progress and limits](docs/assignment/progress.md) explains the
-checklist and verified-progress evidence. Pre-phase-three live qualification and
-staging integration remain required before declaring this milestone complete.
+checklist and verified-progress evidence. The [pre-phase-three qualification](docs/acceptance/pre-phase-three.md)
+records live Luna initialization, a real report improvement, two-owner task routing,
+architectural escalation, preserved failures and integration checks.
 
 Targets declare [environment setup](docs/workspace/workspaces.md) and [components](docs/cli/stewards.md).
 The application creates and retains a dedicated worktree. Review its evidence and
