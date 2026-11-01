@@ -23,6 +23,7 @@ export class InboxDecisions {
       throw new Error('Inbox reply has unauthorized sender');
     const recipient = this.db.get<ExecutionAssignment>('assignment', request.assignmentId);
     const requester = this.db.get<ExecutionAssignment>('assignment', request.from);
+    this.validate(recipient, requester, decision);
     if (answer) this.answer(requester, recipient, decision);
     else if (decision.action === 'clarify') this.clarify(requester, recipient, decision);
     else if (decision.action === 'accept') recipient.data.accepted = true;
@@ -39,13 +40,27 @@ export class InboxDecisions {
     });
   }
 
+  /** Preserves terminal delivery and prevents a new question from overwriting an unanswered one. */
+  private validate(
+    recipient: ExecutionAssignment,
+    requester: ExecutionAssignment,
+    decision: InboxDecision,
+  ): void {
+    const terminal = (item: ExecutionAssignment) =>
+      ['completed', 'rejected', 'failed', 'interrupted'].includes(item.status);
+    if (terminal(recipient) || (decision.action === 'answer' && terminal(requester)))
+      throw new Error('New inbox decisions cannot change terminal assignments');
+    if (decision.action !== 'clarify') return;
+    if (terminal(requester)) throw new Error('Cannot ask a terminal requester for clarification');
+    if (recipient.data.clarification) throw new Error('A clarification is already pending');
+  }
+
   /** Suspends recipient planning and schedules a read-only requester control turn. */
   private clarify(
     requester: ExecutionAssignment,
     recipient: ExecutionAssignment,
     decision: InboxDecision,
   ): void {
-    if (recipient.data.accepted) throw new Error('Accepted request cannot return to clarification');
     recipient.status = 'waiting';
     recipient.data.clarification = decision;
     requester.data.questions = [...((requester.data.questions ?? []) as InboxDecision[]), decision];

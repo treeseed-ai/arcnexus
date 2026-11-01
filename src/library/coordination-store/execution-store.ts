@@ -228,10 +228,15 @@ export class ExecutionStore {
   }
 
   /** Lists request envelopes addressed to or sent by this assignment. */
-  inbox(id: string): InboxRequest[] {
+  inbox(id: string): Array<InboxRequest & { replies: Array<InboxDecision & { actor: string }> }> {
+    const replies = this.db.all<InboxDecision & { actor: string }>('reply');
     return this.db
       .all<InboxRequest>('request')
-      .filter((r) => r.from === id || r.assignmentId === id);
+      .filter((r) => r.from === id || r.assignmentId === id)
+      .map((request) => ({
+        ...request,
+        replies: replies.filter((reply) => reply.requestId === request.id),
+      }));
   }
 
   /** Records an accepted host-validated plan and releases accepted-intent dependents. */

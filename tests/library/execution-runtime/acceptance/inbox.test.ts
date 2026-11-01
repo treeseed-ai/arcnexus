@@ -105,6 +105,45 @@ class InboxScenarios {
     assert.equal(store.assignment(b.id).status, 'blocked');
   }
 
+  /** Retains exact correlated answers in the same inbox projection supplied to resumed workers. */
+  conversation(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const b = store.request(a.id, { key: 'b', owner: 'b', objective: 'Supply', acceptance: [] });
+    const requestId = store.inbox(b.id)[0]!.id;
+    store.accept(b.id);
+    store.respond(b.id, [{ requestId, action: 'clarify', text: 'Which format?' }]);
+    store.respond(a.id, [{ requestId, action: 'answer', text: 'JSON with source locations' }]);
+    const inbox = store.inbox(b.id)[0] as any;
+    assert.deepEqual(
+      inbox.replies.map((reply: any) => reply.text),
+      ['Which format?', 'JSON with source locations'],
+    );
+    assert.equal(store.assignment(b.id).data.accepted, true);
+    assert.equal(store.assignment(a.id).status, 'waiting');
+    assert.deepEqual(store.assignment(b.id).evidence, []);
+  }
+
+  /** Late messages cannot undo a verified delivery or silently reopen recipient work. */
+  terminal(t: TestContext): void {
+    const store = this.store(t);
+    const run = store.createRun('task', ['a', 'b'], 'A goal');
+    const a = store.enqueue(run.id, 'a', 'Root');
+    const b = store.request(a.id, { key: 'b', owner: 'b', objective: 'Supply', acceptance: [] });
+    const requestId = store.inbox(b.id)[0]!.id;
+    const accept = { requestId, action: 'accept' as const, text: 'Accepted scope' };
+    store.respond(b.id, [accept]);
+    store.complete(b.id, ['verified proof']);
+    store.respond(b.id, [accept]);
+    assert.throws(
+      () => store.respond(b.id, [{ requestId, action: 'reject', text: 'Late' }]),
+      /terminal/,
+    );
+    assert.equal(store.assignment(b.id).status, 'completed');
+    assert.equal(store.assignment(a.id).status, 'ready');
+  }
+
   /** Replays a retained scheduling outcome after a crash without executing the model twice. */
   async replay(t: TestContext): Promise<void> {
     const store = this.store(t);
@@ -181,5 +220,10 @@ test('inbox requests preserve explicit recipient workflow and narrowed scope', (
 
 test('shared recipient work rejects conflicting workflow authority', (t) =>
   scenarios.sharedScope(t));
+
+test('accepted inbox requests retain correlated clarification answers', (t) =>
+  scenarios.conversation(t));
+
+test('late inbox replies cannot reopen verified deliveries', (t) => scenarios.terminal(t));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });
