@@ -1,3 +1,4 @@
+import { SpecificationValidationError } from './specification-error.js';
 import { SessionProgress } from './session-progress.js';
 import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
@@ -49,22 +50,29 @@ export class SessionWorkflow {
       if (
         !(error instanceof Error && error.name === 'AssignmentYield') &&
         !(error instanceof AssignmentBlocked) &&
-        !this.retainPlanCorrection(stage, error)
+        !this.retainPlanCorrection(stage, error) &&
+        !this.retainSpecificationCorrection(stage, error)
       ) {
         this.failure(error);
         throw error;
       }
       safe = true;
     } finally {
-      record.safeCheckpoint = safe;
-      delete record.reconciledCandidateDigest;
-      record.continuation = true;
-      record.continuationAuthority = this.state.resolved.digest;
-      record.specificationFinished = this.state.specificationFinished;
-      record.readOnlyTurn = false;
-      this.state.checkpoint();
-      save(root, record);
+      this.checkpoint(safe);
     }
+  }
+
+  /** Saves durable continuation evidence after the completed stage or retained failure. */
+  private checkpoint(safe: boolean): void {
+    const { root, record } = this.state.options;
+    record.safeCheckpoint = safe;
+    delete record.reconciledCandidateDigest;
+    record.continuation = true;
+    record.continuationAuthority = this.state.resolved.digest;
+    record.specificationFinished = this.state.specificationFinished;
+    record.readOnlyTurn = false;
+    this.state.checkpoint();
+    save(root, record);
   }
 
   /** Returns semantic final-response errors to the retained stage without replaying uncertain execution. */
@@ -81,6 +89,25 @@ export class SessionWorkflow {
     return true;
   }
 
+  /** Retains completed regression mismatches without treating uncertain operations as replayable. */
+  private retainSpecificationCorrection(stage: string, error: unknown): boolean {
+    const { record, signal } = this.state.options;
+    if (
+      !record.generalExecution ||
+      stage !== 'specification' ||
+      !(error instanceof SpecificationValidationError)
+    )
+      return false;
+    signal.throwIfAborted();
+    const diagnosis = new SessionProgress(this.state).failure(
+      'expected-regression:' + error.identity,
+      error.message,
+    );
+    record.specificationFeedback = `${diagnosis}\n${error.feedback}`;
+    record.status = 'running';
+    return true;
+  }
+
   /** Applies stage transitions only after the corresponding host checks pass. */
   private async advance(stage: string): Promise<void> {
     const { record } = this.state.options;
@@ -90,6 +117,7 @@ export class SessionWorkflow {
       record.nextStage = this.state.assignment.kind === 'change' ? 'specification' : 'research';
     } else if (stage === 'specification') {
       await this.specification();
+      delete record.specificationFeedback;
       record.nextStage = 'implementation';
     } else if (stage === 'implementation') await this.advanceImplementation();
     else if (stage === 'review') await this.advanceReview();
@@ -167,11 +195,16 @@ export class SessionWorkflow {
   private async specification(): Promise<void> {
     const spec = await this.turns.perform(
       'specification',
-      this.state.assignment.changeType === 'refactor'
-        ? 'Reference the existing behavior contract and inspect characterization coverage. Add or strengthen tests only where needed, without implementation edits. Do not manufacture changed documentation or a failing regression: the host requires passing captured checks before implementation. Return regression=null and evidence for the covered behavior.'
-        : this.state.documentationOnly
-          ? 'Make actual file edits now in the assigned documentation/skill scope. Update the documentation itself, preserving applicable existing content; a prose-only description in your response does not satisfy this checkpoint. Do not edit implementation or tests. Set regression=null and explain why behavioral testing is skipped.'
-          : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. For a completed behavioral specification, regression must not be null. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. Prefer the matching declared host operation to observe the test output before submitting its expectation. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation.",
+      String(
+        this.state.options.record.specificationFeedback
+          ? `Specification checkpoint feedback: ${this.state.options.record.specificationFeedback}\n`
+          : '',
+      ) +
+        (this.state.assignment.changeType === 'refactor'
+          ? 'Reference the existing behavior contract and inspect characterization coverage. Add or strengthen tests only where needed, without implementation edits. Do not manufacture changed documentation or a failing regression: the host requires passing captured checks before implementation. Return regression=null and evidence for the covered behavior.'
+          : this.state.documentationOnly
+            ? 'Make actual file edits now in the assigned documentation/skill scope. Update the documentation itself, preserving applicable existing content; a prose-only description in your response does not satisfy this checkpoint. Do not edit implementation or tests. Set regression=null and explain why behavioral testing is skipped.'
+            : "Research as needed. Make an actual edit to at least one of this component's declared documentation files describing the new behavior, AND add/update a failing regression in its declared test scope. The host rejects this checkpoint if either kind of change is missing; reading another owner's documentation is insufficient. Do not edit implementation. For a completed behavioral specification, regression must not be null. Return regression with verificationIndex selecting a captured command, expected nonzero exitCode and literal outputIncludes naming the expected failing assertion. Prefer the matching declared host operation to observe the test output before submitting its expectation. If sandbox restrictions prevent running the regression, return completed preparation with the proposed regression expectation and an evidence-backed finding describing the limitation; do not claim it was verified. The host must observe the exact expected failure before implementation. Return blocked only when the assignment itself requires unavailable authority or a decision, not solely because the host must execute a check. Return before implementation."),
     );
     if (!this.state.specificationFinished) await this.verification.specification(spec);
   }

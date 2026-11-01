@@ -175,7 +175,10 @@ export class ControlledWorkflow {
     };
     this.specificationActivities(turn);
     if (this.options.mode === 'early-implementation') fs.writeFileSync('source.txt', 'after');
-    if (this.options.mode === 'wrong-red')
+    if (
+      ['wrong-red', 'regression-loop'].includes(this.options.mode) ||
+      (this.options.mode === 'regression-recovery' && turn.count === 2)
+    )
       turn.result.regression.outputIncludes = 'NOT_THE_ASSERTION';
     if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
   }

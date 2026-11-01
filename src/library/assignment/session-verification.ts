@@ -1,3 +1,6 @@
+import { digest } from '../architecture/assignment.js';
+import { SpecificationValidationError } from './specification-error.js';
+import { logExcerpt } from './attempts.js';
 import { CapturedVerification } from './captured-verification.js';
 import { RefactorCheckpoint } from './refactor-checkpoint.js';
 import { assertCapturedTests } from '../testing/captured-tests.js';
@@ -70,7 +73,10 @@ export class SessionVerification {
       failed.exitCode !== this.state.regression.exitCode ||
       !readFileSync(failed.log, 'utf8').includes(this.state.regression.outputIncludes)
     )
-      throw new Error('Regression did not fail with the expected assertion');
+      throw new SpecificationValidationError(
+        `Expected ${JSON.stringify(this.state.regression)}; observed ${failed ? `exit ${failed.exitCode}: ${logExcerpt(failed.log)}; full retained log: ${failed.log}` : 'successful command, so no failing assertion was observed'}`,
+        digest(JSON.stringify([this.state.regression, this.state.frozen, failed?.exitCode ?? 0])),
+      );
     this.state.options.record.regressionCheckpoint = this.state.regression;
     this.state.journal('testing', 'completed', {
       host: 'expected regression failure observed',

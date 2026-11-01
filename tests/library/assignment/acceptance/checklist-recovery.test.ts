@@ -91,6 +91,36 @@ class ChecklistRecoveryScenarios {
     assert.notEqual(readFileSync(join(record.workspace, 'docs/behavior.md'), 'utf8'), 'Before');
   }
 
+  /** Corrects a completed expected-red diagnostic without losing edits or advancing implementation. */
+  async regression(t: TestContext): Promise<void> {
+    const { f, record, step } = this.fixture(t, 'regression-recovery');
+    await step();
+    const thread = record.threadId;
+    await step();
+    assert.equal(record.safeCheckpoint, true);
+    assert.equal(record.nextStage, 'specification');
+    assert.match(String(record.specificationFeedback), /BOUNDARY_EXPECTED/);
+    assert.equal(readFileSync(join(record.workspace, 'source.txt'), 'utf8'), 'before');
+    assert.equal(record.commands.at(-1)?.exitCode, 1);
+    for (let stage = 0; stage < 3; stage++) await step();
+    assert.equal(record.status, 'completed');
+    assert.equal(record.threadId, thread);
+    assert.equal(record.specificationFeedback, undefined);
+    assert.match(readFileSync(f.calls, 'utf8'), /Specification checkpoint feedback/);
+    assert.equal(readFileSync(join(record.workspace, 'source.txt'), 'utf8'), 'after');
+  }
+
+  /** Repeated completed expected-red mismatches require diagnosis without an attempt quota. */
+  async regressionLoop(t: TestContext): Promise<void> {
+    const { record, step } = this.fixture(t, 'regression-loop');
+    await step();
+    for (let failure = 0; failure < 3; failure++) await step();
+    await assert.rejects(step, /different action|attention/);
+    assert.equal(record.status, 'needs_attention');
+    assert.equal(record.nextStage, 'specification');
+    assert.equal(readFileSync(join(record.workspace, 'source.txt'), 'utf8'), 'before');
+  }
+
   /** Captures an unlimited engineering profile and uses the production resumable session after every turn. */
   private fixture(t: TestContext, mode: string) {
     const f = workflowFixture(t, mode);
@@ -163,5 +193,11 @@ test('completed blocked response retains a safe unfinished specification checkpo
 
 test('forbidden activity claims remain unsafe despite completed transport', (t) =>
   scenarios.forbiddenActivity(t));
+
+test('completed expected-regression mismatch can correct on its retained specification', (t) =>
+  scenarios.regression(t));
+
+test('equivalent expected-regression mismatches require diagnosis', (t) =>
+  scenarios.regressionLoop(t));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });
