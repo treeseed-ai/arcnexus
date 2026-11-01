@@ -1,7 +1,6 @@
 export { PromptExperimentRunner } from './prompt-campaign.js';
 
 import {
-  existsSync,
   lstatSync,
   mkdirSync,
   readFileSync,
