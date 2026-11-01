@@ -85,3 +85,25 @@ export async function runInitializerCodex(
     operations,
   }).run();
 }
+
+/** Runs a separate verifier contract without worker checklist or delegation authority. */
+export async function runVerificationCodex(
+  root: string,
+  record: RecordData,
+  prompt: string,
+  executable: string,
+  model: string,
+  signal: AbortSignal,
+  operations?: OperationBridge,
+): Promise<import('../task-intake/direction.js').VerificationResult> {
+  return new CodexExecution<import('../task-intake/direction.js').VerificationResult>({
+    root,
+    record,
+    prompt,
+    executable,
+    model,
+    signal,
+    operations,
+    responseContract: 'verification-result',
+  }).run();
+}

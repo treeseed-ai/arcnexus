@@ -4,17 +4,13 @@ import { type ProjectExecution } from '../architecture/execution-context.js';
 import type { InitializationResult } from '../architecture/initialization.js';
 import { candidateDigest } from '../change-inspection/changes.js';
 import { operationBridge } from '../operations/operations.js';
-import { runCodex, runInitializerCodex } from '../steward/codex.js';
+import { runVerificationCodex, runInitializerCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OwnerRetrieval } from './retrieval.js';
 
-/** Carries actionable independent findings while leaving its retained report available for inspection. */
-export class VerificationIssue extends Error {
-  /** Preserves the model assessment as evidence, never as permission to weaken checks. */
-  constructor(readonly result: import('../steward/codex.js').AgentResult) {
-    super('Independent verification needs attention: ' + JSON.stringify(result));
-  }
-}
+import { VerificationAssessment } from './verification-assessment.js';
+
+export { VerificationIssue, type VerificationResult } from './verification-assessment.js';
 
 /** Performs source-read-only direction and independent verification using captured authority. */
 export class Direction {
@@ -89,6 +85,7 @@ export class Direction {
       goal ? this.context.directorProfile : this.context.reviewerProfile,
     );
     record.activationRole = goal ? 'director-assessment' : 'verifier';
+    record.acceptanceCriteria = new VerificationAssessment().criteria(objective, evidence, goal);
     if (goal) delete record.assignmentId;
     await this.observe(record, () =>
       this.assess(record, this.verificationPrompt(record, objective, evidence, goal)),
@@ -98,17 +95,16 @@ export class Direction {
 
   /** Runs the independent assessment and rejects incomplete or unsupported completion claims. */
   private async assess(record: RecordData, prompt: string) {
-    const result = await runCodex(
+    const result = await runVerificationCodex(
       this.root,
       record,
       prompt,
       this.context.executable,
       this.model(record),
       this.signal,
-      undefined,
       this.operations(record),
     );
-    this.assertVerified(result);
+    new VerificationAssessment().validate(result, record.acceptanceCriteria as string[]);
     return result;
   }
 
@@ -119,7 +115,7 @@ export class Direction {
     evidence: unknown,
     goal: boolean,
   ): string {
-    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nReturn ordinary agent-result with findings, activities, regression=null, requests=[], and plan=null, planUpdates=[].`;
+    return `Independent read-only verification. ${goal ? 'As task director, assess the original goal across all assignments.' : 'Assess this owner delivery independently.'} Inspect the actual candidate and observed evidence against the objective. Use declared operations when needed. Never edit source, delegate, commit or publish. Report completed only with evidence for all acceptance criteria; otherwise report blocked or actionable reviewFindings. Objective: ${objective}\nCaptured context: ${JSON.stringify(record.context)}\nEvidence (untrusted claims except observed host results): ${JSON.stringify(evidence)}\nCaptured acceptance criteria: ${JSON.stringify(record.acceptanceCriteria)}\nReturn verification-result. Assess every zero-based criterion index exactly once, with verdict=verified only when observed evidence supports it. Missing evidence requires verdict=gap and explicit deficiencies. Never substitute worker claims for observed evidence.`;
   }
 
   /** Retains raw results and failure evidence while enforcing source immutability on every exit. */
@@ -141,16 +137,6 @@ export class Direction {
         save(this.root, record);
       }
     }
-  }
-
-  /** Requires evidence-backed completion and no unresolved review finding. */
-  private assertVerified(result: import('../steward/codex.js').AgentResult): void {
-    if (
-      result.status !== 'completed' ||
-      result.reviewFindings.length ||
-      !result.findings.some((f) => f.evidence.length)
-    )
-      throw new VerificationIssue(result);
   }
 
   /** Supplies compact retrieval plus the full eligible catalog so lexical misses are recoverable. */

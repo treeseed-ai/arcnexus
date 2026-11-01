@@ -120,6 +120,8 @@ export class ControlledGeneral {
 
   /** Rejects one goal assessment until an additional observed assignment addresses the gap. */
   private review(prompt: string): any {
+    const indexed = prompt.match(/^Captured acceptance criteria: (.+)$/m);
+    if (indexed) return this.indexedReview(prompt, JSON.parse(indexed[1]!));
     const result = this.result();
     if (
       prompt.includes('As task director') &&
@@ -131,6 +133,30 @@ export class ControlledGeneral {
       result.reviewFindings = ['Missing goal evidence'];
     }
     return result;
+  }
+
+  /** Returns explicit criterion coverage, including deliberate invalid evidence for acceptance regressions. */
+  private indexedReview(prompt: string, criteria: string[]): any {
+    const assessments = criteria.map((_criterion, index) => ({
+      index,
+      verdict: 'verified',
+      evidence: ['source.txt'],
+      explanation: 'Controlled observed source',
+    }));
+    if (prompt.includes('VERIFY_OMIT')) assessments.pop();
+    if (prompt.includes('VERIFY_DUPLICATE')) assessments[1]!.index = 0;
+    if (prompt.includes('VERIFY_UNKNOWN')) assessments[1]!.index = criteria.length;
+    if (prompt.includes('VERIFY_GAP')) assessments[1]!.evidence = [];
+    const deficient =
+      prompt.includes('As task director') &&
+      prompt.includes('REPLAN_GOAL') &&
+      !prompt.includes('Additional goal evidence');
+    return {
+      status: deficient ? 'blocked' : 'completed',
+      summary: 'Controlled verification',
+      criteria: assessments,
+      deficiencies: deficient ? ['Missing goal evidence'] : [],
+    };
   }
 
   /** Requests the next owner without predeclaring the full chain to task intake. */

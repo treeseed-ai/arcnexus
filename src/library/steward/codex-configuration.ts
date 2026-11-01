@@ -15,7 +15,7 @@ import { save, type RecordData } from '../workspace/state.js';
 import { persistExecutionEvidence } from './evidence.js';
 
 export interface CodexInput {
-  responseContract?: 'initializer-result';
+  responseContract?: 'initializer-result' | 'verification-result';
   root: string;
   record: RecordData;
   prompt: string;
@@ -65,7 +65,7 @@ export class CodexConfiguration {
 
   /** Returns the structured result contract expected from the current model turn. */
   private resultSchema() {
-    if (this.input.responseContract) return readSchema('initializer-result');
+    if (this.input.responseContract) return readSchema(this.input.responseContract);
     const schema = readSchema(
       this.input.record.generalExecution ? 'general-agent-result' : 'agent-result',
     );
