@@ -143,3 +143,8 @@ It is an exact authority identifier, even when intake initially supplies descrip
 text. Stewards must not paraphrase it. The host still validates incoming values
 independently; a controlled or incompatible executable cannot bypass authority by
 ignoring the response schema.
+
+Each turn repeats the authoritative assignment objective and explicitly numbered
+acceptance criteria after inbox context. Plan criterion indices refer only to this
+captured assignment list. An incoming request's acceptance text is supplemental;
+it cannot waive implementation, replace ownership, or reduce required acceptance.
