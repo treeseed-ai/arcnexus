@@ -244,9 +244,9 @@ export class ExperimentRunner {
           c.assignmentPath,
           '--model',
           'gpt-6-luna',
-          '--max-attempts',
-          String(c.maxAttempts ?? 1),
         ];
+    if (!c.workdayPath && c.maxAttempts !== undefined)
+      args.push('--max-attempts', String(c.maxAttempts));
     for (const [name, value] of [
       ['bindings', c.bindings],
       ['issue', c.issue],
