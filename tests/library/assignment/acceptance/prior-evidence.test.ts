@@ -71,9 +71,9 @@ class PriorEvidenceTests {
     const r = spawnSync(
       process.execPath,
       [cli, 'inspect', 'report', 'Improve evidence', '--project', process.cwd(), '--json'],
-      { encoding: 'utf8' },
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
     );
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, String(r.error ?? r.stderr));
     const commands = JSON.parse(r.stdout).verification;
     assert.ok(commands.some((c: any) => c.command === 'npm' && c.args.join(' ') === 'test'));
     assert.ok(

@@ -92,9 +92,9 @@ class WorkdayExperimentsTests {
         process.cwd(),
         '--json',
       ],
-      { encoding: 'utf8' },
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
     );
-    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.status, 0, String(r.error ?? r.stderr));
     const owner = JSON.parse(r.stdout).context.find((c: any) => c.id === 'agent-guidance');
     assert.ok(owner.access.writeDirectories.includes('.agents/skills'));
   }
