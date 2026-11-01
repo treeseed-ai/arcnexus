@@ -106,3 +106,11 @@ Owner assessment compares against its assignment candidate base. Whole-goal
 assessment compares the assembled candidate against captured source authority.
 The candidate digest is pinned before capture and checked after assessment.
 Unavailable native Git metadata does not require broader verifier filesystem access.
+
+Blocked-task direction receives current run identity and host-retained assignment
+checkpoint facts automatically: accepted plan and stage, safe-continuation status,
+thread identity, candidate references, pending dependencies and observed command
+outcomes. These facts are evidence, not expanded authority. The director must not
+ask the caller to retrieve runtime bookkeeping that the host already retains;
+clarification remains for substantive goal or architectural decisions. Uncertain
+checkpoints stay ineligible even when the director recommends continuation.

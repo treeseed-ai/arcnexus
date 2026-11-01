@@ -37,3 +37,17 @@ named directly by check commands. Directory-valued command arguments such as
 The implementation under test remains the candidate implementation while captured
 checks run; restoring a baseline implementation would not establish its acceptance.
 Unchanged captured inputs need no separate frozen-check pass.
+
+A semantic checklist error in a completed, scope-checked model response is a
+correctable result. Retain the accepted plan, stage, thread, partial edits and
+observed command evidence; return the exact diagnostic on the next activation.
+Reject the whole invalid update batch before persisting any accepted-plan changes.
+This safe correction applies only after the model and owned operations have ended
+and source scope has been checked. It does not apply to transport, filesystem,
+authority or uncertain-operation failures. Equivalent repeated errors use the
+existing progress diagnosis rule, with no corrective-attempt quota.
+
+General inbox requests remain available independently of the legacy coordination
+protocol's action list. The model uses structured requests for eligible owners and
+inboxActions for correlated responses; an empty legacy action list does not disable
+these capabilities.
