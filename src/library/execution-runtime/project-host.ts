@@ -1,7 +1,12 @@
-import { mkdirSync } from 'node:fs';
+import { ExecutionReports } from '../report/report.js';
+import { StewardshipPolicy } from '../workday/workday.js';
+import { git } from '../operations/process.js';
+import { InputError } from '../architecture/config.js';
+import { validateContinuation } from '../assignment/steward.js';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProjectExecution } from '../architecture/execution-context.js';
-import type { ExecutionRun } from '../coordination-store/execution-types.js';
+import type { ActivationResult, ExecutionRun } from '../coordination-store/execution-types.js';
 import { ExecutionStore } from '../coordination-store/execution-store.js';
 import { createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
 import type { RecordData } from '../workspace/state.js';
@@ -12,6 +17,8 @@ import { Scheduler } from './scheduler.js';
 /** Owns sequential project execution while task and workday policies select different work. */
 export class ProjectHost {
   readonly store: ExecutionStore;
+
+  readonly reports: ExecutionReports;
 
   private busy = false;
 
@@ -25,6 +32,7 @@ export class ProjectHost {
     mkdirSync(join(root, 'runs'), { recursive: true, mode: 0o700 });
     mkdirSync(join(root, 'workspaces'), { recursive: true, mode: 0o700 });
     this.store = new ExecutionStore(join(root, 'projects', context.key, 'execution.sqlite'));
+    this.reports = new ExecutionReports(join(root, 'projects', context.key), this.store);
     this.recover();
   }
 
@@ -35,7 +43,8 @@ export class ProjectHost {
     if (action === 'start' && (!workday || workday.status === 'stopped'))
       workday = this.create('workday', 'Self-directed stewardship');
     if (!workday) throw new Error('No workday exists');
-    if (action === 'pause')
+    if (workday.status === 'stopped' && ['pause', 'stop'].includes(action)) return this.status();
+    if (action === 'pause' && workday.status !== 'stopped')
       this.store.updateRun(workday.id, this.active?.runId === workday.id ? 'pausing' : 'paused', {
         pauseReason: 'user',
       });
@@ -49,7 +58,7 @@ export class ProjectHost {
 
   /** Queues a goal without interrupting an in-flight safe checkpoint. */
   submit(prompt: string): ExecutionRun {
-    if (!prompt.trim()) throw new Error('Task prompt must not be empty');
+    if (!prompt.trim()) throw new InputError('Task prompt must not be empty');
     return this.create('task', prompt);
   }
 
@@ -87,6 +96,7 @@ export class ProjectHost {
         this.store.updateRun(run.id, 'needs_attention', { error: String(error) });
     } finally {
       this.settle(run.id);
+      this.reports.save(run.id);
       this.active = undefined;
       this.busy = false;
     }
@@ -95,17 +105,28 @@ export class ProjectHost {
   /** Projects current lifecycle and accountable assignments for the option-free status command. */
   status() {
     const workday = this.workday();
+    const sourceRevision = git(this.context.source, 'rev-parse', 'HEAD').trim();
     return {
-      workday,
+      sourceChanged: sourceRevision !== this.context.base,
+      capturedRevision: this.context.base,
+      sourceRevision,
+      workday: workday ? this.reports.view(workday.id).run : undefined,
       active: this.active?.runId ?? null,
-      tasks: this.store.runs().filter((r) => r.mode === 'task'),
-      assignments: workday ? this.store.assignments(workday.id) : [],
+      tasks: this.store
+        .runs()
+        .filter((r) => r.mode === 'task')
+        .map((r) => this.reports.view(r.id).run),
+      assignments: workday ? this.reports.view(workday.id).assignments : [],
       candidate: this.latestCandidate(),
     };
   }
 
   /** Captures a new run against the last compatible verified candidate. */
   private create(mode: 'task' | 'workday', objective: string): ExecutionRun {
+    if (git(this.context.source, 'status', '--porcelain', '--untracked-files=all').trim())
+      throw new InputError('Source checkout must be clean when creating a new run');
+    if (git(this.context.source, 'rev-parse', 'HEAD').trim() !== this.context.base)
+      throw new InputError('Source revision changed; stop and start against updated authority');
     const run = this.store.createRun(mode, this.context.owners, objective);
     this.store.updateRun(run.id, 'running', {
       candidateRevision: this.latestCandidate(),
@@ -126,6 +147,8 @@ export class ProjectHost {
     if (workday?.status === 'paused' && workday.data.pauseReason === 'task')
       this.store.updateRun(workday.id, 'running', {
         candidateRevision: this.latestCandidate(),
+        candidateRecord:
+          this.latestDelivery()?.data.candidateRecord ?? workday.data.candidateRecord,
         pauseReason: null,
       });
     const latest = this.workday();
@@ -136,6 +159,8 @@ export class ProjectHost {
   private async advance(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     if (!run.data.workspace) await this.prepare(run, signal);
     run = this.store.run(run.id);
+    if (run.data.workspacePrepared !== true)
+      throw new Error('Workspace preparation was interrupted; inspect retained command evidence');
     if (run.mode === 'task' && !run.data.initialized) return this.direct(run, signal);
     const ready = this.store.ready(run.id);
     if (ready.length && (run.mode === 'task' || run.data.lastDispatch !== 'assignment')) {
@@ -150,13 +175,23 @@ export class ProjectHost {
 
   /** Creates the read-only planning workspace from the current verified candidate. */
   private async prepare(run: ExecutionRun, signal: AbortSignal): Promise<void> {
+    const candidateRevision = this.latestCandidate();
     const record = createWorkspace(this.root, {
       project: this.context.source,
-      base: String(run.data.candidateRevision),
+      authorityBase: this.context.base,
+      base: candidateRevision,
       bindings: this.context.bindings,
     });
+    this.store.updateRun(run.id, this.store.run(run.id).status, {
+      workspace: record,
+      workspacePrepared: false,
+    });
     await prepareWorkspace(this.root, record, signal);
-    this.store.updateRun(run.id, run.status, { workspace: record });
+    this.store.updateRun(run.id, this.store.run(run.id).status, {
+      workspace: record,
+      workspacePrepared: true,
+      candidateRevision,
+    });
   }
 
   /** Runs task direction and retains interactive questions before any owner activation. */
@@ -165,6 +200,7 @@ export class ProjectHost {
       run.data.workspace as RecordData,
       String(run.data.prompt ?? run.objective),
     );
+    if (signal.aborted) return;
     if (result.status !== 'ready') {
       this.store.updateRun(run.id, 'needs_input', {
         questions: result.questions,
@@ -175,7 +211,10 @@ export class ProjectHost {
     }
     if (!result.assignments.length) throw new Error('Task director returned no assignment');
     this.assign(run, result.assignments);
-    this.store.updateRun(run.id, 'running', { initialized: true, direction: result });
+    this.store.updateRun(run.id, this.store.run(run.id).status, {
+      initialized: true,
+      direction: result,
+    });
   }
 
   /** Creates accountable assignments from validated proposals without a fixed owner count. */
@@ -197,14 +236,14 @@ export class ProjectHost {
   /** Visits each eligible steward once per changed candidate, interleaved with inbox work. */
   private async stewardship(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     const seen = (run.data.seen ?? {}) as Record<string, string>;
-    const fingerprint = String(run.data.candidateRevision);
-    const owner = this.nextSteward(run, seen, fingerprint);
-    if (!owner) {
+    const selected = new StewardshipPolicy(this.context).next(run, this.store.assignments(run.id));
+    if (!selected) {
       this.store.updateRun(run.id, this.store.ready(run.id).length ? 'running' : 'idle', {
         lastDispatch: 'stewardship',
       });
       return;
     }
+    const { owner, fingerprint } = selected;
     const component = this.context.catalog.components[owner]!;
     const workspace = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
     const result = await new Direction(this.root, this.context, signal).propose(
@@ -222,22 +261,6 @@ export class ProjectHost {
       lastDispatch: 'stewardship',
       questions: result.questions,
     });
-  }
-
-  /** Avoids duplicate self-directed assignments while an owner already has runnable work. */
-  private nextSteward(
-    run: ExecutionRun,
-    seen: Record<string, string>,
-    fingerprint: string,
-  ): string | undefined {
-    const owner = run.owners.find(
-      (id) =>
-        seen[id] !== fingerprint &&
-        !this.store
-          .assignments(run.id)
-          .some((a) => a.owner === id && ['ready', 'running', 'waiting'].includes(a.status)),
-    );
-    return owner;
   }
 
   /** Requires all assignments and a separate goal-level assessment before task completion. */
@@ -258,7 +281,7 @@ export class ProjectHost {
       assignments,
       true,
     );
-    this.store.updateRun(run.id, 'completed', { goalEvidence: evidence });
+    if (!signal.aborted) this.store.updateRun(run.id, 'completed', { goalEvidence: evidence });
   }
 
   /** Completes pending control requests without allowing a worker result to overwrite user intent. */
@@ -272,21 +295,34 @@ export class ProjectHost {
   private resume(run: ExecutionRun): void {
     if (run.status === 'stopped')
       throw new Error('Stopped workday cannot resume; start a new workday');
-    if (this.store.assignments(run.id).some((a) => a.status === 'interrupted'))
-      throw new Error('Interrupted activation requires reconciliation before resume');
+    for (const assignment of this.store.assignments(run.id)) {
+      if (assignment.status !== 'interrupted') continue;
+      const record = JSON.parse(
+        readFileSync(
+          join(this.root, 'runs', String(assignment.data.recordId), 'report.json'),
+          'utf8',
+        ),
+      ) as RecordData;
+      validateContinuation(this.root, record);
+      this.store.updateAssignment(assignment.id, 'ready');
+    }
     this.store.updateRun(run.id, 'running', { seen: {}, pauseReason: null });
   }
 
   /** Marks abandoned activations without replaying possibly completed operations. */
   private recover(): void {
     for (const run of this.store.runs()) {
-      for (const assignment of this.store.assignments(run.id))
-        if (assignment.status === 'running')
-          this.store.fail(
-            assignment.id,
-            'interrupted',
-            'Host exited during activation; inspect retained operation evidence',
-          );
+      for (const assignment of this.store.assignments(run.id)) {
+        if (assignment.data.pendingOutcome) {
+          const scheduler = new Scheduler(this.store, async () => {
+            throw new Error('Recovery cannot execute');
+          });
+          scheduler.commit(assignment.id, assignment.data.pendingOutcome as ActivationResult);
+        } else if (assignment.status === 'running')
+          this.store.updateAssignment(assignment.id, 'interrupted', {
+            reason: 'Host exited during activation; inspect retained operation evidence',
+          });
+      }
       if (['running', 'pausing', 'stopping'].includes(run.status))
         this.store.updateRun(run.id, 'interrupted');
     }
@@ -302,12 +338,15 @@ export class ProjectHost {
 
   /** Reads the newest verified snapshot in this captured architecture revision. */
   private latestCandidate(): string {
-    return String(
-      this.store
-        .runs()
-        .filter((r) => r.data.authorityBase === this.context.base && r.data.verifiedEvidence)
-        .sort((a, b) => String(a.data.promotedAt).localeCompare(String(b.data.promotedAt)))
-        .at(-1)?.data.candidateRevision ?? this.context.base,
-    );
+    return String(this.latestDelivery()?.data.candidateRevision ?? this.context.base);
+  }
+
+  /** Keeps the candidate revision and its verified workspace evidence paired across run handoffs. */
+  private latestDelivery(): ExecutionRun | undefined {
+    return this.store
+      .runs()
+      .filter((r) => r.data.authorityBase === this.context.base && r.data.verifiedEvidence)
+      .sort((a, b) => String(a.data.promotedAt).localeCompare(String(b.data.promotedAt)))
+      .at(-1);
   }
 }

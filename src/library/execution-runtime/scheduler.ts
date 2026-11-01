@@ -23,19 +23,37 @@ export class Scheduler {
     this.active = true;
     this.store.updateAssignment(assignment.id, 'running');
     try {
-      this.apply(assignment.id, await this.execute(assignment));
+      const result = assignment.data.pendingOutcome as ActivationResult | undefined;
+      this.commit(assignment.id, result ?? (await this.execute(assignment)));
     } catch (error) {
+      const pendingOutcome = this.store.assignment(assignment.id).data.pendingOutcome;
       this.store.fail(assignment.id, 'failed', String(error));
+      this.store.updateAssignment(assignment.id, 'failed', {
+        lastFailedOutcome: pendingOutcome ?? null,
+        pendingOutcome: null,
+      });
     } finally {
       this.active = false;
     }
     return true;
   }
 
+  /** Journals an observed outcome before applying idempotent scheduling transitions. */
+  commit(id: string, result: ActivationResult): void {
+    this.store.updateAssignment(id, 'running', { pendingOutcome: result });
+    this.apply(id, result);
+    this.store.updateAssignment(id, this.store.assignment(id).status, {
+      pendingOutcome: null,
+      lastReceipt: result.receipt ?? null,
+    });
+  }
+
   /** Translates structured results into durable transitions; completion requires verification evidence. */
   private apply(id: string, result: ActivationResult): void {
     if (result.kind === 'completed') this.store.complete(id, result.evidence, result.candidate);
     else if (result.kind === 'blocked') this.store.fail(id, 'blocked', result.reason);
+    else if (result.kind === 'inbox') this.store.exchange(id, result.requests, result.actions);
+    else if (result.kind === 'responses') this.store.respond(id, result.actions);
     else if (result.kind === 'continue') this.store.updateAssignment(id, 'ready');
     else {
       if (!result.requests.length) throw new Error('Yield requires at least one request');

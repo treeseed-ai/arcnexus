@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
@@ -39,6 +39,62 @@ class ContinuationScenarios {
     this.assertCompleted(record, stages);
   }
 
+  /** Requires passing characterization before and after a refactor without fabricated specification edits. */
+  async refactor(t: TestContext): Promise<void> {
+    const f = workflowFixture(t);
+    writeFileSync(
+      join(f.repo, 'tests/baseline.cjs'),
+      "require('node:assert/strict').equal(require('node:fs').readFileSync('source.txt','utf8').trim(),'before');",
+    );
+    writeFileSync(join(f.repo, 'verify.cjs'), "require('./tests/baseline.cjs');");
+    f.configure({ refactor: true });
+    f.commit();
+    this.prepareState(f.state);
+    const record = createWorkspace(f.state, { project: f.repo });
+    this.refactorAuthority(record, f.repo);
+    record.directionAccepted = true;
+    for (let stage = 0; stage < 4; stage++)
+      await new StewardSession(
+        f.state,
+        record,
+        'sample',
+        'Normalize whitespace',
+        'gpt-6-luna',
+        f.executable,
+        new AbortController().signal,
+      ).step();
+    this.assertRefactor(record);
+  }
+
+  /** Checks distinct before/after characterization evidence and unchanged documentation. */
+  private assertRefactor(record: RecordData): void {
+    assert.equal(record.status, 'completed');
+    assert.equal(record.characterization, true);
+    assert.equal(record.regressionCheckpoint, undefined);
+    assert.ok(
+      record.commands.some((c) => c.stage === 'characterization-before' && c.exitCode === 0),
+    );
+    assert.ok(
+      record.commands.some((c) => c.stage === 'characterization-after' && c.exitCode === 0),
+    );
+    assert.equal(readFileSync(join(record.workspace, 'docs/behavior.md'), 'utf8'), 'Before');
+  }
+
+  /** Captures the unchanged behavioral contract before any refactor stage. */
+  private refactorAuthority(record: RecordData, repository: string): void {
+    record.resolvedAssignment = resolveAssignment(repository, record.base, 'sample', {
+      value: {
+        schemaVersion: 3,
+        kind: 'change',
+        changeType: 'refactor',
+        objective: 'Normalize whitespace',
+        expectedOutcome: 'Preserve trimmed value',
+        acceptanceCriteria: ['Trimmed value remains before'],
+        hostChecks: [],
+      },
+    });
+  }
+
   /** Checks retained engineering evidence and the actual candidate after reopening. */
   private assertCompleted(record: RecordData, stages: unknown[]): void {
     assert.equal(record.status, 'completed');
@@ -59,5 +115,8 @@ const scenarios = new ContinuationScenarios();
 
 test('built steward resumes persisted stages without resetting evidence', (t) =>
   scenarios.resume(t));
+
+test('refactor retains passing characterization without changed specification', (t) =>
+  scenarios.refactor(t));
 
 registerSuite({ component: 'assignment', level: 'acceptance', tags: ['deterministic'] });

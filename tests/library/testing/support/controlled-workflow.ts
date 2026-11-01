@@ -25,6 +25,7 @@ export interface WorkflowOptions {
   suppliedTool?: boolean;
   sandboxFeedback?: boolean;
   documentationOnly?: boolean;
+  refactor?: boolean;
   guidanceExpansion?: boolean;
   dependencyMutation?: boolean;
 }
@@ -127,7 +128,10 @@ export class ControlledWorkflow {
     )
       throw new Error('Corrective prompt omitted the actual late failure');
     if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
-    if (this.options.documentationOnly) this.documentation(turn);
+    if (this.options.refactor) {
+      if (['implementation', 'correction'].includes(turn.stage))
+        fs.writeFileSync('source.txt', 'before\n');
+    } else if (this.options.documentationOnly) this.documentation(turn);
     else {
       if (turn.stage === 'specification' && this.options.mode !== 'no-changes')
         this.specification(turn);

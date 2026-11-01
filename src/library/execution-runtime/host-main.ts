@@ -1,3 +1,5 @@
+import { InputError } from '../architecture/config.js';
+import { ExecutionLease } from '../coordination-store/execution-store.js';
 import { createServer, type Socket } from 'node:net';
 import { chmodSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,6 +12,8 @@ import type { HostRequest } from './host-client.js';
 class HostServer {
   private readonly host: ProjectHost;
 
+  private readonly lease: ExecutionLease;
+
   private readonly server = createServer((socket) => this.connection(socket));
 
   /** Opens the sole project writer using the captured startup context. */
@@ -18,6 +22,7 @@ class HostServer {
     private readonly context: ProjectExecution,
     private readonly socket: string,
   ) {
+    this.lease = new ExecutionLease(socket + '.lease.sqlite');
     this.host = new ProjectHost(root, context);
   }
 
@@ -52,19 +57,35 @@ class HostServer {
         const value = this.dispatch(JSON.parse(data.split('\n')[0]!));
         socket.end(JSON.stringify({ value }) + '\n');
       } catch (error) {
-        socket.end(JSON.stringify({ error: String(error) }) + '\n');
+        socket.end(
+          JSON.stringify({ error: String(error), invalid: error instanceof InputError }) + '\n',
+        );
       }
     });
   }
 
+  /** Allows automatic authority replacement only after all executable runs have ended. */
+  private retire(): boolean {
+    const status = this.host.status();
+    if (
+      status.active ||
+      (status.workday && status.workday.status !== 'stopped') ||
+      status.tasks.some((r) => ['running', 'pausing'].includes(r.status))
+    )
+      throw new Error('Active execution host cannot retire');
+    setTimeout(() => {
+      this.lease.close();
+      process.exit(0);
+    }, 50);
+    return true;
+  }
+
   /** Routes explicit controls while keeping scheduling policy inside the host. */
   private dispatch(request: HostRequest): unknown {
+    if (request.action === 'identity') return this.context;
+    if (request.action === 'retire') return this.retire();
     if (request.action === 'submit') return this.host.submit(String(request.prompt ?? ''));
-    if (request.action === 'task-status')
-      return {
-        run: this.host.store.run(String(request.id)),
-        assignments: this.host.store.assignments(String(request.id)),
-      };
+    if (request.action === 'task-status') return this.host.reports.view(String(request.id));
     if (request.action === 'answer') {
       this.host.answer(String(request.id), String(request.answer));
       return true;

@@ -11,11 +11,11 @@ class GeneralCliScenarios {
   /** Starts an idle workday, runs a dynamically expanded task, and preserves explicit pause intent. */
   async lifecycle(t: TestContext): Promise<void> {
     const general = new GeneralFixture(t);
-    const f = general.fixture;
     const command = this.command(general);
     const started = JSON.parse(command('workday', 'start'));
     assert.equal(started.workday.status, 'running');
     general.captureHost();
+    this.sharedHost(general, started.workday.id);
     await this.untilIdle(command);
     const task = command('task', 'run', 'Research the supplier chain');
     const result = JSON.parse(task.trim().split('\n').at(-1)!);
@@ -30,6 +30,19 @@ class GeneralCliScenarios {
     assert.equal(JSON.parse(command('workday', 'status')).workday.status, 'paused');
     command('workday', 'stop');
     assert.equal(JSON.parse(command('workday', 'status')).workday.status, 'stopped');
+  }
+
+  /** A second CLI with a different state root must attach to the same canonical repository host. */
+  private sharedHost(general: GeneralFixture, id: string): void {
+    const f = general.fixture;
+    const result = spawnSync(process.execPath, [cli, 'workday', 'start'], {
+      cwd: f.repo,
+      env: { ...f.env, ARCNEXUS_STATE_DIR: f.state + '-other' },
+      encoding: 'utf8',
+      timeout: 30_000,
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(JSON.parse(result.stdout).workday.id, id);
   }
 
   /** Executes the built CLI and includes terminal failure evidence in assertions. */

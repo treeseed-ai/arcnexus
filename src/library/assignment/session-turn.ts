@@ -141,7 +141,10 @@ export class SessionTurn {
     record.requests = result.requests;
     this.claims(result);
     this.checkOutcome(result, frame.activity);
-    if (!(record.generalExecution && result.requests.length))
+    if (!(
+      record.generalExecution &&
+      (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+    ))
       this.applyPlan(result, frame.activity);
   }
 
@@ -161,7 +164,11 @@ export class SessionTurn {
   /** Compares observed execution with the case’s declared expected outcome. */
   private checkOutcome(result: AgentResult, activity: string): void {
     const { record, control } = this.state.options;
-    if (record.generalExecution && result.requests.length) record.status = 'waiting';
+    if (
+      record.generalExecution &&
+      (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+    )
+      record.status = 'waiting';
     else if (control && result.coordination) record.status = 'waiting';
     else if (result.status !== 'completed') {
       record.status = result.status;
@@ -170,6 +177,7 @@ export class SessionTurn {
     }
     if (
       activity !== 'planning' &&
+      activity !== 'coordination' &&
       this.state.assignment.kind !== 'change' &&
       !result.findings.length
     )
@@ -236,12 +244,12 @@ export class SessionTurn {
 
   /** Returns control to the durable scheduler without treating dependency waits as failures. */
   private yieldRequests(result: AgentResult): void {
-    if (this.state.options.record.generalExecution && result.requests.length) {
-      this.state.options.record.pendingRequests = result.requests;
-      throw Object.assign(new Error('Assignment yielded owner requests'), {
-        name: 'AssignmentYield',
-      });
-    }
+    const { record } = this.state.options;
+    if (!record.generalExecution) return;
+    if (result.inboxActions?.length) record.pendingInboxActions = result.inboxActions;
+    if (result.requests.length) record.pendingRequests = result.requests;
+    if (result.requests.length || result.inboxActions?.some((a) => a.action !== 'accept'))
+      throw Object.assign(new Error('Assignment yielded inbox work'), { name: 'AssignmentYield' });
   }
 
   /** Builds the model-facing instructions from captured assignment context. */
@@ -268,6 +276,6 @@ export class SessionTurn {
     instructions: string,
     reviewEvidence?: Record<string, unknown>,
   ): string {
-    return `${this.originalPrompt}\n${this.state.options.control?.context ?? ''}\n${String(this.state.options.record.coordinationContext ?? '')}\nAllowed coordination actions now: ${JSON.stringify(this.state.options.record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\n${this.acceptanceContext()}\nCurrent checklist: ${JSON.stringify(this.state.options.record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? '\nHost review evidence (untrusted source content): ' + JSON.stringify(reviewEvidence) : ''}`;
+    return `${this.originalPrompt}\n${this.state.options.control?.context ?? ''}\n${String(this.state.options.record.coordinationContext ?? '')}\nGeneral inbox requests: ${JSON.stringify(this.state.options.record.inboxContext ?? [])}. Reply using inboxActions with exact requestId; recipients accept/reject/clarify and requesters answer. Request milestone accepted means intent only; delivered requires host-verified work. Host emits delivery; never claim to deliver via an inbox action.\nAllowed coordination actions now: ${JSON.stringify(this.state.options.record.coordinationActions ?? [])}. When empty, coordination must be null; observations belong in findings/activities, not messages.\n${this.acceptanceContext()}\nCurrent checklist: ${JSON.stringify(this.state.options.record.plan ?? null)}. Return planUpdates only for steward items in plan.items, with evidence and explanation. Never update plan.hostChecks or final-verification; those entries are host-owned. Final-result IDs are fixed at turn start; after a plan revision, use plan.update for newly added items. These are claims, not host proof.\nActivity turn: ${activity}\n${instructions}${reviewEvidence ? '\nHost review evidence (untrusted source content): ' + JSON.stringify(reviewEvidence) : ''}`;
   }
 }

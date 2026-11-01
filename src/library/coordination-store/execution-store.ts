@@ -1,3 +1,4 @@
+import { InboxDecisions, type InboxDecision } from './inbox-decisions.js';
 import { randomUUID } from 'node:crypto';
 import { ExecutionDatabase } from './execution-database.js';
 import type {
@@ -9,6 +10,8 @@ import type {
   RunMode,
   RunStatus,
 } from './execution-types.js';
+
+export { ExecutionLease } from './execution-lease.js';
 
 /** Persists assignment accountability, inbox identities and dependency readiness atomically. */
 export class ExecutionStore {
@@ -108,7 +111,8 @@ export class ExecutionStore {
     return this.assignments(runId).filter(
       (item) =>
         item.status === 'ready' &&
-        item.dependencies.every((id) => this.assignment(id).status === 'completed'),
+        ((Array.isArray(item.data.questions) && item.data.questions.length > 0) ||
+          item.dependencies.every((id) => this.satisfied(item, id))),
     );
   }
 
@@ -132,6 +136,15 @@ export class ExecutionStore {
     );
   }
 
+  /** Commits replies and newly discovered dependencies as one recoverable activation outcome. */
+  exchange(from: string, requests: OwnerRequest[], actions: InboxDecision[]): void {
+    this.db.transaction('inbox.exchanged', { from, requests, actions }, () => {
+      for (const action of actions) new InboxDecisions(this.db).apply(from, action);
+      for (const request of requests) this.route(from, request);
+      this.wake(this.assignment(from).runId);
+    });
+  }
+
   /** Routes within the caller's transaction, preserving request identity and recipient intent. */
   private route(from: string, request: OwnerRequest): ExecutionAssignment {
     const existing = this.db
@@ -139,14 +152,22 @@ export class ExecutionStore {
       .find((item) => item.from === from && item.key === request.key);
     if (existing) return this.repeated(existing, request);
     const sender = this.assignment(from);
-    const recipient = this.create(
-      sender.runId,
-      request.owner,
-      request.objective,
-      request.acceptance,
-    );
+    this.rejectRecursiveIntent(sender, request);
+    const recipient = request.existingAssignmentId
+      ? this.assignment(request.existingAssignmentId)
+      : this.create(sender.runId, request.owner, request.objective, request.acceptance);
+    if (
+      recipient.owner !== request.owner ||
+      recipient.objective !== request.objective ||
+      JSON.stringify(recipient.acceptance) !== JSON.stringify(request.acceptance)
+    )
+      throw new Error('Shared assignment acceptance differs');
+    sender.data.milestones = {
+      ...((sender.data.milestones ?? {}) as object),
+      [recipient.id]: request.milestone ?? 'delivered',
+    };
     const proposal = sender.data.proposal as Record<string, unknown> | undefined;
-    recipient.data.proposal = {
+    recipient.data.proposal ??= {
       kind: proposal?.kind ?? 'change',
       changeType: proposal?.changeType ?? 'behavior',
     };
@@ -156,12 +177,92 @@ export class ExecutionStore {
     return recipient;
   }
 
+  /** Rejects a repeated ancestor intent as a blocking cycle without merging unrelated same-owner work. */
+  private rejectRecursiveIntent(sender: ExecutionAssignment, request: OwnerRequest): void {
+    if (request.existingAssignmentId) return;
+    const ancestor = this.assignments(sender.runId).find(
+      (a) =>
+        a.owner === request.owner &&
+        a.objective === request.objective &&
+        JSON.stringify(a.acceptance) === JSON.stringify(request.acceptance) &&
+        this.reaches(a.id, sender.id, new Set()),
+    );
+    if (ancestor)
+      throw new Error(
+        `Blocking dependency cycle: repeated ancestor intent ${ancestor.id} -> ${sender.id}`,
+      );
+  }
+
   /** Rejects accidental mutation of an already delivered request. */
   private repeated(existing: InboxRequest, request: OwnerRequest): ExecutionAssignment {
     const { id: _id, from: _from, assignmentId, ...original } = existing;
     if (JSON.stringify(original) !== JSON.stringify(request))
       throw new Error('Request identity reused with different content');
     return this.assignment(assignmentId);
+  }
+
+  /** Lists request envelopes addressed to or sent by this assignment. */
+  inbox(id: string): InboxRequest[] {
+    return this.db
+      .all<InboxRequest>('request')
+      .filter((r) => r.from === id || r.assignmentId === id);
+  }
+
+  /** Records an accepted host-validated plan and releases accepted-intent dependents. */
+  accept(id: string): void {
+    this.db.transaction('assignment.accepted', { id }, () => {
+      const item = this.assignment(id);
+      item.data.accepted = true;
+      this.db.put('assignment', item);
+      this.wake(item.runId);
+    });
+  }
+
+  /** Commits correlated decisions and dependent readiness together. */
+  respond(id: string, decisions: InboxDecision[]): void {
+    this.db.transaction('inbox.responses', { id, decisions }, () => {
+      for (const decision of decisions) new InboxDecisions(this.db).apply(id, decision);
+      const actor = this.assignment(id);
+      if (actor.status === 'running') this.db.put('assignment', { ...actor, status: 'ready' });
+      this.wake(actor.runId);
+    });
+  }
+
+  /** Distinguishes accepted intent from verified delivery for each dependency edge. */
+  private satisfied(item: ExecutionAssignment, id: string): boolean {
+    const required = (item.data.milestones as Record<string, string> | undefined)?.[id];
+    const dependency = this.assignment(id);
+    return (
+      dependency.status === 'completed' ||
+      (required === 'accepted' && dependency.data.accepted === true)
+    );
+  }
+
+  /** Wakes satisfied waiters and propagates rejected deliveries without disturbing unrelated work. */
+  private wake(runId: string): void {
+    const assignments = this.assignments(runId);
+    for (const item of assignments) {
+      if (!['waiting', 'ready'].includes(item.status)) continue;
+      const failed = assignments.find(
+        (dep) =>
+          ['blocked', 'rejected', 'failed'].includes(dep.status) &&
+          this.reaches(item.id, dep.id, new Set()),
+      );
+      if (failed)
+        this.db.put('assignment', {
+          ...item,
+          status: 'blocked',
+          data: {
+            ...item.data,
+            reason: `Dependency ${failed.id}: ${failed.data.reason ?? failed.status}`,
+          },
+        });
+      else if (
+        !item.data.clarification &&
+        item.dependencies.every((id) => this.satisfied(item, id))
+      )
+        this.db.put('assignment', { ...item, status: 'ready' });
+    }
   }
 
   /** Adds an explicit dependency on shared work, rejecting cross-run links and cycles. */
@@ -178,7 +279,7 @@ export class ExecutionStore {
     if (this.reaches(recipient.id, sender.id, new Set()))
       throw new Error('Blocking dependency cycle');
     if (!sender.dependencies.includes(recipient.id)) sender.dependencies.push(recipient.id);
-    sender.status = sender.dependencies.every((id) => this.assignment(id).status === 'completed')
+    sender.status = sender.dependencies.every((id) => this.satisfied(sender, id))
       ? 'ready'
       : 'waiting';
     this.db.put('assignment', sender);
@@ -197,7 +298,7 @@ export class ExecutionStore {
     this.db.transaction('assignment.delivered', { id, evidence }, () => {
       const assignment = this.assignment(id);
       if (!evidence.length) throw new Error('Verified delivery requires evidence');
-      if (assignment.dependencies.some((dep) => this.assignment(dep).status !== 'completed'))
+      if (assignment.dependencies.some((dep) => !this.satisfied(assignment, dep)))
         throw new Error('Undelivered dependencies');
       this.db.put('assignment', { ...assignment, status: 'completed', evidence });
       if (candidate) {
@@ -209,7 +310,7 @@ export class ExecutionStore {
       }
       for (const dependent of this.assignments(assignment.runId)) {
         if (dependent.status !== 'waiting') continue;
-        if (dependent.dependencies.every((dep) => this.assignment(dep).status === 'completed'))
+        if (dependent.dependencies.every((dep) => this.satisfied(dependent, dep)))
           this.db.put('assignment', { ...dependent, status: 'ready' });
       }
     });
@@ -225,7 +326,11 @@ export class ExecutionStore {
       const item = this.assignment(id);
       this.db.put('assignment', { ...item, status, data: { ...item.data, reason } });
       for (const other of this.assignments(item.runId)) {
-        if (other.id !== id && this.reaches(other.id, id, new Set()))
+        if (
+          other.id !== id &&
+          other.status !== 'completed' &&
+          this.reaches(other.id, id, new Set())
+        )
           this.db.put('assignment', {
             ...other,
             status: 'blocked',

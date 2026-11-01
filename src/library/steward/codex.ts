@@ -13,6 +13,11 @@ export interface CoordinationResult {
 }
 
 export interface AgentResult {
+  inboxActions?: Array<{
+    requestId: string;
+    action: 'accept' | 'reject' | 'clarify' | 'answer';
+    text: string;
+  }>;
   coordination?: CoordinationResult | null;
   plan?: Plan | null;
   planUpdates?: PlanUpdate[];
@@ -24,6 +29,8 @@ export interface AgentResult {
   regression: { verificationIndex: number; exitCode: number; outputIncludes: string } | null;
   reviewFindings: string[];
   requests: Array<{
+    assignmentId?: string | null;
+    milestone?: 'accepted' | 'delivered';
     fromComponent: string;
     ownerId: string | null;
     request: string;

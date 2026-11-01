@@ -66,7 +66,9 @@ export class CodexConfiguration {
   /** Returns the structured result contract expected from the current model turn. */
   private resultSchema() {
     if (this.input.responseContract) return readSchema('initializer-result');
-    const schema = readSchema('agent-result');
+    const schema = readSchema(
+      this.input.record.generalExecution ? 'general-agent-result' : 'agent-result',
+    );
     if ((this.profile?.schemaVersion ?? 1) >= 2) schema.required = Object.keys(schema.properties);
     else {
       delete schema.properties.plan;

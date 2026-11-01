@@ -22,6 +22,8 @@ import { WorktreeParking, assertOwner, snapshotChanges } from './workday-parking
 import { WorkdayRouting } from './workday-routing.js';
 import { Owner, WorkdayContext, blocked } from './workday-state.js';
 
+export { StewardshipPolicy } from './general-policy.js';
+
 /** Owns the workday lifecycle; routing and engineering retain separate responsibilities. */
 export class WorkdayRunner {
   private readonly state: WorkdayContext;

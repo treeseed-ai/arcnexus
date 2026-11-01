@@ -118,7 +118,12 @@ export class CodexExecution<T extends object = AgentResult> {
     const { dir, profile } = this.configuration;
     writeFileSync(join(dir, 'agent-result.raw.txt'), this.final, { mode: 0o600 });
     const result = validateSchema<T>(
-      this.input.responseContract ?? (record.workdayId ? 'workday-agent-result' : 'agent-result'),
+      this.input.responseContract ??
+        (record.generalExecution
+          ? 'general-agent-result'
+          : record.workdayId
+            ? 'workday-agent-result'
+            : 'agent-result'),
       JSON.parse(this.final),
     );
     if (!this.input.responseContract) this.checkCoordination(result as AgentResult);

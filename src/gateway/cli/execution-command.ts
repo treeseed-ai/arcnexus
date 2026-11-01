@@ -12,13 +12,13 @@ export class ExecutionCommand {
 
   /** Applies one option-free workday control and prints its authoritative state. */
   async workday(action: string): Promise<void> {
-    await this.client.ensure();
+    await this.client.ensure(action);
     console.log(JSON.stringify(await this.client.request({ action }), null, 2));
   }
 
   /** Submits a prompt and streams changed state until completion, cancellation or missing input. */
   async task(prompt: string): Promise<void> {
-    await this.client.ensure();
+    await this.client.ensure('submit');
     const run = (await this.client.request({ action: 'submit', prompt })) as ExecutionRun;
     let previous = '';
     while (!this.signal.aborted) {
@@ -29,6 +29,7 @@ export class ExecutionCommand {
         previous = output;
       }
       if (result.run.status === 'needs_input' && (await this.answer(result.run))) continue;
+      if (this.signal.aborted) break;
       if (!['running', 'pausing'].includes(result.run.status)) {
         process.exitCode =
           result.run.status === 'completed' ? 0 : result.run.status === 'cancelled' ? 130 : 1;
@@ -44,10 +45,12 @@ export class ExecutionCommand {
   private async answer(run: ExecutionRun): Promise<boolean> {
     if (!process.stdin.isTTY || !process.stdout.isTTY) return false;
     const terminal = createInterface({ input: process.stdin, output: process.stdout });
+    const closed = new AbortController();
+    terminal.once('close', () => closed.abort(new Error('Terminal disconnected')));
     try {
       const answer = await terminal.question(
         JSON.stringify(run.data.questions ?? run.data.architectureProposal) + '\nYour response: ',
-        { signal: this.signal },
+        { signal: AbortSignal.any([this.signal, closed.signal]) },
       );
       await this.client.request({ action: 'answer', id: run.id, answer });
       return true;

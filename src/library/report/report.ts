@@ -260,6 +260,8 @@ function serviceLines(record: RecordData): string {
   return serviceLines;
 }
 
+export { ExecutionReports } from './execution-report.js';
+
 export function markdownReport(record: RecordData): string {
   const outcome =
     typeof record.outcome === 'string' && record.outcome.length > 0

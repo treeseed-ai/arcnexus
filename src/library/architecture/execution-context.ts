@@ -2,7 +2,7 @@ import { existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { digest, resolveAssignment, resolveBase, type Assignment } from './assignment.js';
 import { loadBindings, type Bindings } from './bindings.js';
-import { ancestry, loadCatalog, type Catalog, type Component } from './components.js';
+import { ancestry, scopePath, loadCatalog, type Catalog, type Component } from './components.js';
 import { ConfigurationReader } from './configuration.js';
 import { InputError } from './config.js';
 import { git } from '../operations/process.js';
@@ -19,6 +19,7 @@ export interface ProjectExecution {
   directorProfile: string;
   reviewerProfile: string;
   executable: string;
+  verificationInputs: string[];
 }
 
 /** Resolves package context and frozen execution defaults from the current directory. */
@@ -49,8 +50,7 @@ export class ExecutionContext {
       owners,
       catalog,
       bindings,
-      directorProfile: config.directorProfile,
-      reviewerProfile: config.reviewerProfile,
+      ...config,
       executable: bindings.tools.codex ?? 'codex',
     };
   }
@@ -86,7 +86,10 @@ export class ExecutionContext {
       throw new InputError(
         'architecture/execution.yaml must declare directorProfile and reviewerProfile',
       );
+    if (value.verificationInputs !== undefined && !Array.isArray(value.verificationInputs))
+      throw new InputError('verificationInputs must be an array of captured source paths');
     return {
+      verificationInputs: ((value.verificationInputs ?? []) as string[]).map(scopePath),
       directorProfile: value.directorProfile,
       reviewerProfile: value.reviewerProfile,
       defaultPackage: typeof value.defaultPackage === 'string' ? value.defaultPackage : undefined,

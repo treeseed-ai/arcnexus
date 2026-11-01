@@ -1,3 +1,5 @@
+import { CapturedVerification } from './captured-verification.js';
+import { RefactorCheckpoint } from './refactor-checkpoint.js';
 import { assertCapturedTests } from '../testing/captured-tests.js';
 import { SessionProgress } from './session-progress.js';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -15,6 +17,8 @@ export class SessionVerification {
 
   /** Freezes regression files and requires the declared expected-red checkpoint. */
   async specification(spec: AgentResult) {
+    if (this.state.assignment.changeType === 'refactor')
+      return new RefactorCheckpoint(this.state).prepare();
     if (!this.state.ownChanges().length) {
       this.state.options.record.status = 'no_changes';
       this.state.options.record.outcome = 'no_changes';
@@ -115,6 +119,8 @@ export class SessionVerification {
         );
         this.state.safe();
       });
+    await new RefactorCheckpoint(this.state).verify();
+    await new CapturedVerification(this.state).verify();
     for (const c of this.state.hostChecks) await this.state.command(c, 'acceptance');
     this.state.safe();
     if (this.state.assignment.kind === 'change' && !changes(this.state.options.record).length) {

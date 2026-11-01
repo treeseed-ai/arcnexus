@@ -28,6 +28,7 @@ export { assertGeneratedOutputs, assertOutputs } from './outputs.js';
 export interface PrepareOptions {
   project: string;
   base?: string;
+  authorityBase?: string;
   issue?: string;
   bindings?: Bindings;
 }
@@ -58,15 +59,30 @@ export function createWorkspace(root: string, options: PrepareOptions): RecordDa
     commands: [],
   };
   record.bindings = options.bindings ?? loadBindings();
-  record.configurationSources = [
-    new ConfigurationReader().definition(source, base, 'architecture/environment'),
-    ...(options.bindings?.configurationSource ? [options.bindings.configurationSource] : []),
-  ];
-  record.members = resolveMembers(source, base, record.workspace, env, record.bindings as Bindings);
+  captureConfiguration(record, options);
   mkdirSync(join(root, 'runs', id), { mode: 0o700 });
   save(root, record);
   observe(root, record, 'run.created', { base, branch, workspace: record.workspace });
   return record;
+}
+
+/** Captures workspace setup authority separately from the accumulated candidate revision. */
+function captureConfiguration(record: RecordData, options: PrepareOptions): void {
+  record.configurationSources = [
+    new ConfigurationReader().definition(
+      record.source,
+      options.authorityBase ?? record.base,
+      'architecture/environment',
+    ),
+    ...(options.bindings?.configurationSource ? [options.bindings.configurationSource] : []),
+  ];
+  record.members = resolveMembers(
+    record.source,
+    options.authorityBase ?? record.base,
+    record.workspace,
+    record.environment,
+    record.bindings as Bindings,
+  );
 }
 
 export async function prepareWorkspace(
@@ -107,7 +123,11 @@ function inspectSource(options: PrepareOptions) {
       `${options.base ?? 'HEAD'}^{commit}`,
     ).trim();
     env = environment(
-      new ConfigurationReader().definition(source, base, 'architecture/environment').value,
+      new ConfigurationReader().definition(
+        source,
+        options.authorityBase ?? base,
+        'architecture/environment',
+      ).value,
     );
     assertNoSubmodules(source, base);
     commonDir = realpathSync(

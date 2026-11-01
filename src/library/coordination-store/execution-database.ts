@@ -12,7 +12,8 @@ export class ExecutionDatabase {
     this.db = new DatabaseSync(path);
     chmodSync(path, 0o600);
     const version = this.db.prepare('PRAGMA user_version').get()?.user_version;
-    if (version !== 0 && version !== 2) {
+    const tables = this.db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    if ((version !== 0 && version !== 2) || (version === 0 && tables.length > 0)) {
       this.db.close();
       throw new Error('Execution database version cannot resume');
     }

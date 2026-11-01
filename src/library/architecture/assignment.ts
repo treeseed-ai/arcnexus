@@ -47,7 +47,7 @@ export interface Assignment {
   objective: string;
   kind: 'change' | 'research' | 'review';
   expectedOutcome: string;
-  changeType?: 'behavior' | 'documentation';
+  changeType?: 'behavior' | 'documentation' | 'refactor';
   acceptanceCriteria: string[];
   allowedWritePaths?: string[];
   hostChecks: HostCheck[];

@@ -142,7 +142,8 @@ export class SessionState {
     const { record } = this.options;
     if (
       assignment.kind === 'change' &&
-      (!component.documentation.length || (!documentationOnly && !component.tests.length))
+      ((assignment.changeType !== 'refactor' && !component.documentation.length) ||
+        (!documentationOnly && !component.tests.length))
     )
       throw new InputError(
         'Change workflow requires declared documentation and regression test scope',

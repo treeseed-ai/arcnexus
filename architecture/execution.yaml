@@ -1,3 +1,15 @@
 directorProfile: astra
 reviewerProfile: astra
 defaultPackage: cli-package
+verificationInputs:
+  - package.json
+  - package-lock.json
+  - scripts
+  - tests
+  - architecture/test-profiles
+  - eslint.config.ts
+  - tsconfig.json
+  - tsconfig.build.json
+  - tsconfig.tests.json
+  - tsconfig.fixtures.json
+  - tsconfig.tooling.json

@@ -8,6 +8,14 @@ import { runCodex, runInitializerCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OwnerRetrieval } from './retrieval.js';
 
+/** Carries actionable independent findings while leaving its retained report available for inspection. */
+export class VerificationIssue extends Error {
+  /** Preserves the model assessment as evidence, never as permission to weaken checks. */
+  constructor(readonly result: import('../steward/codex.js').AgentResult) {
+    super('Independent verification needs attention: ' + JSON.stringify(result));
+  }
+}
+
 /** Performs source-read-only direction and independent verification using captured authority. */
 export class Direction {
   /** Retains the run's immutable architecture and execution environment. */
@@ -107,7 +115,7 @@ export class Direction {
       result.reviewFindings.length ||
       !result.findings.some((f) => f.evidence.length)
     )
-      throw new Error('Independent verification needs attention: ' + JSON.stringify(result));
+      throw new VerificationIssue(result);
   }
 
   /** Supplies compact retrieval plus the full eligible catalog so lexical misses are recoverable. */

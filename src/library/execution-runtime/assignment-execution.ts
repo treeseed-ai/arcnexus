@@ -1,3 +1,4 @@
+import { candidateDigest } from '../change-inspection/changes.js';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,7 +13,8 @@ import type {
 import { CandidateSnapshots } from '../workspace/candidates.js';
 import { createWorkspace, prepareWorkspace } from '../workspace/workspace.js';
 import { save, type RecordData } from '../workspace/state.js';
-import { Direction } from '../task-intake/direction.js';
+import { ProgressObserver } from '../report/progress.js';
+import { Direction, VerificationIssue } from '../task-intake/direction.js';
 import type { AgentResult } from '../steward/codex.js';
 
 /** Executes one owner stage in an isolated workspace and verifies delivery before promotion. */
@@ -32,6 +34,8 @@ export class AssignmentExecution {
   /** Restores retained work, runs one stage and returns only a structured scheduler outcome. */
   async activate(assignment: ExecutionAssignment): Promise<ActivationResult> {
     const record = await this.record(assignment);
+    this.acknowledge(assignment, record);
+    record.inboxContext = this.store.inbox(assignment.id);
     const resolved = record.resolvedAssignment as ResolvedAssignment;
     const session = new StewardSession(
       this.root,
@@ -42,15 +46,81 @@ export class AssignmentExecution {
       this.context.executable,
       this.signal,
     );
-    await session.step();
+    if (Array.isArray(assignment.data.questions) && assignment.data.questions.length)
+      return this.answer(assignment, record, session);
+    if (!record.pendingRequests && !record.pendingInboxActions) await session.step();
+    const result = await this.outcome(assignment, record, session);
+    return { ...result, receipt: (record.checkpoint as { sha256: string }).sha256 };
+  }
+
+  /** Clears only outputs whose scheduler acknowledgement is durable; unacknowledged outputs replay. */
+  private acknowledge(assignment: ExecutionAssignment, record: RecordData): void {
+    const checkpoint = record.checkpoint as { sha256: string } | undefined;
+    if (!checkpoint || assignment.data.lastReceipt !== checkpoint.sha256) return;
+    delete record.pendingRequests;
+    delete record.pendingInboxActions;
+    save(this.root, record);
+  }
+
+  /** Applies inbox outcomes before considering a candidate eligible for independent delivery review. */
+  private async outcome(
+    assignment: ExecutionAssignment,
+    record: RecordData,
+    session: StewardSession,
+  ): Promise<ActivationResult> {
+    if (record.plan && !assignment.data.accepted) this.store.accept(assignment.id);
+    const actions = record.pendingInboxActions as AgentResult['inboxActions'];
     const requests = record.pendingRequests as AgentResult['requests'] | undefined;
     if (requests?.length) {
-      delete record.pendingRequests;
-      save(this.root, record);
-      return this.requests(assignment, requests);
+      const routed = this.requests(assignment, record, requests);
+      if (routed.kind === 'request' && actions?.length)
+        return { kind: 'inbox', requests: routed.requests, actions };
+      return routed;
     }
+    if (actions?.length) return { kind: 'responses', actions };
     if (record.status !== 'completed') return { kind: 'continue' };
-    return this.deliver(assignment, record, session);
+    try {
+      return await this.deliver(assignment, record, session);
+    } catch (error) {
+      if (!(error instanceof VerificationIssue)) throw error;
+      return this.repair(record, error);
+    }
+  }
+
+  /** Returns actionable independent findings to the existing assignment without resetting its evidence. */
+  private repair(record: RecordData, issue: VerificationIssue): ActivationResult {
+    const feedback = JSON.stringify(issue.result);
+    new ProgressObserver(this.root, record).failed(
+      { activity: 'independent-verification' },
+      feedback,
+      candidateDigest(record),
+    );
+    record.correctiveFeedback = feedback;
+    record.independentFindings = issue.result;
+    const assignment = (record.resolvedAssignment as ResolvedAssignment).assignment;
+    record.nextStage = assignment.kind === 'change' ? 'implementation' : 'research';
+    record.status = 'running';
+    save(this.root, record);
+    return { kind: 'continue' };
+  }
+
+  /** Runs a read-only correlated answer on the requester's retained thread. */
+  private async answer(
+    assignment: ExecutionAssignment,
+    record: RecordData,
+    session: StewardSession,
+  ): Promise<ActivationResult> {
+    const result = await session.reply(
+      `Answer these correlated inbox questions without source edits. Return inboxActions with action=answer, exact requestId and text; requests=[]: ${JSON.stringify(assignment.data.questions)}`,
+    );
+    if (!result.inboxActions?.length) throw new Error('Clarification requires a correlated answer');
+    record.pendingInboxActions = result.inboxActions;
+    save(this.root, record);
+    return {
+      kind: 'responses',
+      actions: result.inboxActions,
+      receipt: (record.checkpoint as { sha256: string }).sha256,
+    };
   }
 
   /** Loads an existing candidate or captures a new owner-scoped assignment. */
@@ -67,12 +137,14 @@ export class AssignmentExecution {
     const resolved = new ExecutionContext().assignment(this.context, assignment.owner, value);
     const record = createWorkspace(this.root, {
       project: this.context.source,
+      authorityBase: this.context.base,
       base,
       bindings: this.context.bindings,
     });
     record.environment = resolved.environment;
     record.resolvedAssignment = resolved;
     record.directionAccepted = true;
+    record.trustedVerificationPaths = this.context.verificationInputs;
     this.store.updateAssignment(assignment.id, 'running', {
       recordId: record.id,
       candidateBase: base,
@@ -125,6 +197,7 @@ export class AssignmentExecution {
         JSON.stringify(assignment.dependencies.map((id) => this.store.assignment(id))),
     });
     if (record.nextStage === 'finished') record.nextStage = 'review';
+    record.reconciledCandidateDigest = candidateDigest(record);
     save(this.root, record);
     return record;
   }
@@ -137,6 +210,7 @@ export class AssignmentExecution {
   ): Promise<RecordData> {
     const next = createWorkspace(this.root, {
       project: this.context.source,
+      authorityBase: this.context.base,
       base: current,
       bindings: this.context.bindings,
     });
@@ -158,6 +232,7 @@ export class AssignmentExecution {
   /** Converts precise boundary requests to durable identities; unknown owners remain blockers. */
   private requests(
     assignment: ExecutionAssignment,
+    record: RecordData,
     requests: AgentResult['requests'],
   ): ActivationResult {
     if (requests.some((r) => !r.ownerId || !this.context.owners.includes(r.ownerId)))
@@ -165,8 +240,10 @@ export class AssignmentExecution {
     return {
       kind: 'request',
       requests: requests.map((r, index) => ({
-        key: `${assignment.id}:${assignment.dependencies.length}:${index}`,
+        key: `${assignment.id}:${(record.checkpoint as { sha256: string }).sha256}:${index}`,
         owner: r.ownerId!,
+        existingAssignmentId: r.assignmentId ?? undefined,
+        milestone: r.milestone ?? 'delivered',
         objective: r.request,
         acceptance: r.acceptanceCriteria,
       })),

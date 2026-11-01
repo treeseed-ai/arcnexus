@@ -61,7 +61,7 @@
             "enum": ["change", "research", "review"]
           },
           "changeType": {
-            "enum": ["behavior", "documentation"]
+            "enum": ["behavior", "documentation", "refactor"]
           },
           "acceptanceCriteria": {
             "type": "array",

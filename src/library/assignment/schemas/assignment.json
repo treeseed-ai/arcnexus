@@ -68,7 +68,7 @@
       }
     },
     "changeType": {
-      "enum": ["behavior", "documentation"]
+      "enum": ["behavior", "documentation", "refactor"]
     },
     "operationIds": {
       "type": "array",

@@ -40,6 +40,8 @@ export interface ExecutionAssignment {
 }
 
 export interface OwnerRequest {
+  existingAssignmentId?: string;
+  milestone?: 'accepted' | 'delivered';
   key: string;
   owner: string;
   objective: string;
@@ -52,8 +54,22 @@ export interface InboxRequest extends OwnerRequest {
   assignmentId: string;
 }
 
-export type ActivationResult =
+export type ActivationResult = { receipt?: string } & (
   | { kind: 'request'; requests: OwnerRequest[] }
+  | {
+      kind: 'inbox';
+      requests: OwnerRequest[];
+      actions: import('./inbox-decisions.js').InboxDecision[];
+    }
   | { kind: 'completed'; evidence: string[]; candidate?: Record<string, unknown> }
+  | {
+      kind: 'responses';
+      actions: Array<{
+        requestId: string;
+        action: 'accept' | 'reject' | 'clarify' | 'answer';
+        text: string;
+      }>;
+    }
   | { kind: 'continue' }
-  | { kind: 'blocked'; reason: string };
+  | { kind: 'blocked'; reason: string }
+);
