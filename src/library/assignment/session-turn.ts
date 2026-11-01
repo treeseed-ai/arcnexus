@@ -141,7 +141,8 @@ export class SessionTurn {
     record.requests = result.requests;
     this.claims(result);
     this.checkOutcome(result, frame.activity);
-    this.applyPlan(result, frame.activity);
+    if (!(record.generalExecution && result.requests.length))
+      this.applyPlan(result, frame.activity);
   }
 
   /** Records claimed activity progress separately from host verification. */
@@ -160,7 +161,8 @@ export class SessionTurn {
   /** Compares observed execution with the case’s declared expected outcome. */
   private checkOutcome(result: AgentResult, activity: string): void {
     const { record, control } = this.state.options;
-    if (control && result.coordination) record.status = 'waiting';
+    if (record.generalExecution && result.requests.length) record.status = 'waiting';
+    else if (control && result.coordination) record.status = 'waiting';
     else if (result.status !== 'completed') {
       record.status = result.status;
       record.outcome = result.status;
@@ -206,6 +208,7 @@ export class SessionTurn {
   /** Executes the model turn while retaining streamed evidence and cleanup state. */
   async perform(activity: string, instructions: string, readOnly = false): Promise<AgentResult> {
     let result = await this.run(activity, instructions, readOnly);
+    this.yieldRequests(result);
     const { control, session, record } = this.state.options;
     while (control && result.coordination) {
       if (
@@ -229,6 +232,16 @@ export class SessionTurn {
       );
     }
     return result;
+  }
+
+  /** Returns control to the durable scheduler without treating dependency waits as failures. */
+  private yieldRequests(result: AgentResult): void {
+    if (this.state.options.record.generalExecution && result.requests.length) {
+      this.state.options.record.pendingRequests = result.requests;
+      throw Object.assign(new Error('Assignment yielded owner requests'), {
+        name: 'AssignmentYield',
+      });
+    }
   }
 
   /** Builds the model-facing instructions from captured assignment context. */

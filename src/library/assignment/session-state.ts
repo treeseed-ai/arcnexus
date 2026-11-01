@@ -86,8 +86,25 @@ export class SessionState {
     this.dir = join(root, 'runs', record.id);
     this.hostChecks = materializeChecks(resolved, join(this.dir, 'acceptance'));
     this.planned = resolved.executionProfile.schemaVersion >= 2;
-    this.initialize();
+    if (options.record.continuation) this.restore();
+    else this.initialize();
     this.captureLimits();
+  }
+
+  /** Hydrates the retained stage without resetting plan, usage, attempts or frozen tests. */
+  private restore(): void {
+    const { record } = this.options;
+    if (record.continuationAuthority !== this.resolved.digest)
+      throw new Error('Continuation authority changed');
+    this.turns.push(...((record.turns ?? []) as Array<Record<string, unknown>>));
+    this.activities.push(...((record.activities ?? []) as Array<Record<string, unknown>>));
+    record.turns = this.turns;
+    record.activities = this.activities;
+    this.resumeId = typeof record.threadId === 'string' ? record.threadId : undefined;
+    this.frozen = (record.frozenTests ?? []) as FrozenTest[];
+    this.regression = (record.regressionCheckpoint ?? null) as AgentResult['regression'];
+    this.specificationFinished = Boolean(record.specificationFinished);
+    this.safe();
   }
 
   /** Records only configured limits; absent values remain visibly unbounded. */

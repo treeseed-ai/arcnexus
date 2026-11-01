@@ -35,6 +35,79 @@ export class SessionWorkflow {
     }
   }
 
+  /** Runs one stage and durably records the next dispatch point, including dependency yields. */
+  async step(): Promise<void> {
+    const { root, record } = this.state.options;
+    const stage = String(record.nextStage ?? 'planning');
+    try {
+      await this.advance(stage);
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AssignmentYield')) {
+        this.failure(error);
+        throw error;
+      }
+    } finally {
+      record.continuation = true;
+      record.continuationAuthority = this.state.resolved.digest;
+      record.specificationFinished = this.state.specificationFinished;
+      record.readOnlyTurn = false;
+      this.state.checkpoint();
+      save(root, record);
+    }
+  }
+
+  /** Applies stage transitions only after the corresponding host checks pass. */
+  private async advance(stage: string): Promise<void> {
+    const { record } = this.state.options;
+    if (stage === 'planning') {
+      await this.planning();
+      record.nextStage = this.state.assignment.kind === 'change' ? 'specification' : 'research';
+    } else if (stage === 'specification') {
+      await this.specification();
+      record.nextStage = 'implementation';
+    } else if (stage === 'implementation') await this.advanceImplementation();
+    else if (stage === 'review') await this.advanceReview();
+    else if (stage === 'research') {
+      await this.research();
+      this.finishStage();
+    } else if (stage !== 'finished') throw new Error('Unknown continuation stage: ' + stage);
+  }
+
+  /** Retains failed-check feedback for a separate correction activation. */
+  private async advanceImplementation(): Promise<void> {
+    const { record } = this.state.options;
+    const attempt = Number(record.implementationAttempts ?? 0) + 1;
+    await this.implement(attempt, String(record.correctiveFeedback ?? ''));
+    const feedback = await this.checkImplementation(attempt);
+    record.correctiveFeedback = feedback ?? '';
+    record.nextStage = feedback === undefined ? 'review' : 'implementation';
+  }
+
+  /** Reviews the assembled candidate and schedules correction or verified completion. */
+  private async advanceReview(): Promise<void> {
+    const { record } = this.state.options;
+    const feedback = await this.review(Number(record.implementationAttempts));
+    if (feedback !== undefined) {
+      record.correctiveFeedback = feedback;
+      record.nextStage = 'implementation';
+      return;
+    }
+    await this.verification.final();
+    this.markAttempt({ status: 'completed' });
+    record.outcome = 'ready_for_integration';
+    this.finishStage();
+  }
+
+  /** Completes the accepted checklist only after all required verification succeeds. */
+  private finishStage(): void {
+    const { root, record } = this.state.options;
+    if (this.state.planned) completePlan(root, record);
+    record.status = 'completed';
+    record.nextStage = 'finished';
+    record.stage = 'finished';
+    this.state.journal('workflow', 'completed', { outcome: record.outcome });
+  }
+
   /** Requires a valid read-only assignment plan before engineering stages. */
   private async planning(): Promise<void> {
     if (this.state.planned)

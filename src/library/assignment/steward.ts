@@ -67,7 +67,21 @@ export class StewardSession {
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
   async run(): Promise<void> {
+    await this.initializeSession();
+    await new SessionWorkflow(this.state!, this.turns!, this.verification!).run();
+  }
+
+  /** Advances one durable stage, preserving continuation when an owner request yields. */
+  async step(): Promise<void> {
+    this.record.generalExecution = true;
+    await this.initializeSession();
+    await new SessionWorkflow(this.state!, this.turns!, this.verification!).step();
+  }
+
+  /** Reconstructs stage services and establishes prerequisites only on the initial activation. */
+  private async initializeSession(): Promise<void> {
     const { root, record, id, objective, model, executable, signal, maxAttempts, control } = this;
+    const retained = Boolean(record.continuation);
     this.state = new SessionState({
       root,
       record,
@@ -80,9 +94,9 @@ export class StewardSession {
       control,
       session: this,
     });
-    await this.prepare();
+    if (!retained) await this.prepare();
     if (this.initialization) this.acceptInitialization();
-    if (!control?.initialized && !this.initialization)
+    if (!retained && !control?.initialized && !this.initialization)
       await initializeExecution({
         root,
         record,
@@ -93,7 +107,6 @@ export class StewardSession {
       });
     this.verification = new SessionVerification(this.state);
     this.turns = new SessionTurn(this.state, this.verification);
-    await new SessionWorkflow(this.state, this.turns, this.verification).run();
   }
 
   /** Requires a valid ready result before allowing participant inference. */
