@@ -65,3 +65,16 @@ before inference and never supplied by the model. Without independent change
 acceptance, intake retains a clarification proposal rather than activating a worker.
 `taskRefresh` maps owner IDs to fixed refresh commands for two-owner candidate views.
 These commands are also caller-controlled captured input, not model-generated tools.
+
+## Initial limit policy
+
+Optional execution deadlines and quotas remain unset. Where a protocol requires
+an explicit timeout, use a generous 24-hour ceiling initially, with cancellation
+and parent-liveness supervision still active. A one-second pending-operation
+observation window returns progress; it does not terminate the operation.
+
+Test-process watchdogs use 30 minutes and the CI job allows six hours so machine
+contention does not masquerade as a runtime failure. Tests that deliberately
+exercise caller-configured limits retain their explicit short limits. These
+harness ceilings are not application execution defaults. Revisit required ceilings
+using recorded execution evidence rather than speculative short deadlines.
