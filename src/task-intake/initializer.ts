@@ -213,9 +213,19 @@ class Initializer {
     return [
       'Task proposal request: ' + this.input.proposal.request,
       'This is unstructured task intake, not an explicit execution assignment. Propose assignments for selected existing owners, with concrete objectives, kind, changeType, acceptanceCriteria and narrowed allowedWritePaths. For two owners propose one requester-to-recipient dependency. No commands or new authority. The host captures existing verification.',
+      'Dependency direction: from is the requesting consumer that needs another owner; to is the supplying owner. This is a request edge, not delivery order. The requester starts, yields to the supplier, then resumes after verified delivery.',
+      'Eligible directed request edges: ' + JSON.stringify(this.requestEdges()),
       'The captured execution owners above are empty because routing is not yet accepted. Select from the retrieved catalog. Do not force a match: missing responsibility requires architecture_change_required with a precise architectureProposal; ambiguity requires needs_clarification. More than two necessary owners requires architectural decomposition.',
       'For ready proposals provide assignments and, for two owners only, dependency. For non-ready proposals provide questions or an architectureProposal. Do not edit source or apply proposed definitions.',
     ];
+  }
+  private requestEdges(): { from: string; to: string }[] {
+    const catalog = this.catalog();
+    return catalog.flatMap((owner) =>
+      owner.relatedIds
+        .filter((id) => catalog.some((candidate) => candidate.id === id))
+        .map((id) => ({ from: owner.id, to: id })),
+    );
   }
   private validate(result: InitializationResult): void {
     if (this.input.proposal || result.status !== 'ready') return;

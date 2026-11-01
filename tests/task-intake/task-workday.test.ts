@@ -17,6 +17,7 @@ class TaskWorkdayTests {
     const proposal = JSON.parse(planned.stdout);
     assert.equal(proposal.status, 'ready');
     assert.equal(proposal.execution.kind, 'workday');
+    this.directionEvidence(f, proposal);
     const result = this.command(f, 'run', proposal.id);
     assert.equal(result.status, 0, result.stderr + result.stdout);
     const report = JSON.parse(result.stdout);
@@ -28,6 +29,14 @@ class TaskWorkdayTests {
         .split('\n').length,
       1,
     );
+  }
+  private directionEvidence(f: any, proposal: any): void {
+    const prompt = readFileSync(
+      join(f.state, 'runs', proposal.initialization.runId, 'prompt.txt'),
+      'utf8',
+    );
+    assert.match(prompt, /from is the requesting consumer/);
+    assert.match(prompt, /"from":"sample","to":"dependency"/);
   }
   private declareDependency(f: any): void {
     const path = join(f.repo, 'architecture/components/sample.json');
