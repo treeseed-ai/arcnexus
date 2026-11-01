@@ -137,3 +137,9 @@ turn start. Host acceptance entries are read-only and cannot be completed by a m
 A plan revision introduced during a turn can update its new items through `plan.update`;
 the final result uses only the IDs advertised for that turn. Host validation still
 checks every update against the current accepted plan and requires completion evidence.
+
+The model-facing coordination schema constrains `contract` to the captured value.
+It is an exact authority identifier, even when intake initially supplies descriptive
+text. Stewards must not paraphrase it. The host still validates incoming values
+independently; a controlled or incompatible executable cannot bypass authority by
+ignoring the response schema.
