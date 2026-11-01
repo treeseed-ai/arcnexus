@@ -42,3 +42,23 @@ The [ESLint function-length rule](https://eslint.org/docs/latest/rules/max-lines
 is exercised against ordinary functions, callbacks and TypeScript constructors.
 Do not enable a typed-lint preset merely to preserve compiler checking; the two
 checks are independent.
+
+## Compiled fixture payloads
+
+Maintain executable fixture sources as TypeScript (`.mts` where the target contract
+uses ESM `.mjs` filenames). `npm run build` compiles them into `.fixture-build`,
+separately from application and test output. Qualification setup materializes the
+compiled payload together with the fixture's configuration and documentation before
+creating its pinned Git revision. Do not copy raw fixture source directories into a
+qualification target or run their uncompiled tests directly.
+
+This preserves existing target contracts and tests the actual compiled programs.
+The fixture catalog and supervising-build hash include the compiled payload; a
+missing build is an explicit preparation error. Maintained fixture source participates
+in type checking, formatting and linting. Generated payloads are ignored, disposable
+outputs, and never widen a steward's source permissions.
+
+Existing acceptance-script paths remain compatibility launchers. Current experiment
+definitions capture the standalone compiled checks from `dist/experiments/checks`,
+including any declared dependencies, so execution does not depend on mutable source
+launchers. The directory-permission acceptance probe uses the installed Node runtime.
