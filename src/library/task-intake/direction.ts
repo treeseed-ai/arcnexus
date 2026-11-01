@@ -129,6 +129,7 @@ export class Direction {
     const captured = record.verificationEvidence as { candidateDigest: string } | undefined;
     const before = captured?.candidateDigest ?? candidateDigest(record);
     try {
+      save(this.root, record);
       this.unchanged(record, before);
       const result = await inference();
       record.agent = result;

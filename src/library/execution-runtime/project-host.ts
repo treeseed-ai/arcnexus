@@ -16,6 +16,7 @@ import type { InitializationResult } from '../architecture/initialization.js';
 import { AssignmentDispatch } from './assignment-dispatch.js';
 import { AssignmentExecution } from './assignment-execution.js';
 import { Scheduler } from './scheduler.js';
+import { PolicyRecovery } from './policy-recovery.js';
 
 /** Owns sequential project execution while task and workday policies select different work. */
 export class ProjectHost {
@@ -403,6 +404,10 @@ export class ProjectHost {
     if (run.status === 'needs_attention')
       throw new Error('Resolve or stop the workday requiring attention before new dispatch');
     try {
+      if ((run.data.uncertainPolicyRecords as string[] | undefined)?.length)
+        throw new Error(
+          'Policy checkpoint or operation completion is uncertain; inspect retained evidence',
+        );
       this.restoreCheckpoints(run);
     } catch (error) {
       this.store.updateRun(run.id, 'needs_attention', { error: String(error) });
@@ -438,6 +443,7 @@ export class ProjectHost {
 
   /** Marks abandoned activations without replaying possibly completed operations. */
   private recover(): void {
+    new PolicyRecovery(this.root, this.store).recover();
     for (const run of this.store.runs()) {
       for (const assignment of this.store.assignments(run.id)) {
         if (assignment.data.pendingOutcome) {
