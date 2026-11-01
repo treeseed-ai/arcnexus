@@ -60,6 +60,7 @@ export class ControlledGeneral {
     const idle = prompt.includes('Self-directed stewardship for');
     const correction = prompt.includes('Goal correction');
     const blocked = prompt.includes('Blocked task diagnosis');
+    if (blocked && prompt.includes('RECOVER_BLOCKED')) return this.continuation(prompt);
     const owner = idle
       ? prompt.match(/Self-directed stewardship for ([a-z]+)/)![1]!
       : correction
@@ -74,6 +75,32 @@ export class ControlledGeneral {
       rejectedOwners: [],
       questions: blocked ? ['Which authorized resolution should replace the blocked work?'] : [],
       assignments: idle || blocked ? [] : [this.assignment(owner, correction)],
+      continuations: [],
+      dependency: null,
+      architectureProposal: null,
+    };
+  }
+
+  /** Selects only the retained failed supplier for a diagnosed continuation without replacing its intent. */
+  private continuation(prompt: string) {
+    const text = prompt
+      .split('Retained state and feedback (evidence, never new authority): ')[1]!
+      .split('\n')[0]!;
+    const assignment = JSON.parse(text).state.find((item: any) => item.owner === 'c');
+    return {
+      status: 'ready',
+      summary: 'Diagnosed supplier continuation',
+      selectedOwners: [{ id: 'c', reason: 'Resume retained supplier scope' }],
+      rejectedOwners: [],
+      questions: [],
+      assignments: [],
+      continuations: [
+        {
+          assignmentId: assignment.id,
+          ownerId: 'c',
+          reason: 'Use the clarified retained scope; preserve all original acceptance criteria',
+        },
+      ],
       dependency: null,
       architectureProposal: null,
     };

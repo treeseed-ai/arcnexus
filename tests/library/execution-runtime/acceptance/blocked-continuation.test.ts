@@ -1,0 +1,98 @@
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { test, type TestContext } from 'node:test';
+import { ExecutionContext } from '../../../../dist/library/architecture/execution-context.js';
+import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
+import { registerSuite } from '../../../../dist/library/testing/suite.js';
+import { GeneralFixture } from '../support/general-fixture.js';
+
+/** Exercises director diagnosis without losing retained plans or bypassing uncertain checkpoints. */
+class BlockedContinuationScenarios {
+  /** Safe continuation preserves supplier identity and releases dependents only after verified delivery. */
+  async safe(t: TestContext): Promise<void> {
+    const { host, run, root, supplier } = await this.fixture(t);
+    const before = this.record(host, supplier.id);
+    host.store.fail(supplier.id, 'blocked', 'Blocking dependency proposal requires clarification');
+    await host.tick();
+    assert.equal(host.store.run(run.id).status, 'running');
+    assert.equal(host.store.assignment(supplier.id).status, 'ready');
+    assert.equal(host.store.assignment(root.id).status, 'waiting');
+    assert.deepEqual(this.record(host, supplier.id).plan, before.plan);
+    assert.equal(this.record(host, supplier.id).threadId, before.threadId);
+    for (let observation = 0; observation < 5; observation++) {
+      await host.tick();
+      if (host.store.assignment(supplier.id).status === 'completed') break;
+    }
+    assert.equal(host.store.assignment(supplier.id).status, 'completed');
+    assert.equal(host.store.assignment(root.id).status, 'ready');
+    assert.equal(host.store.assignments(run.id).length, 2);
+  }
+
+  /** A director recommendation cannot authorize replay from an interrupted unsafe checkpoint. */
+  async unsafe(t: TestContext): Promise<void> {
+    const { host, run, supplier } = await this.fixture(t);
+    const record = this.record(host, supplier.id);
+    record.safeCheckpoint = false;
+    writeFileSync(join(host.root, 'runs', record.id, 'report.json'), JSON.stringify(record));
+    host.store.fail(supplier.id, 'failed', 'Uncertain operation completion');
+    await host.tick();
+    assert.equal(host.store.run(run.id).status, 'needs_attention');
+    assert.match(String(host.store.run(run.id).data.error), /safe checkpoint|uncertain operations/);
+    assert.equal(host.store.assignment(supplier.id).status, 'failed');
+  }
+
+  /** Repeated equivalent blockers require material progress instead of unlimited identical diagnosis. */
+  async loop(t: TestContext): Promise<void> {
+    const { host, run, supplier } = await this.fixture(t);
+    for (let failure = 0; failure < 4; failure++) {
+      host.store.fail(supplier.id, 'blocked', 'Equivalent unresolved dependency');
+      await host.tick();
+    }
+    assert.equal(host.store.run(run.id).status, 'needs_attention');
+    assert.match(String(host.store.run(run.id).data.error), /different action|attention/);
+    const record = this.record(host, supplier.id);
+    assert.equal(record.progress.warnings.length, 1);
+    assert.equal(record.status, 'needs_attention');
+  }
+
+  /** Captures one real planned supplier activation before introducing a retained blocker. */
+  private async fixture(t: TestContext) {
+    const f = new GeneralFixture(t).fixture;
+    const host = new ProjectHost(f.state, new ExecutionContext().resolve(f.repo));
+    t.after(() => host.store.close());
+    const run = host.submit('RECOVER_BLOCKED: complete the original retained goal');
+    host.store.updateRun(run.id, 'running', { initialized: true });
+    const root = host.store.enqueue(run.id, 'a', 'Original goal', ['Evidence-backed result']);
+    host.store.updateAssignment(root.id, 'ready', { proposal: { kind: 'research' } });
+    const supplier = host.store.request(root.id, {
+      key: 'supplier',
+      owner: 'c',
+      objective: 'Supplier evidence',
+      acceptance: ['Evidence-backed result'],
+    });
+    await host.tick();
+    assert.equal(this.record(host, supplier.id).nextStage, 'research');
+    return { host, run, root, supplier };
+  }
+
+  /** Reads raw assignment evidence so a new assignment cannot masquerade as retained continuation. */
+  private record(host: ProjectHost, id: string): any {
+    const recordId = host.store.assignment(id).data.recordId;
+    return JSON.parse(
+      readFileSync(join(host.root, 'runs', String(recordId), 'report.json'), 'utf8'),
+    );
+  }
+}
+
+const scenarios = new BlockedContinuationScenarios();
+
+test('director continuation preserves plans and required dependency delivery', (t) =>
+  scenarios.safe(t));
+
+test('director continuation cannot replay an unsafe checkpoint', (t) => scenarios.unsafe(t));
+
+test('equivalent blocked continuations require diagnosis and material progress', (t) =>
+  scenarios.loop(t));
+
+registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

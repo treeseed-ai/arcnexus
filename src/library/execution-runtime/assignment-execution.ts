@@ -35,6 +35,12 @@ export class AssignmentExecution {
     const record = await this.record(assignment);
     this.acknowledge(assignment, record);
     record.inboxContext = this.store.inbox(assignment.id);
+    record.continuationFeedback = [
+      assignment.data.continuationReason,
+      record.continuationLoopWarning,
+    ]
+      .filter(Boolean)
+      .join('\n');
     const resolved = record.resolvedAssignment as ResolvedAssignment;
     const session = new StewardSession(
       this.root,

@@ -4,13 +4,17 @@ import { type ProjectExecution } from '../architecture/execution-context.js';
 import type { InitializationResult } from '../architecture/initialization.js';
 import { candidateDigest } from '../change-inspection/changes.js';
 import { operationBridge } from '../operations/operations.js';
-import { runVerificationCodex, runInitializerCodex } from '../steward/codex.js';
+import { runVerificationCodex, runDirectorCodex } from '../steward/codex.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OwnerRetrieval } from './retrieval.js';
 
 import { VerificationAssessment } from './verification-assessment.js';
 
 export { VerificationIssue, type VerificationResult } from './verification-assessment.js';
+
+export interface DirectorResult extends InitializationResult {
+  continuations: Array<{ assignmentId: string; ownerId: string; reason: string }>;
+}
 
 /** Performs source-read-only direction and independent verification using captured authority. */
 export class Direction {
@@ -22,11 +26,7 @@ export class Direction {
   ) {}
 
   /** Selects starting assignments or records no actionable stewardship work and precise questions. */
-  async propose(
-    workspace: RecordData,
-    prompt: string,
-    owner?: string,
-  ): Promise<InitializationResult> {
+  async propose(workspace: RecordData, prompt: string, owner?: string): Promise<DirectorResult> {
     const profile = owner
       ? this.context.catalog.components[owner]!.executionProfile
       : this.context.directorProfile;
@@ -39,7 +39,7 @@ export class Direction {
     record.activationRole = owner ? 'stewardship' : 'director';
     delete record.assignmentId;
     return this.observe(record, async () => {
-      const result = await runInitializerCodex(
+      const result = await runDirectorCodex(
         this.root,
         record,
         this.instructions(prompt, owner),
@@ -60,9 +60,9 @@ export class Direction {
     state: unknown,
     feedback: unknown,
     blocked: boolean,
-  ): Promise<InitializationResult> {
+  ): Promise<DirectorResult> {
     const purpose = blocked
-      ? 'Blocked task diagnosis. Diagnose unresolved work and return substantive clarification or architectural questions. Do not silently waive failed assignments or propose unrelated work.'
+      ? 'Blocked task diagnosis. Diagnose unresolved work and return substantive clarification or architectural questions, or explicit continuations for safely checkpointed existing assignments after a concrete diagnosis. Do not silently waive failed assignments or propose unrelated work.'
       : 'Goal correction. Propose additional bounded assignments to address the observed goal-coverage gaps. Preserve verified deliveries and the original goal; do not repeat already satisfied work.';
     return this.propose(
       workspace,
@@ -143,15 +143,15 @@ export class Direction {
   private instructions(prompt: string, owner?: string): string {
     const catalog = this.context.owners.map((id) => this.context.catalog.components[id]!);
     const shortlist = new OwnerRetrieval(catalog).select(prompt);
-    return `ArcNexus task direction. Source-read-only; no implementation, commits or delegation. ${owner ? `Self-directed stewardship for ${owner}: consider purpose, objectives, questions and inbox. Propose work only for this owner; return ready with assignments=[] when no useful authorized work remains.` : 'Interpret the external goal and select any number of starting owners. No fixed team size. Workers may request additional existing owners later.'}\nGoal/context: ${prompt}\nLexical suggestions: ${JSON.stringify(shortlist)}\nEligible catalog: ${JSON.stringify(catalog)}\nReturn initializer-result with concrete assignments and exact selectedOwners. Use dependency=null; describe known dependencies in assignment objectives so workers request them when needed. Do not invent trusted commands or broaden owner permissions. Missing authority requires architecture_change_required; ambiguity requires needs_clarification. Existing relationships aid discovery and do not restrict requests to eligible owners.`;
+    return `ArcNexus task direction. Source-read-only; no implementation, commits or delegation. ${owner ? `Self-directed stewardship for ${owner}: consider purpose, objectives, questions and inbox. Propose work only for this owner; return ready with assignments=[] when no useful authorized work remains.` : 'Interpret the external goal and select any number of starting owners. No fixed team size. Workers may request additional existing owners later.'}\nGoal/context: ${prompt}\nLexical suggestions: ${JSON.stringify(shortlist)}\nEligible catalog: ${JSON.stringify(catalog)}\nReturn director-result with concrete assignments, continuations and exact selectedOwners. A continuation names a current run assignmentId, its existing ownerId and a concrete diagnosis/reason; it cannot alter objective, acceptance, plan or scope. Never continue an assignment from a referenced separate task, and never authorize replay of uncertain operations. Use dependency=null; describe known dependencies in assignment objectives so workers request them when needed. Do not invent trusted commands or broaden owner permissions. Missing authority requires architecture_change_required; ambiguity requires needs_clarification. Existing relationships aid discovery and do not restrict requests to eligible owners.`;
   }
 
   /** Rejects noncatalog owners and inconsistent ready proposals before dispatch. */
-  private validate(result: InitializationResult, owner?: string): void {
+  private validate(result: DirectorResult, owner?: string): void {
     if (result.status !== 'ready') return;
     if (result.questions.length || result.architectureProposal)
       throw new Error('Ready direction has unresolved decisions');
-    if (owner && !result.assignments.length) {
+    if (owner && !result.assignments.length && !result.continuations.length) {
       if (
         !result.summary.trim() ||
         result.selectedOwners.length > 1 ||
@@ -160,13 +160,11 @@ export class Direction {
         throw new Error('No-work stewardship must justify consideration of its captured owner');
       return;
     }
-    for (const assignment of result.assignments)
-      if (
-        !this.context.owners.includes(assignment.ownerId) ||
-        (owner && assignment.ownerId !== owner)
-      )
+    const owners = [...result.assignments, ...result.continuations].map((item) => item.ownerId);
+    for (const selected of owners)
+      if (!this.context.owners.includes(selected) || (owner && selected !== owner))
         throw new Error('Direction selected an unauthorized owner');
-    const selected = [...new Set(result.assignments.map((a) => a.ownerId))].sort();
+    const selected = [...new Set(owners)].sort();
     if (JSON.stringify(selected) !== JSON.stringify(result.selectedOwners.map((o) => o.id).sort()))
       throw new Error('Direction selection and assignments differ');
   }

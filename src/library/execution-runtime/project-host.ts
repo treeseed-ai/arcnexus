@@ -13,6 +13,7 @@ import type { RecordData } from '../workspace/state.js';
 import { Direction, VerificationIssue } from '../task-intake/direction.js';
 import { ProgressObserver } from '../report/progress.js';
 import type { InitializationResult } from '../architecture/initialization.js';
+import { AssignmentDispatch } from './assignment-dispatch.js';
 import { AssignmentExecution } from './assignment-execution.js';
 import { Scheduler } from './scheduler.js';
 
@@ -215,8 +216,9 @@ export class ProjectHost {
       this.clarification(run, result);
       return;
     }
-    if (!result.assignments.length) throw new Error('Task director returned no assignment');
-    this.assign(run, result.assignments);
+    if (!result.assignments.length && !result.continuations.length)
+      throw new Error('Task director returned no assignment or continuation');
+    new AssignmentDispatch(this.root, this.context, this.store).apply(run, result);
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       initialized: true,
       initialDirection: run.data.initialDirection ?? result,
@@ -242,22 +244,6 @@ export class ProjectHost {
     )}`;
   }
 
-  /** Creates accountable assignments from validated proposals without a fixed owner count. */
-  private assign(
-    run: ExecutionRun,
-    proposals: import('../architecture/initialization.js').ProposedAssignment[],
-  ): void {
-    for (const proposal of proposals) {
-      const assignment = this.store.enqueue(
-        run.id,
-        proposal.ownerId,
-        proposal.objective,
-        proposal.acceptanceCriteria,
-      );
-      this.store.updateAssignment(assignment.id, 'ready', { proposal });
-    }
-  }
-
   /** Visits each eligible steward once per changed candidate, interleaved with inbox work. */
   private async stewardship(run: ExecutionRun, signal: AbortSignal): Promise<void> {
     const seen = (run.data.seen ?? {}) as Record<string, string>;
@@ -279,7 +265,8 @@ export class ProjectHost {
       }),
       owner,
     );
-    if (result.status === 'ready') this.assign(run, result.assignments);
+    if (result.status === 'ready')
+      new AssignmentDispatch(this.root, this.context, this.store).apply(run, result);
     seen[owner] = fingerprint;
     this.recordStewardship(run, owner, fingerprint, seen, result);
   }
@@ -355,13 +342,25 @@ export class ProjectHost {
       redirection: feedback,
       directionHistory: [...((run.data.directionHistory ?? []) as unknown[]), result],
     });
+    this.applyRedirection(run, result, blocked);
+  }
+
+  /** Accepts diagnosed continuations without treating new unrelated assignments as resolution of blockers. */
+  private applyRedirection(
+    run: ExecutionRun,
+    result: import('../task-intake/direction.js').DirectorResult,
+    blocked: boolean,
+  ): void {
     if (result.status !== 'ready') this.clarification(run, result);
-    else if (blocked || !result.assignments.length)
+    else if (
+      (blocked && !result.continuations.length) ||
+      (!result.assignments.length && !result.continuations.length)
+    )
       this.store.updateRun(run.id, 'needs_attention', {
         error: 'Director has not resolved required work',
         recoveryProposal: result,
       });
-    else this.assign(run, result.assignments);
+    else new AssignmentDispatch(this.root, this.context, this.store).apply(run, result);
   }
 
   /** Captures substantive questions and architectural proposals before the task releases execution. */

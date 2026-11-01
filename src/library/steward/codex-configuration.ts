@@ -15,7 +15,7 @@ import { save, type RecordData } from '../workspace/state.js';
 import { persistExecutionEvidence } from './evidence.js';
 
 export interface CodexInput {
-  responseContract?: 'initializer-result' | 'verification-result';
+  responseContract?: 'initializer-result' | 'verification-result' | 'director-result';
   root: string;
   record: RecordData;
   prompt: string;

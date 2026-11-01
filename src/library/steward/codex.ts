@@ -107,3 +107,25 @@ export async function runVerificationCodex(
     responseContract: 'verification-result',
   }).run();
 }
+
+/** Runs general direction with explicit retained-continuation proposals and no worker checklist authority. */
+export async function runDirectorCodex(
+  root: string,
+  record: RecordData,
+  prompt: string,
+  executable: string,
+  model: string,
+  signal: AbortSignal,
+  operations?: OperationBridge,
+): Promise<import('../task-intake/direction.js').DirectorResult> {
+  return new CodexExecution<import('../task-intake/direction.js').DirectorResult>({
+    root,
+    record,
+    prompt,
+    executable,
+    model,
+    signal,
+    operations,
+    responseContract: 'director-result',
+  }).run();
+}

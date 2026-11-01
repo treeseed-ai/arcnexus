@@ -126,6 +126,55 @@ export class ExecutionStore {
     });
   }
 
+  /** Reactivates diagnosed work and restores only its propagated dependents to milestone waiting. */
+  continueAssignments(
+    runId: string,
+    continuations: Array<{ assignmentId: string; ownerId: string; reason: string }>,
+  ): void {
+    if (!continuations.length) return;
+    this.db.transaction('assignments.continued', { runId, continuations }, () => {
+      const ids = new Set(continuations.map((item) => item.assignmentId));
+      if (ids.size !== continuations.length) throw new Error('Duplicate continuation identity');
+      for (const item of continuations) this.continueOne(runId, item);
+      for (const assignment of this.assignments(runId))
+        if (assignment.status === 'blocked' && ids.has(String(assignment.data.blockedBy)))
+          this.db.put('assignment', {
+            ...assignment,
+            status: 'waiting',
+            data: { ...assignment.data, blockedBy: null, reason: null },
+          });
+      this.wake(runId);
+    });
+  }
+
+  /** Preserves failed outcome evidence while acknowledging its known routing receipt for correction. */
+  private continueOne(
+    runId: string,
+    continuation: { assignmentId: string; ownerId: string; reason: string },
+  ): void {
+    const assignment = this.assignment(continuation.assignmentId);
+    if (
+      assignment.runId !== runId ||
+      assignment.owner !== continuation.ownerId ||
+      !continuation.reason.trim() ||
+      !['blocked', 'failed', 'rejected'].includes(assignment.status)
+    )
+      throw new Error('Invalid retained assignment continuation');
+    const failed = assignment.data.lastFailedOutcome as { receipt?: string } | undefined;
+    this.db.put('assignment', {
+      ...assignment,
+      status: 'ready',
+      data: {
+        ...assignment.data,
+        blockedBy: null,
+        reason: null,
+        continuationReason: continuation.reason,
+        lastReceipt: failed?.receipt ?? assignment.data.lastReceipt,
+        continuationFrom: { status: assignment.status, reason: assignment.data.reason },
+      },
+    });
+  }
+
   /** Routes a request once; conflicting reuse of a request identity is rejected. */
   request(from: string, request: OwnerRequest): ExecutionAssignment {
     return this.requests(from, [request])[0]!;
@@ -293,6 +342,7 @@ export class ExecutionStore {
           data: {
             ...item.data,
             reason: `Dependency ${failed.id}: ${failed.data.reason ?? failed.status}`,
+            blockedBy: failed.id,
           },
         });
       else if (
@@ -395,17 +445,22 @@ export class ExecutionStore {
   ): void {
     this.db.transaction('assignment.failed', { id, status, reason }, () => {
       const item = this.assignment(id);
-      this.db.put('assignment', { ...item, status, data: { ...item.data, reason } });
+      this.db.put('assignment', {
+        ...item,
+        status,
+        data: { ...item.data, reason, blockedBy: null },
+      });
       for (const other of this.assignments(item.runId)) {
         if (
           other.id !== id &&
-          other.status !== 'completed' &&
+          (['ready', 'waiting', 'running'].includes(other.status) ||
+            (other.status === 'blocked' && Boolean(other.data.blockedBy))) &&
           this.reaches(other.id, id, new Set())
         )
           this.db.put('assignment', {
             ...other,
             status: 'blocked',
-            data: { ...other.data, reason },
+            data: { ...other.data, reason, blockedBy: id },
           });
       }
     });
