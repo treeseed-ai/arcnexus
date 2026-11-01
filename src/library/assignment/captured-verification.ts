@@ -1,6 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, normalize } from 'node:path';
 import { digest } from '../architecture/assignment.js';
 import { covered } from '../architecture/components.js';
 import { git } from '../operations/process.js';
@@ -31,11 +31,13 @@ export class CapturedVerification {
     const scope = [
       ...this.state.component.tests,
       ...((record.trustedVerificationPaths ?? []) as string[]),
-      ...this.state.component.verification.flatMap((c) => [c.command, ...c.args]),
     ];
+    const files = new Set(
+      this.state.component.verification.flatMap((c) => [c.command, ...c.args]).map(normalize),
+    );
     return git(record.source, 'ls-tree', '-r', '--name-only', this.state.resolved.base)
       .split('\n')
-      .filter((path) => path && covered(path, scope))
+      .filter((path) => path && (covered(path, scope) || files.has(path)))
       .map((path) => {
         const bytes = execFileSync('git', [
           '-C',
