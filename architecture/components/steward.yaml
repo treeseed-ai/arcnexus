@@ -77,6 +77,8 @@ discovery:
   exclude: []
 provides: []
 consumes:
+  - id: verification-result
+    version: "1"
   - id: agent-result
     version: "1"
   - id: initializer-result

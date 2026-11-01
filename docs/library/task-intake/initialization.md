@@ -80,3 +80,12 @@ contention does not masquerade as a runtime failure. Tests that deliberately
 exercise caller-configured limits retain their explicit short limits. These
 harness ceilings are not application execution defaults. Revisit required ceilings
 using recorded execution evidence rather than speculative short deadlines.
+
+Independent verification uses the separate `verification-result` contract. The
+host supplies indexed captured acceptance criteria. Each index must appear exactly
+once with a verified verdict, nonempty evidence and an explanation before delivery
+can be promoted. Missing, duplicate, unknown or gap entries and unresolved
+deficiencies prevent completion. Workers cannot supply this assessment themselves.
+Task goal assessment includes the original external goal and the retained assignment
+criteria; verified owner deliveries alone do not establish whole-goal completion.
+Historical ordinary agent-result review records remain inspectable.

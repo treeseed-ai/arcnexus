@@ -68,12 +68,19 @@ discovery:
     - tests/library/task-intake
   exclude: []
 provides:
+  - id: verification-result
+    version: "1"
+    kind: json-schema
+    path: src/library/task-intake/schemas/verification-result.json
+    compatibility: Indexed independent acceptance evidence; preserve historical agent-result reports
   - id: initializer-result
     version: "1"
     kind: json-schema
     path: src/library/task-intake/schemas/initializer-result.json
     compatibility: Preserve supported historical versions and captured execution readers
 consumes:
+  - id: verification-result
+    version: "1"
   - id: initializer-result
     version: "1"
   - id: test-profile
