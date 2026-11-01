@@ -16,6 +16,14 @@ render safely without `undefined` or `null` text. The report does not inspect
 target files or mutate the record or its arrays. Existing report fields, changed
 file ordering, and JSON evidence are preserved.
 
+`## Initialization` presents captured initialization evidence as readable labeled
+lines: component, model, routing outcome, summary, selected owners with their
+reasons, and outstanding questions. Missing historical initialization values say
+`unavailable`. This summary uses only the execution record and does not replace
+the JSON evidence. The following `## Execution progress` section continues to
+show stage, current command, checklist, last verified progress, warnings,
+cancellation, and configured limits.
+
 `## Operations` summarizes captured operation results with each operation id,
 `passed` when its captured `exitCode` is zero and `failed` otherwise, its
 `durationMs`, and log path. Absent or empty operation history produces exactly

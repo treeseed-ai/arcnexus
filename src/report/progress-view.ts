@@ -54,9 +54,50 @@ function text(value: unknown): string {
     (c) => `&#${c.charCodeAt(0)};`,
   );
 }
+
+function readableText(value: unknown): string {
+  if (value === undefined || value === null || value === '') return 'unavailable';
+  const rendered = typeof value === 'string' ? value : String(value);
+  return rendered.replace(/[<>&`*_{}\x5B\x5D()!~\\\r\n]/gu, (character) => {
+    const code = character.codePointAt(0);
+    return code === undefined ? '' : `&#${code};`;
+  });
+}
+
+function initializationMarkdown(initialization: unknown): string {
+  const evidence =
+    initialization && typeof initialization === 'object'
+      ? (initialization as Record<string, unknown>)
+      : {};
+  const result =
+    evidence.result && typeof evidence.result === 'object'
+      ? (evidence.result as Record<string, unknown>)
+      : {};
+  const owners = Array.isArray(result.selectedOwners)
+    ? result.selectedOwners.map((owner: unknown) => {
+        const selection =
+          owner && typeof owner === 'object' ? (owner as Record<string, unknown>) : {};
+        return `- ${readableText(selection.id)} — ${readableText(selection.reason)}`;
+      })
+    : ['- unavailable'];
+  const questions = Array.isArray(result.questions)
+    ? result.questions.map((question: unknown) => `- ${readableText(question)}`)
+    : ['- unavailable'];
+  return [
+    `Component: ${readableText(evidence.componentId)}`,
+    `Model: ${readableText(evidence.model)}`,
+    `Routing outcome: ${readableText(result.status)}`,
+    `Summary: ${readableText(result.summary)}`,
+    'Selected owners:',
+    ...(owners.length ? owners : ['- None recorded.']),
+    'Outstanding questions:',
+    ...(questions.length ? questions : ['- None recorded.']),
+  ].join('\n');
+}
+
 export function progressMarkdown(record: RecordData): string {
   const view = progressView(record);
-  return `## Initialization\n\n${text(record.initialization)}\n\n## Execution progress\n\nStage: ${text(view.stage)}; Current command: ${text(view.currentCommand)}\n\nChecklist: ${text(view.checklist)}\n\nLast verified progress: ${text(view.lastVerified)}\n\nLoop warnings: ${text(view.loopWarnings)}\n\nCancellation: ${text(view.cancellation)}\n\nConfigured execution limits: ${text(view.limits)}\n\nElapsed time is observation, not an ETA. Checklist completion remains an agent claim; mandatory host checks determine success.\n\n`;
+  return `## Initialization\n\n${initializationMarkdown(record.initialization)}\n\n## Execution progress\n\nStage: ${text(view.stage)}; Current command: ${text(view.currentCommand)}\n\nChecklist: ${text(view.checklist)}\n\nLast verified progress: ${text(view.lastVerified)}\n\nLoop warnings: ${text(view.loopWarnings)}\n\nCancellation: ${text(view.cancellation)}\n\nConfigured execution limits: ${text(view.limits)}\n\nElapsed time is observation, not an ETA. Checklist completion remains an agent claim; mandatory host checks determine success.\n\n`;
 }
 
 function observedCommand(events: Array<{ type: string; payload: any }>): unknown {
