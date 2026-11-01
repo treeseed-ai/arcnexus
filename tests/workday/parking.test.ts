@@ -10,6 +10,23 @@ import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js
 class ParkingTests {
   parkingPreservesDistinctIndexBytesWorkingBytesDeletionsModesAndNewFiles_1(t: TestContext) {
     const f = workflowFixture(t);
+    const { r, git } = this.prepareCandidate(f);
+    this.editCandidate(r.workspace, git);
+    const paths = ['source.txt', 'delete.txt', 'new.txt'],
+      before = paths.map((p: any) => entry(r, p)),
+      parking = new WorktreeParking(r, join(f.root, 'parking.json'));
+    parking.park(paths);
+    assert.equal(git('status', '--porcelain'), '');
+    writeFileSync(join(r.workspace, 'other.txt'), 'recipient');
+    parking.restore();
+    assert.deepEqual(
+      paths.map((p: any) => entry(r, p)),
+      before,
+    );
+    assert.equal(readFileSync(join(r.workspace, 'other.txt'), 'utf8'), 'recipient');
+    assert.equal(statSync(join(r.workspace, 'source.txt')).mode & 0o777, 0o755);
+  }
+  private prepareCandidate(f: any) {
     writeFileSync(join(f.repo, 'delete.txt'), 'delete');
     f.commit();
     const p = spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo], {
@@ -25,25 +42,15 @@ class ParkingTests {
         assert.equal(x.status, 0, x.stderr);
         return x.stdout;
       };
-    writeFileSync(join(r.workspace, 'source.txt'), Buffer.from([0, 1, 255]));
+    return { r, git };
+  }
+  private editCandidate(workspace: string, git: (...args: string[]) => string): void {
+    writeFileSync(join(workspace, 'source.txt'), Buffer.from([0, 1, 255]));
     git('add', 'source.txt');
-    writeFileSync(join(r.workspace, 'source.txt'), 'working');
-    chmodSync(join(r.workspace, 'source.txt'), 0o755);
-    unlinkSync(join(r.workspace, 'delete.txt'));
-    writeFileSync(join(r.workspace, 'new.txt'), 'new');
-    const paths = ['source.txt', 'delete.txt', 'new.txt'],
-      before = paths.map((p: any) => entry(r, p)),
-      parking = new WorktreeParking(r, join(f.root, 'parking.json'));
-    parking.park(paths);
-    assert.equal(git('status', '--porcelain'), '');
-    writeFileSync(join(r.workspace, 'other.txt'), 'recipient');
-    parking.restore();
-    assert.deepEqual(
-      paths.map((p: any) => entry(r, p)),
-      before,
-    );
-    assert.equal(readFileSync(join(r.workspace, 'other.txt'), 'utf8'), 'recipient');
-    assert.equal(statSync(join(r.workspace, 'source.txt')).mode & 0o777, 0o755);
+    writeFileSync(join(workspace, 'source.txt'), 'working');
+    chmodSync(join(workspace, 'source.txt'), 0o755);
+    unlinkSync(join(workspace, 'delete.txt'));
+    writeFileSync(join(workspace, 'new.txt'), 'new');
   }
   parkingRefusesReplacementAndCleanupRefusesUnresolvedWorkdayTransition_2(t: TestContext) {
     const f = workflowFixture(t),

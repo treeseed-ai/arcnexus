@@ -1,9 +1,11 @@
+import { groupMembers } from '../../dist/operations/service-state.js';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { waitFor } from '../development-tooling/test-process.js';
 import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js';
 class ParentLossTests {
   async builtSDKLauncherStopsCodexAfterHardHostLoss_1(t: TestContext) {
@@ -21,24 +23,28 @@ class ParentLossTests {
           process.kill(-pid, 'SIGKILL');
         } catch {}
     });
-    const deadline = Date.now() + 10000;
-    while (Date.now() < deadline && !pid) {
-      if (existsSync(f.calls) && existsSync(join(f.state, 'runs')))
-        for (const id of readdirSync(join(f.state, 'runs'))) {
-          const p = join(f.state, 'runs', id, 'codex.pid');
-          if (existsSync(p)) pid = Number(readFileSync(p, 'utf8'));
-        }
-      if (!pid) await new Promise((r: any) => setTimeout(r, 25));
-    }
+    await waitFor(() => {
+      pid = this.codexPid(f);
+      return !!pid;
+    }, 'Controlled Codex must start');
     assert.ok(pid, 'controlled Codex reached execution');
     const exited = new Promise((r: any) => child.once('close', r));
     child.kill('SIGKILL');
     await exited;
-    const { groupMembers } = await import('../../dist/operations/service-state.js');
-    const until = Date.now() + 5000;
-    while (groupMembers(pid).length && Date.now() < until)
-      await new Promise((r: any) => setTimeout(r, 25));
+    await waitFor(
+      () => groupMembers(pid!).length === 0,
+      'No steward process survives host loss',
+      5000,
+    );
     assert.deepEqual(groupMembers(pid), [], 'no steward process survives host loss');
+  }
+  private codexPid(f: any): number | undefined {
+    if (!existsSync(f.calls) || !existsSync(join(f.state, 'runs'))) return undefined;
+    for (const id of readdirSync(join(f.state, 'runs'))) {
+      const path = join(f.state, 'runs', id, 'codex.pid');
+      if (existsSync(path)) return Number(readFileSync(path, 'utf8'));
+    }
+    return undefined;
   }
 }
 const suite = new ParentLossTests();

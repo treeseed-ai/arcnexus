@@ -138,13 +138,11 @@ class ArchitectureTests {
       id: 'other',
       allowedWritePaths: ['src/other'],
     });
-    mkdirSync(join(f.repo, 'src/sample'), { recursive: true });
-    mkdirSync(join(f.repo, 'src/other'), { recursive: true });
-    writeFileSync(
-      join(f.repo, 'src/sample/main.ts'),
+    f.source(
+      'src/sample/main.ts',
       dynamic ? "await import('../other/private.js');" : "import '../other/private.js';",
     );
-    writeFileSync(join(f.repo, 'src/other/private.ts'), 'export const value=1;');
+    f.source('src/other/private.ts', 'export const value=1;');
     f.put('architecture/ownership.json', {
       schemaVersion: 1,
       maintainedPaths: ['src'],
@@ -276,9 +274,7 @@ class ArchitectureTests {
     f.commit();
     assert.equal(f.run('validate').status, 2);
   }
-  async hostAcceptanceSnapshotsPreserveModuleExtensionsAndDeclaredRelativeImports_16(
-    t: TestContext,
-  ) {
+  async capturesAcceptanceModules(t: TestContext) {
     const f = fixture(t),
       check = join(f.root, 'check.mjs'),
       helper = join(f.root, 'helper.mjs'),
@@ -311,24 +307,13 @@ class ArchitectureTests {
 const suite = new ArchitectureTests();
 
 const cli = resolve('dist/cli.js');
-function fixture(t: any): any {
-  const root = mkdtempSync(join(tmpdir(), 'architecture-'));
-  t.after(() => rmSync(root, { recursive: true, force: true }));
-  const repo = join(root, 'repo');
-  mkdirSync(repo);
-  const git = (...args: any) => {
-    const r = spawnSync('git', ['-C', repo, ...args], { encoding: 'utf8' });
-    assert.equal(r.status, 0, r.stderr);
-    return r.stdout.trim();
-  };
-  git('init', '-b', 'main');
-  git('config', 'user.name', 'Test');
-  git('config', 'user.email', 'test@example.invalid');
-  const put = (path: any, v: any) => {
-    mkdirSync(join(repo, path, '..'), { recursive: true });
-    writeFileSync(join(repo, path), JSON.stringify(v));
-  };
-  const common = {
+function fixture(t: TestContext): ArchitectureFixture {
+  return new ArchitectureFixture(t);
+}
+class ArchitectureFixture {
+  readonly root = mkdtempSync(join(tmpdir(), 'architecture-'));
+  readonly repo = join(this.root, 'repo');
+  readonly common = {
     schemaVersion: 1,
     repository: 'sample',
     purpose: 'Own sample behavior',
@@ -347,66 +332,96 @@ function fixture(t: any): any {
     allowedWritePaths: ['source.txt'],
     verification: [{ command: 'node', args: ['--version'] }],
   };
-  put('architecture/components/platform.json', {
-    ...common,
-    id: 'platform',
-    type: 'platform',
-    allowedWritePaths: ['.'],
-  });
-  put('architecture/components/package.json', {
-    ...common,
-    id: 'package',
-    type: 'package',
-    parentId: 'platform',
-    allowedWritePaths: ['.'],
-    members: {
-      foundations: [],
-      dependencies: [],
-      gateways: [],
-      libraries: ['sample'],
-      releases: [],
-    },
-  });
-  const component = { ...common, id: 'sample', type: 'library', parentId: 'package' };
-  put('architecture/components/sample.json', component);
-  put('architecture/roles/engineer.json', {
-    schemaVersion: 1,
-    id: 'engineer',
-    purpose: 'Engineering',
-    responsibilities: ['Verify bounded work'],
-    activities: ['research', 'documentation', 'testing', 'implementation', 'review', 'release'],
-  });
-  put('architecture/execution-profiles/luna.yaml', {
-    schemaVersion: 1,
-    id: 'luna',
-    model: 'gpt-6-luna',
-    reasoning: 'medium',
-    webSearch: 'live',
-    timeoutSeconds: 900,
-    commandTimeoutSeconds: 120,
-    maxTurns: 3,
-    maxCorrectiveTurns: 2,
-  });
-  put('architecture/environment.json', {
-    schemaVersion: 1,
-    prerequisites: [],
-    setup: [],
-    generatedDirectories: [],
-  });
-  writeFileSync(join(repo, 'source.txt'), 'before');
-  writeFileSync(join(repo, 'README.md'), 'Sample');
-  writeFileSync(join(repo, 'test.mjs'), '');
-  const commit = () => {
-    git('add', '.');
-    git('commit', '-m', 'fixture');
-  };
-  commit();
-  const run = (...args: any) =>
-    spawnSync(process.execPath, [cli, ...args, '--project', repo], {
+  component: any;
+  constructor(t: TestContext) {
+    t.after(() => rmSync(this.root, { recursive: true, force: true }));
+    mkdirSync(this.repo);
+    this.git('init', '-b', 'main');
+    this.git('config', 'user.name', 'Test');
+    this.git('config', 'user.email', 'test@example.invalid');
+    this.hierarchy();
+    this.execution();
+    this.environment();
+    writeFileSync(join(this.repo, 'source.txt'), 'before');
+    writeFileSync(join(this.repo, 'README.md'), 'Sample');
+    writeFileSync(join(this.repo, 'test.mjs'), '');
+    this.commit();
+  }
+  private git(...args: string[]): string {
+    const result = spawnSync('git', ['-C', this.repo, ...args], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim();
+  }
+  put(path: string, value: unknown): void {
+    mkdirSync(join(this.repo, path, '..'), { recursive: true });
+    writeFileSync(join(this.repo, path), JSON.stringify(value));
+  }
+  source(path: string, content: string): void {
+    mkdirSync(join(this.repo, path, '..'), { recursive: true });
+    writeFileSync(join(this.repo, path), content);
+  }
+  commit(): void {
+    this.git('add', '.');
+    this.git('commit', '-m', 'fixture');
+  }
+  run(...args: string[]) {
+    return spawnSync(process.execPath, [cli, ...args, '--project', this.repo], {
       encoding: 'utf8',
-      env: { ...process.env, ARCNEXUS_STATE_DIR: join(root, 'state') },
+      env: { ...process.env, ARCNEXUS_STATE_DIR: join(this.root, 'state') },
     });
-  return { root, repo, component, put, commit, run };
+  }
+  private hierarchy(): void {
+    this.put('architecture/components/platform.json', {
+      ...this.common,
+      id: 'platform',
+      type: 'platform',
+      allowedWritePaths: ['.'],
+    });
+    this.put('architecture/components/package.json', {
+      ...this.common,
+      id: 'package',
+      type: 'package',
+      parentId: 'platform',
+      allowedWritePaths: ['.'],
+      members: {
+        foundations: [],
+        dependencies: [],
+        gateways: [],
+        libraries: ['sample'],
+        releases: [],
+      },
+    });
+    this.component = { ...this.common, id: 'sample', type: 'library', parentId: 'package' };
+    this.put('architecture/components/sample.json', this.component);
+  }
+  private execution(): void {
+    this.put('architecture/roles/engineer.json', {
+      schemaVersion: 1,
+      id: 'engineer',
+      purpose: 'Engineering',
+      responsibilities: ['Verify bounded work'],
+      activities: ['research', 'documentation', 'testing', 'implementation', 'review', 'release'],
+    });
+    this.put('architecture/execution-profiles/luna.yaml', {
+      schemaVersion: 1,
+      id: 'luna',
+      model: 'gpt-6-luna',
+      reasoning: 'medium',
+      webSearch: 'live',
+      timeoutSeconds: 900,
+      commandTimeoutSeconds: 120,
+      maxTurns: 3,
+      maxCorrectiveTurns: 2,
+    });
+  }
+  private environment(): void {
+    this.put('architecture/environment.json', {
+      schemaVersion: 1,
+      prerequisites: [],
+      setup: [],
+      generatedDirectories: [],
+    });
+  }
 }
 test('built CLI reads YAML at a captured revision and snapshots source hashes', (t: any) =>
   suite.builtCLIReadsYAMLAtACapturedRevisionAndSnapshotsSourceHashes_1(t));
@@ -457,4 +472,4 @@ test('unused invalid definition is rejected and dirty working definitions cannot
 test('related context does not widen authority and ancestor narrowing fails', (t: any) =>
   suite.relatedContextDoesNotWidenAuthorityAndAncestorNarrowingFails_15(t));
 test('host acceptance snapshots preserve module extensions and declared relative imports', (t: any) =>
-  suite.hostAcceptanceSnapshotsPreserveModuleExtensionsAndDeclaredRelativeImports_16(t));
+  suite.capturesAcceptanceModules(t));

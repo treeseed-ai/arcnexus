@@ -25,16 +25,7 @@ class ContextTests {
       binding,
       JSON.stringify({ schemaVersion: 1, repositories: {}, tools: { 'target-node': tool } }),
     );
-    let executable = readFileSync(f.executable, 'utf8');
-    executable = executable.replace(
-      'const stage=prompt.match',
-      `const commands=JSON.parse(prompt.split('Captured verification commands (zero-based index): ')[1].split('\\n')[0]);
- const supplied=JSON.parse(prompt.split('Target command environment: ')[1].split('\\n')[0]);
- const probe=cp.spawnSync(commands[0].command,commands[0].args,{env:{...process.env,PATH:'/nonexistent',...supplied}});
- if(probe.status!==0)throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
- const stage=prompt.match`,
-    );
-    writeFileSync(f.executable, executable);
+    f.configure({ suppliedTool: true });
     const r = f.run('--kind', 'research', '--bindings', binding);
     assert.equal(r.status, 0, r.stderr);
     const record = JSON.parse(r.stdout);
@@ -82,14 +73,7 @@ class ContextTests {
   }
   specificationDelegatesUnavailableSandboxChecksToTheAuthoritativeHost_5(t: TestContext) {
     const f = workflowFixture(t);
-    let program = readFileSync(f.executable, 'utf8');
-    program = program.replace(
-      "if(stage==='specification'&&mode!=='no-changes'){",
-      `if(stage==='specification'&&mode!=='no-changes'){
-  if(!prompt.includes('If sandbox restrictions prevent running the regression'))throw new Error('HOST_CHECK_HANDOFF_MISSING');
-  result.findings.push({summary:'Sandbox regression execution unavailable',evidence:['Observed EPERM from sandbox command'],uncertainty:'Proposed assertion must be checked by host'});`,
-    );
-    writeFileSync(f.executable, program);
+    f.configure({ sandboxFeedback: true });
     const r = f.run();
     assert.equal(r.status, 0, r.stderr);
     const report = JSON.parse(r.stdout);
@@ -108,26 +92,8 @@ class ContextTests {
   documentationOnlySpecificationRequiresRealDocumentationEditsThroughTheBuiltCLI_7(t: TestContext) {
     const f = workflowFixture(t),
       assignment = join(f.root, 'documentation.json');
-    writeFileSync(
-      assignment,
-      JSON.stringify({
-        schemaVersion: 1,
-        kind: 'change',
-        changeType: 'documentation',
-        objective: 'Update documentation',
-        expectedOutcome: 'Updated docs',
-        acceptanceCriteria: ['Updated documentation'],
-        hostChecks: [],
-      }),
-    );
-    let code = readFileSync(f.executable, 'utf8')
-      .replace("if(stage==='specification'&&mode!=='no-changes'){", 'if(false){')
-      .replace("if(stage==='implementation'||stage==='correction'){", 'if(false){');
-    code = code.replace(
-      'const result={status:',
-      "if(stage==='specification'){if(!prompt.includes('Make actual file edits now'))throw new Error('DOCUMENTATION_EDIT_CHECKPOINT_MISSING');fs.writeFileSync('docs/behavior.md','Updated documentation');}const result={status:",
-    );
-    writeFileSync(f.executable, code);
+    this.documentationAssignment(assignment);
+    f.configure({ documentationOnly: true });
     const r = spawnSync(
       process.execPath,
       [
@@ -151,6 +117,20 @@ class ContextTests {
     );
     assert.ok(!report.commands.some((c: any) => c.stage === 'red-test'));
     assert.equal(report.status, 'completed');
+  }
+  private documentationAssignment(assignment: string): void {
+    writeFileSync(
+      assignment,
+      JSON.stringify({
+        schemaVersion: 1,
+        kind: 'change',
+        changeType: 'documentation',
+        objective: 'Update documentation',
+        expectedOutcome: 'Updated docs',
+        acceptanceCriteria: ['Updated documentation'],
+        hostChecks: [],
+      }),
+    );
   }
 }
 const suite = new ContextTests();

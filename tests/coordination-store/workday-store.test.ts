@@ -2,53 +2,19 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import type { TestContext } from 'node:test';
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { WorkdayStore } from '../../dist/coordination-store/workday-store.js';
 import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js';
 class WorkdayStoreTests {
-  async SQLiteDeliveryAndReadinessCommitAtomicallyBuiltViewersRetainOrderedEvidence_1(
-    t: TestContext,
-  ) {
-    const f = workflowFixture(t),
-      { WorkdayStore } = await import('../../dist/coordination-store/workday-store.js');
-    const directory = join(f.state, 'workdays', 'one');
+  deliveryAndReadinessAreAtomic(t: TestContext): void {
+    const fixture = workflowFixture(t);
+    const directory = join(fixture.state, 'workdays', 'one');
     mkdirSync(directory, { recursive: true });
     const store = new WorkdayStore(join(directory, 'workday.sqlite'), true);
     try {
-      store.initialize('one', { base: f.git('rev-parse', 'HEAD') }, ['sample', 'dependency']);
-      store.commit(
-        'request.delivered',
-        { id: 'request-1' },
-        {
-          assignments: [{ id: 'dependency', status: 'ready', data: {} }],
-          messages: [
-            {
-              id: 'request-1',
-              from: 'sample',
-              to: 'dependency',
-              kind: 'request',
-              payload: { contract: 'sample' },
-            },
-          ],
-        },
-      );
-      assert.throws(() =>
-        store.commit(
-          'duplicate',
-          {},
-          {
-            assignments: [{ id: 'dependency', status: 'incorrect', data: {} }],
-            messages: [
-              { id: 'request-1', from: 'sample', to: 'dependency', kind: 'request', payload: {} },
-            ],
-          },
-        ),
-      );
-      assert.equal(
-        store.snapshot().assignments.find((a: any) => a.id === 'dependency')?.status,
-        'ready',
-      );
-      assert.equal(store.events().length, 2);
+      store.initialize('one', { base: fixture.git('rev-parse', 'HEAD') }, ['sample', 'dependency']);
+      this.deliver(store);
+      this.assertDuplicateRollsBack(store);
       store.commit(
         'workday.finished',
         {},
@@ -57,10 +23,50 @@ class WorkdayStoreTests {
     } finally {
       store.close();
     }
-    const workday = (...args: any) =>
+    this.assertBuiltViewers(fixture.env);
+  }
+  private deliver(store: WorkdayStore): void {
+    store.commit(
+      'request.delivered',
+      { id: 'request-1' },
+      {
+        assignments: [{ id: 'dependency', status: 'ready', data: {} }],
+        messages: [
+          {
+            id: 'request-1',
+            from: 'sample',
+            to: 'dependency',
+            kind: 'request',
+            payload: { contract: 'sample' },
+          },
+        ],
+      },
+    );
+  }
+  private assertDuplicateRollsBack(store: WorkdayStore): void {
+    assert.throws(() =>
+      store.commit(
+        'duplicate',
+        {},
+        {
+          assignments: [{ id: 'dependency', status: 'incorrect', data: {} }],
+          messages: [
+            { id: 'request-1', from: 'sample', to: 'dependency', kind: 'request', payload: {} },
+          ],
+        },
+      ),
+    );
+    assert.equal(
+      store.snapshot().assignments.find((assignment) => assignment.id === 'dependency')?.status,
+      'ready',
+    );
+    assert.equal(store.events().length, 2);
+  }
+  private assertBuiltViewers(env: NodeJS.ProcessEnv): void {
+    const workday = (...args: string[]) =>
       spawnSync(process.execPath, [cli, 'workday', ...args], {
         encoding: 'utf8',
-        env: f.env,
+        env,
         timeout: 10000,
       });
     const status = workday('status', 'one', '--json');
@@ -72,13 +78,12 @@ class WorkdayStoreTests {
       follow.stdout
         .trim()
         .split('\n')
-        .map((x: any) => JSON.parse(x).sequence),
+        .map((line) => JSON.parse(line).sequence),
       [2, 3],
     );
     assert.equal(workday('status', 'missing', '--json').status, 2);
   }
 }
 const suite = new WorkdayStoreTests();
-
-test('SQLite delivery and readiness commit atomically; built viewers retain ordered evidence', (t: any) =>
-  suite.SQLiteDeliveryAndReadinessCommitAtomicallyBuiltViewersRetainOrderedEvidence_1(t));
+test('SQLite delivery and readiness commit atomically; built viewers retain ordered evidence', (t) =>
+  suite.deliveryAndReadinessAreAtomic(t));

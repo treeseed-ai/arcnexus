@@ -31,12 +31,12 @@ hostChecks:
   - id: injected-report-repair
     command: node
     args:
-      - ../checks/inject-report-defect.mjs
+      - ../../dist/experiments/checks/inject-report-defect.js
       - "{faultMarker}"
-      - ../checks/report-operations.mjs
+      - ../../dist/experiments/checks/report-operations.js
     artifacts:
-      - ../checks/inject-report-defect.mjs
-      - ../checks/report-operations.mjs
+      - ../../dist/experiments/checks/inject-report-defect.js
+      - ../../dist/experiments/checks/report-operations.js
 allowedWritePaths:
   - src/report/report.ts
   - tests/report/report.test.mjs

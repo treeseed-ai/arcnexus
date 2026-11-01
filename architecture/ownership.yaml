@@ -22,6 +22,8 @@ maintainedPaths:
   - .prettierrc.yaml
   - .prettierignore
   - tsconfig.tests.json
+  - tsconfig.fixtures.json
+  - tsconfig.tooling.json
 owners:
   - component: agent-guidance
     paths:
@@ -104,6 +106,8 @@ owners:
       - .prettierrc.yaml
       - .prettierignore
       - tsconfig.tests.json
+      - tsconfig.fixtures.json
+      - tsconfig.tooling.json
     publicModules: []
     directoryExceptions:
       - .

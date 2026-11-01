@@ -1,57 +1,47 @@
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
-import { setTimeout as delay } from 'node:timers/promises';
 import { handoffFixture } from '../development-tooling/handoff-fixture.js';
+import { TestProcess, waitFor } from '../development-tooling/test-process.js';
 import { cli } from '../development-tooling/workflow-fixture.js';
 class WorkdayInterruptionTests {
   async scenario_1(t: TestContext, signal: any) {
     const f = handoffFixture(t, 'hang'),
       marker = join(f.root, 'agent-pid'),
-      child = spawn(
-        process.execPath,
+      child = new TestProcess(
+        t,
         [cli, 'workday', 'run', f.manifest, '--project', f.repo, '--codex-path', f.executable],
-        { env: f.env, stdio: ['ignore', 'pipe', 'pipe'] },
+        f.env,
       );
-    let output = '';
-    child.stdout.on('data', (x: any) => (output += x));
-    child.stderr.resume();
-    const finished = new Promise((resolve: any) => child.once('exit', resolve));
-    t.after(() => child.kill('SIGKILL'));
-    const deadline = Date.now() + 30000;
-    while (!existsSync(marker)) {
-      assert.ok(Date.now() < deadline, 'recipient inference must start');
-      await delay(50);
-    }
+    await waitFor(() => existsSync(marker), 'Recipient inference must start', 30000);
     const pid = Number(readFileSync(marker));
     child.kill(signal);
-    const code = await finished;
-    const end = Date.now() + 5000;
-    while (existsSync('/proc/' + pid)) {
-      assert.ok(Date.now() < end, 'managed inference must stop');
-      await delay(50);
-    }
+    const code = await child.closed;
+    await waitFor(() => !existsSync('/proc/' + pid), 'Managed inference must stop', 5000);
     if (signal === 'SIGINT') {
       assert.equal(code, 130);
-      const w = JSON.parse(output);
+      const w = JSON.parse(child.stdout);
       assert.equal(w.status, 'cancelled');
       assert.equal(w.parking.status, 'restored');
     } else {
-      const { readdirSync } = await import('node:fs'),
-        id = readdirSync(join(f.state, 'workdays'))[0]!,
-        r = spawnSync(process.execPath, [cli, 'workday', 'status', id, '--json'], {
-          env: f.env,
-          encoding: 'utf8',
-        });
-      assert.equal(r.status, 0, r.stderr);
-      const w = JSON.parse(r.stdout);
-      assert.equal(w.interrupted, true);
-      assert.equal(w.workday.status, 'running');
-      assert.ok(existsSync(join(f.state, 'workdays', id, 'parking.json')));
+      await this.assertInterrupted(f);
     }
+  }
+  private async assertInterrupted(f: any): Promise<void> {
+    const { readdirSync } = await import('node:fs'),
+      id = readdirSync(join(f.state, 'workdays'))[0]!,
+      r = spawnSync(process.execPath, [cli, 'workday', 'status', id, '--json'], {
+        env: f.env,
+        encoding: 'utf8',
+      });
+    assert.equal(r.status, 0, r.stderr);
+    const w = JSON.parse(r.stdout);
+    assert.equal(w.interrupted, true);
+    assert.equal(w.workday.status, 'running');
+    assert.ok(existsSync(join(f.state, 'workdays', id, 'parking.json')));
   }
 }
 const suite = new WorkdayInterruptionTests();

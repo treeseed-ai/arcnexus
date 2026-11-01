@@ -1,6 +1,5 @@
-import { accessSync, constants, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs';
-import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { accessSync, constants, readFileSync, realpathSync, statSync } from 'node:fs';
+import { dirname, isAbsolute, resolve } from 'node:path';
 import {
   digest,
   resolveAssignment,
@@ -15,6 +14,7 @@ import { ConfigurationReader } from '../architecture/configuration.js';
 import { validateSchema } from '../architecture/schema.js';
 import { git } from '../operations/process.js';
 import { resolveWorkday, type WorkdayInput } from '../workday/workday-config.js';
+import { FixtureCatalog, type FixtureKind } from './fixture-catalog.js';
 export type EvidenceMode = 'simulation' | 'live' | 'legacy-unspecified' | 'unselected';
 export type Scenario = 'success' | 'repair' | 'boundary' | 'failure' | 'handoff';
 interface LocalProject {
@@ -84,23 +84,9 @@ function executable(path: string): string {
   accessSync(path, constants.X_OK);
   return realpathSync(path);
 }
-export function fixtureFiles(workday = false): Record<string, string> {
-  const root = fileURLToPath(
-      new URL(workday ? '../../fixtures/workday' : '../../fixtures/simulation', import.meta.url),
-    ),
-    out: Record<string, string> = {};
-  const visit = (directory: string) => {
-    for (const entry of readdirSync(join(root, directory), {
-      withFileTypes: true,
-    })) {
-      const path = directory ? directory + '/' + entry.name : entry.name;
-      if (entry.isDirectory()) visit(path);
-      else if (entry.isFile()) out[path] = readFileSync(join(root, path)).toString('base64');
-      else throw new Error('Invalid bundled fixture');
-    }
-  };
-  visit('');
-  return out;
+export function fixtureFiles(selection: boolean | FixtureKind = false): Record<string, string> {
+  const kind = typeof selection === 'boolean' ? (selection ? 'workday' : 'simulation') : selection;
+  return new FixtureCatalog().files(kind);
 }
 function checkFixture(project: string, base: string, workday = false): void {
   const files = fixtureFiles(workday),

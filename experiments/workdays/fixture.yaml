@@ -16,6 +16,6 @@ acceptance:
   - id: combined
     command: node
     args:
-      - ../checks/workday-contract.mjs
+      - ../../dist/experiments/checks/workday-contract.js
     artifacts:
-      - ../checks/workday-contract.mjs
+      - ../../dist/experiments/checks/workday-contract.js

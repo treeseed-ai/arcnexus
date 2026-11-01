@@ -58,6 +58,31 @@ const suite = new WorkdaysTests();
 
 function fixture(t: any): any {
   const f = workflowFixture(t);
+  defineParticipants(f);
+  const manifest = {
+    schemaVersion: 1,
+    requester: { component: 'sample', assignment: 'requester.json', refresh: [] },
+    recipient: { component: 'dependency', assignment: 'recipient.json', refresh: [] },
+    dependency: {
+      from: 'sample',
+      to: 'dependency',
+      contract: 'sample-contract',
+      delivery: 'Verified dependency contract',
+    },
+    acceptance: [],
+  };
+  const path = join(f.root, 'workday.json');
+  const save = () => writeFileSync(path, JSON.stringify(manifest));
+  save();
+  const run = (...args: any) =>
+    spawnSync(process.execPath, [cli, 'workday', ...args], {
+      encoding: 'utf8',
+      env: f.env,
+      timeout: 10000,
+    });
+  return { ...f, manifest, path, save, workday: run };
+}
+function defineParticipants(f: any): void {
   const dependency = {
     ...f.component,
     id: 'dependency',
@@ -81,28 +106,6 @@ function fixture(t: any): any {
   };
   for (const name of ['requester', 'recipient'])
     writeFileSync(join(f.root, name + '.json'), JSON.stringify(assignment));
-  const manifest = {
-    schemaVersion: 1,
-    requester: { component: 'sample', assignment: 'requester.json', refresh: [] },
-    recipient: { component: 'dependency', assignment: 'recipient.json', refresh: [] },
-    dependency: {
-      from: 'sample',
-      to: 'dependency',
-      contract: 'sample-contract',
-      delivery: 'Verified dependency contract',
-    },
-    acceptance: [],
-  };
-  const path = join(f.root, 'workday.json');
-  const save = () => writeFileSync(path, JSON.stringify(manifest));
-  save();
-  const run = (...args: any) =>
-    spawnSync(process.execPath, [cli, 'workday', ...args], {
-      encoding: 'utf8',
-      env: f.env,
-      timeout: 10000,
-    });
-  return { ...f, manifest, path, save, workday: run };
 }
 test('built workday inspect captures two disjoint owners without state or inference', (t: any) =>
   suite.builtWorkdayInspectCapturesTwoDisjointOwnersWithoutStateOrInference_1(t));

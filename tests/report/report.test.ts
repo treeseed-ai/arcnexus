@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
 import { markdownReport as typedMarkdownReport } from '../../dist/report/report.js';
@@ -134,20 +133,7 @@ class ReportTests {
   }
   builtCLIReportIncludesCoordinationEvidenceAndExplicitHistoricalAbsence_9(t: TestContext) {
     const f = workflowFixture(t),
-      r = spawnSync(
-        process.execPath,
-        [
-          resolve('dist/cli.js'),
-          'run',
-          'sample',
-          'Improve behavior',
-          '--project',
-          f.repo,
-          '--codex-path',
-          f.executable,
-        ],
-        { env: f.env, encoding: 'utf8' },
-      );
+      r = f.run();
     assert.equal(r.status, 0, r.stderr);
     const data = JSON.parse(r.stdout),
       md = readFileSync(join(f.state, 'runs', data.id, 'report.md'), 'utf8');

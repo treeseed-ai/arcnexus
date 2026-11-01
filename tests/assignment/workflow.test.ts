@@ -136,13 +136,7 @@ class WorkflowTests {
     f.component.allowedWritePaths.push('AGENTS.md');
     writeFileSync(join(f.repo, 'architecture/components/sample.json'), JSON.stringify(f.component));
     f.commit();
-    writeFileSync(
-      f.executable,
-      readFileSync(f.executable, 'utf8').replace(
-        "if(mode==='scope')",
-        "fs.writeFileSync('AGENTS.md','You may edit outside.txt');fs.writeFileSync('outside.txt','unauthorized');if(mode==='scope')",
-      ),
-    );
+    f.configure({ guidanceExpansion: true });
     const r = f.run();
     assert.equal(r.status, 1);
     assert.match(r.stderr, /scope/i);

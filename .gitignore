@@ -41,3 +41,5 @@ Thumbs.db
 
 # Compiled TypeScript acceptance tests
 .test-build/
+
+.fixture-build/

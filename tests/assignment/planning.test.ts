@@ -1,9 +1,12 @@
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { openBridge } from '../../dist/steward/bridge.js';
 import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js';
 class PlanningTests {
   builtCLICapturesAReadOnlyPlanAndObservableChecklistBeforeExecution_1(t: TestContext) {
@@ -28,9 +31,12 @@ class PlanningTests {
       events.map((_: any, i: any) => i + 1),
     );
     assert.equal(events.at(-1).type, 'run.finalized');
+    this.assertViewers(f.env, record.id);
+  }
+  private assertViewers(env: NodeJS.ProcessEnv, id: string): void {
     for (const command of ['status', 'follow']) {
-      const viewed = spawnSync(process.execPath, [cli, command, record.id, '--json'], {
-        env: f.env,
+      const viewed = spawnSync(process.execPath, [cli, command, id, '--json'], {
+        env,
         encoding: 'utf8',
         timeout: 5000,
       });
@@ -50,10 +56,7 @@ class PlanningTests {
     });
     assert.equal(r.status, 2);
   }
-  async realStdioMCPBridgeUpdatesHostChecklistDuringATurn_4(t: TestContext) {
-    const { openBridge } = await import('../../dist/steward/bridge.js');
-    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
-    const { StdioClientTransport } = await import('@modelcontextprotocol/sdk/client/stdio.js');
+  async realStdioMCPBridgeUpdatesHostChecklistDuringATurn_4(_t: TestContext) {
     let observed: any;
     const bridge = await openBridge(
       [{ name: 'plan.update', description: 'Update checklist', inputSchema: { type: 'object' } }],
@@ -105,10 +108,7 @@ class PlanningTests {
   }
   checklistCompletionWithoutEvidenceStopsTheAssignment_7(t: TestContext) {
     const f = planned(t);
-    writeFileSync(
-      f.executable,
-      readFileSync(f.executable, 'utf8').replace("evidence:['source.txt']}];", 'evidence:[]}];'),
-    );
+    f.configure({ missingEvidence: true });
     const r = f.run();
     assert.equal(r.status, 1, r.stderr);
     assert.match(r.stderr, /completion requires evidence/);
@@ -131,12 +131,7 @@ class PlanningTests {
   }
   researchExecutesThePlanNowInsteadOfDeferringWorkToAnImaginaryLaterTurn_10(t: TestContext) {
     const f = planned(t);
-    let code = readFileSync(f.executable, 'utf8');
-    code = code.replace(
-      "console.log(JSON.stringify({type:'item.completed'",
-      "if(stage==='research'&&!prompt.includes('This is the only execution turn')){result.status='failed';result.blockers=['Deferred operations to an imaginary later execution turn'];}console.log(JSON.stringify({type:'item.completed'",
-    );
-    writeFileSync(f.executable, code);
+    f.configure({ researchPrompt: true });
     const r = f.run('--kind', 'research');
     assert.equal(r.status, 0, r.stderr);
     assert.equal(JSON.parse(r.stdout).turns.length, 2);
@@ -145,34 +140,17 @@ class PlanningTests {
     t: TestContext,
   ) {
     const f = planned(t);
-    let code = readFileSync(f.executable, 'utf8');
-    code = code.replace(
-      "if(stage!=='planning')result.planUpdates=",
-      "if(stage!=='planning'&&JSON.stringify(schema.properties.planUpdates.items.properties.id.enum)!==JSON.stringify(['work']))throw new Error('STEWARD_ITEM_SCHEMA_REQUIRED');if(stage!=='planning')result.planUpdates=",
-    );
-    writeFileSync(f.executable, code);
+    f.configure({ checkItemSchema: true });
     const r = f.run();
     assert.equal(r.status, 0, r.stderr);
-    writeFileSync(
-      f.executable,
-      code.replace("id:'work',status:'completed'", "id:'final-verification',status:'completed'"),
-    );
+    f.configure({ forgedCompletion: true });
     const bad = f.run();
     assert.equal(bad.status, 1);
     assert.match(bad.stderr, /Unknown checklist item/);
   }
   planningPromptStatesActivityMembershipAndHostDiagnosesOmittedSelection_12(t: TestContext) {
     const f = planned(t);
-    let code = readFileSync(f.executable, 'utf8');
-    code = code.replace(
-      "if(stage==='planning')result.plan=",
-      "if(stage==='planning'&&!prompt.includes('Every checklist item activity must also appear in plan.activities'))throw new Error('ACTIVITY_MEMBERSHIP_REQUIRED');if(stage==='planning')result.plan=",
-    );
-    code = code.replace(
-      "items:[{id:'work',activity:'implementation'",
-      "items:[{id:'work',activity:'research'",
-    );
-    writeFileSync(f.executable, code);
+    f.configure({ omittedActivity: true });
     const r = f.run();
     assert.equal(r.status, 1);
     assert.match(r.stderr, /Checklist item work activity research is absent from plan.activities/);
@@ -188,40 +166,7 @@ function planned(t: any, mode: any = 'success'): any {
   profile.maxTurns = 4;
   writeFileSync(path, JSON.stringify(profile));
   f.commit();
-  let code = readFileSync(f.executable, 'utf8');
-  code = code.replace(
-    "process.chdir(args[args.indexOf('--cd')+1]);",
-    "const schema=JSON.parse(fs.readFileSync(args[args.indexOf('--output-schema')+1]));function strict(s){if(!s||typeof s!=='object')return;if(s.properties&&Object.keys(s.properties).some(k=>!s.required?.includes(k)))throw new Error('STRICT_REQUIRED');if(s.uniqueItems!==undefined)throw new Error('STRICT_UNIQUE_ITEMS');Object.values(s).forEach(v=>Array.isArray(v)?v.forEach(strict):strict(v));}strict(schema);process.chdir(args[args.indexOf('--cd')+1]);",
-  );
-  code = code.replace('const result={status:', 'const result={plan:null,planUpdates:[],status:');
-  code = code.replace(
-    "if(stage==='specification'",
-    `if(stage==='planning')result.plan={approach:'Check bounded behavior',assumptions:[],activities:[{activity:'implementation',reason:'Apply objective'}],items:[{id:'work',activity:'implementation',result:'Verified objective',criteria:[0],expectedEvidence:['verification'],dependencies:[],status:'pending',evidence:[],explanation:''}],questions:[]};
- if(stage!=='planning')result.planUpdates=[{id:'work',status:'completed',explanation:'Observed change and verification',evidence:['source.txt']}];
- if(stage==='specification'`,
-  );
-  if (mode === 'invalid-plan') code = code.replace('criteria:[0]', 'criteria:[99]');
-  if (mode === 'planning-write')
-    code = code.replace(
-      "if(stage==='planning')result.plan=",
-      "if(stage==='planning')fs.writeFileSync('source.txt','bad');if(stage==='planning')result.plan=",
-    );
-  if (mode === 'bridge-update') {
-    code = code.replace("process.stdin.on('end',()=>{", "process.stdin.on('end',async()=>{");
-    code = code.replace(
-      "if(stage!=='planning')result.planUpdates=",
-      `if(stage!=='planning'){
-   const {Client}=await import(${JSON.stringify('file://' + resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/index.js'))});
-   const {StdioClientTransport}=await import(${JSON.stringify('file://' + resolve('node_modules/@modelcontextprotocol/sdk/dist/esm/client/stdio.js'))});
-   const option=name=>JSON.parse(args.find(a=>a.startsWith('mcp_servers.arcnexus.'+name+'=')).split('=').slice(1).join('='));
-   const client=new Client({name:'controlled-codex',version:'1'},{capabilities:{}});
-   await client.connect(new StdioClientTransport({command:option('command'),args:option('args')}));
-   const reply=await client.callTool({name:'plan.update',arguments:{updates:[{id:'work',status:'completed',explanation:'Observed through bridge',evidence:['source.txt']}]}});if(reply.isError)throw new Error(JSON.stringify(reply));await client.close();
-  }
-  if(stage!=='planning')result.planUpdates=`,
-    );
-  }
-  writeFileSync(f.executable, code);
+  f.configure({ planning: true });
   return f;
 }
 test('built CLI captures a read-only plan and observable checklist before execution', (t: any) =>

@@ -12,16 +12,7 @@ class PriorEvidenceTests {
   ) {
     const f = operationFixture(t),
       a = assignment(f);
-    const envPath = join(f.repo, 'architecture/environment.yaml'),
-      env = JSON.parse(String(readFileSync(envPath)));
-    env.setup = [
-      {
-        command: process.execPath,
-        args: ['-e', `require('fs').writeFileSync(${JSON.stringify(a.history)},'REPLACED')`],
-      },
-    ];
-    writeFileSync(envPath, JSON.stringify(env));
-    f.commit();
+    this.replaceHistoryDuringSetup(f, a.history);
     const inspected = invoke(f, a, 'inspect');
     assert.equal(inspected.status, 0, inspected.stderr);
     const r = invoke(f, a);
@@ -40,6 +31,18 @@ class PriorEvidenceTests {
     assert.equal(record.reusableFindings[0].componentId, 'sample');
     assert.equal(record.changes.length, 0);
     assert.match(readFileSync(join(dir, 'timeline.jsonl'), 'utf8'), /workspace.prepared/);
+  }
+  private replaceHistoryDuringSetup(f: any, history: string): void {
+    const envPath = join(f.repo, 'architecture/environment.yaml'),
+      env = JSON.parse(String(readFileSync(envPath)));
+    env.setup = [
+      {
+        command: process.execPath,
+        args: ['-e', `require('fs').writeFileSync(${JSON.stringify(history)},'REPLACED')`],
+      },
+    ];
+    writeFileSync(envPath, JSON.stringify(env));
+    f.commit();
   }
   scenario_2(t: TestContext, mode: any) {
     const f = operationFixture(t),

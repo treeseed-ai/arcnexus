@@ -1,7 +1,7 @@
 # TypeScript and code quality
 
-Issue #64 introduces the following development contract. These commands and limits
-are delivery requirements until implementation and acceptance are complete.
+Maintained code follows this development contract. The same commands and limits
+apply to local development, steward feedback and CI.
 
 Maintained application code, tests and executable tooling use TypeScript. Test
 suites use cohesive classes with explicit fixture lifecycle and scenario methods.

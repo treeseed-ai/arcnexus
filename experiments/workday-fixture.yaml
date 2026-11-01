@@ -9,7 +9,7 @@ cases:
     acceptance:
       - command: node
         args:
-          - checks/workday-report.mjs
+          - ../dist/experiments/checks/workday-report.js
           - "{report}"
         artifacts:
-          - checks/workday-report.mjs
+          - ../dist/experiments/checks/workday-report.js

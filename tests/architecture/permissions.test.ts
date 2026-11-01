@@ -54,60 +54,15 @@ class PermissionsTests {
   }
   permissionPreparationRejectsMissingReadsFileWriteDirectoriesAndSymlinkSegments_3(t: TestContext) {
     const { root, work } = workspace(t);
-    assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: ['missing'], writeDirectories: [] },
-          [],
-          join(root, 'tmp'),
-        ),
-      /does not exist/,
-    );
-    assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: ['file.txt'], writeDirectories: ['file.txt'] },
-          ['file.txt'],
-          join(root, 'tmp'),
-        ),
-      /directory/,
-    );
+    this.rejectPolicy(root, work, ['missing'], [], [], /does not exist/);
+    this.rejectPolicy(root, work, ['file.txt'], ['file.txt'], ['file.txt'], /directory/);
     symlinkSync('file.txt', join(work, 'link'));
-    assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: ['link'], writeDirectories: [] },
-          [],
-          join(root, 'tmp'),
-        ),
-      /symlink/,
-    );
-    assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: ['file.txt'], writeDirectories: ['link/child'] },
-          [],
-          join(root, 'tmp'),
-        ),
-      /symlink/,
-    );
+    this.rejectPolicy(root, work, ['link'], [], [], /symlink/);
+    this.rejectPolicy(root, work, ['file.txt'], ['link/child'], [], /symlink/);
   }
   writeCoverageRequiresADeclaredDirectoryAndDotAloneGrantsTheWholeWorktree_4(t: TestContext) {
     const { root, work } = workspace(t);
-    assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: [], writeDirectories: ['generated'] },
-          ['generated2/file'],
-          join(root, 'tmp'),
-        ),
-      /not covered/,
-    );
+    this.rejectPolicy(root, work, [], ['generated'], ['generated2/file'], /not covered/);
     assert.doesNotThrow(() =>
       preparePermissions(
         work,
@@ -116,15 +71,19 @@ class PermissionsTests {
         join(root, 'tmp'),
       ),
     );
+    this.rejectPolicy(root, work, ['.'], ['.'], ['../outside'], /Invalid relative path/);
+  }
+  private rejectPolicy(
+    root: string,
+    work: string,
+    readPaths: string[],
+    writeDirectories: string[],
+    scope: string[],
+    diagnostic: RegExp,
+  ): void {
     assert.throws(
-      () =>
-        preparePermissions(
-          work,
-          { readPaths: ['.'], writeDirectories: ['.'] },
-          ['../outside'],
-          join(root, 'tmp'),
-        ),
-      /Invalid relative path/,
+      () => preparePermissions(work, { readPaths, writeDirectories }, scope, join(root, 'tmp')),
+      diagnostic,
     );
   }
   accessPoliciesAreRequiredHaveBothExplicitPathArraysAndOnlyDotBypassesNormalPathValidation_5() {

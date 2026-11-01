@@ -8,3 +8,5 @@ docs/acceptance/
 docs/plans/
 docs/*qualification.json
 qualification/tree-artifact-expected.json
+
+.fixture-build/

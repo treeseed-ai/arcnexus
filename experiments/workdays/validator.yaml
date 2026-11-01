@@ -37,6 +37,6 @@ hostChecks:
   - id: reference-policy
     command: node
     args:
-      - ../checks/guidance-references.mjs
+      - ../../dist/experiments/checks/guidance-references.js
     artifacts:
-      - ../checks/guidance-references.mjs
+      - ../../dist/experiments/checks/guidance-references.js

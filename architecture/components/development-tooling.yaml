@@ -21,6 +21,8 @@ allowedWritePaths:
   - .prettierrc.yaml
   - .prettierignore
   - tsconfig.tests.json
+  - tsconfig.fixtures.json
+  - tsconfig.tooling.json
 verification:
   - command: npm
     args:

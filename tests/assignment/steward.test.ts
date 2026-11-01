@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { spawn, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { TestProcess, waitFor } from '../development-tooling/test-process.js';
 import { cli, workflowFixture } from '../development-tooling/workflow-fixture.js';
 class StewardTests {
   scenario_1(t: TestContext, args: any, expected: any) {
@@ -58,10 +59,26 @@ class StewardTests {
     assert.equal(existsSync(f.calls), false);
   }
   async scenario_6(t: TestContext, activity: any, cancel: any) {
-    const f = workflowFixture(t, activity + '-timeout'),
-      start = Date.now();
-    const child = spawn(
-      process.execPath,
+    const f = workflowFixture(t, activity + '-timeout');
+    const child = this.start(t, f, cancel);
+    if (cancel) {
+      await waitFor(
+        () => readFileSync(f.calls, 'utf8').includes(`"stage":"${activity}"`),
+        'Agent must reach selected stage',
+      );
+      child.kill('SIGINT');
+    }
+    assert.equal(await child.closed, cancel ? 130 : 1);
+    const v = JSON.parse(child.stdout);
+    assert.equal(v.status, cancel ? 'cancelled' : 'failed');
+    assert.ok(
+      existsSync(join(f.state, 'runs', v.id, 'turns', String(v.turns.length), 'events.jsonl')),
+    );
+    assert.equal(existsSync(join(f.state, 'active.lock')), false);
+  }
+  private start(t: TestContext, f: any, cancel: boolean): TestProcess {
+    return new TestProcess(
+      t,
       [
         cli,
         'run',
@@ -74,35 +91,39 @@ class StewardTests {
         '--timeout-seconds',
         cancel ? '15' : '4',
       ],
-      { env: f.env },
+      f.env,
     );
-    let out = '';
-    child.stdout.on('data', (x: any) => (out += x));
-    const closed = new Promise((r: any) => child.on('close', r));
-    if (cancel) {
-      let ready = false;
-      while (Date.now() - start < 10000) {
-        try {
-          ready = readFileSync(f.calls, 'utf8').includes(`"stage":"${activity}"`);
-        } catch {}
-        if (ready) break;
-        await new Promise((r: any) => setTimeout(r, 20));
-      }
-      assert.ok(ready);
-      child.kill('SIGINT');
-    }
-    assert.equal(await closed, cancel ? 130 : 1);
-    const v = JSON.parse(out);
-    assert.equal(v.status, cancel ? 'cancelled' : 'failed');
-    assert.ok(
-      existsSync(join(f.state, 'runs', v.id, 'turns', String(v.turns.length), 'events.jsonl')),
-    );
-    assert.equal(existsSync(join(f.state, 'active.lock')), false);
+  }
+  private hostReady(f: any): boolean {
+    const id = readdirSync(join(f.state, 'runs'))[0];
+    if (!id) return false;
+    const run = join(f.state, 'runs', id);
+    return readdirSync(run)
+      .filter((path) => path.startsWith('command-'))
+      .some((path) => readFileSync(join(run, path), 'utf8').includes('HOST_READY'));
   }
   runConsumesTheSameInspectedAssignmentAndSnapshottedIndependentCheck_7(t: TestContext) {
     const f = workflowFixture(t),
       file = join(f.root, 'assignment.json'),
       check = join(f.root, 'acceptance.cjs');
+    this.assignmentWithAcceptance(file, check);
+    const args = ['sample', '--assignment', file, '--project', f.repo],
+      preview = spawnSync(process.execPath, [cli, 'inspect', ...args, '--json'], {
+        encoding: 'utf8',
+      });
+    assert.equal(preview.status, 0, preview.stderr);
+    const r = spawnSync(process.execPath, [cli, 'run', ...args, '--codex-path', f.executable], {
+      encoding: 'utf8',
+      env: f.env,
+    });
+    assert.equal(r.status, 0, r.stderr);
+    const v = JSON.parse(r.stdout);
+    assert.equal(v.resolvedAssignment.digest, JSON.parse(preview.stdout).digest);
+    assert.ok(v.commands.at(-1).args[0].startsWith(join(f.state, 'runs', v.id, 'acceptance')));
+    const prompt = readFileSync(join(f.state, 'runs', v.id, 'turns/1/prompt.txt'), 'utf8');
+    assert.ok(!prompt.includes(Buffer.from(readFileSync(check)).toString('base64')));
+  }
+  private assignmentWithAcceptance(file: string, check: string): void {
     writeFileSync(
       check,
       "if(require('fs').readFileSync('source.txt','utf8')!=='after')process.exit(7)",
@@ -120,21 +141,6 @@ class StewardTests {
         ],
       }),
     );
-    const args = ['sample', '--assignment', file, '--project', f.repo],
-      preview = spawnSync(process.execPath, [cli, 'inspect', ...args, '--json'], {
-        encoding: 'utf8',
-      });
-    assert.equal(preview.status, 0, preview.stderr);
-    const r = spawnSync(process.execPath, [cli, 'run', ...args, '--codex-path', f.executable], {
-      encoding: 'utf8',
-      env: f.env,
-    });
-    assert.equal(r.status, 0, r.stderr);
-    const v = JSON.parse(r.stdout);
-    assert.equal(v.resolvedAssignment.digest, JSON.parse(preview.stdout).digest);
-    assert.ok(v.commands.at(-1).args[0].startsWith(join(f.state, 'runs', v.id, 'acceptance')));
-    const prompt = readFileSync(join(f.state, 'runs', v.id, 'turns/1/prompt.txt'), 'utf8');
-    assert.ok(!prompt.includes(Buffer.from(readFileSync(check)).toString('base64')));
   }
   finalHostVerificationCannotHideAStagedScopeViolation_8(t: TestContext) {
     const f = workflowFixture(t);
@@ -157,43 +163,13 @@ class StewardTests {
       "const fs=require('fs');if(fs.existsSync('tests/regression.cjs'))require('./tests/regression.cjs');if(fs.existsSync('tests/marker')){console.log('HOST_READY');setInterval(()=>{},1000)}",
     );
     f.commit();
-    const child = spawn(
-      process.execPath,
-      [
-        cli,
-        'run',
-        'sample',
-        'Improve behavior',
-        '--project',
-        f.repo,
-        '--codex-path',
-        f.executable,
-        '--timeout-seconds',
-        cancel ? '15' : '4',
-      ],
-      { env: f.env },
-    );
-    let out = '';
-    child.stdout.on('data', (x: any) => (out += x));
-    const closed = new Promise((r: any) => child.on('close', r));
+    const child = this.start(t, f, cancel);
     if (cancel) {
-      const start = Date.now();
-      let ready = false;
-      while (Date.now() - start < 10000) {
-        try {
-          const run = join(f.state, 'runs', readdirSync(join(f.state, 'runs'))[0]!);
-          ready = readdirSync(run)
-            .filter((p: any) => p.startsWith('command-'))
-            .some((p: any) => readFileSync(join(run, p), 'utf8').includes('HOST_READY'));
-        } catch {}
-        if (ready) break;
-        await new Promise((r: any) => setTimeout(r, 20));
-      }
-      assert.ok(ready);
+      await waitFor(() => this.hostReady(f), 'Host verification must start');
       child.kill('SIGINT');
     }
-    assert.equal(await closed, cancel ? 130 : 1);
-    const v = JSON.parse(out);
+    assert.equal(await child.closed, cancel ? 130 : 1);
+    const v = JSON.parse(child.stdout);
     assert.equal(v.stage, 'verification');
     assert.equal(v.agent.status, 'completed');
     assert.equal(v.turns.length, 2);

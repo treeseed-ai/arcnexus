@@ -16,6 +16,10 @@ args:
   - node_modules/eslint/bin/eslint.js
   - src/experiments
   - tests/experiments
+  - fixtures
+  - scripts
+  - experiments/checks
+  - qualification
 timeoutSeconds: 120
 generatedDirectories: []
 artifacts: []

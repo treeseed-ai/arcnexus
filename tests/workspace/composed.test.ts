@@ -139,13 +139,7 @@ class ComposedTests {
   }
   dependencyChangesByAControlledExecutableFailTheHostBoundaryCheck_10(t: TestContext) {
     const f = composed(t);
-    writeFileSync(
-      f.executable,
-      readFileSync(f.executable, 'utf8').replace(
-        "if(stage==='implementation'||stage==='correction'){",
-        "if(stage==='implementation')fs.writeFileSync('packages/dependency/source.txt','mutated');if(stage==='implementation'||stage==='correction'){",
-      ),
-    );
+    f.configure({ dependencyMutation: true });
     const r = f.run('--bindings', f.bindings);
     assert.equal(r.status, 1, r.stderr);
     assert.match(r.stderr, /changed source|dependency/i);
@@ -173,7 +167,27 @@ const suite = new ComposedTests();
 
 function composed(t: any): any {
   const f = workflowFixture(t),
-    dependency = join(f.root, 'dependency');
+    { dependency, dg } = createDependency(f.root);
+  f.git('remote', 'add', 'origin', 'https://example.invalid/primary.git');
+  writeFileSync(join(f.repo, '.gitignore'), 'packages/\n');
+  const environment = workspaceEnvironment(dg('rev-parse', 'HEAD'));
+  const bindings = writeBindings(f.root, dependency);
+  const commit = () => {
+    writeFileSync(join(f.repo, 'architecture/environment.yaml'), JSON.stringify(environment));
+    if (f.git('status', '--porcelain')) f.commit();
+  };
+  commit();
+  const prepare = () =>
+    spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo, '--bindings', bindings], {
+      env: f.env,
+      encoding: 'utf8',
+    });
+  const cleanup = (id: any) =>
+    spawnSync(process.execPath, [cli, 'cleanup', id], { env: f.env, encoding: 'utf8' });
+  return { ...f, dependency, dg, environment, bindings, commit, prepare, cleanup };
+}
+function createDependency(root: string) {
+  const dependency = join(root, 'dependency');
   mkdirSync(dependency);
   const dg = (...args: any) => {
     const r = spawnSync('git', ['-C', dependency, ...args], { encoding: 'utf8' });
@@ -188,37 +202,10 @@ function composed(t: any): any {
   writeFileSync(join(dependency, '.gitignore'), 'generated/\nunknown/\n');
   dg('add', '.');
   dg('commit', '-m', 'dependency');
-  f.git('remote', 'add', 'origin', 'https://example.invalid/primary.git');
-  writeFileSync(join(f.repo, '.gitignore'), 'packages/\n');
-  const environment = {
-    schemaVersion: 1,
-    prerequisites: [],
-    setup: [],
-    generatedDirectories: [],
-    workspace: {
-      primary: { id: 'sample', repository: 'https://example.invalid/primary.git' },
-      dependencies: [
-        {
-          id: 'dependency',
-          repository: 'https://example.invalid/dependency.git',
-          commit: dg('rev-parse', 'HEAD'),
-          path: 'packages/dependency',
-          prerequisites: [],
-          setup: [
-            {
-              command: 'node',
-              args: [
-                '-e',
-                "require('fs').mkdirSync('generated');require('fs').writeFileSync('generated/cwd',process.cwd())",
-              ],
-            },
-          ],
-          generatedDirectories: ['generated'],
-        },
-      ],
-    },
-  };
-  const bindings = join(f.root, 'bindings.json');
+  return { dependency, dg };
+}
+function writeBindings(root: string, dependency: string): string {
+  const bindings = join(root, 'bindings.json');
   writeFileSync(
     bindings,
     JSON.stringify({
@@ -227,19 +214,38 @@ function composed(t: any): any {
       tools: { node: process.execPath },
     }),
   );
-  const commit = () => {
-    writeFileSync(join(f.repo, 'architecture/environment.yaml'), JSON.stringify(environment));
-    if (f.git('status', '--porcelain')) f.commit();
+  return bindings;
+}
+function workspaceEnvironment(commit: string): any {
+  return {
+    schemaVersion: 1,
+    prerequisites: [],
+    setup: [],
+    generatedDirectories: [],
+    workspace: {
+      primary: { id: 'sample', repository: 'https://example.invalid/primary.git' },
+      dependencies: [dependencyDefinition(commit)],
+    },
   };
-  commit();
-  const prepare = () =>
-    spawnSync(process.execPath, [cli, 'prepare', '--project', f.repo, '--bindings', bindings], {
-      env: f.env,
-      encoding: 'utf8',
-    });
-  const cleanup = (id: any) =>
-    spawnSync(process.execPath, [cli, 'cleanup', id], { env: f.env, encoding: 'utf8' });
-  return { ...f, dependency, dg, environment, bindings, commit, prepare, cleanup };
+}
+function dependencyDefinition(commit: string) {
+  return {
+    id: 'dependency',
+    repository: 'https://example.invalid/dependency.git',
+    commit,
+    path: 'packages/dependency',
+    prerequisites: [],
+    setup: [
+      {
+        command: 'node',
+        args: [
+          '-e',
+          "require('fs').mkdirSync('generated');require('fs').writeFileSync('generated/cwd',process.cwd())",
+        ],
+      },
+    ],
+    generatedDirectories: ['generated'],
+  };
 }
 test('built prepare creates pinned dependency worktrees and guarded cleanup preserves originals', (t: any) =>
   suite.builtPrepareCreatesPinnedDependencyWorktreesAndGuardedCleanupPreservesOriginals_1(t));

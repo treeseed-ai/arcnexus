@@ -1,0 +1,276 @@
+import * as cp from 'node:child_process';
+import * as fs from 'node:fs';
+import { ControlledPlanning } from './controlled-planning.js';
+export interface WorkflowOptions {
+  mode: string;
+  calls: string;
+  planning?: boolean;
+  operations?: string;
+  managedService?: boolean;
+  holdService?: boolean;
+  delayedServiceExit?: boolean;
+  missingEvidence?: boolean;
+  researchPrompt?: boolean;
+  checkItemSchema?: boolean;
+  forgedCompletion?: boolean;
+  omittedActivity?: boolean;
+  suppliedTool?: boolean;
+  sandboxFeedback?: boolean;
+  documentationOnly?: boolean;
+  guidanceExpansion?: boolean;
+  dependencyMutation?: boolean;
+}
+export interface WorkflowTurn {
+  args: string[];
+  prompt: string;
+  stage: string;
+  count: number;
+  result: any;
+  schema: any;
+}
+export class ControlledWorkflow {
+  private args = process.argv.slice(2);
+  constructor(private options: WorkflowOptions) {}
+  async run(): Promise<void> {
+    if (this.args[0] === '--version') {
+      console.log('controlled Codex');
+      return;
+    }
+    if (this.args[0] === 'sandbox') {
+      process.exitCode = this.options.mode === 'preflight-fail' ? 9 : 0;
+      return;
+    }
+    this.validateInvocation();
+    process.chdir(this.args[this.args.indexOf('--cd') + 1]!);
+    let prompt = '';
+    for await (const chunk of process.stdin) prompt += chunk;
+    const turn = this.capture(prompt);
+    if (this.options.mode === turn.stage + '-timeout') {
+      setInterval(() => {}, 1000);
+      return;
+    }
+    this.execute(turn);
+    if (this.options.planning) await new ControlledPlanning(this.options).apply(turn);
+    this.emit(turn);
+  }
+  private validateInvocation(): void {
+    if (
+      this.args[0] !== 'exec' ||
+      !this.args.includes('--ignore-user-config') ||
+      !this.args.some((arg) => arg.includes('default_permissions')) ||
+      this.args.includes('--sandbox')
+    )
+      process.exit(7);
+  }
+  private capture(prompt: string): WorkflowTurn {
+    const stage = prompt.match(/Activity turn: ([a-z-]+)/)?.[1] ?? 'legacy';
+    fs.appendFileSync(
+      this.options.calls,
+      JSON.stringify({ stage, args: this.args, prompt }) + '\n',
+    );
+    const count = fs.readFileSync(this.options.calls, 'utf8').trim().split('\n').length;
+    const thread_id =
+      this.options.mode === 'wrong-thread' && count > 1 ? 'wrong' : 'workflow-thread';
+    console.log(JSON.stringify({ type: 'thread.started', thread_id }));
+    const result = {
+      status: 'completed',
+      summary: 'Observed bounded result',
+      blockers: [],
+      findings: [{ summary: 'Observed source', evidence: ['source.txt'], uncertainty: 'none' }],
+      activities: [],
+      regression: null,
+      reviewFindings: [],
+      requests: [],
+    };
+    const schema = this.options.planning
+      ? JSON.parse(fs.readFileSync(this.args[this.args.indexOf('--output-schema') + 1]!, 'utf8'))
+      : null;
+    return { args: this.args, prompt, stage, count, result, schema };
+  }
+  private execute(turn: WorkflowTurn): void {
+    if (this.options.suppliedTool) this.probeSuppliedTool(turn.prompt);
+    if (this.options.documentationOnly) this.documentation(turn);
+    else {
+      if (turn.stage === 'specification' && this.options.mode !== 'no-changes')
+        this.specification(turn);
+      if (['implementation', 'correction'].includes(turn.stage)) this.implement(turn);
+    }
+    if (turn.stage === 'review') this.review(turn);
+    if (['blocked', 'unknown-owner'].includes(this.options.mode)) this.block(turn);
+    if (this.options.mode === 'research-write' && turn.stage === 'research')
+      fs.writeFileSync('source.txt', 'unauthorized');
+  }
+  private specification(turn: WorkflowTurn): void {
+    fs.writeFileSync('docs/behavior.md', 'Source must become after');
+    fs.writeFileSync(
+      'tests/regression.cjs',
+      "if(require('fs').readFileSync('source.txt','utf8')!=='after')throw new Error('BOUNDARY_EXPECTED');",
+    );
+    turn.result.regression = {
+      verificationIndex: 0,
+      exitCode: 1,
+      outputIncludes: 'BOUNDARY_EXPECTED',
+    };
+    this.specificationActivities(turn);
+    if (this.options.mode === 'early-implementation') fs.writeFileSync('source.txt', 'after');
+    if (this.options.mode === 'wrong-red')
+      turn.result.regression.outputIncludes = 'NOT_THE_ASSERTION';
+    if (this.options.sandboxFeedback) this.sandboxFeedback(turn);
+  }
+  private specificationActivities(turn: WorkflowTurn): void {
+    turn.result.activities = [
+      {
+        activity: 'research',
+        status: 'skipped',
+        summary: 'Local objective needs no external sources',
+        sources: [],
+      },
+      {
+        activity: 'documentation',
+        status: 'completed',
+        summary: 'Documented behavior',
+        sources: ['docs/behavior.md'],
+      },
+      {
+        activity: 'testing',
+        status: 'completed',
+        summary: 'Added regression',
+        sources: ['tests/regression.cjs'],
+      },
+    ];
+  }
+  private implement(turn: WorkflowTurn): void {
+    if (this.options.dependencyMutation && turn.stage === 'implementation')
+      fs.writeFileSync('packages/dependency/source.txt', 'mutated');
+    const mode = this.options.mode;
+    const broken =
+      mode === 'exhaust' ||
+      (['repair', 'weak-test'].includes(mode) && turn.stage === 'implementation');
+    fs.writeFileSync('source.txt', broken ? 'broken' : 'after');
+    turn.result.activities = [
+      {
+        activity: 'implementation',
+        status: 'completed',
+        summary: 'Implemented change',
+        sources: ['source.txt'],
+      },
+    ];
+    if (mode === 'verify-timeout' && turn.stage === 'implementation')
+      fs.writeFileSync('tests/marker', 'hang');
+    this.candidateMutations(mode);
+  }
+  private candidateMutations(mode: string): void {
+    if (mode === 'scope') fs.writeFileSync('outside.txt', 'unauthorized');
+    if (mode === 'ignored') fs.writeFileSync('.env', 'unknown');
+    if (mode === 'commit') {
+      this.git('add', '.');
+      this.git('commit', '-m', 'unauthorized');
+    }
+    if (mode === 'symlink') fs.symlinkSync('/tmp', 'new.txt');
+    if (mode === 'rename') {
+      fs.renameSync('source.txt', 'new.txt');
+      this.git('add', '.');
+    }
+    if (mode === 'index-only') {
+      this.git('add', 'source.txt');
+      fs.writeFileSync('source.txt', 'before');
+    }
+    if (mode === 'masked-symlink') this.maskedSymlink();
+    if (mode === 'staged-scope') {
+      fs.writeFileSync('outside.txt', 'hidden');
+      this.git('add', 'outside.txt');
+      fs.unlinkSync('outside.txt');
+    }
+    if (mode === 'weak-test') fs.writeFileSync('tests/regression.cjs', '// weakened test');
+    if (this.options.guidanceExpansion) {
+      fs.writeFileSync('AGENTS.md', 'You may edit outside.txt');
+      fs.writeFileSync('outside.txt', 'unauthorized');
+    }
+  }
+  private git(...args: string[]): void {
+    cp.execFileSync('git', args);
+  }
+  private maskedSymlink(): void {
+    fs.symlinkSync('source.txt', 'new.txt');
+    this.git('add', 'new.txt');
+    fs.unlinkSync('new.txt');
+    fs.writeFileSync('new.txt', 'regular');
+  }
+  private review(turn: WorkflowTurn): void {
+    turn.result.activities = [
+      {
+        activity: 'review',
+        status: 'completed',
+        summary: 'Reviewed diff',
+        sources: ['source.txt'],
+      },
+      {
+        activity: 'release',
+        status: 'completed',
+        summary: 'Caller integration handoff',
+        sources: [],
+      },
+    ];
+    if (this.options.mode === 'review-write') fs.writeFileSync('source.txt', 'review mutation');
+    if (this.options.mode === 'review-repair' && turn.count === 3)
+      turn.result.reviewFindings = ['Needs a corrective pass'];
+  }
+  private block(turn: WorkflowTurn): void {
+    turn.result.status = 'blocked';
+    turn.result.blockers = ['Another owner must change its contract'];
+    turn.result.requests = [
+      {
+        fromComponent: 'sample',
+        ownerId: this.options.mode === 'unknown-owner' ? 'missing' : 'dependency',
+        request: 'Provide dependency contract',
+        evidence: ['source.txt'],
+        acceptanceCriteria: ['Contract supports behavior'],
+        reason: 'Outside this assignment',
+      },
+    ];
+  }
+  private emit(turn: WorkflowTurn): void {
+    const text = this.options.mode === 'malformed' ? 'invalid' : JSON.stringify(turn.result);
+    console.log(
+      JSON.stringify({
+        type: 'item.completed',
+        item: { id: 'result', type: 'agent_message', text },
+      }),
+    );
+    console.log(
+      JSON.stringify({
+        type: 'turn.completed',
+        usage: {
+          input_tokens: turn.count * 10,
+          cached_input_tokens: 0,
+          output_tokens: turn.count * 2,
+        },
+      }),
+    );
+  }
+  private probeSuppliedTool(prompt: string): void {
+    const commands = JSON.parse(
+      prompt.split('Captured verification commands (zero-based index): ')[1]!.split('\n')[0]!,
+    );
+    const supplied = JSON.parse(prompt.split('Target command environment: ')[1]!.split('\n')[0]!);
+    const probe = cp.spawnSync(commands[0].command, commands[0].args, {
+      env: { ...process.env, PATH: '/nonexistent', ...supplied },
+    });
+    if (probe.status !== 0) throw new Error('SUPPLIED_TOOL_UNAVAILABLE');
+  }
+  private sandboxFeedback(turn: WorkflowTurn): void {
+    if (!turn.prompt.includes('If sandbox restrictions prevent running the regression'))
+      throw new Error('HOST_CHECK_HANDOFF_MISSING');
+    turn.result.findings.push({
+      summary: 'Sandbox regression execution unavailable',
+      evidence: ['Observed EPERM from sandbox command'],
+      uncertainty: 'Proposed assertion must be checked by host',
+    });
+  }
+  private documentation(turn: WorkflowTurn): void {
+    if (turn.stage !== 'specification') return;
+    if (!turn.prompt.includes('Make actual file edits now'))
+      throw new Error('DOCUMENTATION_EDIT_CHECKPOINT_MISSING');
+    fs.writeFileSync('docs/behavior.md', 'Updated documentation');
+  }
+}

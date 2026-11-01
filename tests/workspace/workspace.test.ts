@@ -16,6 +16,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { groupMembers } from '../../dist/operations/service-state.js';
+import { TestProcess, waitFor, killProcessGroup } from '../development-tooling/test-process.js';
 class WorkspaceTests {
   builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport_1(t: TestContext) {
     const f = fixture(t, [
@@ -224,14 +226,7 @@ class WorkspaceTests {
       prepared = f.prepare();
     assert.equal(prepared.status, 0, prepared.stderr);
     const record = JSON.parse(prepared.stdout);
-    if (legacy) {
-      f.git('worktree', 'remove', record.workspace);
-      record.status = 'removed';
-      writeFileSync(join(f.state, 'runs', record.id, 'report.json'), JSON.stringify(record));
-    } else {
-      const result = f.run('cleanup', record.id);
-      assert.equal(result.status, 0, result.stderr);
-    }
+    this.removeInitialCandidate(f, record, legacy);
     const original = evidence(f, record),
       receiptPath = join(original.dir, 'cleanup.json');
     const receipt = legacy ? undefined : readFileSync(receiptPath);
@@ -241,24 +236,7 @@ class WorkspaceTests {
       else assert.deepEqual(readFileSync(receiptPath), receipt);
     };
     for (const kind of ['file', 'directory', 'symlink', 'dangling symlink']) {
-      if (kind === 'file') writeFileSync(record.workspace, 'keep');
-      else if (kind === 'directory') {
-        mkdirSync(record.workspace);
-        writeFileSync(join(record.workspace, 'keep'), 'keep');
-      } else symlinkSync(kind === 'symlink' ? f.repo : join(f.root, 'missing'), record.workspace);
-      const result = f.run('cleanup', record.id);
-      assert.equal(result.status, 1, `${kind}: ${result.stderr}`);
-      if (kind.includes('symlink')) {
-        assert.ok(lstatSync(record.workspace).isSymbolicLink());
-        assert.equal(
-          readlinkSync(record.workspace),
-          kind === 'symlink' ? f.repo : join(f.root, 'missing'),
-        );
-      } else
-        assert.equal(
-          readFileSync(kind === 'file' ? record.workspace : join(record.workspace, 'keep'), 'utf8'),
-          'keep',
-        );
+      this.assertReplacementPreserved(f, record, kind);
       checkEvidence();
       rmSync(record.workspace, { recursive: true });
     }
@@ -269,77 +247,79 @@ class WorkspaceTests {
       checkEvidence();
     }
   }
-  async hardParentDeathStopsAFiniteSetupProcessGroupAndPreservesIncompleteEvidence_14(
-    t: TestContext,
-  ) {
+  private removeInitialCandidate(f: any, record: any, legacy: boolean): void {
+    if (legacy) {
+      f.git('worktree', 'remove', record.workspace);
+      record.status = 'removed';
+      writeFileSync(join(f.state, 'runs', record.id, 'report.json'), JSON.stringify(record));
+    } else {
+      const result = f.run('cleanup', record.id);
+      assert.equal(result.status, 0, result.stderr);
+    }
+  }
+  private assertReplacementPreserved(f: any, record: any, kind: string): void {
+    if (kind === 'file') writeFileSync(record.workspace, 'keep');
+    else if (kind === 'directory') {
+      mkdirSync(record.workspace);
+      writeFileSync(join(record.workspace, 'keep'), 'keep');
+    } else symlinkSync(kind === 'symlink' ? f.repo : join(f.root, 'missing'), record.workspace);
+    const result = f.run('cleanup', record.id);
+    assert.equal(result.status, 1, `${kind}: ${result.stderr}`);
+    if (kind.includes('symlink')) {
+      assert.ok(lstatSync(record.workspace).isSymbolicLink());
+      assert.equal(
+        readlinkSync(record.workspace),
+        kind === 'symlink' ? f.repo : join(f.root, 'missing'),
+      );
+    } else
+      assert.equal(
+        readFileSync(kind === 'file' ? record.workspace : join(record.workspace, 'keep'), 'utf8'),
+        'keep',
+      );
+  }
+  async preservesEvidenceAfterParentLoss(t: TestContext) {
     const f = fixture(t, [
       {
         command: process.execPath,
         args: ['-e', "console.log('COMMAND_PID='+process.pid);setInterval(()=>{},1000)"],
       },
     ]);
-    const child = spawn(process.execPath, [cli, 'prepare', '--project', f.repo], {
-      env: f.env,
-      stdio: 'ignore',
-    });
-    let pid: number | undefined, record: string | undefined, log: string | undefined;
-    t.after(() => {
-      child.kill('SIGKILL');
-      if (pid)
-        try {
-          process.kill(-pid, 'SIGKILL');
-        } catch {}
-    });
-    const deadline = Date.now() + 10000;
-    while (Date.now() < deadline && !pid) {
-      if (existsSync(join(f.state, 'runs')))
-        for (const id of readdirSync(join(f.state, 'runs'))) {
-          const path = join(f.state, 'runs', id, 'command-0.log');
-          if (existsSync(path)) {
-            const match = readFileSync(path, 'utf8').match(/COMMAND_PID=(\d+)/);
-            if (match) {
-              pid = Number(match[1]);
-              log = path;
-              record = join(f.state, 'runs', id, 'report.json');
-            }
-          }
-        }
-      if (!pid) await new Promise((r: any) => setTimeout(r, 25));
-    }
-    assert.ok(pid, 'command reached observable running state');
-    const exited = new Promise((r: any) => child.once('close', r));
+    const child = new TestProcess(t, [cli, 'prepare', '--project', f.repo], f.env);
+    let captured: { pid: number; record: string; log: string } | undefined;
+    t.after(() => killProcessGroup(captured?.pid));
+    await waitFor(() => {
+      captured = this.runningSetup(f);
+      return !!captured;
+    }, 'Command must reach observable running state');
+    assert.ok(captured);
     child.kill('SIGKILL');
-    await exited;
-    const { groupMembers } = await import('../../dist/operations/service-state.js');
-    const stopped = Date.now() + 5000;
-    while (groupMembers(pid).length && Date.now() < stopped)
-      await new Promise((r: any) => setTimeout(r, 25));
-    assert.deepEqual(groupMembers(pid), [], 'parent-loss supervisor stops command group');
-    assert.ok(log);
-    assert.ok(record);
-    assert.match(readFileSync(log, 'utf8'), /COMMAND_PID=/);
-    assert.equal(JSON.parse(String(readFileSync(record))).finishedAt, undefined);
+    await child.closed;
+    await waitFor(
+      () => groupMembers(captured!.pid).length === 0,
+      'Parent-loss supervisor must stop command group',
+      5000,
+    );
+    assert.deepEqual(groupMembers(captured.pid), []);
+    assert.match(readFileSync(captured.log, 'utf8'), /COMMAND_PID=/);
+    assert.equal(JSON.parse(readFileSync(captured.record, 'utf8')).finishedAt, undefined);
+  }
+  private runningSetup(f: any): { pid: number; record: string; log: string } | undefined {
+    for (const id of readdirSync(join(f.state, 'runs'))) {
+      const directory = join(f.state, 'runs', id),
+        log = join(directory, 'command-0.log');
+      if (!existsSync(log)) continue;
+      const match = readFileSync(log, 'utf8').match(/COMMAND_PID=(\d+)/);
+      if (match) return { pid: Number(match[1]), log, record: join(directory, 'report.json') };
+    }
+    return undefined;
   }
   cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent_15(t: TestContext) {
     const f = fixture(t),
       r = f.prepare();
     assert.equal(r.status, 0, r.stderr);
     const record = JSON.parse(r.stdout);
-    const dir = join(f.state, 'runs', record.id),
-      stat = lstatSync(record.workspace);
-    const intent = {
-      schemaVersion: 1,
-      id: record.id,
-      source: record.source,
-      commonDir: record.commonDir,
-      base: record.base,
-      branch: record.branch,
-      workspace: record.workspace,
-      device: stat.dev,
-      inode: stat.ino,
-      members: record.members,
-      status: 'removing',
-    };
+    const dir = join(f.state, 'runs', record.id);
+    const intent = cleanupIntent(record);
     writeFileSync(join(dir, 'cleanup-intent.json'), JSON.stringify(intent));
     writeFileSync(join(dir, 'members-cleanup.json'), JSON.stringify({ removed: [] }));
     const before = readFileSync(join(dir, 'report.json'));
@@ -356,21 +336,8 @@ class WorkspaceTests {
   cleanupRefusesUnexplainedDisappearanceAndReplacementAfterIntent_16(t: TestContext) {
     const f = fixture(t),
       record = JSON.parse(f.prepare().stdout),
-      dir = join(f.state, 'runs', record.id),
-      stat = lstatSync(record.workspace);
-    const intent = {
-      schemaVersion: 1,
-      id: record.id,
-      source: record.source,
-      commonDir: record.commonDir,
-      base: record.base,
-      branch: record.branch,
-      workspace: record.workspace,
-      device: stat.dev,
-      inode: stat.ino,
-      members: record.members,
-      status: 'removing',
-    };
+      dir = join(f.state, 'runs', record.id);
+    const intent = cleanupIntent(record);
     f.git('worktree', 'remove', record.workspace);
     assert.equal(f.run('cleanup', record.id).status, 1);
     writeFileSync(join(dir, 'cleanup-intent.json'), JSON.stringify(intent));
@@ -383,6 +350,22 @@ class WorkspaceTests {
 const suite = new WorkspaceTests();
 
 const cli = resolve('dist/cli.js');
+function cleanupIntent(record: any) {
+  const stat = lstatSync(record.workspace);
+  return {
+    schemaVersion: 1,
+    id: record.id,
+    source: record.source,
+    commonDir: record.commonDir,
+    base: record.base,
+    branch: record.branch,
+    workspace: record.workspace,
+    device: stat.dev,
+    inode: stat.ino,
+    members: record.members,
+    status: 'removing',
+  };
+}
 function fixture(t: any, setup: any = []): any {
   const root = mkdtempSync(join(tmpdir(), 'arcnexus-test-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -399,6 +382,16 @@ function fixture(t: any, setup: any = []): any {
   git('config', 'user.name', 'Test');
   writeFileSync(join(repo, '.gitignore'), 'generated/\n.env\n');
   writeFileSync(join(repo, 'source.txt'), 'original\n');
+  writeEnvironment(repo, setup);
+  git('add', '.');
+  git('commit', '-m', 'fixture');
+  const env = { ...process.env, ARCNEXUS_STATE_DIR: state };
+  const run = (...args: any) =>
+    spawnSync(process.execPath, [cli, ...args], { env, encoding: 'utf8' });
+  const prepare = (...args: any) => run('prepare', '--project', repo, ...args);
+  return { root, repo, state, git, env, run, prepare };
+}
+function writeEnvironment(repo: string, setup: any[]): void {
   writeFileSync(
     join(repo, 'architecture/environment.yaml'),
     JSON.stringify({
@@ -408,13 +401,6 @@ function fixture(t: any, setup: any = []): any {
       generatedDirectories: ['generated'],
     }),
   );
-  git('add', '.');
-  git('commit', '-m', 'fixture');
-  const env = { ...process.env, ARCNEXUS_STATE_DIR: state };
-  const run = (...args: any) =>
-    spawnSync(process.execPath, [cli, ...args], { env, encoding: 'utf8' });
-  const prepare = (...args: any) => run('prepare', '--project', repo, ...args);
-  return { root, repo, state, git, env, run, prepare };
 }
 test('built prepare creates a pinned workspace, runs setup there and cleanup retains branch/report', (t: any) =>
   suite.builtPrepareCreatesAPinnedWorkspaceRunsSetupThereAndCleanupRetainsBranchReport_1(t));
@@ -459,7 +445,7 @@ for (const legacy of [false, true])
     suite.scenario_13(t, legacy));
 
 test('hard parent death stops a finite setup process group and preserves incomplete evidence', (t: any) =>
-  suite.hardParentDeathStopsAFiniteSetupProcessGroupAndPreservesIncompleteEvidence_14(t));
+  suite.preservesEvidenceAfterParentLoss(t));
 test('cleanup reconciles primary removal only with durable matching intent', (t: any) =>
   suite.cleanupReconcilesPrimaryRemovalOnlyWithDurableMatchingIntent_15(t));
 test('cleanup refuses unexplained disappearance and replacement after intent', (t: any) =>

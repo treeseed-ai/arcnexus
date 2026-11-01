@@ -29,6 +29,8 @@ export function runnerHash(runner: string): string {
   };
   visit(dirname(runner));
   visit(join(dirname(runner), '../schemas'));
+  const compiledFixtures = join(dirname(runner), '../.fixture-build');
+  if (existsSync(compiledFixtures)) visit(compiledFixtures);
   const fixtures = join(dirname(runner), '../fixtures/simulation');
   if (existsSync(fixtures)) visit(fixtures);
   const workdayFixture = join(dirname(runner), '../fixtures/workday');

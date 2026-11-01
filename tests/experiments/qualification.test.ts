@@ -73,7 +73,7 @@ class QualificationTests {
   independentReportCheckerStillExecutesWhenItsSnapshotPathContainsSpaces_6(t: TestContext) {
     const f = workflowFixture(t),
       script = join(f.root, 'report check.mjs');
-    writeFileSync(script, readFileSync('qualification/check-report-summary.mjs'));
+    writeFileSync(script, readFileSync('dist/experiments/checks/check-report-summary.js'));
     mkdirSync(join(f.repo, 'dist/report'), { recursive: true });
     writeFileSync(
       join(f.repo, 'dist/report/report.js'),
@@ -105,6 +105,37 @@ function campaign(t: any, mode: any = 'success'): any {
     assignment = join(f.root, 'assignment.json'),
     manifest = join(f.root, 'manifest.json'),
     output = join(f.root, 'campaign');
+  const check = prepareAcceptance(f, assignment);
+  const value = campaignDefinition(f, assignment, check);
+  const run = () => {
+    writeFileSync(manifest, JSON.stringify(value));
+    return spawnSync(process.execPath, [program, manifest, output], {
+      env: f.env,
+      encoding: 'utf8',
+      timeout: 30000,
+    });
+  };
+  return { ...f, value, run, output };
+}
+function campaignDefinition(f: any, assignment: string, check: string): any {
+  return {
+    schemaVersion: 1,
+    runner: cli,
+    codexPath: f.executable,
+    cases: [
+      {
+        id: 'change',
+        project: f.repo,
+        base: f.git('rev-parse', 'HEAD'),
+        component: 'sample',
+        assignment,
+        expectedOutcome: 'ready_for_integration',
+        acceptance: [{ command: process.execPath, args: [check, '{report}'], artifacts: [check] }],
+      },
+    ],
+  };
+}
+function prepareAcceptance(f: any, assignment: string): string {
   writeFileSync(
     assignment,
     JSON.stringify({
@@ -121,31 +152,7 @@ function campaign(t: any, mode: any = 'success'): any {
     check,
     "import{readFileSync}from'node:fs';import assert from'node:assert/strict';const r=JSON.parse(readFileSync(process.argv[2]));assert.equal(readFileSync(r.workspace+'/source.txt','utf8'),'after');",
   );
-  const value = {
-    schemaVersion: 1,
-    runner: cli,
-    codexPath: f.executable,
-    cases: [
-      {
-        id: 'change',
-        project: f.repo,
-        base: f.git('rev-parse', 'HEAD'),
-        component: 'sample',
-        assignment,
-        expectedOutcome: 'ready_for_integration',
-        acceptance: [{ command: process.execPath, args: [check, '{report}'], artifacts: [check] }],
-      },
-    ],
-  };
-  const run = () => {
-    writeFileSync(manifest, JSON.stringify(value));
-    return spawnSync(process.execPath, [program, manifest, output], {
-      env: f.env,
-      encoding: 'utf8',
-      timeout: 30000,
-    });
-  };
-  return { ...f, value, run, output };
+  return check;
 }
 test('qualification program exercises production CLI and retains immutable campaign evidence', (t: any) =>
   suite.qualificationProgramExercisesProductionCLIAndRetainsImmutableCampaignEvidence_1(t));

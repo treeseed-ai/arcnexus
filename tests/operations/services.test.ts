@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
 import { test } from 'node:test';
+import { endpointClosed } from '../../dist/operations/service-state.js';
 import { operationFixture } from '../development-tooling/operations-fixture.js';
+import { TestProcess, waitFor } from '../development-tooling/test-process.js';
+import { cli } from '../development-tooling/workflow-fixture.js';
 class ServicesTests {
   builtCLIProbesStartsOwnedHTTPServiceChecksItAndEndsItsLease_1(t: TestContext) {
     const f = fixture(t),
@@ -26,10 +29,10 @@ class ServicesTests {
   nonLoopbackBindIsRejectedEvenWhenAnnouncementClaimsLoopback_3(t: TestContext) {
     const f = fixture(t);
     const path = join(f.repo, 'server.mjs');
-    writeFileSync(
-      path,
-      readFileSync(path, 'utf8').replace("process.env.ARCNEXUS_HOST??'127.0.0.1'", "'0.0.0.0'"),
-    );
+    const before = readFileSync(path, 'utf8');
+    const after = before.replace("process.env.ARCNEXUS_HOST ?? '127.0.0.1'", "'0.0.0.0'");
+    assert.notEqual(after, before, 'fixture must actually bind outside loopback');
+    writeFileSync(path, after);
     f.commit();
     const r = f.run('--kind', 'research');
     assert.equal(r.status, 1);
@@ -53,22 +56,29 @@ class ServicesTests {
     assert.equal(r.status, 1);
     assert.equal(JSON.parse(r.stdout).turns.length, 0);
   }
-  async scenario_5(t: TestContext, signal: any) {
-    const { spawn } = await import('node:child_process'),
-      { setTimeout: delay } = await import('node:timers/promises'),
-      { existsSync } = await import('node:fs');
-    const { cli } = await import('../development-tooling/workflow-fixture.js');
-    const { endpointClosed } = await import('../../dist/operations/service-state.js');
+  async scenario_5(t: TestContext, signal: NodeJS.Signals) {
     const f = fixture(t);
-    writeFileSync(
-      f.executable,
-      readFileSync(f.executable, 'utf8').replace(
-        "const reply=await client.callTool({name:'operations.run'",
-        "await new Promise(()=>{setInterval(()=>{},1000)});const reply=await client.callTool({name:'operations.run'",
-      ),
-    );
-    const child = spawn(
-      process.execPath,
+    f.configure({ holdService: true });
+    const child = this.startResearch(t, f);
+    let record: any, directory: string | undefined;
+    try {
+      await waitFor(() => {
+        const captured = this.serviceRecord(f);
+        record = captured.record;
+        directory = captured.directory;
+        return record.services?.[0]?.status === 'ready';
+      }, 'Service must become ready');
+      child.kill(signal);
+      await child.closed;
+      await this.assertStoppedService(record.services[0].recordPath);
+    } finally {
+      child.kill('SIGKILL');
+      this.stopCodex(directory);
+    }
+  }
+  private startResearch(t: TestContext, f: any): TestProcess {
+    return new TestProcess(
+      t,
       [
         cli,
         'run',
@@ -81,45 +91,35 @@ class ServicesTests {
         '--codex-path',
         f.executable,
       ],
-      { env: f.env, stdio: 'ignore' },
+      f.env,
     );
-    const finished = new Promise((resolve: any) => child.once('close', resolve));
-    let record: any, dir: any;
+  }
+  private serviceRecord(f: any) {
+    const id = readdirSync(join(f.state, 'runs'))[0];
+    if (!id) return { directory: undefined, record: {} };
+    const directory = join(f.state, 'runs', id);
+    return { directory, record: JSON.parse(readFileSync(join(directory, 'report.json'), 'utf8')) };
+  }
+  private async assertStoppedService(path: string): Promise<void> {
+    let resource: any;
+    await waitFor(
+      () => {
+        resource = JSON.parse(readFileSync(path, 'utf8'));
+        return resource.status === 'stopped';
+      },
+      'Service must stop',
+      5000,
+    );
+    assert.equal(resource.endpointClosed, true);
+    assert.equal(await endpointClosed(resource.port), true);
+  }
+  private stopCodex(directory?: string): void {
+    if (!directory || !existsSync(join(directory, 'codex.pid'))) return;
+    const pid = Number(readFileSync(join(directory, 'codex.pid'), 'utf8'));
     try {
-      for (let n = 0; n < 200; n++) {
-        await delay(50);
-        if (!existsSync(join(f.state, 'runs'))) continue;
-        const ids = readdirSync(join(f.state, 'runs'));
-        if (!ids.length) continue;
-        dir = join(f.state, 'runs', ids[0]!);
-        try {
-          record = JSON.parse(String(readFileSync(join(dir, 'report.json'))));
-        } catch {
-          continue;
-        }
-        if (record.services?.[0]?.status === 'ready') break;
-      }
-      assert.equal(record?.services?.[0]?.status, 'ready');
-      child.kill(signal);
-      await finished;
-      const path = record.services[0].recordPath;
-      let resource: any;
-      for (let n = 0; n < 100; n++) {
-        resource = JSON.parse(String(readFileSync(path)));
-        if (resource.status === 'stopped') break;
-        await delay(50);
-      }
-      assert.equal(resource.status, 'stopped');
-      assert.equal(resource.endpointClosed, true);
-      assert.equal(await endpointClosed(resource.port), true);
-    } finally {
-      child.kill('SIGKILL');
-      if (dir && existsSync(join(dir, 'codex.pid'))) {
-        const pid = Number(readFileSync(join(dir, 'codex.pid')));
-        try {
-          process.kill(-pid, 'SIGKILL');
-        } catch {}
-      }
+      process.kill(-pid, 'SIGKILL');
+    } catch {
+      /* Already stopped. */
     }
   }
   async cleanupRefusesUnresolvedServiceOwnership_6(t: TestContext) {
@@ -135,9 +135,7 @@ class ServicesTests {
     assert.throws(() => assertServicesStopped(f.state, 'sample'), /unresolved/);
   }
   async fixedPortCollisionFailsWithoutTouchingTheUnrelatedListener_7(t: TestContext) {
-    const { createServer } = await import('node:http'),
-      { spawn } = await import('node:child_process');
-    const { cli } = await import('../development-tooling/workflow-fixture.js');
+    const { createServer } = await import('node:http');
     const server = createServer((req: any, res: any) => res.end('unrelated'));
     await new Promise((resolve: any) => server.listen(0, '127.0.0.1', resolve));
     t.after(() => server.close());
@@ -147,28 +145,10 @@ class ServicesTests {
     op.service.port = (server.address() as import('node:net').AddressInfo).port;
     writeFileSync(path, JSON.stringify(op));
     f.commit();
-    const child = spawn(
-      process.execPath,
-      [
-        cli,
-        'run',
-        'sample',
-        'Read',
-        '--kind',
-        'research',
-        '--project',
-        f.repo,
-        '--codex-path',
-        f.executable,
-      ],
-      { env: f.env },
-    );
-    let output = '';
-    child.stdout.on('data', (d: any) => (output += d));
-    child.stderr.resume();
-    const code = await new Promise((resolve: any) => child.once('close', resolve));
+    const child = this.startResearch(t, f);
+    const code = await child.closed;
     assert.equal(code, 1);
-    assert.equal(JSON.parse(output).services[0].status, 'stopped');
+    assert.equal(JSON.parse(child.stdout).services[0].status, 'stopped');
     assert.equal(
       await (
         await fetch(`http://127.0.0.1:${(server.address() as import('node:net').AddressInfo).port}`)
@@ -206,13 +186,7 @@ class ServicesTests {
     const path = join(f.repo, 'server.mjs');
     writeFileSync(path, readFileSync(path, 'utf8') + '\nsetTimeout(()=>process.exit(3),500);\n');
     f.commit();
-    writeFileSync(
-      f.executable,
-      readFileSync(f.executable, 'utf8').replace(
-        "await client.callTool({name:'services.status',arguments:{id:'test'}});",
-        "await client.callTool({name:'services.status',arguments:{id:'test'}});await new Promise(r=>setTimeout(r,800));",
-      ),
-    );
+    f.configure({ delayedServiceExit: true });
     const r = f.run('--kind', 'research');
     assert.equal(r.status, 1);
     assert.match(r.stderr, /unexpectedly/);
@@ -247,7 +221,7 @@ const suite = new ServicesTests();
 
 function fixture(t: any, mode: any = 'success'): any {
   const f = operationFixture(t);
-  writeFileSync(join(f.repo, 'server.mjs'), readFileSync('fixtures/http/server.mjs'));
+  writeFileSync(join(f.repo, 'server.mjs'), readFileSync('.fixture-build/http/server.mjs'));
   const path = join(f.repo, 'architecture/operations/test.json'),
     op = JSON.parse(String(readFileSync(path)));
   Object.assign(op, {
@@ -268,6 +242,12 @@ function fixture(t: any, mode: any = 'success'): any {
   if (mode === 'not-ready') op.service.readinessPath = '/absent';
   if (mode === 'crash') op.args = ['-e', 'process.exit(2)'];
   writeFileSync(path, JSON.stringify(op));
+  registerHttpCheck(f, op);
+  f.commit();
+  f.configure({ managedService: true });
+  return f;
+}
+function registerHttpCheck(f: any, op: any): void {
   const check = {
     ...op,
     id: 'http-check',
@@ -281,17 +261,6 @@ function fixture(t: any, mode: any = 'success'): any {
   writeFileSync(join(f.repo, 'architecture/operations/http-check.json'), JSON.stringify(check));
   f.component.operationIds = ['test', 'http-check'];
   writeFileSync(join(f.repo, 'architecture/components/sample.json'), JSON.stringify(f.component));
-  f.commit();
-  let code = readFileSync(f.executable, 'utf8');
-  code = code.replace(
-    'const reply=await client.callTool({name:\'operations.run\',arguments:{id:"test"}});',
-    `const started=await client.callTool({name:'services.start',arguments:{id:'test'}});if(started.isError)throw new Error(JSON.stringify(started));
- const reply=await client.callTool({name:'operations.run',arguments:{id:'http-check'}});if(reply.isError)throw new Error(JSON.stringify(reply));
- await client.callTool({name:'services.logs',arguments:{id:'test'}});
- await client.callTool({name:'services.status',arguments:{id:'test'}});`,
-  );
-  writeFileSync(f.executable, code);
-  return f;
 }
 test('built CLI probes, starts owned HTTP service, checks it and ends its lease', (t: any) =>
   suite.builtCLIProbesStartsOwnedHTTPServiceChecksItAndEndsItsLease_1(t));
@@ -301,7 +270,7 @@ test('non-loopback bind is rejected even when announcement claims loopback', (t:
   suite.nonLoopbackBindIsRejectedEvenWhenAnnouncementClaimsLoopback_3(t));
 test('probe mutation stops before any planning or execution', (t: any) =>
   suite.probeMutationStopsBeforeAnyPlanningOrExecution_4(t));
-for (const signal of ['SIGINT', 'SIGKILL'])
+for (const signal of ['SIGINT', 'SIGKILL'] as const)
   test(`service stops when assignment receives ${signal}`, (t: any) => suite.scenario_5(t, signal));
 test('cleanup refuses unresolved service ownership', (t: any) =>
   suite.cleanupRefusesUnresolvedServiceOwnership_6(t));
