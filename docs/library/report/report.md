@@ -32,6 +32,14 @@ service id, status, and `endpointClosed` boolean. Absent or empty service histor
 produces exactly `No managed services recorded.` Both summaries use only captured
 record fields and leave the records unchanged.
 
+`## Captured test selection` lists the mandatory test suites captured in each
+component definition under `resolvedAssignment.context`. Each entry shows the
+captured component id, source path, test level, and SHA-256, sorted by source path
+in ascending, case-sensitive string order. Rendering reads only the captured
+assignment context and does not inspect test files or reorder the captured arrays.
+When historical records have no captured test selection, the section says
+`unavailable`. An explicitly captured empty suite list says `No tests captured.`
+
 ## Coordination evidence
 
 Reports summarize planned/actual/corrective turns, implementation attempts, elapsed

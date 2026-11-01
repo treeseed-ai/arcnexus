@@ -23,6 +23,41 @@ function readableInitializationRecord(): any {
   };
 }
 
+function capturedTestSelectionRecord(): any {
+  return {
+    ...record,
+    resolvedAssignment: {
+      context: [
+        { id: 'container-without-test-profile' },
+        capturedComponent('zeta', 'tests/zeta.test.ts', 'unit', 'z'),
+        capturedComponent('alpha', 'tests/alpha.test.ts', 'acceptance', 'a'),
+      ],
+    },
+  };
+}
+
+function capturedComponent(id: string, source: string, level: string, hash: string): any {
+  return {
+    id,
+    capturedTests: [{ component: id, source, level, sha256: hash.repeat(64) }],
+  };
+}
+
+function capturedTestSelectionSection(report: string): string | undefined {
+  return report.split('## Captured test selection\n\n')[1]?.split('\n\n## ')[0];
+}
+
+function emptyCapturedTestSelectionRecord(): any {
+  return {
+    ...record,
+    resolvedAssignment: { context: [{ id: 'empty', capturedTests: [] }] },
+  };
+}
+
+function historicalCapturedTestSelectionRecord(): any {
+  return { ...record, resolvedAssignment: { context: [{ id: 'historical-component' }] } };
+}
+
 function initializationSection(report: string): string {
   const section = report.split('## Initialization\n\n')[1]?.split('\n\n## Execution progress')[0];
   assert.ok(section, 'initialization section is present');
@@ -71,6 +106,34 @@ function assertInitializationLists(section: string): void {
 
 /** Exercises report behavior through observable scenarios. */
 class ReportTests {
+  /** Verifies captured test identity, source ordering, immutability, and historical absence. */
+  capturedTestSelectionIsSortedAndDistinguishesUnavailableFromEmpty() {
+    const captured = Object.freeze(capturedTestSelectionRecord());
+    const before = JSON.stringify(captured);
+    const report = markdownReport(captured);
+    const selection = capturedTestSelectionSection(report);
+
+    assert.equal(
+      selection,
+      '- alpha — tests/alpha.test.ts — acceptance — SHA-256 ' +
+        'a'.repeat(64) +
+        '\n- zeta — tests/zeta.test.ts — unit — SHA-256 ' +
+        'z'.repeat(64),
+      'captured test selection is sorted by source path and shows captured identity',
+    );
+    assert.equal(JSON.stringify(captured), before, 'captured selection evidence is unchanged');
+    assert.equal(
+      capturedTestSelectionSection(markdownReport(historicalCapturedTestSelectionRecord())),
+      'unavailable',
+      'missing historical selection is unavailable',
+    );
+    assert.equal(
+      capturedTestSelectionSection(markdownReport(emptyCapturedTestSelectionRecord())),
+      'No tests captured.',
+      'an explicitly captured empty selection reports no tests',
+    );
+  }
+
   /** Verifies that initialization summary is readable and preserves execution progress. */
   initializationSummaryIsReadableAndPreservesExecutionProgress() {
     const report = markdownReport(readableInitializationRecord());
@@ -215,6 +278,9 @@ const record = {
 };
 
 const section = (report: any) => report.split('## Changed files\n\n')[1]?.split('\n\n')[0];
+
+test('captured test selection is sorted and distinguishes unavailable from empty', () =>
+  suite.capturedTestSelectionIsSortedAndDistinguishesUnavailableFromEmpty());
 
 test('changed files are sorted independently of input and preserve captured evidence', () =>
   suite.changedFilesAreSortedIndependentlyOfInputAndPreserveCapturedEvidence());

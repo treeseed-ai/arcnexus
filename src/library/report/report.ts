@@ -47,6 +47,14 @@ class CoordinationEvidence {
           executionProfile?: { schemaVersion?: number };
           digest?: string;
           priorEvidence?: unknown[];
+          context?: Array<{
+            capturedTests?: Array<{
+              component?: string;
+              source?: string;
+              level?: string;
+              sha256?: string;
+            }>;
+          }>;
         }
       | undefined;
     this.planned = this.resolved?.assignment?.kind
@@ -65,6 +73,7 @@ class CoordinationEvidence {
       this.accounting() +
       this.usage() +
       this.context() +
+      this.testSelection() +
       this.checks() +
       this.requests() +
       this.interventions() +
@@ -114,6 +123,34 @@ Selected prior evidence: ${value(
     )}
 
 `;
+  }
+
+  /** Lists captured test selections without reading suites or changing assignment evidence. */
+  private testSelection(): string {
+    const context = this.resolved?.context;
+    if (
+      !Array.isArray(context) ||
+      context.length === 0 ||
+      !context.some((component) => Array.isArray(component.capturedTests))
+    )
+      return '## Captured test selection\n\nunavailable\n\n';
+
+    const tests = context.flatMap((component) =>
+      Array.isArray(component.capturedTests) ? component.capturedTests : [],
+    );
+    const entries = [...tests]
+      .sort((left, right) => {
+        if (left.source === right.source) return 0;
+        if (!left.source) return 1;
+        if (!right.source) return -1;
+        return left.source < right.source ? -1 : 1;
+      })
+      .map(
+        (captured) =>
+          `- ${value(captured.component)} — ${value(captured.source)} — ${value(captured.level)} — SHA-256 ${value(captured.sha256)}`,
+      );
+
+    return `## Captured test selection\n\n${entries.join('\n') || 'No tests captured.'}\n\n`;
   }
 
   /** Separates host command results from agent claims, including expected-red failures. */
