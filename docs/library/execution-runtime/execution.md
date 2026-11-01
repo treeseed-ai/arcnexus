@@ -101,7 +101,8 @@ produce an actionable migration error.
 The general result contract exposes correlated inbox decisions independently of
 ordinary boundary requests. Recipients accept, reject or ask clarification; the
 originating assignment answers in a read-only control activation. The host records
-verified delivery itself. Requests may deliberately link an existing assignment and
+verified delivery itself. A completed model turn with outstanding structured requests
+still yields the assignment; turn status never implies dependency delivery. Requests may deliberately link an existing assignment and
 specify accepted intent or verified delivery as their required milestone. An inbox
 reply must match its captured sender/recipient identities. A clarification does not
 restart engineering or mark the original assignment complete.
