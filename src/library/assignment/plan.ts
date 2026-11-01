@@ -88,6 +88,15 @@ export class PlanValidationError extends Error {
   }
 }
 
+/** Identifies invalid final claims after model completion and scope validation, permitting safe correction. */
+export class CompletedPlanValidationError extends PlanValidationError {
+  /** Keeps the semantic diagnostic separate from uncertain execution or persistence failures. */
+  constructor(cause: PlanValidationError) {
+    super(cause);
+    this.name = 'CompletedPlanValidationError';
+  }
+}
+
 export function acceptPlan(
   root: string,
   record: RecordData,
@@ -121,6 +130,17 @@ function validateProposedPlan(value: unknown, resolved: ResolvedAssignment): Pla
 }
 
 export function updatePlan(root: string, record: RecordData, updates: unknown): void {
+  let plan: Plan;
+  try {
+    plan = validateUpdates(record, updates);
+  } catch (error) {
+    throw new PlanValidationError(error);
+  }
+  persist(root, record, plan, 'Steward progress update');
+}
+
+/** Validates the entire proposed batch on a copy before accepted-plan persistence. */
+function validateUpdates(record: RecordData, updates: unknown): Plan {
   const values = validateSchema<PlanUpdate[]>('plan-updates', updates),
     plan = structuredClone(record.plan) as Plan | undefined;
   if (!plan) throw new Error('No accepted plan');
@@ -137,7 +157,7 @@ export function updatePlan(root: string, record: RecordData, updates: unknown): 
       throw new Error('Checklist completion requires evidence and satisfied dependencies');
     Object.assign(item, update, { basis: 'agent claim' });
   }
-  persist(root, record, plan, 'Steward progress update');
+  return plan;
 }
 
 export function completePlan(root: string, record: RecordData): void {

@@ -1,3 +1,4 @@
+import { ControlledChecklist } from './controlled-checklist.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { appendFileSync, writeFileSync } from 'node:fs';
@@ -22,6 +23,7 @@ export class ControlledPlanning {
       else if (this.options.operations)
         for (let i = 0; i < (this.options.operationRepeats ?? 1); i++) await this.operation(turn);
     }
+    new ControlledChecklist(this.options.mode).apply(turn);
   }
 
   /** Rejects response schemas incompatible with the controlled strict-output contract. */

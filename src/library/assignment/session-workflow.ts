@@ -1,7 +1,7 @@
 import { SessionProgress } from './session-progress.js';
 import { save } from '../workspace/state.js';
 import { logExcerpt } from './attempts.js';
-import { completePlan, PlanValidationError } from './plan.js';
+import { completePlan, CompletedPlanValidationError } from './plan.js';
 import { SessionState } from './session-state.js';
 import { SessionTurn } from './session-turn.js';
 import { SessionVerification } from './session-verification.js';
@@ -48,7 +48,7 @@ export class SessionWorkflow {
     } catch (error) {
       if (
         !(error instanceof Error && error.name === 'AssignmentYield') &&
-        !this.retainPlanning(stage, error)
+        !this.retainPlanCorrection(stage, error)
       ) {
         this.failure(error);
         throw error;
@@ -66,16 +66,16 @@ export class SessionWorkflow {
     }
   }
 
-  /** Returns rejected read-only plan content to the same stage without retrying other failure classes. */
-  private retainPlanning(stage: string, error: unknown): boolean {
+  /** Returns semantic final-response errors to the retained stage without replaying uncertain execution. */
+  private retainPlanCorrection(stage: string, error: unknown): boolean {
     const { record, signal } = this.state.options;
-    if (!record.generalExecution || stage !== 'planning' || !(error instanceof PlanValidationError))
-      return false;
+    if (!record.generalExecution || !(error instanceof CompletedPlanValidationError)) return false;
     signal.throwIfAborted();
-    record.planningFeedback = new SessionProgress(this.state).failure(
-      'plan-validation',
+    record.planFeedback = new SessionProgress(this.state).failure(
+      'plan-validation:' + stage,
       error.message,
     );
+    if (stage === 'planning') record.planningFeedback = record.planFeedback;
     record.status = 'running';
     return true;
   }
