@@ -1,5 +1,4 @@
 import { candidateDigest } from '../change-inspection/changes.js';
-import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ExecutionContext, type ProjectExecution } from '../architecture/execution-context.js';
@@ -185,7 +184,7 @@ export class AssignmentExecution {
     const incoming = this.snapshots.capture(record.workspace, record.base);
     const merged = this.snapshots.reconcile(record.base, current, incoming);
     if (merged.status !== 'merged') throw new Error('Candidate conflict: ' + merged.evidence);
-    const next = await this.materialize(record, current, merged.revision);
+    const next = await this.materialize(assignment, record, current, merged.revision);
     record.previousWorkspaces = [
       ...((record.previousWorkspaces ?? []) as string[]),
       record.workspace,
@@ -194,18 +193,18 @@ export class AssignmentExecution {
       workspace: next.workspace,
       branch: next.branch,
       base: current,
-      coordinationContext:
-        'Verified dependency deliveries: ' +
-        JSON.stringify(assignment.dependencies.map((id) => this.store.assignment(id))),
     });
     if (record.nextStage === 'finished') record.nextStage = 'review';
     record.reconciledCandidateDigest = candidateDigest(record);
+    record.reconciliationId = next.id;
     save(this.root, record);
+    this.store.updateAssignment(assignment.id, 'running', { reconciliation: null });
     return record;
   }
 
   /** Materializes a reconciled candidate while retaining the owner's edits relative to the new base. */
   private async materialize(
+    assignment: ExecutionAssignment,
     record: RecordData,
     current: string,
     revision: string,
@@ -217,17 +216,11 @@ export class AssignmentExecution {
       bindings: this.context.bindings,
     });
     next.environment = record.environment;
+    this.store.updateAssignment(assignment.id, 'running', {
+      reconciliation: { recordId: next.id, workspace: next.workspace, current, revision },
+    });
     await prepareWorkspace(this.root, next, this.signal);
-    const patch = execFileSync('git', [
-      '-C',
-      this.context.source,
-      'diff',
-      '--binary',
-      current,
-      revision,
-    ]);
-    if (patch.length)
-      execFileSync('git', ['-C', next.workspace, 'apply', '--binary', '-'], { input: patch });
+    this.snapshots.apply(next.workspace, current, revision);
     return next;
   }
 

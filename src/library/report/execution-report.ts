@@ -24,6 +24,7 @@ export class ExecutionReports {
       evidence: a.evidence,
       reason: a.data.reason,
       recordId: a.data.recordId,
+      reconciliation: a.data.reconciliation,
       progress: a.status === 'running' ? this.progress(a.data.recordId) : undefined,
       inbox: this.store.inbox(a.id).length,
     }));

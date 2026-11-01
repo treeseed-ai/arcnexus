@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, type TestContext } from 'node:test';
 import { join } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { ExecutionContext } from '../../../../dist/library/architecture/execution-context.js';
 import { ExecutionLease } from '../../../../dist/library/coordination-store/execution-store.js';
 import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
@@ -33,6 +34,36 @@ class RecoveryScenarios {
     await host.tick();
     assert.ok(host.store.assignments(second.id).some((a) => a.data.recordId));
     assert.equal(host.store.assignments(first.id).length, 0);
+  }
+
+  /** Recovery never repeats workspace setup whose completion is not recorded durably. */
+  async reconciliation(t: TestContext, committed: boolean): Promise<void> {
+    const f = new GeneralFixture(t).fixture;
+    const context = new ExecutionContext().resolve(f.repo);
+    let host = new ProjectHost(f.state, context);
+    const task = host.submit('Research supplier evidence');
+    await host.tick();
+    await host.tick();
+    const original = host.store.assignments(task.id)[0]!;
+    const path = join(f.state, 'runs', String(original.data.recordId), 'report.json');
+    const record = JSON.parse(readFileSync(path, 'utf8'));
+    if (committed) record.reconciliationId = 'replacement-workspace';
+    writeFileSync(path, JSON.stringify(record));
+    host.cancel(task.id);
+    host.control('start');
+    const workday = host.store.runs().at(-1)!;
+    const assignment = host.store.enqueue(workday.id, 'a', 'Retained work');
+    host.store.updateAssignment(assignment.id, 'running', {
+      recordId: record.id,
+      reconciliation: { recordId: 'replacement-workspace' },
+    });
+    host.store.close();
+    host = new ProjectHost(f.state, context);
+    t.after(() => host.store.close());
+    if (committed) host.control('resume');
+    else assert.throws(() => host.control('resume'), /uncertain workspace preparation/);
+    assert.equal(host.store.assignment(assignment.id).status, committed ? 'ready' : 'interrupted');
+    assert.equal(host.store.run(workday.id).status, committed ? 'running' : 'needs_attention');
   }
 
   /** Reconciles already observed delivery while retaining uncertain engineering as interrupted. */
@@ -77,5 +108,11 @@ test('answered tasks wait for the current task to release project execution', (t
 
 test('host recovery commits known outcomes and retains uncertain operations', (t) =>
   scenarios.recovery(t));
+
+test('host recovery retains uncertain reconciliation without replaying setup', (t) =>
+  scenarios.reconciliation(t, false));
+
+test('host recovery accepts a durably completed reconciliation checkpoint', (t) =>
+  scenarios.reconciliation(t, true));
 
 registerSuite({ component: 'execution-runtime', level: 'acceptance', tags: ['deterministic'] });

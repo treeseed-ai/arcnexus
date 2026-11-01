@@ -53,6 +53,20 @@ export class CandidateSnapshots {
     return { status: 'conflict', base, current, incoming, evidence };
   }
 
+  /** Applies an already checked reconciliation to a freshly prepared assignment workspace. */
+  apply(workspace: string, current: string, revision: string): void {
+    const patch = execFileSync('git', [
+      '-C',
+      this.repository,
+      'diff',
+      '--binary',
+      current,
+      revision,
+    ]);
+    if (patch.length)
+      execFileSync('git', ['-C', workspace, 'apply', '--binary', '-'], { input: patch });
+  }
+
   /** Pins a private commit object so Git maintenance cannot prune retained execution evidence. */
   private commit(tree: string, parents: string[]): string {
     const env = {

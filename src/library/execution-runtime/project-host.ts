@@ -256,7 +256,10 @@ export class ProjectHost {
     }
     const { owner, fingerprint } = selected;
     const component = this.context.catalog.components[owner]!;
-    const workspace = (run.data.candidateRecord ?? run.data.workspace) as RecordData;
+    const workspace = {
+      ...((run.data.candidateRecord ?? run.data.workspace) as RecordData),
+      executionRunId: run.id,
+    };
     const result = await new Direction(this.root, this.context, signal).propose(
       workspace,
       JSON.stringify({
@@ -353,8 +356,13 @@ export class ProjectHost {
           'utf8',
         ),
       ) as RecordData;
+      const pending = assignment.data.reconciliation as { recordId: string } | null;
+      if (pending && pending.recordId !== record.reconciliationId)
+        throw new Error(
+          `Assignment ${assignment.id} has uncertain workspace preparation: ${pending.recordId}`,
+        );
       validateContinuation(this.root, record);
-      this.store.updateAssignment(assignment.id, 'ready');
+      this.store.updateAssignment(assignment.id, 'ready', { reconciliation: null });
     }
   }
 
