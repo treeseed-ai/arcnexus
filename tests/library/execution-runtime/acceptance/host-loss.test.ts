@@ -7,7 +7,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { test, type TestContext } from 'node:test';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import { cli, type WorkflowFixture } from '../../testing/support/workflow-fixture.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Kills the actual background host while its managed harness is active and inspects recovery. */
 class HostLossScenario {

@@ -4,7 +4,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { test, type TestContext } from 'node:test';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import { cli } from '../../testing/support/workflow-fixture.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Exercises exact public commands through the real background-host construction path. */
 class GeneralCliScenarios {

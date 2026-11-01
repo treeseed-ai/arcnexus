@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { TestContext } from 'node:test';
-import { workflowFixture, type WorkflowFixture } from '../../testing/support/workflow-fixture.js';
+import { workflowFixture, type WorkflowFixture } from './workflow-fixture.js';
 
 /** Captures a three-owner package and local executable binding for option-free CLI scenarios. */
 export class GeneralFixture {

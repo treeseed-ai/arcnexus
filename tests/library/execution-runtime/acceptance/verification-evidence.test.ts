@@ -7,7 +7,7 @@ import { Direction } from '../../../../dist/library/task-intake/direction.js';
 import { createWorkspace, prepareWorkspace } from '../../../../dist/library/workspace/workspace.js';
 import { CandidateSnapshots } from '../../../../dist/library/workspace/candidates.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Verifies the independent model receives immutable host change evidence through a constrained tool. */
 class VerificationEvidenceScenarios {

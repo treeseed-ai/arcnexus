@@ -5,7 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
 import { cli } from '../../testing/support/workflow-fixture.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Replaces a disposable installation after startup to prove the host retains its own runner. */
 class RunnerSnapshotScenario {

@@ -6,7 +6,7 @@ import { ExecutionContext } from '../../../../dist/library/architecture/executio
 import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
 import { CandidateSnapshots } from '../../../../dist/library/workspace/candidates.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Ensures read-only policy sees pinned candidate contents rather than mutable delivery bookkeeping. */
 class PolicyWorkspaceScenarios {

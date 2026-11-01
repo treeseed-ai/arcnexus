@@ -7,7 +7,7 @@ import { ExecutionLease } from '../../../../dist/library/coordination-store/exec
 import { StewardshipPolicy } from '../../../../dist/library/workday/workday.js';
 import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Exercises host ownership and recovery without substituting model claims for observed delivery. */
 class RecoveryScenarios {

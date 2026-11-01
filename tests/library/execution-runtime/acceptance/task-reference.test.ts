@@ -4,7 +4,7 @@ import { test, type TestContext } from 'node:test';
 import { ExecutionContext } from '../../../../dist/library/architecture/execution-context.js';
 import { ProjectHost } from '../../../../dist/library/execution-runtime/project-host.js';
 import { registerSuite } from '../../../../dist/library/testing/suite.js';
-import { GeneralFixture } from '../support/general-fixture.js';
+import { GeneralFixture } from '../../testing/support/general-fixture.js';
 
 /** Carries retained noninteractive questions into a new prompt without silently resuming old work. */
 class TaskReferenceScenario {

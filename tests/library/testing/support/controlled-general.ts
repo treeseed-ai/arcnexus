@@ -1,5 +1,5 @@
 import { ControlledEvidence } from './controlled-evidence.js';
-import { StructuredOutputCheck } from '../../testing/support/structured-output-check.js';
+import { StructuredOutputCheck } from './structured-output-check.js';
 import { appendFileSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
 import { setTimeout as delay } from 'node:timers/promises';
 
