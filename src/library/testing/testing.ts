@@ -8,7 +8,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { loadCatalog } from '../architecture/components.js';
+import { loadCatalog, type Catalog } from '../architecture/components.js';
 import { InputError } from '../architecture/config.js';
 import { execute, git, type CommandResult } from '../operations/process.js';
 import { stateRoot } from '../workspace/state.js';
@@ -58,15 +58,11 @@ export class ComponentTesting {
     project = resolve(project);
     const revision = git(project, 'rev-parse', 'HEAD').trim();
     const catalog = loadCatalog(project, revision, bindings);
-    const owners = Object.values(catalog.components).filter((owner) =>
-      filters.component ? owner.id === filters.component : Boolean(owner.testProfile),
-    );
-    if (!owners.length) throw new InputError(`Unknown component: ${filters.component}`);
+    const owners = this.owners(catalog, filters.component);
     const profiles = new Map<string, TestProfile>();
     const suites: DiscoveredSuite[] = [];
     for (const owner of owners) {
-      if (!owner.testProfile) throw new InputError(`No test profile for ${owner.id}`);
-      const profile = loadTestProfile(project, revision, owner.testProfile);
+      const profile = loadTestProfile(project, revision, owner.testProfile!);
       profiles.set(profile.id, profile);
       suites.push(...new TestDiscovery(project).discover(owner, profile.outputRoot));
     }
@@ -82,6 +78,22 @@ export class ComponentTesting {
         selected.some((suite) => suite.profile === profile.id),
       ),
     };
+  }
+
+  /** Selects executable test owners without granting inherited container profiles their own suites. */
+  private owners(catalog: Catalog, id?: string) {
+    const owners = Object.values(catalog.components).filter((owner) =>
+      id
+        ? owner.id === id
+        : Boolean(owner.testProfile) && !['platform', 'package'].includes(owner.type),
+    );
+    if (!owners.length) throw new InputError(`Unknown component: ${id}`);
+    for (const owner of owners) {
+      if (['platform', 'package'].includes(owner.type))
+        throw new InputError(`Container has no test ownership: ${owner.id}`);
+      if (!owner.testProfile) throw new InputError(`No test profile for ${owner.id}`);
+    }
+    return owners;
   }
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
