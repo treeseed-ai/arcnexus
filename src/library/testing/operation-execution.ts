@@ -48,22 +48,13 @@ export class SharedTestExecution {
   /** Deduplicates equivalent preparation while keeping each owner's selected runner invocation explicit. */
   async run(productionBuilt: boolean): Promise<void> {
     const plan = this.result.selection.operationPlan!;
-    const seen = new Set<string>();
     try {
       for (const component of plan.catalog)
         if (this.result.selection.suites.some((s) => s.component === component.id))
           assertCapturedTests(component, this.record.workspace);
-      for (const step of plan.steps) {
-        const { resolvedContext: _context, ...definition } = step.operation;
-        const key = JSON.stringify(definition);
-        if (
-          step.purpose !== 'test-run' &&
-          (seen.has(key) || (productionBuilt && step.purpose === 'production'))
-        )
-          continue;
-        await this.invoke(step.operation, step.purpose);
-        seen.add(key);
-      }
+      await this.invoke(
+        plan.steps.filter((step) => !(productionBuilt && step.purpose === 'production')),
+      );
       this.record.status = 'completed';
     } catch (error) {
       this.record.status = this.signal.aborted ? 'cancelled' : 'failed';
@@ -76,18 +67,18 @@ export class SharedTestExecution {
 
   /** Preserves the supervised command result even when a test or preparation operation fails. */
   private async invoke(
-    operation: import('../operations/operations.js').Operation,
-    purpose: string,
+    steps: import('./operation-plan.js').TestOperationPlan['steps'],
   ): Promise<void> {
     try {
-      this.result.commands.push(
-        await new OperationExecution(this.root, this.record, this.signal).run(operation, purpose),
-      );
-    } catch (error) {
-      const result = (error as { commandResult?: import('../operations/process.js').CommandResult })
-        .commandResult;
-      if (result) this.result.commands.push(result);
-      throw error;
+      await new OperationExecution(this.root, this.record, this.signal).steps(steps);
+    } finally {
+      const invocations = this.record.operationInvocations as
+        | Array<{
+            result?: import('../operations/process.js').CommandResult;
+          }>
+        | undefined;
+      for (const invocation of invocations ?? [])
+        if (invocation.result) this.result.commands.push(invocation.result);
     }
   }
 }

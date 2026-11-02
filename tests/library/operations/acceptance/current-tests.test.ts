@@ -16,6 +16,31 @@ import { registerSuite } from '../../../../dist/library/testing/suite.js';
 
 /** Exercises current test selection without allowing candidate configuration to redefine authority. */
 class CurrentTestScenarios {
+  /** A standalone host test executes its compilation prerequisite once before observing the current suite. */
+  async prerequisites(t: TestContext): Promise<void> {
+    const { root, record, op } = this.fixture(t);
+    rmSync(join(record.workspace, '.test-build'), { recursive: true });
+    const compile = new OperationArguments().capture(
+      this.operation('compile', [
+        '-e',
+        "const f=require('fs');f.mkdirSync('.test-build/unit',{recursive:true});f.copyFileSync('tests/unit/base.test.ts','.test-build/unit/base.test.js');f.appendFileSync('.test-build/count','x');",
+      ]),
+      op.resolvedContext!,
+    );
+    const check = new OperationArguments().capture(
+      this.operation('test', undefined, ['compile']),
+      op.resolvedContext!,
+    );
+    (record.resolvedAssignment as any).context[0].operationPlan = { verify: [compile, check] };
+    const executor = new OperationExecution(root, record, new AbortController().signal);
+    await executor.run(check, 'verify');
+    assert.equal(readFileSync(join(record.workspace, '.test-build/count'), 'utf8'), 'x');
+    const checkpoint = Reflect.get(executor, 'checkpoint');
+    assert.equal(typeof checkpoint, 'function');
+    await checkpoint.call(executor, [compile, check], 'verify');
+    assert.equal(readFileSync(join(record.workspace, '.test-build/count'), 'utf8'), 'xx');
+  }
+
   /** A newly created regression actually runs while the captured operation and selection remain immutable. */
   async discovers(t: TestContext): Promise<void> {
     const { root, record, op } = this.fixture(t);
@@ -122,10 +147,14 @@ class CurrentTestScenarios {
   }
 
   /** Defines one command whose token definition remains stable after candidate tests change. */
-  private operation(): Operation {
+  private operation(
+    id = 'test',
+    args: unknown[] = ['--test', { context: 'selectedTestFiles' }],
+    prerequisites: string[] = [],
+  ): Operation {
     return normalizeOperation({
       schemaVersion: 4,
-      id: 'test',
+      id,
       purpose: 'Run owner tests',
       kind: 'command',
       repository: 'sample',
@@ -133,10 +162,10 @@ class CurrentTestScenarios {
       category: 'unit-test',
       activities: ['testing'],
       command: 'node',
-      args: ['--test', { context: 'selectedTestFiles' }],
+      args,
       generatedDirectories: ['.test-build'],
       artifacts: [],
-      prerequisites: [],
+      prerequisites,
       network: false,
     } as unknown as Operation);
   }
@@ -165,6 +194,12 @@ class CurrentTestScenarios {
 }
 
 const scenarios = new CurrentTestScenarios();
+
+test(
+  'standalone verification executes prerequisites and checkpoints deduplicate preparation',
+  { skip: !process.env.ARCNEXUS_TEST_CODEX },
+  (t) => scenarios.prerequisites(t),
+);
 
 test('captured operation path context resolves against its working directory', () =>
   scenarios.cwd());

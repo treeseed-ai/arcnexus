@@ -74,7 +74,7 @@ class ExecutionScenarios {
       commands: [],
       bindings: { tools: { codex: process.env.ARCNEXUS_TEST_CODEX! } },
       resolvedAssignment: {
-        context: [{ repository: 'sample', access: { readPaths: ['.'] } }],
+        context: [{ id: 'owner', repository: 'sample', access: { readPaths: ['.'] } }],
         initialization: {
           catalog: [{ repository: 'sample', allowedWritePaths: ['source.txt', 'check.cjs'] }],
         },

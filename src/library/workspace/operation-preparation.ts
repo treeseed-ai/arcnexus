@@ -6,7 +6,6 @@ import { ConfigurationReader } from '../architecture/configuration.js';
 import { ExecutionContext } from '../architecture/execution-context.js';
 import type { Bindings } from '../architecture/bindings.js';
 import { OperationExecution } from '../operations/operation-execution.js';
-import type { Operation } from '../operations/operations.js';
 import { memberEnvironment, type Member } from './members.js';
 import { save, type RecordData } from './state.js';
 
@@ -122,17 +121,14 @@ export class WorkspaceOperations {
 
   /** Orders lifecycle classes and deduplicates identical resolved commands only within this checkpoint. */
   private async execute(record: RecordData, owners: Component[]): Promise<void> {
-    const seen = new Set<string>();
-    for (const usage of ['preflight', 'setup']) {
-      for (const operation of owners.flatMap((c) => c.operationPlan?.[usage] ?? [])) {
-        const identity = this.identity(operation);
-        if (seen.has(identity)) continue;
-        seen.add(identity);
-        record.commands.push(
-          await new OperationExecution(this.root, record, this.signal).run(operation, usage),
-        );
-      }
-    }
+    const steps = ['preflight', 'setup'].flatMap((purpose) =>
+      owners.flatMap((owner) =>
+        (owner.operationPlan?.[purpose] ?? []).map((operation) => ({ operation, purpose })),
+      ),
+    );
+    record.commands.push(
+      ...(await new OperationExecution(this.root, record, this.signal).steps(steps)),
+    );
   }
 
   /** Requires the immutable catalog snapshot captured before any setup command was dispatched. */
@@ -140,11 +136,5 @@ export class WorkspaceOperations {
     if (!Array.isArray(this.record.operationCatalog))
       throw new Error('Missing captured setup authority');
     return this.record.operationCatalog as Component[];
-  }
-
-  /** Includes complete resolved execution semantics while excluding unused owner context. */
-  private identity(operation: Operation): string {
-    const { resolvedContext: _context, ...resolved } = operation;
-    return JSON.stringify(resolved);
   }
 }

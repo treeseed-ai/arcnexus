@@ -8,7 +8,7 @@ import { observe } from '../report/timeline.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OperationConfinement } from './operation-confinement.js';
 import { operationEnvironment } from './environment.js';
-import { currentOperationContext } from './current-context.js';
+import { OperationCheckpoint, type OperationStep } from './operation-checkpoint.js';
 import type { Operation } from './operations.js';
 import { execute, type CommandResult } from './process.js';
 
@@ -40,19 +40,31 @@ export class OperationExecution {
     private readonly signal: AbortSignal,
   ) {}
 
-  /** Records intent before dispatch and keeps agent use distinct from required checkpoint evidence. */
+  /** Executes a fresh checkpoint, including required preparation, for a single requested operation. */
   async run(op: Operation, purpose: string): Promise<CommandResult> {
-    if (
-      op.kind !== 'command' ||
-      op.schemaVersion !== 4 ||
-      op.argumentTokens ||
-      !op.definitionDigest ||
-      !op.resolvedContext
-    )
-      throw new Error('A finite captured operation with resolved host context is required');
+    return (await this.checkpoint([op], purpose)).at(-1)!;
+  }
+
+  /** Executes the fully validated dependency order once, without reusing evidence across checkpoints. */
+  async checkpoint(operations: Operation[], purpose: string): Promise<CommandResult[]> {
+    return this.steps(operations.map((operation) => ({ operation, purpose })));
+  }
+
+  /** Shares prerequisite ordering and deduplication across lifecycle usages in one host checkpoint. */
+  async steps(steps: OperationStep[]): Promise<CommandResult[]> {
     this.assertSettled();
     this.signal.throwIfAborted();
-    op = currentOperationContext(this.record, op);
+    const ordered = new OperationCheckpoint(this.record).resolve(steps);
+    const results: CommandResult[] = [];
+    for (const step of ordered) results.push(await this.invoke(step.operation, step.purpose));
+    return results;
+  }
+
+  /** Records intent before dispatch and keeps agent use distinct from required checkpoint evidence. */
+  private async invoke(op: Operation, purpose: string): Promise<CommandResult> {
+    if (op.kind !== 'command') throw new Error('Finite command required');
+    this.assertSettled();
+    this.signal.throwIfAborted();
     const adapter = await new OperationConfinement(this.root, this.record, this.signal).prepare(op);
     const invocation = this.begin(op, purpose);
     try {

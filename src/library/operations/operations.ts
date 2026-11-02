@@ -1,5 +1,4 @@
 import { OperationExecution } from './operation-execution.js';
-import { OperationOrder } from './operation-definition.js';
 import { readDiagnosticExcerpt } from './diagnostics.js';
 import { materialCandidate } from '../change-inspection/changes.js';
 import { ProgressObserver } from '../report/progress.js';
@@ -140,18 +139,6 @@ class OperationRuntime {
     const action = { activity: this.record.stage, operation: op.id };
     const candidate = materialCandidate(this.record);
     progress.before(action, candidate);
-    if (op.schemaVersion === 4) {
-      const registry = Object.fromEntries(
-        this.resolved.operations.map((entry) => [entry.id, entry]),
-      );
-      for (const prerequisite of new OperationOrder(registry)
-        .resolve([op.id])
-        .filter((entry) => entry.id !== op.id))
-        await new OperationExecution(this.root, this.record, this.signal).run(
-          prerequisite,
-          'agent-prerequisite',
-        );
-    }
     const result = await this.finite(op);
     if (result.status === 'failed') {
       const warning = progress.failed(action, result.output, candidate);
