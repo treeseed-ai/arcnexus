@@ -17,6 +17,36 @@ After a hard interruption, inspect the lock's PID and retained record; only afte
 confirming the process is gone may the caller remove the stale lock. No automatic
 recovery is attempted. State is private to the current OS user.
 
+## Shared-operation preparation (migration in progress)
+
+Environment schema 4 contains repository composition only:
+
+```yaml
+schemaVersion: 4
+workspace:
+  primary:
+    id: app
+    repository: https://example.invalid/app.git
+  dependencies: []
+```
+
+Version-five components inherit `operations` usages. Preparation runs their captured
+`preflight` operations followed by `setup`, expanding fixed host context inputs and
+ordering prerequisites. Identical resolved operations run once per checkpoint.
+Generated-output roots come from those operation definitions; environment setup
+recipes and duplicate output-root declarations are rejected. Mounted repositories
+receive their own captured owner context and retained operation evidence.
+
+The installed confinement adapter must prove source and configuration-home writes
+are denied before setup executes. Setup can write only its declared generated roots
+and private temporary storage. Run intent is flushed before dispatch; uncertain
+operations are not automatically replayed. Cleanup derives disposable outputs from
+immutable operation definitions and retains the original reports.
+
+This preparation path is implemented. Full v5 engineering remains gated pending
+refresh, test preparation and verification integration; it is not yet the production
+configuration family. The following describes the existing legacy preparation path.
+
 Commit `architecture/environment.yaml` in the target repository:
 
 ```yaml

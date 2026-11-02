@@ -156,6 +156,7 @@ class AssignmentResolver {
     this.component = this.context.at(-1)!;
     this.env = environment(
       new ConfigurationReader().definition(repository, base, 'architecture/environment').value,
+      Object.values(this.catalog.operations),
     );
     this.validateTarget();
     if (options.file && (options.objective !== undefined || options.kind !== undefined))

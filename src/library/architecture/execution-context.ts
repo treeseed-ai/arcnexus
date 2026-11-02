@@ -32,17 +32,16 @@ export function executionIdentity(context: ProjectExecution): string {
 export class ExecutionContext {
   /** Discovers repository, committed authority and machine bindings; ambiguous packages fail. */
   resolve(cwd: string): ProjectExecution {
-    const { source, base } = resolveBase(cwd);
-    const commonDir = realpathSync(
-      git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
-    );
-    const path = join(commonDir, 'arcnexus', 'bindings.yaml');
-    const bindings = loadBindings(existsSync(path) ? path : undefined);
+    const { source, base, commonDir, bindings } = this.discovery(cwd);
     const catalog = loadCatalog(source, base, bindings);
     const config = this.defaults(source, base, catalog);
-    const selected = this.package(catalog, relative(source, resolve(cwd)), config.defaultPackage);
+    const selected = this.selectPackage(
+      catalog,
+      relative(source, resolve(cwd)),
+      config.defaultPackage,
+    );
     const owners = this.owners(catalog, selected.id);
-    this.profiles(catalog, [
+    this.validateProfiles(catalog, [
       ...owners.map((id) => catalog.components[id]!.executionProfile),
       config.directorProfile,
       config.reviewerProfile,
@@ -59,6 +58,17 @@ export class ExecutionContext {
       ...config,
       executable: bindings.tools.codex ?? 'codex',
     };
+  }
+
+  /** Resolves canonical repository identity and machine bindings without reading mutable authority. */
+  private discovery(cwd: string) {
+    const { source, base } = resolveBase(cwd);
+    const commonDir = realpathSync(
+      git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
+    );
+    const path = join(commonDir, 'arcnexus', 'bindings.yaml');
+    const bindings = loadBindings(existsSync(path) ? path : undefined);
+    return { source, base, commonDir, bindings };
   }
 
   /** Selects executable descendants while containers contribute inherited context only. */
@@ -142,7 +152,7 @@ export class ExecutionContext {
   }
 
   /** Selects the deepest containing package; equal candidates require an explicit default. */
-  private package(catalog: Catalog, path: string, defaultId?: string): Component {
+  selectPackage(catalog: Catalog, path: string, defaultId?: string): Component {
     const packages = Object.values(catalog.components).filter(
       (c) =>
         c.type === 'package' &&
@@ -158,7 +168,7 @@ export class ExecutionContext {
   }
 
   /** Rejects obsolete work budgets rather than silently changing their meaning. */
-  private profiles(catalog: Catalog, ids: string[]): void {
+  validateProfiles(catalog: Catalog, ids: string[]): void {
     const obsolete = [
       'timeoutSeconds',
       'commandTimeoutSeconds',

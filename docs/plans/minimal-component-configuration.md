@@ -152,3 +152,13 @@ configuration, stable regression operation identities, HTTP verification checkpo
 and continuation reconciliation still need integration. Mandatory HTTP verification
 currently fails explicitly rather than disappearing from the captured check plan.
 Migration and removal of old executable configuration have not been delivered.
+
+
+The shared-operation checkpoint passed the affected operations (33), workspace (41),
+assignment (88), and architecture (75) suites through the test inspect/run interface:
+237 cases, with no failures or skips in those local runs. The platform now supplies
+new director/reviewer defaults without a duplicate execution file. Environment schema
+4 captures composition alone; preparation and cleanup derive outputs from shared
+operations. Installed-runtime preparation tests cover generated delivery, deduplication
+across owners, setup-script write denial and cleanup. These tests use controlled
+fixtures and do not satisfy real task/workday qualification.

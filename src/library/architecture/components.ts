@@ -181,7 +181,7 @@ class CatalogLoader {
       'architecture/environment',
     );
     this.catalog.configurationSources.push(source);
-    const env = environment(source.value);
+    const env = environment(source.value, Object.values(this.catalog.operations));
     repositoryRevisions(this.catalog, env, this.repository, this.base, this.bindings);
     new ComponentV4Resolver(this.catalog).resolve();
     new ComponentV5Resolver(this.catalog).resolve();

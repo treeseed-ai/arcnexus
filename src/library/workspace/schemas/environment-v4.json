@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcnexus.local/schemas/environment-v4",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "const": 4
+    },
+    "workspace": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-zA-Z0-9_-]+$"
+            },
+            "repository": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^https://"
+            }
+          },
+          "required": ["id", "repository"],
+          "additionalProperties": false
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^[a-zA-Z0-9_-]+$"
+              },
+              "repository": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "^https://"
+              },
+              "commit": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": ["id", "repository", "commit", "path"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["primary", "dependencies"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["schemaVersion", "workspace"],
+  "additionalProperties": false
+}

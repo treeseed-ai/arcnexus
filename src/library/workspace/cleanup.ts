@@ -1,3 +1,4 @@
+import { loadCatalog } from '../architecture/components.js';
 import {
   existsSync,
   lstatSync,
@@ -214,14 +215,7 @@ export class WorkspaceCleanup {
   /** Reads the declared disposable-output policy from retained preparation evidence. */
   private capturedEnvironment() {
     const { record, members } = this;
-    // Use the immutable base configuration, not potentially edited report settings.
-    const env = environment(
-      new ConfigurationReader().definition(
-        record.workspace,
-        record.base,
-        'architecture/environment',
-      ).value,
-    );
+    const env = this.outputPolicy();
     const definitions = env.workspace?.dependencies ?? [];
     if (definitions.length !== members.length)
       throw new Error('Dependency ownership record mismatch');
@@ -236,6 +230,21 @@ export class WorkspaceCleanup {
       member.definition = definition;
     }
     return env;
+  }
+
+  /** Derives output roots from immutable operation definitions, never mutable report permissions. */
+  private outputPolicy() {
+    const { workspace, base } = this.record;
+    const source = new ConfigurationReader().definition(
+      workspace,
+      base,
+      'architecture/environment',
+    ).value;
+    const operations =
+      (source as { schemaVersion: number }).schemaVersion === 4
+        ? Object.values(loadCatalog(workspace, base).operations)
+        : [];
+    return environment(source, operations);
   }
 
   /** Atomically records completed cleanup without rewriting execution reports. */

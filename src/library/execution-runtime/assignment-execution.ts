@@ -145,11 +145,23 @@ export class AssignmentExecution {
     }
     const run = this.store.run(assignment.runId);
     const base = String(run.data.candidateRevision ?? this.context.base);
+    const record = this.capture(assignment, base);
+    this.store.updateAssignment(assignment.id, 'running', {
+      recordId: record.id,
+      candidateBase: base,
+    });
+    save(this.root, record);
+    return record;
+  }
+
+  /** Captures assignment authority and associates a fresh workspace with its durable execution identity. */
+  private capture(assignment: ExecutionAssignment, base: string): RecordData {
     const value = this.value(assignment);
     const resolved = new ExecutionContext().assignment(this.context, assignment.owner, value);
     const record = createWorkspace(this.root, {
       project: this.context.source,
       authorityBase: this.context.base,
+      packageId: this.context.packageId,
       base,
       bindings: this.context.bindings,
     });
@@ -159,11 +171,6 @@ export class AssignmentExecution {
     record.resolvedAssignment = resolved;
     record.directionAccepted = true;
     record.trustedVerificationPaths = this.context.verificationInputs;
-    this.store.updateAssignment(assignment.id, 'running', {
-      recordId: record.id,
-      candidateBase: base,
-    });
-    save(this.root, record);
     return record;
   }
 
@@ -244,10 +251,14 @@ export class AssignmentExecution {
     const next = createWorkspace(this.root, {
       project: this.context.source,
       authorityBase: this.context.base,
+      packageId: this.context.packageId,
       base: current,
       bindings: this.context.bindings,
     });
     next.environment = record.environment;
+    next.resolvedAssignment = record.resolvedAssignment;
+    next.assignmentId = assignment.id;
+    next.executionRunId = assignment.runId;
     this.store.updateAssignment(assignment.id, 'running', {
       reconciliation: { recordId: next.id, workspace: next.workspace, current, revision },
     });
