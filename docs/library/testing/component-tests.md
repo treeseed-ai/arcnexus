@@ -6,6 +6,13 @@ reads literal registrations; it does not import test modules, prepare an environ
 or invoke a model. Component roots and the shared profile come from captured HEAD.
 Untracked regular suites under those roots are visible; symlink traversal is rejected.
 
+For minimal v5 definitions, discovery derives test files from owned paths and captured
+classification rules; no leaf repeats test directories. Containers contribute the
+inherited profile without becoming test owners. The Node convention maps a package's
+`tests/` tree into the profile output root, preserving paths below `tests/`. Both
+captured and newly created suites use the same ownership and classification checks.
+Unsupported source layouts fail with a diagnostic rather than selecting no tests.
+
 Use `arcnexus test run report --project .` to prepare and execute that selection.
 Omit the component to select all declared suites. Filters intersect:
 
