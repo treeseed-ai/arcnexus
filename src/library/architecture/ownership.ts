@@ -41,7 +41,7 @@ export class OwnershipValidator {
       .trim()
       .split('\n');
     files.forEach((file) => this.files.add(file));
-    if (Object.values(catalog.components).some((c) => c.schemaVersion === 4)) {
+    if (Object.values(catalog.components).some((c) => c.schemaVersion >= 4)) {
       this.versionFour(catalog, files);
       return;
     }
@@ -79,8 +79,8 @@ export class OwnershipValidator {
       .flatMap((c) => c.coverageExclusions ?? []);
     exclusions.forEach((e) => e.path !== '.' && relativePath(e.path));
     const policy: OwnershipPolicy = { schemaVersion: 1, maintainedPaths: ['.'], owners };
-    this.validateOwners(policy, catalog, files);
     this.overlaps(owners);
+    this.validateOwners(policy, catalog, files);
     for (const file of files.filter((p) => !exclusions.some((e) => covers(p, e.path)))) {
       const owner = this.owner(file, policy);
       if (/\.[cm]?[jt]sx?$/.test(file)) this.imports(file, owner, policy);

@@ -8,12 +8,14 @@ import {
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { loadCatalog } from '../architecture/components.js';
+import { loadCatalog, type Catalog, type Component } from '../architecture/components.js';
 import { InputError } from '../architecture/config.js';
 import { execute, git, type CommandResult } from '../operations/process.js';
 import { stateRoot } from '../workspace/state.js';
 import { TestDiscovery, matches, type DiscoveredSuite, type TestFilters } from './discovery.js';
 import { loadTestProfile, type TestProfile } from './profile.js';
+import { TestOperationPlanning, type TestOperationPlan } from './operation-plan.js';
+import { SharedTestExecution } from './operation-execution.js';
 
 export interface TestSelection {
   project: string;
@@ -22,6 +24,8 @@ export interface TestSelection {
   inference: false;
   suites: DiscoveredSuite[];
   profiles: TestProfile[];
+  operationPlan?: TestOperationPlan;
+  requiresSharedOperations?: boolean;
 }
 
 export interface TestExecution {
@@ -35,6 +39,7 @@ export interface TestExecution {
   commands: CommandResult[];
   productionBuild: 'caller-prepared' | 'service-prepared';
   error?: string;
+  operationEvidence?: string;
 }
 
 /** Selects owner-declared suites and executes their fixed Node profile with retained evidence. */
@@ -58,30 +63,55 @@ export class ComponentTesting {
     project = resolve(project);
     const revision = git(project, 'rev-parse', 'HEAD').trim();
     const catalog = loadCatalog(project, revision, bindings);
-    const owners = Object.values(catalog.components).filter((owner) =>
-      filters.component ? owner.id === filters.component : Boolean(owner.testProfile),
-    );
-    if (!owners.length) throw new InputError(`Unknown component: ${filters.component}`);
-    const profiles = new Map<string, TestProfile>();
-    const suites: DiscoveredSuite[] = [];
-    for (const owner of owners) {
-      if (!owner.testProfile) throw new InputError(`No test profile for ${owner.id}`);
-      const profile = loadTestProfile(project, revision, owner.testProfile);
-      profiles.set(profile.id, profile);
-      suites.push(...new TestDiscovery(project).discover(owner, profile.outputRoot));
-    }
+    const owners = this.owners(catalog, filters.component);
+    const { profiles, suites } = this.discover(project, revision, owners);
     const selected = suites.filter((suite) => matches(suite, filters));
     if (!selected.length) throw new InputError('No tests match the required selection');
-    return {
+    const selection: TestSelection = {
       project,
       bindings,
       revision,
       inference: false,
+      requiresSharedOperations: owners.some((owner) => owner.schemaVersion === 5),
       suites: selected,
       profiles: [...profiles.values()].filter((profile) =>
         selected.some((suite) => suite.profile === profile.id),
       ),
     };
+    selection.operationPlan = new TestOperationPlanning(catalog).capture(
+      selected,
+      selection.profiles,
+    );
+    return selection;
+  }
+
+  /** Captures each shared profile once and discovers suites independently for every selected owner. */
+  private discover(project: string, revision: string, owners: Component[]) {
+    const profiles = new Map<string, TestProfile>();
+    const suites: DiscoveredSuite[] = [];
+    for (const owner of owners) {
+      const profile =
+        profiles.get(owner.testProfile!) ?? loadTestProfile(project, revision, owner.testProfile!);
+      profiles.set(profile.id, profile);
+      suites.push(...new TestDiscovery(project).discover(owner, profile.outputRoot));
+    }
+    return { profiles, suites };
+  }
+
+  /** Selects executable test owners without granting inherited container profiles their own suites. */
+  private owners(catalog: Catalog, id?: string) {
+    const owners = Object.values(catalog.components).filter((owner) =>
+      id
+        ? owner.id === id
+        : Boolean(owner.testProfile) && !['platform', 'package'].includes(owner.type),
+    );
+    if (!owners.length) throw new InputError(`Unknown component: ${id}`);
+    for (const owner of owners) {
+      if (['platform', 'package'].includes(owner.type))
+        throw new InputError(`Container has no test ownership: ${owner.id}`);
+      if (!owner.testProfile) throw new InputError(`No test profile for ${owner.id}`);
+    }
+    return owners;
   }
 
   /** Executes this lifecycle through its configured collaborators and propagates failures. */
@@ -90,17 +120,13 @@ export class ComponentTesting {
     signal: AbortSignal,
     productionBuilt = false,
   ): Promise<TestExecution> {
+    if (selection.requiresSharedOperations && !selection.operationPlan)
+      throw new InputError(
+        'Migrate test profile to schemaVersion 2 before executing minimal components',
+      );
     const result = this.record(selection, productionBuilt);
     try {
-      await this.prepare(result, signal, productionBuilt);
-      await this.command(
-        result,
-        {
-          command: selection.bindings.tools.node ?? process.execPath,
-          args: ['--test', ...selection.suites.map((suite) => suite.compiled)],
-        },
-        signal,
-      );
+      await this.execute(result, signal, productionBuilt);
       result.status = 'passed';
       result.exitCode = 0;
     } catch (error) {
@@ -109,8 +135,39 @@ export class ComponentTesting {
       result.exitCode = cancelled ? 130 : 1;
       result.error = String(error);
     }
+    const last = result.commands.at(-1);
+    if (last) this.captureOutput(result, last.log);
     this.save(result);
     return result;
+  }
+
+  /** Publishes shared-operation evidence before dispatch so interrupted CLI runs remain traceable. */
+  private async execute(
+    result: TestExecution,
+    signal: AbortSignal,
+    productionBuilt: boolean,
+  ): Promise<void> {
+    if (!result.selection.operationPlan) return this.legacy(result, signal, productionBuilt);
+    const execution = new SharedTestExecution(result, signal);
+    this.save(result);
+    await execution.run(productionBuilt);
+  }
+
+  /** Preserves existing test profiles during explicit migration to shared operations. */
+  private async legacy(
+    result: TestExecution,
+    signal: AbortSignal,
+    productionBuilt: boolean,
+  ): Promise<void> {
+    await this.prepare(result, signal, productionBuilt);
+    await this.command(
+      result,
+      {
+        command: result.selection.bindings.tools.node ?? process.execPath,
+        args: ['--test', ...result.selection.suites.map((suite) => suite.compiled)],
+      },
+      signal,
+    );
   }
 
   /** Creates the evidence record before subsequent lifecycle work begins. */
@@ -148,6 +205,8 @@ export class ComponentTesting {
   ): Promise<void> {
     const seen = new Set<string>();
     for (const profile of result.selection.profiles) {
+      if (profile.schemaVersion !== 1)
+        throw new InputError('Shared test profile cannot execute legacy commands');
       for (const step of profile.preparation) {
         const identity = JSON.stringify(step);
         if (seen.has(identity) || (productionBuilt && step.purpose === 'production')) continue;

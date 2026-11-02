@@ -1,3 +1,4 @@
+import { PlatformExecution } from './platform-execution.js';
 import type { Operation } from '../operations/operations.js';
 import type { Catalog, Component, ExecutionProfile, Role } from './components.js';
 import { InputError } from './config.js';
@@ -11,7 +12,7 @@ export interface InitializationSnapshot {
   profile: ExecutionProfile;
   catalog: Component[];
   model: string;
-  reasoning: 'medium';
+  reasoning: ExecutionProfile['reasoning'];
 }
 
 export interface OwnerSelection {
@@ -66,7 +67,17 @@ function lineage(catalog: Catalog, component: Component): Component[] {
 
 export function validateInitialization(catalog: Catalog): void {
   for (const component of Object.values(catalog.components)) {
-    if (component.schemaVersion >= 3 && component.type === 'platform' && !component.initialization)
+    if (component.schemaVersion === 5 && component.type === 'platform') {
+      if (component.director || component.reviewerProfile)
+        new PlatformExecution(catalog).director(component);
+      continue;
+    }
+    if (
+      component.schemaVersion >= 3 &&
+      component.schemaVersion < 5 &&
+      component.type === 'platform' &&
+      !component.initialization
+    )
       throw new InputError('Version-three platform requires an initializer: ' + component.id);
     if (!component.initialization) continue;
     if (component.schemaVersion < 3 || component.type !== 'platform')
@@ -82,9 +93,11 @@ export function validateInitialization(catalog: Catalog): void {
 export function captureInitialization(
   catalog: Catalog,
   owner: Component,
-  model = 'gpt-6-luna',
+  model?: string,
 ): InitializationSnapshot {
   const platform = lineage(catalog, owner).find((component) => component.type === 'platform');
+  if (platform?.schemaVersion === 5) return captureDirector(catalog, platform, model);
+  model ??= 'gpt-6-luna';
   const identity = platform?.initialization?.componentId;
   const component = identity ? catalog.components[identity]! : fallback(owner.repository);
   return {
@@ -97,6 +110,32 @@ export function captureInitialization(
     catalog: Object.values(catalog.components),
     model,
     reasoning: 'medium',
+  };
+}
+
+/** Captures explicit platform direction without inheriting the engineering component's model. */
+function captureDirector(
+  catalog: Catalog,
+  platform: Component,
+  model?: string,
+): InitializationSnapshot {
+  const component = new PlatformExecution(catalog).director(platform);
+  const profile = catalog.profiles[platform.director!.profile]!;
+  if (model && model !== profile.model)
+    throw new InputError('Director model must come from the captured platform profile');
+  const operations = component.operationPlan?.agent ?? [];
+  if (operations.some((op) => !profile.operationCategories?.includes(op.category)))
+    throw new InputError('Director operation category outside captured profile');
+  return {
+    provenance: 'declared-component',
+    componentId: component.id,
+    context: lineage(catalog, component),
+    role: catalog.roles[component.role]!,
+    profile: structuredClone(profile),
+    operations,
+    catalog: Object.values(catalog.components),
+    model: profile.model,
+    reasoning: profile.reasoning,
   };
 }
 

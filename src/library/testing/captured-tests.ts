@@ -5,11 +5,14 @@ import { git } from '../operations/process.js';
 import { SuiteMetadataReader } from './metadata.js';
 import { loadTestProfile } from './profile.js';
 import type { SuiteMetadata } from './suite.js';
+import { TestDiscovery } from './discovery.js';
 
 export interface CapturedTest extends SuiteMetadata {
   source: string;
   sha256: string;
 }
+
+export { compiledTestPath } from './test-paths.js';
 
 /** Captures mandatory suite identities before candidate edits can affect discovery. */
 export function captureComponentTests(catalog: Catalog, repository: string, base: string): void {
@@ -57,3 +60,11 @@ export function assertCapturedTests(component: Component, workspace: string): vo
       throw new Error(`Candidate changed mandatory test selection: ${captured.source}`);
   }
 }
+
+/** Selects current owned suites using captured rules and refuses changes to mandatory identities. */
+export function currentComponentTests(component: Component, workspace: string, outputRoot: string) {
+  assertCapturedTests(component, workspace);
+  return new TestDiscovery(workspace).discover(component, outputRoot);
+}
+
+export type { DiscoveredSuite } from './discovery.js';

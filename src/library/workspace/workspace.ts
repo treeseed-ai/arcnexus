@@ -1,3 +1,4 @@
+import { WorkspaceOperations } from './operation-preparation.js';
 import { capturedCommandTimeout } from '../architecture/config.js';
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, realpathSync } from 'node:fs';
@@ -29,6 +30,7 @@ export interface PrepareOptions {
   project: string;
   base?: string;
   authorityBase?: string;
+  packageId?: string;
   issue?: string;
   bindings?: Bindings;
 }
@@ -60,6 +62,12 @@ export function createWorkspace(root: string, options: PrepareOptions): RecordDa
   };
   record.bindings = options.bindings ?? loadBindings();
   captureConfiguration(record, options);
+  WorkspaceOperations.capture(
+    record,
+    options.project,
+    options.authorityBase ?? record.base,
+    options.packageId,
+  );
   mkdirSync(join(root, 'runs', id), { mode: 0o700 });
   save(root, record);
   observe(root, record, 'run.created', { base, branch, workspace: record.workspace });
@@ -93,8 +101,18 @@ export async function prepareWorkspace(
   signal.throwIfAborted();
   git(record.source, 'worktree', 'add', '-b', record.branch, record.workspace, record.base);
   observe(root, record, 'workspace.created', { workspace: record.workspace, base: record.base });
-  await prepareMembers(root, record, signal);
+  const shared =
+    record.environment.schemaVersion === 4
+      ? new WorkspaceOperations(root, record, signal)
+      : undefined;
+  await prepareMembers(
+    root,
+    record,
+    signal,
+    shared ? (member) => shared.member(member) : undefined,
+  );
   observe(root, record, 'workspace.members', { members: record.members });
+  if (shared) await shared.primary();
   for (const command of [...record.environment.prerequisites, ...record.environment.setup])
     await prepareCommand(root, record, signal, command);
   freezeMembers(root, record);

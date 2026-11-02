@@ -196,6 +196,7 @@ export async function prepareMembers(
   root: string,
   record: RecordData,
   signal: AbortSignal,
+  prepare?: (member: Member) => Promise<void>,
 ): Promise<void> {
   for (const member of (record.members ?? []) as Member[]) {
     signal.throwIfAborted();
@@ -211,6 +212,7 @@ export async function prepareMembers(
     git(member.source, 'worktree', 'add', '--detach', member.workspace, member.base);
     member.status = 'created';
     save(root, record);
+    if (prepare) await prepare(member);
     for (const command of [...member.definition.prerequisites, ...member.definition.setup]) {
       await prepareMemberCommand(root, record, member, command, signal);
     }

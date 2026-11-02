@@ -1,3 +1,4 @@
+import { PlatformExecution } from './platform-execution.js';
 import { existsSync, realpathSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { digest, resolveAssignment, resolveBase, type Assignment } from './assignment.js';
@@ -31,17 +32,16 @@ export function executionIdentity(context: ProjectExecution): string {
 export class ExecutionContext {
   /** Discovers repository, committed authority and machine bindings; ambiguous packages fail. */
   resolve(cwd: string): ProjectExecution {
-    const { source, base } = resolveBase(cwd);
-    const commonDir = realpathSync(
-      git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
-    );
-    const path = join(commonDir, 'arcnexus', 'bindings.yaml');
-    const bindings = loadBindings(existsSync(path) ? path : undefined);
+    const { source, base, commonDir, bindings } = this.discovery(cwd);
     const catalog = loadCatalog(source, base, bindings);
-    const config = this.defaults(source, base);
-    const selected = this.package(catalog, relative(source, resolve(cwd)), config.defaultPackage);
+    const config = this.defaults(source, base, catalog);
+    const selected = this.selectPackage(
+      catalog,
+      relative(source, resolve(cwd)),
+      config.defaultPackage,
+    );
     const owners = this.owners(catalog, selected.id);
-    this.profiles(catalog, [
+    this.validateProfiles(catalog, [
       ...owners.map((id) => catalog.components[id]!.executionProfile),
       config.directorProfile,
       config.reviewerProfile,
@@ -58,6 +58,17 @@ export class ExecutionContext {
       ...config,
       executable: bindings.tools.codex ?? 'codex',
     };
+  }
+
+  /** Resolves canonical repository identity and machine bindings without reading mutable authority. */
+  private discovery(cwd: string) {
+    const { source, base } = resolveBase(cwd);
+    const commonDir = realpathSync(
+      git(source, 'rev-parse', '--path-format=absolute', '--git-common-dir').trim(),
+    );
+    const path = join(commonDir, 'arcnexus', 'bindings.yaml');
+    const bindings = loadBindings(existsSync(path) ? path : undefined);
+    return { source, base, commonDir, bindings };
   }
 
   /** Selects executable descendants while containers contribute inherited context only. */
@@ -101,7 +112,9 @@ export class ExecutionContext {
   }
 
   /** Reads declarative director/reviewer profiles without selecting models in scheduling code. */
-  private defaults(source: string, base: string) {
+  private defaults(source: string, base: string, catalog: Catalog) {
+    if (Object.values(catalog.components).some((c) => c.schemaVersion === 5))
+      return new PlatformExecution(catalog).defaults(source, base);
     const value = new ConfigurationReader().definition(source, base, 'architecture/execution')
       .value as Record<string, unknown>;
     this.validateDefaults(value);
@@ -139,7 +152,7 @@ export class ExecutionContext {
   }
 
   /** Selects the deepest containing package; equal candidates require an explicit default. */
-  private package(catalog: Catalog, path: string, defaultId?: string): Component {
+  selectPackage(catalog: Catalog, path: string, defaultId?: string): Component {
     const packages = Object.values(catalog.components).filter(
       (c) =>
         c.type === 'package' &&
@@ -151,13 +164,11 @@ export class ExecutionContext {
     if (selected.length === 1) return selected[0]!;
     const fallback = selected.find((c) => c.id === defaultId);
     if (fallback) return fallback;
-    throw new InputError(
-      'Ambiguous or missing package; declare defaultPackage in architecture/execution.yaml',
-    );
+    throw new InputError('Ambiguous or missing package; declare defaultPackage on the platform');
   }
 
   /** Rejects obsolete work budgets rather than silently changing their meaning. */
-  private profiles(catalog: Catalog, ids: string[]): void {
+  validateProfiles(catalog: Catalog, ids: string[]): void {
     const obsolete = [
       'timeoutSeconds',
       'commandTimeoutSeconds',

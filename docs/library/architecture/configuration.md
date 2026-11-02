@@ -40,3 +40,19 @@ Version-four ownership is defined in each component. See the
 patterns, contracts and discovered inventories. Versions 1–3 preserve their existing
 interpretation. Empty version-three/four container permissions express containment,
 not a deny-all ceiling. Container nodes cannot execute assignments.
+
+
+## Minimal configuration migration (#109)
+
+Version-five platform declarations are the single source for `director` (component
+and profile), `reviewerProfile`, `defaultPackage`, and `verificationInputs`.
+New execution rejects a simultaneous `architecture/execution` file. Director models
+and reasoning come from the selected profile; absent configuration never selects a
+hidden model or initializer. Version-five catalogs and shared-operation preparation
+are implemented while full engineering execution remains gated.
+
+Environment schema 4 retains repository composition only. Operation schema 4 holds
+fixed commands, prerequisite references, disposable outputs and artifacts once;
+component usages capture owner-specific plans. See [workspace preparation](../workspace/workspaces.md)
+and the [accepted migration plan](../../plans/minimal-component-configuration.md)
+for current scope and the qualification gates still outstanding.

@@ -1,5 +1,21 @@
 # Steward operations and evidence
 
+Shared operation argument tokens retain their captured definition separately from
+each invocation's resolved arguments. Path inputs are anchored to the repository and
+resolved relative to the operation working directory. During an assignment, a test
+operation discovers current owned suites using captured classification and profile
+rules, including newly created regression suites, while enforcing mandatory captured
+test identities. Invocation evidence retains the selected source hashes. Candidate
+configuration cannot replace the operation, owner or profile. Explicit CLI test
+filters retain their validated selection rather than expanding to all owner tests.
+
+Finite shared-operation checkpoints resolve prerequisites before dispatch and execute
+each equivalent resolved operation once. Equivalence includes the effective read
+boundary as well as command arguments, working directory, outputs and definition.
+A new checkpoint re-executes its checks. Host regression checks and engineering calls
+use this same ordering; a requested test cannot run against stale generated output
+merely because it was selected separately from its preparation prerequisite.
+
 Plans/timeline (#41), declared operations (#42), managed local services/probes
 (#45), and selected history/live qualification (#48) are available. Their retained
 qualification evidence is linked below.

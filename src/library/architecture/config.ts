@@ -1,3 +1,4 @@
+import type { Operation } from '../operations/operations.js';
 import { posix } from 'node:path';
 import { validateSchema } from './schema.js';
 
@@ -26,7 +27,7 @@ export interface WorkspaceDefinition {
 
 export interface Environment {
   workspace?: WorkspaceDefinition;
-  schemaVersion: 1;
+  schemaVersion: 1 | 4;
   prerequisites: Command[];
   setup: Command[];
   generatedDirectories: string[];
@@ -63,7 +64,12 @@ export function commands(value: unknown): Command[] {
   });
 }
 
-export function environment(value: unknown): Environment {
+export function environment(value: unknown, operations: Operation[] = []): Environment {
+  if ((value as { schemaVersion?: number } | null)?.schemaVersion === 4) {
+    if (operations.some((op) => op.schemaVersion !== 4))
+      throw new InputError('Environment schema 4 requires migrated operation definitions');
+    return sharedEnvironment(value, operations);
+  }
   let v: Environment;
   try {
     v = validateSchema<Environment>('environment', value);
@@ -80,6 +86,37 @@ export function environment(value: unknown): Environment {
     setup: commands(v.setup),
     generatedDirectories: v.generatedDirectories.map(relativePath),
   };
+}
+
+/** Derives disposable outputs from operation definitions while keeping composition recipe-free. */
+function sharedEnvironment(value: unknown, operations: Operation[]): Environment {
+  const input = validateSchema<{ schemaVersion: 4; workspace: WorkspaceDefinition }>(
+    'environment-v4',
+    value,
+  );
+  const outputs = (id: string) =>
+    [
+      ...new Set(
+        operations.filter((op) => op.repository === id).flatMap((op) => op.generatedDirectories),
+      ),
+    ].map(relativePath);
+  const result: Environment = {
+    schemaVersion: 4,
+    prerequisites: [],
+    setup: [],
+    generatedDirectories: outputs(input.workspace.primary.id),
+    workspace: {
+      primary: input.workspace.primary,
+      dependencies: input.workspace.dependencies.map((member) => ({
+        ...member,
+        prerequisites: [],
+        setup: [],
+        generatedDirectories: outputs(member.id),
+      })),
+    },
+  };
+  validateWorkspace(result);
+  return result;
 }
 
 function validateWorkspace(v: Environment): void {

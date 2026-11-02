@@ -1,5 +1,6 @@
 import {
   closeSync,
+  fsyncSync,
   mkdirSync,
   openSync,
   realpathSync,
@@ -55,5 +56,17 @@ export function lock(root: string): () => void {
 export function save(root: string, record: RecordData): void {
   const path = join(root, 'runs', record.id, 'report.json');
   writeFileSync(`${path}.tmp`, JSON.stringify(record, null, 2) + '\n', { mode: 0o600 });
+  flush(`${path}.tmp`);
   renameSync(`${path}.tmp`, path);
+  flush(join(root, 'runs', record.id));
+}
+
+/** Flushes run intent and directory entries before managed execution may begin. */
+function flush(path: string): void {
+  const fd = openSync(path, 'r');
+  try {
+    fsyncSync(fd);
+  } finally {
+    closeSync(fd);
+  }
 }

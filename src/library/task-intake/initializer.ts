@@ -20,7 +20,7 @@ export interface InitializationEvidence {
   runId: string;
   componentId: string;
   model: string;
-  reasoning: 'medium';
+  reasoning: InitializationSnapshot['reasoning'];
   turns: number;
   threadId?: unknown;
   usage?: unknown;
@@ -81,7 +81,7 @@ class Initializer {
       runId: this.child.id,
       componentId: this.snapshot.componentId,
       model: this.snapshot.model,
-      reasoning: 'medium',
+      reasoning: this.snapshot.reasoning,
       turns: 0,
       durationMs: 0,
     };

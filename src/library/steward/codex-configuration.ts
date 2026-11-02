@@ -1,3 +1,4 @@
+import { SourceConfinement } from '../operations/confinement.js';
 import { readSchema } from '../architecture/schema.js';
 import { existsSync, appendFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -148,6 +149,10 @@ export class CodexConfiguration {
   /** Builds the explicit directory policy used by the Codex sandbox. */
   private permissionPolicy(authority: ReturnType<CodexConfiguration['authority']>) {
     const { record } = this.input;
+    if (
+      (record.context as Array<{ schemaVersion: number }> | undefined)?.at(-1)?.schemaVersion === 5
+    )
+      return this.checkedPermissions(authority);
     return preparePermissions(
       record.workspace,
       authority.access,
@@ -189,6 +194,24 @@ export class CodexConfiguration {
     env.TMPDIR = this.permissions.tmpDirectory;
     env.PATH = targetEnvironment(record).PATH!;
     return env;
+  }
+
+  /** Gives the model read-only source access; checked edits remain exclusively host-owned. */
+  private checkedPermissions(authority: ReturnType<CodexConfiguration['authority']>) {
+    const adapter = new SourceConfinement({
+      workspace: this.input.record.workspace,
+      reads: authority.access.readPaths,
+      outputs: [],
+      temporaryRoot: join(this.dir, 'tmp'),
+      executable: this.input.executable,
+      toolDirectories: toolDirectories(this.input.record),
+    });
+    return {
+      configOverrides: adapter.overrides,
+      tmpDirectory: adapter.temporaryRoot,
+      filesystem: adapter.filesystem,
+      createdDirectories: [],
+    };
   }
 
   /** Builds explicit SDK settings independently of personal user configuration. */

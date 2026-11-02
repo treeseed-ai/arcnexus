@@ -26,28 +26,39 @@ export class RunWorkspace {
     const record = createWorkspace(this.root, {
       project: this.context.source,
       authorityBase: this.context.base,
+      packageId: this.context.packageId,
       base: revision,
       bindings: this.context.bindings,
     });
     record.executionRunId = run.id;
-    this.store.updateRun(run.id, this.store.run(run.id).status, {
-      workspace: record,
-      workspacePrepared: false,
-      initialCandidateRevision: run.data.initialCandidateRevision ?? revision,
-      initialCandidateSourceRun: run.data.initialCandidateRevision
-        ? run.data.initialCandidateSourceRun
-        : (latest?.id ?? null),
-      previousPolicyWorkspaces: [
-        ...((run.data.previousPolicyWorkspaces ?? []) as unknown[]),
-        ...(run.data.workspace ? [(run.data.workspace as RecordData).id] : []),
-      ],
-    });
+    this.preparing(run, record, revision, latest?.id ?? null);
     await prepareWorkspace(this.root, record, signal);
     this.validate(record, revision);
     this.store.updateRun(run.id, this.store.run(run.id).status, {
       workspace: record,
       workspacePrepared: true,
       candidateRevision: revision,
+    });
+  }
+
+  /** Journals preparation intent and retained prior workspaces before operations can execute. */
+  private preparing(
+    run: ExecutionRun,
+    record: RecordData,
+    revision: string,
+    sourceRun: string | null,
+  ): void {
+    this.store.updateRun(run.id, this.store.run(run.id).status, {
+      workspace: record,
+      workspacePrepared: false,
+      initialCandidateRevision: run.data.initialCandidateRevision ?? revision,
+      initialCandidateSourceRun: run.data.initialCandidateRevision
+        ? run.data.initialCandidateSourceRun
+        : sourceRun,
+      previousPolicyWorkspaces: [
+        ...((run.data.previousPolicyWorkspaces ?? []) as unknown[]),
+        ...(run.data.workspace ? [(run.data.workspace as RecordData).id] : []),
+      ],
     });
   }
 

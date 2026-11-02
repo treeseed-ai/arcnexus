@@ -3,8 +3,10 @@ import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { InputError } from '../architecture/config.js';
 import type { Component } from '../architecture/components.js';
+import { classifyComponentPath } from '../architecture/file-classification.js';
 import { SuiteMetadataReader } from './metadata.js';
 import type { SuiteMetadata } from './suite.js';
+import { compiledTestPath } from './test-paths.js';
 
 export interface TestFilters {
   component?: string;
@@ -31,8 +33,18 @@ export class TestDiscovery {
   discover(component: Component, outputRoot: string): DiscoveredSuite[] {
     const paths = new Set<string>();
     const excluded = component.discovery?.exclude ?? [];
-    for (const root of component.discovery?.tests ?? []) this.walk(root, paths, excluded);
-    return [...paths].sort().map((path) => this.suite(component, path, outputRoot));
+    const roots =
+      component.schemaVersion === 5
+        ? component.allowedWritePaths
+        : (component.discovery?.tests ?? []);
+    for (const root of roots) this.walk(root, paths, excluded);
+    return [...paths]
+      .sort()
+      .filter(
+        (path) =>
+          component.schemaVersion !== 5 || classifyComponentPath(component, path) === 'tests',
+      )
+      .map((path) => this.suite(component, path, outputRoot));
   }
 
   /** Visits regular files within the declared root while respecting exclusions. */
@@ -73,8 +85,6 @@ export class TestDiscovery {
       (category !== 'regression' && category !== metadata.level)
     )
       throw new InputError(`Suite directory and level disagree: ${source}`);
-    if (!source.startsWith('tests/'))
-      throw new InputError(`Unsupported test source root: ${source}`);
     const sha256 = createHash('sha256').update(text).digest('hex');
     const captured = component.inventory?.find((file) => file.path === source);
     return {
@@ -83,7 +93,7 @@ export class TestDiscovery {
       state: !captured ? 'added' : captured.sha256 === sha256 ? 'unchanged' : 'modified',
       source,
       category,
-      compiled: join(outputRoot, source.slice('tests/'.length).replace(/\.ts$/, '.js')),
+      compiled: compiledTestPath(component, source, outputRoot),
       sha256,
     };
   }

@@ -59,6 +59,7 @@ ownership:
     - docs/library/workspace
     - architecture/components/workspace.yaml
   publicModules:
+    - src/library/workspace/checked-edits.ts
     - src/library/workspace/candidates.ts
     - src/library/workspace/members.ts
     - src/library/workspace/state.ts

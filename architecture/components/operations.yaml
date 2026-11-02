@@ -62,6 +62,9 @@ ownership:
     - docs/library/operations
     - architecture/components/operations.yaml
   publicModules:
+    - src/library/operations/operation-execution.ts
+    - src/library/operations/confinement.ts
+    - src/library/operations/operation-definition.ts
     - src/library/operations/diagnostics.ts
     - src/library/operations/operations.ts
     - src/library/operations/probes.ts

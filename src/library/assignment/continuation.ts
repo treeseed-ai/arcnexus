@@ -6,6 +6,9 @@ import type { RecordData } from '../workspace/state.js';
 
 /** Validates a completed durable boundary before a process can resume an assignment. */
 export function validateContinuation(root: string, record: RecordData): void {
+  const invocations = (record.operationInvocations ?? []) as Array<{ status: string }>;
+  if (invocations.some((op) => ['running', 'interrupted'].includes(op.status)))
+    throw new Error('Operation completion is uncertain; inspect retained invocation evidence');
   const checkpoint = record.checkpoint as { path: string; sha256: string } | undefined;
   if (!record.safeCheckpoint || !checkpoint)
     throw new Error('Activation has no safe checkpoint; uncertain operations must be inspected');
