@@ -9,6 +9,13 @@ test identities. Invocation evidence retains the selected source hashes. Candida
 configuration cannot replace the operation, owner or profile. Explicit CLI test
 filters retain their validated selection rather than expanding to all owner tests.
 
+Finite shared-operation checkpoints resolve prerequisites before dispatch and execute
+each equivalent resolved operation once. Equivalence includes the effective read
+boundary as well as command arguments, working directory, outputs and definition.
+A new checkpoint re-executes its checks. Host regression checks and engineering calls
+use this same ordering; a requested test cannot run against stale generated output
+merely because it was selected separately from its preparation prerequisite.
+
 Plans/timeline (#41), declared operations (#42), managed local services/probes
 (#45), and selected history/live qualification (#48) are available. Their retained
 qualification evidence is linked below.
