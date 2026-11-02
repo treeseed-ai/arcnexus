@@ -45,6 +45,22 @@ levels should be split so selection has a useful meaning.
 
 ## Preparation and evidence
 
+New test profiles use schema version 2: `preparation` entries reference a shared
+`operation` and retain their `purpose` (`production` or `tests`); `run` names the
+shared finite test operation. Command definitions exist only in the operation
+registry. The host resolves `selectedTestFiles` to the validated compiled suite
+paths and `testOutputRoot` to the captured profile output root. Every preparation
+and runner invocation uses source-read-only confinement and retains its captured
+definition, context and output through the common operation executor. Required
+verification remains a separate checkpoint from an engineering test invocation.
+
+Preparation references must be available through the owner's `setup` or `refresh`
+usage, and its runner through `agent` or `verify`. Missing references, incompatible
+profiles, services in finite checkpoints and mixed old/new test profiles fail before
+execution. Repeated equivalent preparations run once per test checkpoint; changing
+candidate inputs requires a new checkpoint. These rules also apply to test code and
+package hooks: generated output is writable, maintained source is not.
+
 The shared Node profile declares fixed preparation commands and the compiled output
 root. The service runs preparation once, then invokes Node with the selected compiled
 files. `npm test` first builds the production service, then delegates to it with the
