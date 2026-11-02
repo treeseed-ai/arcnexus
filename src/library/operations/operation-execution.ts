@@ -8,6 +8,7 @@ import { observe } from '../report/timeline.js';
 import { save, type RecordData } from '../workspace/state.js';
 import { OperationConfinement } from './operation-confinement.js';
 import { operationEnvironment } from './environment.js';
+import { currentOperationContext } from './current-context.js';
 import type { Operation } from './operations.js';
 import { execute, type CommandResult } from './process.js';
 
@@ -24,6 +25,7 @@ interface Invocation {
   definitionDigest: string;
   purpose: string;
   context: unknown;
+  selectedTests?: Operation['selectedTests'];
   status: 'running' | 'completed' | 'failed' | 'cancelled' | 'interrupted';
   result?: CommandResult;
   error?: string;
@@ -50,6 +52,7 @@ export class OperationExecution {
       throw new Error('A finite captured operation with resolved host context is required');
     this.assertSettled();
     this.signal.throwIfAborted();
+    op = currentOperationContext(this.record, op);
     const adapter = await new OperationConfinement(this.root, this.record, this.signal).prepare(op);
     const invocation = this.begin(op, purpose);
     try {
@@ -105,6 +108,7 @@ export class OperationExecution {
       artifactErrors: [],
       definitionDigest: op.definitionDigest!,
       context: op.resolvedContext,
+      selectedTests: op.selectedTests,
       purpose,
       status: 'running',
     };

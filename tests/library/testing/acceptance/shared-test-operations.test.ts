@@ -7,6 +7,23 @@ import { SharedTestFixture } from '../support/shared-test-fixture.js';
 
 /** Exercises actual test CLI preparation and execution through installed source confinement. */
 class SharedTestScenarios {
+  /** Explicit CLI filters keep their validated subset when assignment operations gain dynamic discovery. */
+  filtered(t: TestContext): void {
+    const f = new SharedTestFixture(t);
+    f.put(
+      'tests/unit/omitted.test.ts',
+      "import {test} from 'node:test';function registerSuite(x){}\nregisterSuite({component:'sample',level:'unit'});test('unselected',()=>{throw new Error('must remain unselected')});",
+    );
+    const result = f.run('run', 'sample', '--tag', 'fast', '--bindings', f.bindings());
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    const report = JSON.parse(result.stdout);
+    const evidence = JSON.parse(readFileSync(report.operationEvidence, 'utf8'));
+    assert.deepEqual(evidence.operationInvocations.at(-1).arguments, [
+      '--test',
+      '.test-build/unit/small.test.js',
+    ]);
+  }
+
   /** Retains failed runner output and operation evidence rather than reporting completed preparation as success. */
   fails(t: TestContext): void {
     const f = new SharedTestFixture(t);
@@ -83,6 +100,12 @@ class SharedTestScenarios {
 }
 
 const scenarios = new SharedTestScenarios();
+
+test(
+  'shared CLI test operations preserve explicit selection filters',
+  { skip: !process.env.ARCNEXUS_TEST_CODEX },
+  (t) => scenarios.filtered(t),
+);
 
 test(
   'shared test failure retains actual runner diagnostics and unsuccessful invocation',

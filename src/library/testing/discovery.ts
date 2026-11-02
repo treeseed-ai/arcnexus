@@ -5,7 +5,7 @@ import { InputError } from '../architecture/config.js';
 import { classifyComponentPath, type Component } from '../architecture/components.js';
 import { SuiteMetadataReader } from './metadata.js';
 import type { SuiteMetadata } from './suite.js';
-import { compiledTestPath } from './captured-tests.js';
+import { compiledTestPath } from './test-paths.js';
 
 export interface TestFilters {
   component?: string;

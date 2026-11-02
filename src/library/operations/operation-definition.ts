@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { posix } from 'node:path';
 import type { Operation } from './operations.js';
 
 export type ContextInput =
@@ -33,14 +34,30 @@ export class OperationArguments {
   capture(operation: Operation, context: OperationContext): Operation {
     if (operation.schemaVersion !== 4) return operation;
     const definitionDigest = operation.definitionDigest!;
-    const args = this.resolve(operation.argumentTokens ?? [], context);
+    const definitionArguments = operation.argumentTokens ?? operation.definitionArguments ?? [];
+    const args = this.resolve(definitionArguments, this.paths(context, operation.cwd));
     return {
       ...operation,
       args,
       argumentTokens: undefined,
+      definitionArguments,
       definitionDigest,
       resolvedContext: context,
     } as Operation;
+  }
+
+  /** Converts repository-relative host path inputs into argv relative to the captured working directory. */
+  private paths(context: OperationContext, cwd: string): OperationContext {
+    const path = (value: string) => posix.relative(cwd, value) || '.';
+    return {
+      ...context,
+      ownedPaths: context.ownedPaths.map(path),
+      packageRoot: path(context.packageRoot),
+      ...(context.selectedTestFiles
+        ? { selectedTestFiles: context.selectedTestFiles.map(path) }
+        : {}),
+      ...(context.testOutputRoot ? { testOutputRoot: path(context.testOutputRoot) } : {}),
+    };
   }
 }
 
