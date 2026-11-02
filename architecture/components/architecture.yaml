@@ -64,6 +64,7 @@ ownership:
     - src/library/architecture/assignment.ts
     - src/library/architecture/bindings.ts
     - src/library/architecture/components.ts
+    - src/library/architecture/file-classification.ts
     - src/library/architecture/config.ts
     - src/library/architecture/configuration.ts
     - src/library/architecture/initialization.ts
