@@ -1,5 +1,14 @@
 # Steward operations and evidence
 
+Shared operation argument tokens retain their captured definition separately from
+each invocation's resolved arguments. Path inputs are anchored to the repository and
+resolved relative to the operation working directory. During an assignment, a test
+operation discovers current owned suites using captured classification and profile
+rules, including newly created regression suites, while enforcing mandatory captured
+test identities. Invocation evidence retains the selected source hashes. Candidate
+configuration cannot replace the operation, owner or profile. Explicit CLI test
+filters retain their validated selection rather than expanding to all owner tests.
+
 Plans/timeline (#41), declared operations (#42), managed local services/probes
 (#45), and selected history/live qualification (#48) are available. Their retained
 qualification evidence is linked below.
