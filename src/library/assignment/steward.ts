@@ -195,3 +195,5 @@ export async function runSteward(
 }
 
 export { validateContinuation } from './continuation.js';
+
+export { recoverAssignmentEdits } from './edit-recovery.js';

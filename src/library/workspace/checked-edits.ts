@@ -36,6 +36,8 @@ export class CheckedEdits {
     private readonly authority: string,
     private readonly authorize: (path: string) => void,
   ) {
+    if (realpathSync(workspace) !== resolve(workspace))
+      throw new Error('Edit workspace cannot be a filesystem alias');
     this.assertOutside(resolve(workspace), resolve(directory));
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     this.assertOutside(realpathSync(workspace), realpathSync(directory));
@@ -77,14 +79,19 @@ export class CheckedEdits {
   }
 
   /** Reconciles only recorded before/after images; unknown state blocks dispatch. */
-  recover(): void {
+  recover(): string[] {
+    const recovered: string[] = [];
     for (const name of readdirSync(this.directory)
       .filter((file) => file.endsWith('.json'))
       .sort()) {
       const path = join(this.directory, name);
       const transaction = this.load(path);
-      if (transaction.status === 'pending') this.finish(path, transaction);
+      if (transaction.status === 'pending') {
+        this.finish(path, transaction);
+        recovered.push(transaction.id);
+      }
     }
+    return recovered;
   }
 
   /** Rejects caller-supplied identities and malformed edit semantics before scope evaluation. */

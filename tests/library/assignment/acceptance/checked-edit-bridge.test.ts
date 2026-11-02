@@ -63,10 +63,11 @@ class EditAuthorityScenarios {
     const workspace = join(root, 'source');
     mkdirSync(join(workspace, 'owned'), { recursive: true });
     writeFileSync(join(workspace, 'owned/file.ts'), 'before');
+    const resolved = { digest: 'captured-authority' };
     return {
-      options: { record: { workspace, id: 'run' } },
+      options: { record: { workspace, id: 'run', resolvedAssignment: resolved } },
       dir: join(root, 'evidence'),
-      resolved: { digest: 'captured-authority' },
+      resolved,
       scope: ['owned'],
       assignment: { kind: 'change' },
       frozen: [],

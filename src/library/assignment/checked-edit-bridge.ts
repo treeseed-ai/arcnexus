@@ -1,6 +1,6 @@
 import { readSchema } from '../architecture/schema.js';
 import { join } from 'node:path';
-import { digest } from '../architecture/assignment.js';
+import { checkedEditAuthority } from './edit-recovery.js';
 import { covered, classifyComponentPath } from '../architecture/components.js';
 import type { BridgeTool } from '../steward/bridge.js';
 import { CheckedEdits } from '../workspace/checked-edits.js';
@@ -18,7 +18,7 @@ export class CheckedEditBridge {
     this.edits = new CheckedEdits(
       record.workspace,
       join(state.dir, 'checked-edits'),
-      digest(JSON.stringify([state.resolved.digest, record.assignmentId ?? record.id])),
+      checkedEditAuthority(record),
       (path) => this.authorize(path),
     );
     this.tools = [

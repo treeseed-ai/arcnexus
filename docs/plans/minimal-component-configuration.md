@@ -147,8 +147,7 @@ not prevent modification. This finding is specific to the tested permissions pro
 The maintained live probe requires `ARCNEXUS_TEST_CODEX`; skipping it is not a pass.
 These are enforcement probes, not the six real task/workday acceptance gates.
 
-Shared setup/refresh/test preparation, complete invocation recovery, platform execution
-configuration, stable regression operation identities, HTTP verification checkpoints,
+Shared refresh/test preparation, stable regression operation identities, HTTP verification checkpoints,
 and continuation reconciliation still need integration. Mandatory HTTP verification
 currently fails explicitly rather than disappearing from the captured check plan.
 Migration and removal of old executable configuration have not been delivered.
@@ -162,3 +161,10 @@ new director/reviewer defaults without a duplicate execution file. Environment s
 operations. Installed-runtime preparation tests cover generated delivery, deduplication
 across owners, setup-script write denial and cleanup. These tests use controlled
 fixtures and do not satisfy real task/workday qualification.
+
+Host restart now reconciles journaled checked edits before considering pending assignment
+outcomes. Interrupted operations remain uncertain and cannot be replayed automatically;
+an incompatible completion outcome is retained without publishing delivery. Conflicting
+filesystem bytes remain intact and require attention. Eight focused cases cover this
+integration, transaction crashes and assignment edit authority. This is direct bootstrap
+work with deterministic host-restart evidence, not live model qualification.

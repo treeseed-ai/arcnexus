@@ -46,7 +46,18 @@ class CheckedEditScenarios {
 
   /** Rejects traversal and both filesystem alias forms before touching maintained bytes. */
   async aliases(t: TestContext): Promise<void> {
-    const { root, edits } = await this.fixture(t);
+    const { root, edits, directory, CheckedEdits } = await this.fixture(t);
+    symlinkSync(root, join(directory, 'alias'));
+    assert.throws(
+      () =>
+        new CheckedEdits(
+          join(directory, 'alias'),
+          join(directory, 'private'),
+          'authority',
+          () => {},
+        ),
+      /filesystem alias/,
+    );
     symlinkSync('../other/value.txt', join(root, 'owned/symlink'));
     linkSync(join(root, 'other/value.txt'), join(root, 'owned/hardlink'));
     for (const path of ['../escape', 'owned/symlink', 'owned/hardlink'])
@@ -124,7 +135,7 @@ class CheckedEditScenarios {
         if (!path.startsWith('owned/')) throw new Error('Edit outside captured owner');
       },
     );
-    return { root, edits, directory };
+    return { root, edits, directory, CheckedEdits: module.CheckedEdits };
   }
 
   /** Computes the expected current-content identity supplied with a checked edit. */

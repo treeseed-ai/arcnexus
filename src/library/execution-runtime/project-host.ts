@@ -1,3 +1,4 @@
+import { AssignmentRecovery } from './assignment-recovery.js';
 import { RunAuthority } from './run-authority.js';
 import { ExecutionEvidence, ExecutionReports } from '../report/report.js';
 import { StewardshipPolicy } from '../workday/workday.js';
@@ -454,6 +455,7 @@ export class ProjectHost {
   /** Marks abandoned activations without replaying possibly completed operations. */
   private recover(): void {
     new PolicyRecovery(this.root, this.store).recover();
+    new AssignmentRecovery(this.root, this.store).recover();
     for (const run of this.store.runs()) {
       for (const assignment of this.store.assignments(run.id)) {
         if (assignment.data.pendingOutcome) {
