@@ -5,6 +5,14 @@ import { MinimalTestFixture } from '../support/minimal-test-fixture.js';
 
 /** Exercises derived test selection through the built CLI without executing candidate modules. */
 class MinimalDiscoveryScenarios {
+  /** Keeps inspection available during migration while refusing the legacy unconfined execution path. */
+  rejectsLegacyExecution(t: TestContext): void {
+    const f = new MinimalTestFixture(t);
+    const result = f.run('run', 'sample');
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /Migrate test profile to schemaVersion 2/);
+  }
+
   /** Includes new owned suites and excludes classified documentation without per-leaf discovery. */
   selects(t: TestContext, root: string): void {
     const f = new MinimalTestFixture(t, root);
@@ -31,6 +39,9 @@ class MinimalDiscoveryScenarios {
 }
 
 const scenarios = new MinimalDiscoveryScenarios();
+
+test('minimal components cannot run tests through legacy inline commands', (t) =>
+  scenarios.rejectsLegacyExecution(t));
 
 test('minimal ownership discovers captured and new suites without discovery declarations', (t) =>
   scenarios.selects(t, '.'));

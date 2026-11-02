@@ -147,7 +147,7 @@ not prevent modification. This finding is specific to the tested permissions pro
 The maintained live probe requires `ARCNEXUS_TEST_CODEX`; skipping it is not a pass.
 These are enforcement probes, not the six real task/workday acceptance gates.
 
-Shared refresh/test preparation, stable regression operation identities, HTTP verification checkpoints,
+Shared refresh, stable regression operation identities, HTTP verification checkpoints,
 and continuation reconciliation still need integration. Mandatory HTTP verification
 currently fails explicitly rather than disappearing from the captured check plan.
 Migration and removal of old executable configuration have not been delivered.
@@ -168,3 +168,21 @@ an incompatible completion outcome is retained without publishing delivery. Conf
 filesystem bytes remain intact and require attention. Eight focused cases cover this
 integration, transaction crashes and assignment edit authority. This is direct bootstrap
 work with deterministic host-restart evidence, not live model qualification.
+
+Minimal ownership now drives test discovery for existing and new suites, including
+nested package roots and classification exceptions. Test profile version 2 references
+shared preparation and runner operations; the built test CLI uses the confined executor,
+deduplicates equivalent multi-owner preparation and retains separate invocation evidence.
+Minimal components cannot execute legacy inline test recipes. Sixteen focused cases
+pass locally, including actual installed-runtime source denial from test code, failure
+diagnostics, transport output limits and cancellation. The earlier discovery checkpoint
+passed all 21 testing cases; the recovery checkpoint passed all 79 runtime cases.
+
+Issue [#111](https://github.com/treeseed-ai/arcnexus/issues/111) records diagnostic transport
+that earlier enforcement probes did not verify. The tested network restriction hides
+Node socket-backed stdio types. A host-owned read-only preload repairs subprocess
+streams; host-opened regular descriptors preserve the test coordinator's output. The
+runtime qualifier now requires stdout/stderr sentinels as well as filesystem denial.
+These are controlled fixture checks, not live task/workday qualification. Dynamic
+assignment test-context refresh, complete operation lifecycle unification, the derived
+API catalog, executable migration and all six live gates remain unfinished.

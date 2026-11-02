@@ -56,17 +56,20 @@ export class OperationConfinement {
     if (this.record.confinementQualified === hostIdentity) return;
     const { source, root, probe } = this.probe(adapter);
     const script =
-      "const f=require('fs');f.writeFileSync('output/proof','ok');for(const p of ['canary',process.env.CODEX_HOME+'/config.toml']){try{f.writeFileSync(p,'bad');process.exit(7)}catch(e){if(!['EROFS','EPERM','EACCES'].includes(e.code))throw e;}}";
+      "const f=require('fs');console.log('stdout-proof');console.error('stderr-proof');f.writeFileSync('output/proof','ok');for(const p of ['canary',process.env.CODEX_HOME+'/config.toml']){try{f.writeFileSync(p,'bad');process.exit(7)}catch(e){if(!['EROFS','EPERM','EACCES'].includes(e.code))throw e;}}";
+    const log = join(root, `probe-${randomUUID()}.log`);
     await execute(
       probe.command({ command: process.execPath, args: ['-e', script] }),
       source,
-      join(root, `probe-${randomUUID()}.log`),
+      log,
       this.signal,
-      { env: probe.environment(operationEnvironment(this.record)) },
+      { env: probe.environment(operationEnvironment(this.record)), fileOutput: true },
     );
     if (
       readFileSync(join(source, 'canary'), 'utf8') !== 'original' ||
-      readFileSync(join(source, 'output/proof'), 'utf8') !== 'ok'
+      readFileSync(join(source, 'output/proof'), 'utf8') !== 'ok' ||
+      !readFileSync(log, 'utf8').includes('stdout-proof') ||
+      !readFileSync(log, 'utf8').includes('stderr-proof')
     )
       throw new Error('Source confinement qualification failed');
     this.record.confinementQualified = hostIdentity;

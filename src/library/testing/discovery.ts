@@ -5,6 +5,7 @@ import { InputError } from '../architecture/config.js';
 import { classifyComponentPath, type Component } from '../architecture/components.js';
 import { SuiteMetadataReader } from './metadata.js';
 import type { SuiteMetadata } from './suite.js';
+import { compiledTestPath } from './captured-tests.js';
 
 export interface TestFilters {
   component?: string;
@@ -83,10 +84,6 @@ export class TestDiscovery {
       (category !== 'regression' && category !== metadata.level)
     )
       throw new InputError(`Suite directory and level disagree: ${source}`);
-    const testRoot =
-      join(component.schemaVersion === 5 ? component.repositoryRoot! : '.', 'tests') + '/';
-    if (!source.startsWith(testRoot))
-      throw new InputError(`Unsupported test source root: ${source}`);
     const sha256 = createHash('sha256').update(text).digest('hex');
     const captured = component.inventory?.find((file) => file.path === source);
     return {
@@ -95,7 +92,7 @@ export class TestDiscovery {
       state: !captured ? 'added' : captured.sha256 === sha256 ? 'unchanged' : 'modified',
       source,
       category,
-      compiled: join(outputRoot, source.slice(testRoot.length).replace(/\.ts$/, '.js')),
+      compiled: compiledTestPath(component, source, outputRoot),
       sha256,
     };
   }

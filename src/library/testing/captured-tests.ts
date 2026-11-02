@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, posix } from 'node:path';
 import type { Catalog, Component } from '../architecture/components.js';
 import { git } from '../operations/process.js';
 import { SuiteMetadataReader } from './metadata.js';
@@ -9,6 +9,15 @@ import type { SuiteMetadata } from './suite.js';
 export interface CapturedTest extends SuiteMetadata {
   source: string;
   sha256: string;
+}
+
+/** Maps a supported package test path to its captured Node profile output without caller path substitution. */
+export function compiledTestPath(component: Component, source: string, outputRoot: string): string {
+  const root =
+    posix.join(component.schemaVersion === 5 ? component.repositoryRoot! : '.', 'tests') + '/';
+  if (!source.startsWith(root) || !source.endsWith('.test.ts'))
+    throw new Error(`Unsupported test source root or extension: ${source}`);
+  return posix.join(outputRoot, source.slice(root.length).replace(/\.ts$/, '.js'));
 }
 
 /** Captures mandatory suite identities before candidate edits can affect discovery. */

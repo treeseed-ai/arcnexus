@@ -79,7 +79,7 @@ export class OperationExecution {
       realpathSync(join(this.record.workspace, op.cwd)),
       join(this.root, 'runs', this.record.id, `invocation-${id}.log`),
       this.signal,
-      { env: adapter.environment(operationEnvironment(this.record)) },
+      { env: adapter.environment(operationEnvironment(this.record)), fileOutput: true },
     );
     return { ...result, command: op.command, args: op.args };
   }

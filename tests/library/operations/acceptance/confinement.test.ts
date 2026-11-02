@@ -20,7 +20,7 @@ class ConfinementScenarios {
       executable: process.env.ARCNEXUS_TEST_CODEX!,
     });
     const script =
-      "const f=require('fs');f.writeFileSync('generated/result','ok');for(const path of ['source.txt',process.env.CODEX_HOME+'/config.toml']){try{f.writeFileSync(path,'bad');process.exit(7)}catch(e){if(!['EROFS','EACCES','EPERM'].includes(e.code))throw e;}}";
+      "const f=require('fs');console.log('stdout-proof');console.error('stderr-proof');f.writeFileSync('generated/result','ok');for(const path of ['source.txt',process.env.CODEX_HOME+'/config.toml']){try{f.writeFileSync(path,'bad');process.exit(7)}catch(e){if(!['EROFS','EACCES','EPERM'].includes(e.code))throw e;}}";
     const command = adapter.command({ command: process.execPath, args: ['-e', script] });
     const result = spawnSync(command.command, command.args, {
       cwd: root,
@@ -28,6 +28,8 @@ class ConfinementScenarios {
       encoding: 'utf8',
     });
     assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /stdout-proof/);
+    assert.match(result.stderr, /stderr-proof/);
     assert.equal(readFileSync(join(root, 'source.txt'), 'utf8'), 'original');
     assert.equal(readFileSync(join(root, 'generated/result'), 'utf8'), 'ok');
   }

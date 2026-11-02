@@ -6,6 +6,7 @@ import {
 import type { Operation } from '../operations/operations.js';
 import type { Catalog, Component } from './components.js';
 import { InputError } from './config.js';
+import { compiledTestPath } from '../testing/captured-tests.js';
 
 /** Captures finite lifecycle plans and agent availability from a single definition registry. */
 export class ComponentOperationPlans {
@@ -41,7 +42,9 @@ export class ComponentOperationPlans {
       packageRoot: c.repositoryRoot!,
       ...(c.testProfile
         ? {
-            selectedTestFiles: (c.capturedTests ?? []).map((t) => t.source),
+            selectedTestFiles: (c.capturedTests ?? []).map((t) =>
+              compiledTestPath(c, t.source, (profile!.value as { outputRoot: string }).outputRoot),
+            ),
             testOutputRoot: (profile?.value as { outputRoot?: string } | undefined)?.outputRoot,
           }
         : {}),
