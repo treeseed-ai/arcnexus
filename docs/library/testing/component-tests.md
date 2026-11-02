@@ -61,6 +61,17 @@ execution. Repeated equivalent preparations run once per test checkpoint; changi
 candidate inputs requires a new checkpoint. These rules also apply to test code and
 package hooks: generated output is writable, maintained source is not.
 
+Confinement qualification also requires retained stdout and stderr sentinels. A
+successful exit without diagnostic transport is insufficient. On the tested Linux
+runtime, Node socket-backed stdio inside the restricted sandbox can become a generic
+`Writable` stream that discards output, while direct descriptor writes work. Confined
+commands therefore preload a host-owned Node compatibility module that restores only
+these inherited stdout/stderr descriptors. The preload is read-only and also applies
+to Node subprocesses. Finite commands additionally receive host-opened regular output
+descriptors because Node's test coordinator initializes its reporter before preloads.
+A diagnostic-size watchdog retains the existing output limit; source/network
+restrictions and cancellation supervision remain in force.
+
 The shared Node profile declares fixed preparation commands and the compiled output
 root. The service runs preparation once, then invokes Node with the selected compiled
 files. `npm test` first builds the production service, then delegates to it with the
